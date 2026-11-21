@@ -70,7 +70,9 @@ def test_disabled_examples_profile_is_not_assigned(web, monkeypatch):  # noqa: F
     assert db.get_project(pid)["provider_id"] in (None, 0)
 
 
-def test_external_examples_profile_waits_for_the_students_mark(web, monkeypatch, external_loopback):  # noqa: F811
+def test_external_examples_profile_is_assigned_with_the_default_mark(web, monkeypatch, external_loopback):  # noqa: F811
+    """Учебный пример – открытый код: отметка «код не секретный» ставится при создании (слово владельца 21.11.2026),
+    внешний профиль примеров назначается сразу."""
     db = web.app.state.db
     profile = external_profile(web, "https://external-test.example:9", name="DeepSeek учебный")
     db.set_settings({"examples_provider_id": int(profile["id"])})
@@ -79,12 +81,8 @@ def test_external_examples_profile_waits_for_the_students_mark(web, monkeypatch,
     arch.write_bytes(_archive(FILES))
     ex.unpack(arch, entry, ex.examples_root(web.settings.repos_root) / ex.folder_name(entry))
     r = web.client.post("/examples/toy/project", headers=ORIGIN, follow_redirects=False)
-    assert r.status_code == 303 and r.headers["location"].endswith("/external?example=1"), r.headers["location"]
-    pid = int(r.headers["location"].split("/")[2])
-    assert not db.get_project(pid)["provider_id"], "до отметки внешний профиль не назначен"
-    page = web.client.get(f"/projects/{pid}/external").text
-    assert "Учебный пример «Toy» из каталога стенда" in page, "обоснование заполнено"
-    assert mark(web, pid, reason="Учебный пример Toy из каталога стенда: открытый код, лицензия MIT").status_code == 303
+    assert r.status_code == 303 and "ok=project_example_profile" in r.headers["location"], r.headers["location"]
+    pid = int(r.headers["location"].split("/")[2].split("?")[0])
     project = db.get_project(pid)
     assert project["external_allowed"] == 1 and project["provider_id"] == profile["id"]
 

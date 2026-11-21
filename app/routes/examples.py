@@ -236,6 +236,9 @@ def _prepared_import(settings, entry: dict, tree: Path):
     return result
 
 
+EXAMPLE_MARK_REASON = "Учебный пример: открытый исходный код из публичного репозитория GitHub."
+
+
 def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
     """Проект из примера: (номер, только что доведён до готовности). Сначала всё, что может сорваться (выгрузка, папка,
     разбор), затем запись. Проект создаётся в одной транзакции со связью («создаётся»), номер импорта пишется в связь в
@@ -270,6 +273,9 @@ def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
 
         project_id = db.create_project(unique_name(db, f"Пример: {entry['title']}"[:200]), after=link_project)
         link = {**record, "project_id": project_id}
+        created_now = True
+    else:
+        created_now = False
     project_id = int(link["project_id"])
     if result is not None:
         # до импорта у проекта нет находок и срезов: папка проекта и карта ставятся без потерь; после импорта
@@ -296,6 +302,11 @@ def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
     if result is None and link.get("codebases"):  # импорт был в прошлый раз: исходная копия и карта не меняются
         mapping = dict(link["codebases"])
     db.update_json_entry(LINK_KEY, key, {**link, "codebases": mapping, "state": "ready"})
+    if created_now:
+        # учебный пример – открытый код с GitHub: отметка «код не секретный» по умолчанию (слово владельца 21.11.2026);
+        # действует, только когда внешние провайдеры включены на установке; снимается в параметрах проекта
+        db.set_external_mark(project_id, EXAMPLE_MARK_REASON)
+        remember_mark_root(db, project_id, settings)
     return project_id, True
 
 

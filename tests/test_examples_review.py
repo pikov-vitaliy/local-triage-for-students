@@ -527,7 +527,8 @@ def test_root_change_revokes_catalog_marks(web, monkeypatch):  # noqa: F811
     pid = int(_create(web).headers["location"].split("/")[2].split("?")[0])
     db.set_external_mark(pid, "Учебный пример: открытый код, проверено для теста")
     key = next(iter(db.get_settings()[LINK_KEY]))
-    db.update_json_entry(LINK_KEY, key, {**db.get_settings()[LINK_KEY][key], "root": "host:/other/examples"})
+    db.update_json_entry(LINK_KEY, key, {**db.get_settings()[LINK_KEY][key], "root": "host:/other/examples",
+                                         "mark_root": "host:/other/examples"})  # отметка дана для прежнего корня
     assert revoke_marks_on_root_change(db, web.settings) == 1 and db.get_project(pid)["external_allowed"] == 0
 
 

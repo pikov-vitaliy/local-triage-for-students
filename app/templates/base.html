@@ -22,6 +22,7 @@
     <a class="brand" href="/" title="Local Triage – к проектам">{{ icon("logo") }}<span class="brand-name"><b>Local</b> Triage</span></a>
     <nav class="crumbs" aria-label="Навигация">{% block crumbs %}{% endblock %}</nav>
     <div class="topbar-actions">
+      <a class="topnav-link" href="/"{% if self.page()|trim == "projects" %} aria-current="page"{% endif %} title="Ваши проекты">{{ icon("folder") }}<span>Проекты</span></a>
       <a class="topnav-link" href="{{ work_link('/examples') }}"{% if self.page()|trim == "examples" %} aria-current="page"{% endif %} title="Каталог учебных примеров">{{ icon("package") }}<span>Примеры</span></a>
       <a class="topnav-link" href="{{ work_link('/feeds') }}"{% if self.page()|trim == "feeds" %} aria-current="page"{% endif %} title="Справочники уязвимостей">{{ icon("book") }}<span>Справочники</span></a>
       <a class="topnav-link" href="{{ work_link('/cwe') }}"{% if self.page()|trim == "cwe" or self.page()|trim == "bdu" %} aria-current="page"{% endif %} title="Справочник классов CWE"><span>CWE</span></a>

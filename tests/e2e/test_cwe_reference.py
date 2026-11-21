@@ -73,7 +73,7 @@ def test_cwe_list_search_filter_and_card(ui, tmp_path: Path):
     page.locator('.cwe-link-list a[href="/cwe/CWE-2098"]').first.click()
     expect(page).to_have_url(re.compile(r"/cwe/CWE-2098$"))
     expect(page.locator("h1")).to_contain_text("Demo Parent Class")
-    page.get_by_role("link", name="Проекты", exact=True).click()
+    page.locator("nav.crumbs").get_by_role("link", name="Проекты", exact=True).click()
     page.goto("/cwe/CWE-9999")
     expect(page.locator("main")).to_contain_text("Такого класса в каталоге нет")
 
