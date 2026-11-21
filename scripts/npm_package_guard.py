@@ -31,6 +31,7 @@ from hygiene_rules import (CONTROL, LOCAL_PATHS, PLACE_WORDS, REAL_PROJECT, STAN
                            hub_number_hits)
 
 GENERATED = {"README.md", "npm/build.json"}
+AUTHOR_EMAILS = {"pikov@" + "yandex.ru"}
 LICENSE_TEXTS = {"THIRD-PARTY-NOTICES.md", "LICENSE"}
 XLSX = {".xlsx", ".xlsm"}
 BINARY_OK = {".woff2"}  # шрифты: текста, который могли бы проверить правила, в них нет
@@ -120,7 +121,9 @@ def text_problems(name: str, text: str) -> list[str]:
     for what, shown, at in hub_number_hits(text):
         out.append(f"{where(at)}: {what} «{shown.strip()}»")
     if name not in LICENSE_TEXTS:
-        out.extend(f"{name}: {p}" for p in email_problems(text))
+        # почта автора пакета – только в package.json (поле author), это решение автора; в остальных файлах – нарушение
+        allowed = AUTHOR_EMAILS if name == "package.json" else set()
+        out.extend(f"{name}: {p}" for p in email_problems(text) if not any(a in p for a in allowed))
     for m in IPV6_CANDIDATE.finditer(text):  # частные IPv6 (ULA, fc00::/7) – любой записью; разбор адреса целиком
         try:
             address = ipaddress.IPv6Address(m.group(1))

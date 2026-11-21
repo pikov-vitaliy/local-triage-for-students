@@ -2,8 +2,24 @@
   "name": "local-triage",
   "version": "0.10.0-dev.32",
   "description": "Учебный стенд «Локальный триаж»: разбор срабатываний SAST и SCA в браузере, со своими Python и PostgreSQL, без Docker",
-  "private": true,
   "license": "MIT",
+  "author": "Vitaly Pikov <pikov@yandex.ru>",
+  "homepage": "https://github.com/pikov-vitaliy/local-triage-for-students#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pikov-vitaliy/local-triage-for-students.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pikov-vitaliy/local-triage-for-students/issues"
+  },
+  "keywords": [
+    "sast",
+    "sca",
+    "triage",
+    "appsec",
+    "security-training",
+    "secure-development"
+  ],
   "bin": {
     "local-triage": "npm/cli.js"
   },
