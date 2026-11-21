@@ -1,0 +1,11 @@
+{% if task_context and task_context.visible %}
+<aside class="task-context" id="task-context" aria-label="Возврат к рабочей задаче">
+  <div><span class="small muted">Открыто из: {{ task_context.project }}</span><strong class="break block">{{ task_context.label }}</strong></div>
+  <nav class="actions" aria-label="Возврат к работе">
+    <a class="btn btn-small btn-primary" id="task-origin" href="{{ task_context.origin }}">{{ task_context.title }}</a>
+    {% if task_context.queue != task_context.origin %}<a class="btn btn-small" id="task-queue" href="{{ task_context.queue }}">К рабочему списку</a>{% endif %}
+    {% if task_context.via %}<a class="btn btn-small btn-ghost" id="task-previous" href="{{ work_link(task_context.via) }}">Предыдущая статья</a>{% endif %}
+  </nav>
+  {% if task_context.missing %}<p class="hint">Исходной находки нет в текущей выгрузке. Возврат ведёт в сохранённую историческую карточку.</p>{% endif %}
+</aside>
+{% endif %}

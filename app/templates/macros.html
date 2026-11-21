@@ -1,0 +1,440 @@
+{# Общие элементы страниц. Описание – docs/DESIGN.md. Макросы видят только глобальные имена шаблонов (подписи
+   из app/view.py): адреса, настройки и пороги передаются аргументами. #}
+
+{# Значок 16 px: SVG 24×24, обводка цветом текста; без label скрыт от чтения с экрана #}
+{% macro icon(name, label="", cls="") -%}
+{%- set shapes = {
+  "archive": '<rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+  "arrow-left": '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+  "arrow-right": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  "arrow-up": '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+  "book": '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+  "check": '<path d="M20 6 9 17l-5-5"/>',
+  "check-circle": '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  "chevron-down": '<path d="m6 9 6 6 6-6"/>',
+  "chevron-right": '<path d="m9 18 6-6-6-6"/>',
+  "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  "code": '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+  "copy": '<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  "download": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  "edit": '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  "external": '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  "eye": '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  "file": '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5Z"/><path d="M14 2v6h6"/>',
+  "folder": '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  "inbox": '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/>',
+  "info": '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  "keyboard": '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M8 15h8"/>',
+  "list": '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  "list-check": '<path d="M11 18H3M15 18l2 2 4-4M16 12H3M16 6H3"/>',
+  "logo": '<rect class="logo-bg" x="1" y="1" width="22" height="22" rx="6"/><path class="logo-fg" d="m7 12.5 3.2 3.2L17 9"/>',
+  "message": '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  "moon": '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  "package": '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.3 7 8.7 5 8.7-5"/>',
+  "pause": '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  "play": '<path d="m6 3 14 9-14 9V3z"/>',
+  "plus": '<path d="M5 12h14M12 5v14"/>',
+  "refresh": '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  "search": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  "settings": '<path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
+  "shield": '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  "stop": '<rect x="5" y="5" width="14" height="14" rx="1"/>',
+  "sun": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  "trash": '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6M14 11v6"/>',
+  "upload": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  "warning": '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+  "x": '<path d="M18 6 6 18M6 6l12 12"/>',
+} -%}
+{%- if name in shapes -%}
+<svg class="icon icon-{{ name }}{% if cls %} {{ cls }}{% endif %}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"{% if label %} role="img" aria-label="{{ label }}"{% else %} aria-hidden="true"{% endif %}>{{ shapes[name]|safe }}</svg>
+{%- endif -%}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------- макросы этапа 1 (вывод не меняется) #}
+
+{% macro verdict_badge(value, confidence=None) -%}
+{%- if value -%}<span class="badge verdict verdict-{{ value }}">{{ VERDICT_LABELS.get(value, value) }}{% if confidence is not none %} · {{ confidence }}%{% endif %}</span>
+{%- else -%}<span class="badge verdict verdict-none">нет</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro severity(value) -%}
+{%- if value == "critical" -%}<span class="sev-badge">{{ SEVERITY_LABELS[value] }}</span>
+{%- elif value -%}<span class="sev sev-{{ value }}">{{ SEVERITY_LABELS.get(value, value) }}</span>
+{%- else -%}<span class="muted">–</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro run_state(state) -%}
+<span class="state state-{{ state }}">{{ RUN_STATE_LABELS.get(state, state) }}</span>
+{%- endmacro %}
+
+{# ---------------------------------------------------------------- бейджи и отметки #}
+
+{# Вид находки: SAST, SCA, лицензии, DAST #}
+{% macro kind_badge(kind) -%}
+<span class="badge badge-kind">{{ KIND_LABELS.get(kind, kind) }}</span>
+{%- endmacro %}
+
+{# Уверенность модели словами и в процентах: от 80 – высокая, 50–79 – средняя, ниже 50 – низкая #}
+{% macro confidence(value) -%}
+{%- if value is not none and value != "" -%}
+{%- set pct = [[value|int, 0]|max, 100]|min -%}
+{%- set level = "high" if pct >= 80 else ("mid" if pct >= 50 else "low") -%}
+<span class="conf conf-{{ level }}" title="Насколько модель уверена в своём вердикте"><span class="conf-bar" aria-hidden="true"><span class="conf-fill p-{{ pct }}"></span></span>уверенность {{ {"high": "высокая", "mid": "средняя", "low": "низкая"}[level] }}, {{ pct }}%</span>
+{%- endif -%}
+{%- endmacro %}
+
+{# Находка в каталоге тестов: только показ, отбор и решение не меняются #}
+{% macro test_code_badge(path) -%}
+{%- if is_test_path(path) -%}<span class="badge badge-muted test-code-badge" title="Путь находки – в каталоге test или tests">тестовый код</span>{%- endif -%}
+{%- endmacro %}
+
+{# Отметки находки; дата – во всплывающей подсказке #}
+{# Сборщик метрик компьютера не работает (HOSTCOL-01): что без него не работает и что
+   запустить. what: metrics – страница прогона, run – запуск прогона, external – внешние провайдеры. #}
+{% macro collector_warning(c, what="metrics", external_on=False, hidden=False, id="collector-warning") -%}
+{# внешний запрос из контейнера встаёт без свежих адресов компьютера (llm_net: in_container и нет адресов не старше
+   5 минут) – только тогда фраза о внешних провайдерах; на странице прогона её показывает и прячет скрипт #}
+{% set blocks_external = external_on and c.expected and not c.addresses %}
+<div class="callout callout-warn collector-warning" id="{{ id }}" role="status" data-external-on="{{ 1 if external_on else 0 }}"{% if hidden %} hidden{% endif %}>
+  <p><strong>{% if what == "external" %}Запросы к внешним провайдерам сейчас не уйдут: нет свежих адресов этого компьютера{% else %}Сборщик метрик компьютера не работает{% endif %}</strong><span data-collector-detail-wrap{% if not c.detail %} hidden{% endif %}> – <span data-collector-detail>{{ c.detail }}</span></span>. После перезагрузки компьютера сборщик сам не запускается.</p>
+  {% if STAND == "npm" %}<p>В учебном стенде сведения о компьютере пишет окно стенда. Закройте его и запустите стенд снова той же командой <code>npx local-triage</code>.</p>{% else %}<p>Запустите его в PowerShell из папки приложения (там, где <span class="mono">start.ps1</span>): <code>.\scripts\host-metrics.ps1 -Action Start</code> – приложение перезапускать не нужно, предупреждение исчезнет само{% if what != "metrics" %} после обновления страницы{% endif %}.</p>{% endif %}
+  <p class="small">{% if what == "external" %}Адреса компьютера передаёт этот сборщик. Без них приложение не может исключить, что адрес провайдера ведёт на сам компьютер, поэтому внешний запрос не отправляется.{% elif what == "run" %}Без него на странице прогона не видно памяти и процессора компьютера{% if blocks_external %}, а запросы к внешним провайдерам не уходят{% endif %}.{% else %}Без него не видно памяти и процессора компьютера<span data-collector-external{% if not blocks_external %} hidden{% endif %}>, а запросы к внешним провайдерам не уходят</span>.{% endif %}</p>
+</div>
+{%- endmacro %}
+
+{% macro marks(reviewed=False, entered=False, reviewed_at="", entered_at="", missing=False) -%}
+{%- if reviewed or entered or missing -%}
+<span class="marks">
+{%- if reviewed %}<span class="badge badge-ok" title="Проверено{% if reviewed_at %} {{ reviewed_at|ts }}{% endif %}">{{ icon("check") }}<span class="badge-label">проверено</span></span>{% endif %}
+{%- if entered %}<span class="badge badge-info" title="Внесено в Hub{% if entered_at %} {{ entered_at|ts }}{% endif %}">{{ icon("check-circle") }}<span class="badge-label">в Hub</span></span>{% endif %}
+{%- if missing %}<span class="badge badge-muted" title="В последней загруженной выгрузке этой находки нет">нет в выгрузке</span>{% endif -%}
+</span>
+{%- endif -%}
+{%- endmacro %}
+
+{# Цвет по версии шкалы; по умолчанию прежняя шкала 3.x. У 2.0 высокий начинается с 7, критического нет #}
+{% macro cvss(score, version="") -%}
+{%- if score is none or score == "" -%}<span class="muted">–</span>
+{%- else -%}
+{%- set s = (score|string)|replace(",", ".")|float -%}
+{%- if version == "2.0" -%}
+{%- set level = "high" if s >= 7 else ("medium" if s >= 4 else "low") -%}
+{%- else -%}
+{%- set level = "critical" if s >= 9 else ("high" if s >= 7 else ("medium" if s >= 4 else ("low" if s > 0 else "none"))) -%}
+{%- endif -%}
+<span class="cvss cvss-{{ level }}" title="CVSS {{ score|num }}">{{ score|num }}</span>
+{%- endif -%}
+{%- endmacro %}
+
+{# Вывод по компоненту SCA (models.ScaAnswer.conclusion) #}
+{% macro sca_conclusion(value, label="") -%}
+{%- set labels = {"update": "обновить", "not_applicable": "не применимо", "unclear": "неясно"} -%}
+{%- if value in labels -%}<span class="badge conclusion conclusion-{{ value }}"{% if value == "not_applicable" %} title="Ложное срабатывание: компонент или уязвимость определены ошибочно"{% endif %}>{{ label or labels[value] }}</span>
+{%- else -%}<span class="badge badge-muted">{{ label or "нет ответа" }}</span>{%- endif -%}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------- ход и счётчики #}
+
+{# Полоса хода: «проверено» и поверх – «внесено в Hub»; ширина – классом p-N (встроенные стили запрещены политикой CSP) #}
+{% macro progress(done, total, entered=None, label="Проверено", entered_label="Внесено в Hub", caption=True) -%}
+{%- set total_n = total|int -%}
+{%- set done_n = done|int -%}
+{%- set pct = 0 if total_n <= 0 else [(done_n * 100 / total_n)|round(0, "floor")|int, 100]|min -%}
+{%- set pct = 1 if (done_n > 0 and pct == 0) else pct -%}
+{%- if entered is not none -%}
+{%- set entered_n = entered|int -%}
+{%- set epct = 0 if total_n <= 0 else [(entered_n * 100 / total_n)|round(0, "floor")|int, 100]|min -%}
+{%- set epct = 1 if (entered_n > 0 and epct == 0) else epct -%}
+{%- endif -%}
+<div class="progress-block">
+  <div class="pbar"{% if caption %} aria-hidden="true"{% else %} role="img" aria-label="{{ label }} {{ done_n }} из {{ total_n }}{% if entered is not none %}, {{ entered_label }} {{ entered_n }}{% endif %}"{% endif %}><span class="pbar-fill pbar-done p-{{ pct }}"></span>{% if entered is not none %}<span class="pbar-fill pbar-entered p-{{ epct }}"></span>{% endif %}</div>
+  {% if caption %}<div class="pbar-caption"><span class="pbar-key">{{ label }} <strong>{{ done_n }}</strong> из {{ total_n }}</span>{% if entered is not none %}<span class="pbar-key pbar-key-entered">{{ entered_label }} <strong>{{ entered_n }}</strong></span>{% endif %}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{# Счётчик для .stats: подпись читается первой, число показано крупно сверху #}
+{% macro stat(value, label, tone="", sub="", href="", active=False) -%}
+{% if href %}<a class="stat stat-filter{% if tone %} stat-{{ tone }}{% endif %}{% if active %} is-active{% endif %}" href="{{ href }}"{% if active %} aria-current="true"{% endif %}>{% else %}<div class="stat{% if tone %} stat-{{ tone }}{% endif %}">{% endif %}<span class="stat-label">{{ label }}</span><span class="stat-value">{{ value }}</span>{% if sub %}<span class="stat-sub">{{ sub }}</span>{% endif %}{% if href %}</a>{% else %}</div>{% endif %}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------- навигация #}
+
+{% macro chip(href, label, active=False, count=None) -%}
+<a class="chip{% if active %} is-active{% endif %}" href="{{ href }}"{% if active %} aria-current="true"{% endif %}>{{ label }}{% if count is not none %} <span class="chip-count">{{ count }}</span>{% endif %}</a>
+{%- endmacro %}
+
+{# Вкладки: items – кортежи (ключ, подпись, адрес[, число]); active – ключ текущей #}
+{% macro tabs(items, active, label="Разделы") -%}
+<nav class="tabs" aria-label="{{ label }}">
+{%- for item in items %}<a class="tab" href="{{ item[2] }}"{% if item[0] == active %} aria-current="page"{% endif %}>{{ item[1] }}{% if item|length > 3 and item[3] is not none %} <span class="tab-count">{{ item[3] }}</span>{% endif %}</a>{% endfor -%}
+</nav>
+{%- endmacro %}
+
+{# Вкладки проекта: total – находок в выгрузке, sca – находок SCA Security, defects – дефектов из карточек (ADR-0120);
+   active – ключ #}
+{% macro project_tabs(project, total, sca, active, defects=None) -%}
+{{ tabs([("overview", "Обзор", "/projects/%d" % project.id), ("findings", "Находки", "/projects/%d/findings" % project.id, total), ("sca", "SCA", "/projects/%d/sca" % project.id, sca), ("components", "Компоненты", "/projects/%d/components" % project.id), ("defects", "Дефекты", "/projects/%d/defects" % project.id, defects)], active, label="Разделы проекта") }}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------- пустое состояние #}
+
+{# Пустое место с подсказкой, что сделать дальше; свои кнопки – через {% call empty_state(...) %} #}
+{% macro empty_state(title, text="", href="", action="", icon_name="inbox") -%}
+<div class="empty-state">
+  <span class="empty-icon">{{ icon(icon_name) }}</span>
+  <p class="empty-title">{{ title }}</p>
+  {% if text %}<p class="empty-text">{{ text }}</p>{% endif %}
+  {% if href or caller is defined %}<div class="empty-actions">{% if href %}<a class="btn btn-primary" href="{{ href }}">{{ action or "Продолжить" }}</a>{% endif %}{% if caller is defined %}{{ caller() }}{% endif %}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{# ---------------------------------------------------------- классы CWE #}
+
+{# Номер класса CWE ссылкой на карточку справочника /cwe/{id}; номера нет – текстом #}
+{% macro cwe_link(value, label="", cls="mono") -%}
+{%- set key = cwe_number(value) -%}
+{%- if key -%}{{ catalog_link('cwe', key, label or key, cls=cls) }}{%- else -%}<span class="{{ cls }}">{{ label or value }}</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro catalog_link(kind, key, label="", href="", cls="mono") -%}
+{%- set target = href or ('/' ~ kind ~ '/' ~ key) -%}
+{%- set note = reference_status(kind, key) if reference_status is defined else '' -%}
+<a class="{{ cls }}{% if note %} reference-unavailable{% endif %}"{% if note %} title="{{ note }}" aria-description="{{ note }}"{% endif %} href="{{ work_link(target) if work_link is defined else target }}">{{ label or key }}</a>
+{%- endmacro %}
+
+{# Перечень номеров CWE через точку с пробелом (таблица SCA, перечень классов находки) #}
+{% macro cwe_tags(values, sep=" · ", cls="mono") -%}
+{%- for v in values -%}
+{{- cwe_link(v, cls=cls) }}{{ sep if not loop.last }}
+{%- endfor -%}
+{%- endmacro %}
+
+{# Внешний адрес из данных справочника: ссылка только по правилу norm_link, иначе текст #}
+{% macro ext_link(url, label="", cls="") -%}
+{%- set href = url|norm_link -%}
+{%- if href -%}<a class="{{ cls }}" href="{{ href }}" rel="noopener noreferrer" target="_blank">{{ label or url }}</a>{%- elif label -%}<span class="{{ cls }}">{{ label }}</span>{%- else -%}<span class="break">{{ url }}</span>{%- endif -%}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------- код #}
+
+{# Код с номерами строк; разметка строк та же, что на этапе 1 (на неё опираются тесты и скрипт) #}
+{% macro code_view(rows, label="Код вокруг находки", box_id="code", wrap=True) -%}
+<div class="code{% if wrap %} code-wrap{% endif %}" id="{{ box_id }}" tabindex="0" role="region" aria-label="{{ label }}">
+  <table class="code-table">
+    <tbody>
+    {% for r in rows %}{% set cls = (("is-target" if r.target else ("is-evidence" if r.evidence else "")) ~ (" is-steering" if r.steering else ""))|trim %}<tr{% if r.n %} id="L{{ r.n }}"{% endif %}{% if cls %} class="{{ cls }}"{% endif %}><td class="ln">{% if r.target %}<span class="mark" aria-hidden="true">▶</span>{% elif r.steering %}<span class="mark mark-steer" aria-hidden="true">!</span>{% endif %}{{ r.n if r.n else "" }}</td><td class="src">{{ r.text }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{%- endmacro %}
+
+{% macro code_legend(steering=False) -%}
+<p class="legend small"><span class="swatch swatch-target" aria-hidden="true">▶</span> строка срабатывания <span class="swatch swatch-evidence" aria-hidden="true"></span> строки из объяснения модели{% if steering %} <span class="swatch swatch-steer" aria-hidden="true">!</span> похоже на указания для модели{% endif %}</p>
+{%- endmacro %}
+
+{# Кнопка копирования: текст из атрибута или содержимое элемента по id #}
+{% macro copy_button(label="Скопировать", text=None, target=None, small=True, done="") -%}
+<button type="button" class="btn{% if small %} btn-small{% endif %}"{% if target %} data-copy-target="{{ target }}"{% else %} data-copy-text="{{ text or '' }}"{% endif %}{% if done %} data-copy-done="{{ done }}"{% endif %}>{{ icon("copy") }}{{ label }}</button>
+{%- endmacro %}
+
+{# Дефект для Hub (заголовок и текст) – в карточках SAST и SCA. Панель видна, когда сохранено решение с итогом
+   «истинная» или «ложная»; скрипт карточки показывает и прячет её по ответу на сохранение (defect_ready) и копирует
+   заголовок и текст, полученные с сервера. Без скрипта – форма сохраняет номер, а текст виден ниже для копирования. #}
+{#- Каркас панели «Дефект для Hub»: общий для SAST и SCA; пояснение о том, что делать в Hub, – у каждого вида своё
+    (defect_panel_sast, defect_panel_sca) -#}
+{% macro _defect_panel(defect, action, existing=None, auto=False) -%}
+<section class="panel defect-panel" id="defect-panel" aria-labelledby="defect-title"{% if not defect.ready %} hidden{% endif %}>
+  <h2 id="defect-title">Дефект для Hub</h2>
+  {% if existing %}<p class="callout callout-ok" id="defect-exists"><strong>Дефект для этой находки уже есть:</strong> <a href="{{ existing.card_url }}">{{ existing.text }}</a>{% if existing.origin == "import" %} (занесён из Hub){% endif %}. Заголовок и текст ниже – для сверки и копирования; изменения в Hub – «Push в Hub» в карточке дефекта.</p>
+  {% elif auto %}<p class="hint" id="defect-auto-hint">Дефект создаётся кнопкой «Создать дефект» в блоке ниже. Копирование нужно, только если заводите дефект в Hub вручную.{% if defect.hint and not defect.ready %} {{ defect.hint }}{% endif %}</p>
+  {% else %}<p class="hint">Создайте дефект в Hub вручную: заголовок дефекта – в название, полный текст дефекта – в описание.{{ caller() }} {{ defect.hint }}</p>{% endif %}
+  {% if defect.warnings %}
+  <div class="callout callout-warn" role="note" id="defect-warnings">
+    <p><strong>Перед копированием проверьте:</strong></p>
+    <ul>{% for w in defect.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+    <p>Если всё верно, отметьте «Предупреждения проверены»; иначе поправьте комментарий для Hub и сохраните решение.</p>
+  </div>
+  {% endif %}
+  {#- текст не по требованиям команды (ADR-0123): предупреждение без запрета – «Создать дефект в Hub» такой текст не отправит.
+      Полный текст скрыт (обоснование – текст модели или агента к другому выводу) – перечня нет: нарушения цитируют
+      строки скрытого текста -#}
+  {% if defect.form_problems and not defect.comment_check and not defect.comment_others %}
+  <div class="callout callout-warn" role="note" id="defect-form-problems">
+    <p><strong>Текст не по требованиям команды:</strong></p>
+    <ul>{% for p in defect.form_problems %}<li>{{ p }}</li>{% endfor %}</ul>
+    <p>Скопировать текст можно, но «Создать дефект в Hub» его не отправит: поправьте решение в карточке и сохраните его.</p>
+  </div>
+  {% endif %}
+  {% if defect.note %}<p class="field-hint" id="defect-note">{{ defect.note }}</p>{% endif %}
+  <form method="post" action="{{ action }}" id="defect-form" class="inline-form">
+    <label class="field">
+      <span class="field-label">Номер дефекта в Hub</span>
+      <span class="defect-number"><span class="mono" aria-hidden="true">ID</span><input type="number" name="number" id="defect-number" value="{{ defect.entered_number or defect.number }}" min="1" max="999999" inputmode="numeric" aria-describedby="defect-number-hint"></span>
+    </label>
+    <label class="check" id="defect-confirm-row"{% if not defect.warnings %} hidden{% endif %}><input type="checkbox" name="confirm" value="1" id="defect-confirm"> Предупреждения проверены</label>
+    {% if defect.review_revision is defined %}<input type="hidden" name="review_revision" value="{{ defect.review_revision }}" id="defect-review-revision">{% endif %}
+    <input type="hidden" name="number_shown" value="{{ defect.saved_number if defect.saved_number is defined and defect.saved_number is not none else (defect.number if defect.stored else "") }}" id="defect-number-shown">
+    <label class="check" id="defect-comment-confirm-row"{% if not defect.comment_check %} hidden{% endif %}><input type="checkbox" name="comment_confirmed" value="1" id="defect-comment-confirm"> Текст проверен – обоснование подходит к итоговому вердикту</label>
+    <button type="submit" class="btn" name="part" value="title" id="copy-defect-title">{{ icon("copy") }}Скопировать заголовок дефекта</button>
+    <button type="submit" class="btn" name="part" value="body" id="copy-defect-body">{{ icon("copy") }}Скопировать полный текст дефекта</button>
+  </form>
+  {% if defect.group_note %}<p class="small text-warn" id="defect-group-note">{{ defect.group_note }}</p>{% endif %}
+  <p class="field-hint" id="defect-number-hint">{% if defect.stored %}Номер сохранён для этой {{ defect.subject }}.{% else %}Предложен следующий номер по счётчику проекта – поправьте, если в Hub он другой.{% endif %}{% if defect.needs_team %} Название команды для первой фразы – на странице <a href="/settings#defect-title">«Настройки»</a>.{% endif %}</p>
+  <p class="copy-status" id="defect-status" role="status" aria-live="polite"></p>
+  <details class="hub-preview" id="defect-preview">
+    <summary>Заголовок и текст дефекта</summary>
+    <pre class="hub-text" id="defect-title-text">{{ defect.title }}</pre>
+    {% if defect.comment_others %}<p class="small text-warn" id="defect-body-hidden">Полный текст не показан: в дефект входят находки, где комментарий – текст агента к другому выводу ({{ defect.comment_others[:10]|join(", ") }}). Поправьте комментарий в их карточках.</p>
+    {% elif defect.comment_check %}<p class="small text-warn" id="defect-body-hidden">Полный текст не показан: обоснование написано моделью к другому вердикту. Поправьте комментарий и сохраните решение или отметьте «Текст проверен» и скопируйте полный текст.</p>{% endif %}
+    <pre class="hub-text" id="defect-body-text">{% if not defect.comment_check and not defect.comment_others %}{{ defect.body }}{% endif %}</pre>
+    <button type="button" class="btn btn-small" id="defect-copied-manually" hidden>Скопировал текст дефекта вручную</button>
+  </details>
+</section>
+{%- endmacro %}
+
+{#- Панель дефекта SAST: дефект создаётся из отмеченных находок группы; у слившейся группы с разными номерами – только
+    находки этого дефекта -#}
+{#- «Отправить в Hub» (ADR-0115): статус находки с комментарием и сроком действия уходит через исполнителя.
+    hub – hub_status_routes.card_context; action – адрес отправки; project_id – для адресов состояния и сверки.
+    Поле срока обязательное и без умолчания: календарь или быстрый срок. -#}
+{% macro hub_send_panel(hub, action, project_id, stale=False, revision="") -%}
+<div class="hub-send" id="hub-send">
+  <h3 class="hub-send-title">Отправить в Hub</h3>
+  {% if hub.blocker %}<p class="small muted" id="hub-send-blocker">{{ hub.blocker }}</p>
+  {% elif hub.research_conflict %}
+  <p class="small text-warn" id="hub-send-conflict">Совет агента «не применимо» расходится с исследованием, принятым после решения ({{ hub.research_conflict }}). Проверьте находку: подтвердите совет или измените решение и сохраните, затем отправляйте.</p>
+  {% elif hub.fixed %}
+  <p class="small" id="hub-send-fixed">{{ hub.fixed }}</p>
+  {% if hub.fixed_from_export %}<p><a class="btn btn-small" id="hub-send-fixed-sync" href="/projects/{{ project_id }}/defects">Открыть вкладку «Дефекты»</a></p>{% endif %}
+  {% elif hub.in_defect %}
+  {# находка входит в дефект (dev32): статус в Hub через дефект – формы отправки нет #}
+  <div class="small" id="hub-send-in-defect">
+    <p id="hub-send-in-defect-text">{{ hub.in_defect.text }}</p>
+    <p><a class="btn btn-small" href="{{ hub.in_defect.url }}" id="hub-send-in-defect-link">Открыть дефект {{ hub.in_defect.label }}</a></p>
+  </div>
+  {% else %}
+  <form method="post" action="{{ action }}" id="hub-send-form" class="stack-form" data-ajax data-include="review-revision" data-busy="Ставлю в очередь…">
+    {# редакция решения – и без скрипта (со скриптом её заменяет актуальная #review-revision); отпечаток данных
+       находки, которые видел оператор: после обновления выгрузки отправка отклоняется #}
+    <input type="hidden" name="review_revision" value="{{ revision }}">
+    <input type="hidden" name="finding_sig" value="{{ hub.sig }}">
+    <input type="hidden" name="text_hash" id="hub-send-text-hash" value="{{ hub.text_hash }}">
+    {# назначение, которое показала карточка (KIMI-12): адрес Hub или приложение сменили после показа – отказ #}
+    <input type="hidden" name="hub_base" id="hub-send-hub-base" value="{{ hub.hub_base }}">
+    <input type="hidden" name="hub_app_id" id="hub-send-app-id" value="{{ hub.hub_app_id }}">
+    {# статус уже стоит в Hub, текущего комментария там нет (dev29): замена двумя шагами по подтверждению #}
+    {% set replacing = hub.replace and hub.replace.active %}
+    {% if replacing %}<input type="hidden" name="replace" value="1" id="hub-send-replace">{% endif %}
+    {% if hub.note %}<p class="small text-warn" id="hub-send-note">{{ hub.note }}</p>{% endif %}
+    <p class="small text-warn" id="hub-send-replace-note"{% if not replacing %} hidden{% endif %}>{{ hub.replace.note if hub.replace else "" }}</p>
+    <div class="field">
+      <label class="field-label" for="hub-send-expires">Срок действия статуса <span aria-hidden="true">*</span></label>
+      <input type="date" name="expires" id="hub-send-expires"{% if hub.expires %} value="{{ hub.expires }}"{% endif %} min="{{ hub.min }}" max="{{ hub.max }}" required aria-describedby="hub-send-hint">
+      <span class="cluster review-presets" role="group" aria-label="Быстрый срок действия">{% for days, value in hub.presets %}<button type="button" class="btn btn-ghost btn-small" data-date-for="hub-send-expires" data-date-value="{{ value }}" title="{{ value }}">+{{ days }} дней</button>{% endfor %}<button type="button" class="btn btn-ghost btn-small" id="hub-send-last" hidden>как в прошлый раз</button></span>
+      <span class="field-hint" id="hub-send-hint">В Hub уходит сохранённое решение: статус, комментарий (как в предпросмотре) и срок. Исполнитель отправит его при следующем обращении; отметка «Внесено в Hub» поставится сама, когда Hub ответит.</span>
+      <span class="field-hint" id="hub-send-until-preview" aria-live="polite" hidden></span>
+    </div>
+    {# без скрипта – свой флажок; со скриптом – общий «Текст проверен» карточки (app.js) #}
+    <label class="check small" id="hub-send-confirm-label"{% if not stale %} hidden{% endif %}><input type="checkbox" name="comment_confirmed" value="1" id="hub-send-comment-confirm"> Текст проверен – обоснование подходит к итоговому вердикту</label>
+    <label class="check small" id="hub-send-replace-confirm"{% if not replacing %} hidden{% endif %}><input type="checkbox" name="replace_confirm" value="1" id="hub-send-replace-box"{% if replacing %} required{% endif %}> <span id="hub-send-replace-text">{{ hub.replace.check if hub.replace else "" }}</span></label>
+    <div class="actions"><button type="submit" class="btn btn-primary" id="hub-send-button">{% if replacing %}Обновить комментарий в Hub{% else %}Отправить в Hub{% endif %}</button></div>
+  </form>
+  {% endif %}
+  <p class="small hub-send-status{% if hub.last.tone %} text-{{ hub.last.tone }}{% endif %}" id="hub-send-status" role="status" aria-live="polite"{% if not hub.last.text %} hidden{% endif %}{% if hub.last.op_id and not hub.last.final %} data-poll="/projects/{{ project_id }}/hub/ops/{{ hub.last.op_id }}?hub_id={{ hub.hub_id }}"{% endif %}>{% if hub.last.time %}{{ hub.last.time.prefix }}<time datetime="{{ hub.last.time.datetime }}">{{ hub.last.time.fallback }}</time>{{ hub.last.time.suffix }}{% else %}{{ hub.last.text }}{% endif %}</p>
+  {# «Сверить» в разметке всегда: опрос показывает кнопку и меняет номер операции без перезагрузки #}
+  <form method="post" action="/projects/{{ project_id }}/hub/verify" id="hub-verify-form" class="actions" data-ajax data-busy="Ставлю сверку…"{% if not hub.last.verify %} hidden{% endif %}>
+    <input type="hidden" name="op_id" id="hub-verify-op" value="{{ hub.last.op_id or '' }}"><input type="hidden" name="hub_id" value="{{ hub.hub_id }}">
+    <button type="submit" class="btn btn-small" id="hub-verify-button">Pull из Hub</button>
+  </form>
+</div>
+{%- endmacro %}
+
+{% macro defect_panel_sast(defect, action, existing=None, auto=False) -%}
+{% call _defect_panel(defect, action, existing, auto) %}{% if defect.merge_split %} В этой группе после обновления приложения разные номера дефектов: в Hub отметьте только находки этого дефекта (с номером из поля ниже), остальные относятся к другому. Статус находок менять не нужно.{% else %} Дефект создаётся из отмеченных галочкой находок: вместе с этой отметьте находки из списка «Та же строка, та же категория и тот же код» (если он есть). Статус находок менять не нужно.{% endif %}{% endcall %}
+{%- endmacro %}
+
+{#- Панель дефекта SCA: дефект на версию компонента, короткий текст – в комментарий к смене статуса -#}
+{% macro defect_panel_sca(defect, action, existing=None, auto=False) -%}
+{% call _defect_panel(defect, action, existing, auto) %} Короткий текст для Hub (кнопка внизу) – в комментарий к смене статуса находки.{% endcall %}
+{%- endmacro %}
+
+{#- «Создать дефект в Hub» (ADR-0120): заготовка → предпросмотр → «Создать» → подтверждение чтением. hd –
+    hub_defect_routes.card_context; action – адрес заготовки; shown_hash – отпечаток текста дефекта, который видит
+    оператор (SAST – тело, SCA – подпись набора); ready – текст дефекта готов (панель «Дефект для Hub» видна). -#}
+{% macro hub_defect_panel(hd, action, project_id, shown_hash="", revision="", ready=False, hint="") -%}
+{% set row = hd.row %}
+{# блок виден всегда: пока текст дефекта не готов, вместо кнопки – причина (скрытый блок без
+   объяснения оставлял оператора без кнопки «Создать дефект») #}
+<div class="hub-send hub-defect" id="hub-defect">
+  <h3 class="hub-send-title">Создать дефект в Hub</h3>
+  {% if not ready and (not row or row.state == "failed") and not hd.blocker and not hd.link %}<p class="small muted" id="hub-defect-not-ready">Создать дефект пока нельзя: {{ hint or "текст дефекта не готов – сохраните решение и текст дефекта в разделах выше." }}</p>{% endif %}
+  {% if row %}<p><a id="defect-card-link" href="/projects/{{ project_id }}/defects/{{ row.id }}">Карточка дефекта</a></p>{% endif %}
+  {% if hd.blocker %}<p class="small muted" id="hub-defect-blocker">{{ hd.blocker }}</p>
+  {% else %}
+  {% if row and row.state == "preview" and hd.preview %}
+  <section class="hub-defect-preview" id="hub-defect-preview" aria-labelledby="hub-defect-preview-title">
+    <h4 id="hub-defect-preview-title">Предпросмотр дефекта</h4>
+    <p class="small">Заголовок: <span class="mono break" id="hub-defect-summary">{{ hd.preview.summary }}</span></p>
+    <p class="small" id="hub-defect-targets">Будут привязаны находки ({{ hd.preview.targets|length }}): {% for t in hd.preview.targets %}{% if t.url %}<a class="mono" href="{{ t.url }}">{{ t.hub_id }}</a>{% else %}<span class="mono">{{ t.hub_id }}</span>{% endif %}{{ ", " if not loop.last }}{% endfor %}.</p>
+    {% if hd.preview.left_out %}<p class="small text-warn" id="hub-defect-left-out">Не войдут: {% for e in hd.preview.left_out %}<span class="mono">{{ e.hub_id }}</span> – {{ e.why }}{{ "; " if not loop.last }}{% endfor %}.</p>{% endif %}
+    {% if hd.preview.warnings %}<ul class="small text-warn" id="hub-defect-warnings">{% for w in hd.preview.warnings %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
+    <form method="post" action="/projects/{{ project_id }}/hub/defects/{{ row.id }}/create" id="hub-defect-create-form" class="stack-form" data-ajax data-busy="Ставлю в очередь…">
+      <input type="hidden" name="create_snapshot" value="{{ hd.preview.snapshot }}">
+      <p class="field-hint">«Создать» разрешает один POST создания и чтение результата. Если Hub не привязал часть показанного состава, исполнитель выполнит одну привязку недостающих находок и подтверждающее чтение. Повторного создания нет.</p>
+      <label class="field"><span class="field-label">Приоритет</span>
+        {% if hd.preview.priorities %}<select name="priority" id="hub-defect-priority">{% for name in hd.preview.priorities %}<option value="{{ name }}"{% if name == hd.preview.priority %} selected{% endif %}>{{ name }}</option>{% endfor %}</select>
+        {% else %}<input type="text" name="priority" id="hub-defect-priority" value="{{ hd.preview.priority }}" readonly aria-describedby="hub-defect-levels-hint">{% endif %}</label>
+      <label class="field"><span class="field-label">Серьёзность</span>
+        {% if hd.preview.severities %}<select name="severity" id="hub-defect-severity">{% for name in hd.preview.severities %}<option value="{{ name }}"{% if name == hd.preview.severity %} selected{% endif %}>{{ name }}</option>{% endfor %}</select>
+        {% else %}<input type="text" name="severity" id="hub-defect-severity" value="{{ hd.preview.severity }}" readonly aria-describedby="hub-defect-levels-hint">{% endif %}</label>
+      {% if not hd.preview.priorities or not hd.preview.severities %}<p class="field-hint" id="hub-defect-levels-hint">Значение из заготовки Hub: списка для выбора справочник Hub не дал.</p>{% endif %}
+      <div class="actions"><button type="submit" class="btn btn-primary" id="hub-defect-create">Создать</button></div>
+    </form>
+    <p class="small" id="hub-defect-body-title">Текст дефекта (уйдёт в описание):</p>
+    <pre class="hub-text" id="hub-defect-body">{{ hd.preview.command_text }}</pre>
+    {% if hd.preview.where_added and not hd.preview.hub_adds %}<p class="small" id="hub-defect-where">В конце текста раздел «Где исправлять»: Hub не отдал служебный блок, сведения взяты из связанных находок.</p>{% endif %}
+    <p class="small muted">Текст уйдёт как HTML (абзацы и пункты){% if hd.preview.hub_adds %}; следом в описание уйдёт служебный блок Hub из заготовки (объект сканирования, дата, ветка, коммит, трасса, категории) – как у дефектов, созданных в Hub; он виден в карточке дефекта{% else %}; блока «Информация об объекте сканирования» заготовка не дала – в описание уйдёт только текст{% endif %}. Статусы находок не меняются.</p>
+    <form method="post" action="/projects/{{ project_id }}/hub/defects/{{ row.id }}/cancel" id="hub-defect-cancel-form" class="actions" data-ajax data-busy="Отменяю…">
+      <button type="submit" class="btn btn-small" id="hub-defect-cancel" aria-describedby="hub-defect-cancel-hint">Отменить предпросмотр</button>
+      <span class="field-hint" id="hub-defect-cancel-hint">Поменялись решение, текст или состав – отмените и запросите заготовку заново.</span>
+    </form>
+  </section>
+  {% endif %}
+  {% if (not row or row.state == "failed") and not hd.bound and not hd.blocker and hd.add_url %}
+  <p class="small" id="hub-defect-add"><a href="{{ hd.add_url }}" id="hub-defect-add-link">Добавить в существующий дефект…</a> – находка войдёт в дефект, созданный раньше; текст дефекта не изменится.</p>
+  {% endif %}
+  {% if (not row or row.state == "failed") and hd.link %}
+  {# новая находка группы с готовым дефектом (ADR-0121 п. 5): привязка к нему вместо второго дефекта #}
+  <form method="post" action="{{ action|replace('/hub-defect', '/hub-defect-link', 1) }}" id="hub-defect-link-form" class="stack-form" data-ajax data-include="review-revision" data-busy="Ставлю в очередь…">
+    <input type="hidden" name="review_revision" value="{{ revision }}">
+    <input type="hidden" name="text_hash" value="{{ shown_hash }}">
+    <input type="hidden" name="defect" value="{{ hd.link.parent.id }}">
+    {# показанный состав: маршрут сверяет его с собранным заново (ADR-0121 п. 5) #}
+    <input type="hidden" name="targets" value="{{ hd.link.shown }}">
+    <p class="small" id="hub-defect-link-targets">В группе «та же строка, категория и код» уже есть дефект {{ hd.link.label }} с тем же текстом решения. К нему привяжутся находки ({{ hd.link.targets|length }}): {% for t in hd.link.targets %}{% if t.url %}<a class="mono" href="{{ t.url }}">{{ t.hub_id }}</a>{% else %}<span class="mono">{{ t.hub_id }}</span>{% endif %}{{ ", " if not loop.last }}{% endfor %}.</p>
+    {% if hd.link.left_out %}<p class="small text-warn" id="hub-defect-link-left-out">Не войдут: {% for e in hd.link.left_out %}<span class="mono">{{ e.hub_id }}</span> – {{ e.why }}{{ "; " if not loop.last }}{% endfor %}.</p>{% endif %}
+    <p class="field-hint" id="hub-defect-link-hint">Второй дефект не создаётся: исполнитель привяжет находки к этому дефекту в Hub, приложение проверит привязку чтением и поставит отметку «Внесено в Hub» с тем же номером ID{{ hd.link.parent.number }}. Статусы находок не меняются. Решение другое – поправьте и сохраните его: будет отдельный дефект.</p>
+    <div class="actions"><button type="submit" class="btn" id="hub-defect-link-button">Привязать к дефекту {{ hd.link.label }}</button></div>
+  </form>
+  {% elif (not row or row.state == "failed") and ready %}
+  <form method="post" action="{{ action }}" id="hub-defect-form" class="stack-form" data-ajax data-include="review-revision" data-busy="Ставлю в очередь…">
+    <input type="hidden" name="review_revision" value="{{ revision }}">
+    <input type="hidden" name="text_hash" id="hub-defect-text-hash" value="{{ shown_hash }}">
+    <p class="field-hint" id="hub-defect-hint">Исполнитель запросит у Hub заготовку дефекта по находкам (группа «та же строка, категория и код» с тем же решением; у SCA – набор), карточка покажет предпросмотр. Дефект создаётся после «Создать» и считается созданным, когда чтение из Hub подтвердит привязку находок.</p>
+    <div class="actions"><button type="submit" class="btn" id="hub-defect-button">Создать дефект</button></div>
+  </form>
+  {% endif %}
+  {% if row and row.origin == "import" and row.state == "done" %}
+  {# дефект, занесённый из Hub (ADR-0124 п. 8): заведён в Hub не приложением, отметок «Внесено в Hub» занесение не ставит #}
+  <p class="small text-ok" id="hub-defect-done">Дефект {% if row.hub_link %}<a href="{{ row.hub_link }}" rel="noopener noreferrer" target="_blank">№{{ row.hub_defect_id }}</a>{% else %}№{{ row.hub_defect_id }}{% endif %}{% if row.number %} (<span class="mono">ID{{ row.number }}</span>){% endif %}, занесён из Hub · <a href="/projects/{{ project_id }}/defects">вкладка «Дефекты»</a></p>
+  {% elif row and row.state in ("done", "mismatch") %}<p class="small{% if row.state == 'done' %} text-ok{% endif %}" id="hub-defect-done">{% if row.blank_op_id or row.create_op_id %}Дефект создан в Hub: {% elif row.state == "mismatch" %}Привязка к дефекту в Hub неполная: {% else %}Находки привязаны к дефекту в Hub: {% endif %}{% if row.hub_link %}<a href="{{ row.hub_link }}" rel="noopener noreferrer" target="_blank">№{{ row.hub_defect_id }}</a>{% else %}№{{ row.hub_defect_id }}{% endif %} · <span class="mono">ID{{ row.number }}</span> · <a href="/projects/{{ project_id }}/defects">вкладка «Дефекты»</a></p>{% endif %}
+  {% endif %}
+  {% if hd.decision_changed %}<p class="small text-warn" id="hub-defect-decision-changed">Решение изменено после создания дефекта {{ hd.bound_label }} – дефект в Hub прежний: поправьте его в Hub сами, если нужно.</p>{% endif %}
+  <p class="small hub-send-status{% if hd.view.tone %} text-{{ hd.view.tone }}{% endif %}" id="hub-defect-status" role="status" aria-live="polite"{% if not hd.view.text %} hidden{% endif %}{% if hd.poll_url %} data-poll="{{ hd.poll_url }}"{% endif %}>{{ hd.view.text }}</p>
+  {% if hd.view.diff %}<pre class="hub-text text-warn" id="hub-defect-confirmation-diff">{{ hd.view.diff }}</pre>{% endif %}
+  <form method="post" action="/projects/{{ project_id }}/hub/defects/{{ row.id if row else 0 }}/verify" id="hub-defect-verify-form" class="actions" data-ajax data-busy="Ставлю сверку…"{% if not hd.view.verify %} hidden{% endif %}>
+    <button type="submit" class="btn btn-small" id="hub-defect-verify">Pull из Hub</button>
+  </form>
+</div>
+{%- endmacro %}

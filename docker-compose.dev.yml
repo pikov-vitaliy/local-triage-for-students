@@ -1,0 +1,8 @@
+# Разработка: запуск приложения из папки (.venv, uvicorn) с базой в Docker. Порт базы – только на этом компьютере:
+#   docker compose -p local-triage-dev -f docker-compose.yml -f docker-compose.dev.yml up -d db
+#   $env:PGHOST='127.0.0.1'; $env:PGPORT='5432'; $env:PGDATABASE='triage'; $env:PGUSER='triage'; $env:PGPASSWORD=<из .env>
+# Рабочая база открыта быть не должна: у проекта разработки свой том (ключ -p). Тесты – своя база: scripts/test-db.ps1.
+services:
+  db:
+    ports:
+      - "127.0.0.1:${TRIAGE_DEV_DB_PORT:-5432}:5432"

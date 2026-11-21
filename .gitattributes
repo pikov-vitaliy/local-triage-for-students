@@ -1,0 +1,12 @@
+# Текстовые файлы в репозитории и в рабочей копии – с переводом строки LF на любой системе
+* text=auto eol=lf
+
+# Сценарии PowerShell – CRLF: Windows PowerShell 5.1 и редакторы Windows ждут именно его
+*.ps1 text eol=crlf
+
+# Двоичные файлы не меняются: выгрузки Excel и снимки экрана
+*.xlsx binary
+*.png binary
+
+# Пакетные файлы Windows – CRLF: cmd.exe с LF ошибается в метках и переходах
+*.cmd text eol=crlf

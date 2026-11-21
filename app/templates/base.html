@@ -1,0 +1,91 @@
+{% from "macros.html" import icon %}
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="same-origin">
+<title>{% block title %}Локальный триаж{% endblock %}</title>
+<link rel="icon" href="/static/favicon.svg?v=2" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css?v={{ asset_version }}">
+<script src="/static/theme.js?v={{ asset_version }}"></script>
+<script src="/static/app.js?v={{ asset_version }}" defer></script>
+<script src="/static/navigation.js?v={{ asset_version }}" defer></script>
+<script src="/static/observability.js?v={{ asset_version }}" defer></script>
+{% block head %}{% endblock %}
+</head>
+<body data-page="{% block page %}{% endblock %}">
+<a class="skip-link" href="#main">К содержимому</a>
+<header class="topbar">
+  <div class="wrap{% block wide %}{% endblock %} topbar-inner">
+    <a class="brand" href="/" title="К проектам">{{ icon("logo") }}<span>Локальный триаж</span></a>
+    <nav class="crumbs" aria-label="Навигация">{% block crumbs %}{% endblock %}</nav>
+    <div class="topbar-actions">
+      <a class="topnav-link" href="{{ work_link('/feeds') }}"{% if self.page()|trim == "feeds" %} aria-current="page"{% endif %} title="Справочники уязвимостей">{{ icon("book") }}<span>Справочники</span></a>
+      <a class="topnav-link" href="{{ work_link('/cwe') }}"{% if self.page()|trim == "cwe" or self.page()|trim == "bdu" %} aria-current="page"{% endif %} title="Справочник классов CWE">{{ icon("list") }}<span>CWE</span></a>
+      <a class="topnav-link" href="{{ work_link('/capec') }}"{% if self.page()|trim == "capec" %} aria-current="page"{% endif %} title="Справочник сценариев CAPEC">{{ icon("list") }}<span>CAPEC</span></a>
+      <a class="topnav-link" href="{{ work_link('/settings') }}"{% if self.page()|trim == "settings" %} aria-current="page"{% endif %} title="Настройки">{{ icon("settings") }}<span>Настройки</span></a>
+      <a class="topnav-link" href="{{ work_link('/journal') }}"{% if self.page()|trim == "journal" %} aria-current="page"{% endif %} title="Статистика работы локальных моделей">{{ icon("list") }}<span>Журнал</span></a>
+      <button type="button" class="icon-btn keys-open" id="keys-open" data-dialog-open="keys-dialog" aria-haspopup="dialog" aria-label="Клавиши" title="Клавиши (?)">{{ icon("keyboard") }}</button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Переключить тему">{{ icon("moon", cls="icon-moon") }}{{ icon("sun", cls="icon-sun") }}</button>
+    </div>
+  </div>
+</header>
+<main id="main" class="wrap{{ self.wide() }}" tabindex="-1">
+<aside class="active-run-bar" id="active-run-bar" hidden><a id="active-run-link" href="#">Ход разбора</a><button type="button" class="btn btn-small" id="active-run-dismiss">Скрыть</button></aside>
+<aside class="active-run-bar active-research-bar" id="active-research-bar" hidden><a id="active-research-link" href="#">Ход получения</a><button type="button" class="btn btn-small" id="active-research-dismiss">Скрыть</button></aside>
+{% block subnav %}{% endblock %}
+{% include 'navigation.html' %}
+{% if ok_message %}<p class="flash {{ 'flash-err' if ok_error else 'flash-ok' }}" role="{{ 'alert' if ok_error else 'status' }}">{{ ok_message }}</p>{% endif %}
+{% if error %}<p class="flash flash-err" role="alert">{{ error }}</p>{% endif %}
+{% block content %}{% endblock %}
+</main>
+<footer class="footer wrap{{ self.wide() }}">
+  {% if external_in_use %}<p id="code-destination">{{ icon("shield") }}<span>Код находок уходит только к модели профиля проекта: в Ollama на этой машине{% if lan_in_use %}, на подтверждённые адреса сервера в сети организации{% endif %} или – только у проектов с отметкой «код не секретный» – внешнему провайдеру через интернет.</span></p>{% elif lan_in_use %}<p id="code-destination">{{ icon("shield") }}<span>Код находок уходит только к модели профиля: в Ollama на этой машине или на подтверждённые адреса сервера в сети организации; внешних запросов интерфейс не делает.</span></p>{% else %}<p id="code-destination">{{ icon("shield") }}<span>Код находок не покидает компьютер: модель работает в Ollama на этой машине, внешних запросов интерфейс не делает.</span></p>{% endif %}
+  <p class="build-info" id="build-info"><span class="build-pill" title="Что открыто в браузере: версия приложения и коммит, из которого собран образ">Версия {{ BUILD.version }} · коммит <span class="mono">{{ BUILD.commit or "неизвестен" }}</span>{% if BUILD.dirty %} + правки вне коммита{% elif BUILD.commit and BUILD.dirty is none %} (правки не проверены){% endif %}{% if BUILD.built %} · сборка {{ BUILD.built }}{% endif %}</span></p>
+</footer>
+<button type="button" class="to-top" id="to-top" hidden aria-label="Наверх" title="Наверх">{{ icon("arrow-up") }}</button>
+<div class="toasts" id="toasts"></div>
+<div class="visually-hidden" id="sr-status" role="status" aria-live="polite"></div>
+<div class="visually-hidden" id="sr-alert" role="alert" aria-live="assertive"></div>
+<dialog class="dialog" id="keys-dialog" aria-labelledby="keys-title">
+  <div class="dialog-head">
+    <h2 id="keys-title">Клавиши</h2>
+    <button type="button" class="btn btn-ghost btn-icon btn-small" data-dialog-close aria-label="Закрыть">{{ icon("x") }}</button>
+  </div>
+  <div class="dialog-body">
+    <h3 class="section-title">Карточка находки</h3>
+    <dl class="keys-grid">
+      <div data-keys="j k"><dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>следующая и предыдущая непроверенная (в списке – строка)</dd></div>
+      <div data-keys="n"><dt><kbd>n</kbd></dt><dd>SAST: ложное срабатывание</dd></div>
+      <div data-keys="y"><dt><kbd>y</kbd></dt><dd>SAST: подтверждаю дефект</dd></div>
+      <div data-keys="a"><dt><kbd>a</kbd></dt><dd>SCA: согласен с агентом</dd></div>
+      <div data-keys="d"><dt><kbd>d</kbd></dt><dd>SCA: своё решение</dd></div>
+      <div data-keys="l"><dt><kbd>l</kbd></dt><dd>отложить</dd></div>
+      <div data-keys="r"><dt><kbd>r</kbd></dt><dd>SCA: риск принят (нужно обоснование в комментарии)</dd></div>
+      <div data-keys="c"><dt><kbd>c</kbd></dt><dd>скопировать комментарий для Hub (у SAST – только для ложного срабатывания)</dd></div>
+      <div data-keys="f"><dt><kbd>f</kbd></dt><dd>скопировать текст дефекта (описание дефекта в Hub)</dd></div>
+      <div data-keys="h"><dt><kbd>h</kbd></dt><dd>отметить «Внесено в Hub»</dd></div>
+      <div data-keys="v"><dt><kbd>v</kbd></dt><dd>отметить «Проверено»</dd></div>
+      <div data-keys="ctrl+enter"><dt><kbd>Ctrl</kbd>+<kbd>Enter</kbd></dt><dd>сохранить решение и перейти к следующей</dd></div>
+    </dl>
+    <h3 class="section-title">Списки</h3>
+    <dl class="keys-grid">
+      <div data-keys="rows"><dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>следующая и предыдущая строка</dd></div>
+      <div data-keys="rows"><dt><kbd>Enter</kbd></dt><dd>открыть выбранную строку</dd></div>
+    </dl>
+    <h3 class="section-title">Везде</h3>
+    <dl class="keys-grid">
+      <div><dt><kbd>?</kbd></dt><dd>эта справка</dd></div>
+      <div><dt><kbd>Esc</kbd></dt><dd>закрыть окно</dd></div>
+    </dl>
+    <p class="hint">Раскладка клавиатуры не важна. Цифры <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> – решения по порядку на панели (у SAST – <kbd>n</kbd> <kbd>y</kbd> <kbd>l</kbd>, у SCA – <kbd>a</kbd> <kbd>d</kbd> <kbd>l</kbd>), <kbd>4</kbd> – <kbd>r</kbd> у SCA. В полях ввода клавиши не срабатывают.</p>
+  </div>
+  <div class="dialog-foot">
+    <label class="switch"><input type="checkbox" role="switch" id="hotkeys-enabled" checked><span>Однобуквенные клавиши</span></label>
+    <button type="button" class="btn btn-small" data-dialog-close>Закрыть</button>
+  </div>
+</dialog>
+</body>
+</html>

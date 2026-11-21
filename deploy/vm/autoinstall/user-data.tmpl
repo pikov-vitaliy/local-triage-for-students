@@ -1,0 +1,101 @@
+#cloud-config
+# Автоустановка Ubuntu Server 24.04 для демо-ВМ «Локального триажа».
+# Подстановки @...@ заполняет build.sh: хэш пароля учётной записи triage и открытый ключ сборщика
+# (ключ удаляется при очистке образа). Для установки нужен выход в интернет: обновления безопасности,
+# Docker и git берутся из архива Ubuntu. Готовая ВМ работает без интернета.
+autoinstall:
+  version: 1
+  refresh-installer:
+    update: false
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  timezone: Etc/UTC
+  source:
+    id: ubuntu-server
+    search_drivers: false
+  network:
+    version: 2
+    ethernets:
+      lan:
+        match:
+          name: "en*"
+        dhcp4: true
+        dhcp-identifier: mac
+  apt:
+    geoip: false
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+  identity:
+    hostname: local-triage-demo
+    realname: Local triage demo
+    username: triage
+    password: "@PASSWORD_HASH@"
+  ssh:
+    install-server: true
+    allow-pw: true
+    authorized-keys:
+      - "@BUILD_SSH_KEY@"
+  codecs:
+    install: false
+  drivers:
+    install: false
+  updates: all
+  packages:
+    - docker.io
+    - docker-compose-v2
+    - git
+    - ca-certificates
+    - curl
+  late-commands:
+    # приложение: compose, настройки, образы контейнеров (приложение, база, Ollama), модель, данные: копия демо-базы
+    # demo.dump (ключ маскирования – в нём). В том базы копию кладёт start.sh при первой загрузке
+    - mkdir -p /target/opt/local-triage
+    - cp -r /cdrom/triage/app/. /target/opt/local-triage/
+    - chown -R root:root /target/opt/local-triage
+    - chmod 755 /target/opt/local-triage
+    - find /target/opt/local-triage -maxdepth 1 -type f -exec chmod 644 {} +
+    - mkdir -p /target/opt/local-triage/images /target/opt/local-triage/ollama /target/opt/local-triage/data
+    - cp /cdrom/triage/images/* /target/opt/local-triage/images/
+    - cp -r /cdrom/triage/ollama/. /target/opt/local-triage/ollama/
+    - tar -xzf /cdrom/triage/data.tar.gz -C /target/opt/local-triage/data
+    # данные приложения пишет пользователь контейнера (uid 1000)
+    - chown -R 1000:1000 /target/opt/local-triage/data
+    - chmod 700 /target/opt/local-triage/data
+    # клоны репозиториев: владелец – пользователь ОС (uid 1000), демо – в /srv/repos/demo
+    - mkdir -p /target/srv/repos
+    - cp -r /cdrom/triage/demo-repos /target/srv/repos/demo
+    - chown -R 1000:1000 /target/srv/repos
+    # с ISO файлы приходят исполняемыми: обычные права – каталоги 755, файлы 644
+    - find /target/srv/repos -type d -exec chmod 755 {} +
+    - find /target/srv/repos -type f -exec chmod 644 {} +
+    # сценарии запуска и очистки
+    - mkdir -p /target/opt/local-triage/bin
+    - install -m 755 /cdrom/triage-guest/start.sh /target/opt/local-triage/bin/start.sh
+    - install -m 755 /cdrom/triage-guest/cleanup.sh /target/opt/local-triage/bin/cleanup.sh
+    - install -m 755 /cdrom/triage-guest/network-access.sh /target/opt/local-triage/bin/network-access.sh
+    - install -m 644 /cdrom/triage-guest/local-triage.service /target/etc/systemd/system/local-triage.service
+    - install -m 644 /cdrom/triage-guest/local-triage-refresh.service /target/etc/systemd/system/local-triage-refresh.service
+    - install -m 644 /cdrom/triage-guest/local-triage-refresh.timer /target/etc/systemd/system/local-triage-refresh.timer
+    - curtin in-target -- systemctl enable docker.service local-triage.service local-triage-refresh.timer
+    # сеть: DHCP на любом адаптере en*
+    - rm -f /target/etc/netplan/*.yaml
+    - install -m 600 /cdrom/triage-guest/01-lan.yaml /target/etc/netplan/01-lan.yaml
+    # ключи SSH сервера создаются заново, если их нет (после очистки образа)
+    - install -D -m 644 /cdrom/triage-guest/ssh-hostkeys.conf /target/etc/systemd/system/ssh.service.d/10-hostkeys.conf
+    # пауза ВМ не должна стирать адреса сетей Docker: сценарии VMware Tools при паузе и пробуждении выключены
+    - install -D -m 644 /cdrom/triage-guest/tools.conf /target/etc/vmware-tools/tools.conf
+    # git: учётные данные – только в памяти на время сессии (8 часов), на диск не пишутся
+    - curtin in-target -- git config --system credential.helper 'cache --timeout=28800'
+    # адрес приложения на экране входа консоли
+    - cat /cdrom/triage-guest/issue.append >> /target/etc/issue
+    - curtin in-target -- usermod -aG docker triage
+    # sudo без пароля – только на время сборки, cleanup.sh удаляет
+    - echo 'triage ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/90-triage-build
+    - chmod 440 /target/etc/sudoers.d/90-triage-build
+  error-commands:
+    - tail -n 200 /var/log/installer/subiquity-server-debug.log > /dev/ttyS0 || true
+    - tail -n 100 /var/log/curtin/install.log > /dev/ttyS0 || true
+  shutdown: poweroff

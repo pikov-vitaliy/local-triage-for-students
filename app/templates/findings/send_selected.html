@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Отправить выбранные в Hub · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}send-selected{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/findings?kind=SAST">Находки</a><span aria-hidden="true"> / </span><span aria-current="page">Отправить выбранные в Hub</span>{% endblock %}
+{% block content %}
+<h1>Отправить выбранные в Hub</h1>
+<p class="hint">Один статус «Ложное срабатывание», один комментарий и один срок для нескольких находок SAST – одним запросом к Hub (ADR-0119). Сохранённые решения и их тексты не меняются: общий комментарий уходит только в Hub и запоминается в отметке «Внесено в Hub».</p>
+{% if error %}<p class="callout callout-err" role="alert" id="bulk-error">{{ error }}</p>{% endif %}
+{% if blocker %}<p class="callout callout-warn" id="bulk-blocker">{{ blocker }}</p>
+{% elif not hub_ids %}<p class="callout callout-info" id="bulk-empty">Ничего не выбрано: отметьте находки галочками в <a href="/projects/{{ project.id }}/findings?kind=SAST">списке находок</a> и нажмите «Отправить выбранные в Hub».</p>
+{% else %}
+{% if too_many %}<p class="callout callout-warn">Выбрано больше {{ max_selected }} находок – показаны первые {{ max_selected }}; остальные отправьте следующей партией.</p>{% endif %}
+<section class="panel" aria-labelledby="bulk-ready-title">
+  <h2 id="bulk-ready-title">Уйдут в Hub: {{ ready|length }}</h2>
+  {% if ready %}
+  <table class="table" id="bulk-ready">
+    <thead><tr><th scope="col">Находка</th><th scope="col">Где</th><th scope="col">Категория</th><th scope="col">Текст сохранённого решения</th></tr></thead>
+    <tbody>{% for r in ready %}<tr data-hub-id="{{ r.hub_id }}"><td data-label="Находка"><a class="mono" href="/projects/{{ project.id }}/findings/{{ r.id }}">{{ r.hub_id }}</a></td><td data-label="Где" class="mono break">{{ r.where }}</td><td data-label="Категория">{{ r.rule }}</td><td data-label="Текст" class="break">{{ r.text }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted" id="bulk-none">Отправлять нечего: у всех выбранных находок есть причина ниже.</p>{% endif %}
+  {% if excluded %}
+  <h3>Не уйдут: {{ excluded|length }}</h3>
+  <ul id="bulk-excluded">{% for e in excluded %}<li><span class="mono">{{ e.hub_id }}</span> – {{ e.why }}</li>{% endfor %}</ul>
+  {% endif %}
+</section>
+{% if ready and not op %}
+<form method="post" action="/projects/{{ project.id }}/hub/send-selected" id="bulk-form" class="panel stack-form">
+  {% for r in ready %}<input type="hidden" name="target" value="{{ r.hub_id }}|{{ r.revision }}|{{ r.sig }}">{% endfor %}
+  {# назначение, по которому собран предпросмотр (KIMI-12): адрес Hub или приложение сменили после показа – отказ #}
+  <input type="hidden" name="hub_base" id="bulk-hub-base" value="{{ hub_base }}">
+  <input type="hidden" name="hub_app_id" id="bulk-app-id" value="{{ hub_app_id }}">
+  <label class="field">
+    <span class="field-label">Общий комментарий к смене статуса <span aria-hidden="true">*</span></span>
+    <textarea name="comment" id="bulk-comment" rows="4" maxlength="{{ reason_max }}" required>{{ comment }}</textarea>
+    <span class="field-hint">Уйдёт в Hub у каждой из {{ ready|length }} находок как комментарий к статусу «Ложное срабатывание». Подставлен текст сохранённого решения первой находки – поправьте, если нужно.</span>
+  </label>
+  <div class="field">
+    <label class="field-label" for="hub-send-expires">Срок действия статуса <span aria-hidden="true">*</span></label>
+    <input type="date" name="expires" id="hub-send-expires" min="{{ min }}" max="{{ max }}" required aria-describedby="hub-send-until-preview">
+    <span class="cluster review-presets" role="group" aria-label="Быстрый срок действия">{% for days, value in presets %}<button type="button" class="btn btn-ghost btn-small" data-date-for="hub-send-expires" data-date-value="{{ value }}" title="{{ value }}">+{{ days }} дней</button>{% endfor %}<button type="button" class="btn btn-ghost btn-small" id="hub-send-last" hidden>как в прошлый раз</button></span>
+    <span class="field-hint" id="hub-send-until-preview" aria-live="polite" hidden></span>
+  </div>
+  <div class="actions"><button type="submit" class="btn btn-primary" id="bulk-send">Отправить в Hub: {{ ready|length }}</button> <a class="btn btn-ghost" href="/projects/{{ project.id }}/findings?kind=SAST">К списку находок</a></div>
+</form>
+{% endif %}
+<p class="small hub-send-status{% if last.tone %} text-{{ last.tone }}{% endif %}" id="hub-send-status" role="status" aria-live="polite"{% if not last.text %} hidden{% endif %}{% if poll_url %} data-poll="{{ poll_url }}"{% endif %}>{% if last.time %}{{ last.time.prefix }}<time datetime="{{ last.time.datetime }}">{{ last.time.fallback }}</time>{{ last.time.suffix }}{% else %}{{ last.text }}{% endif %}</p>
+<form method="post" action="/projects/{{ project.id }}/hub/verify" id="hub-verify-form" class="actions" data-ajax data-busy="Ставлю сверку…"{% if not last.verify %} hidden{% endif %}>
+  <input type="hidden" name="op_id" id="hub-verify-op" value="{{ last.op_id or '' }}">
+  <button type="submit" class="btn btn-small" id="hub-verify-button">Pull из Hub</button>
+</form>
+{% if op %}<p class="actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/findings?kind=SAST">К списку находок</a></p>{% endif %}
+{% endif %}
+{% endblock %}

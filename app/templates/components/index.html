@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, stat, project_tabs, empty_state %}
+
+{% macro scope_label(value) -%}
+{{ "открытая поддержка" if value == "oss" else labels.scope.get(value, "неизвестно") }}
+{%- endmacro %}
+
+{% macro research_badge(row) -%}
+{% set tone = {"vulnerable": "err", "no_known_vulnerabilities": "ok", "incomplete": "warn",
+               "identity_unresolved": "warn"}.get(row.status, "muted") %}
+<span class="badge badge-{{ tone }}">{{ row.status_label or "не исследован" }}</span>
+{%- endmacro %}
+
+{% from "worklists.html" import pager, controls, groups %}
+{% block title %}Компоненты · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}components{% endblock %}
+{% block wide %} wrap-wide{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Компоненты</span>{% endblock %}
+{% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
+
+{% block content %}
+{% set pid = project.id %}
+{% if identity_pending %}<div class="callout callout-info" role="note" id="identity-pending"><p><strong>Сведения Hub о библиотеках ещё не применены</strong> к находкам SCA: {{ identity_pending }}. Выполните «Синхронизировать с Hub» и «Принять состояние Hub» – тогда экосистема и координаты компонентов будут по Hub.</p></div>{% endif %}
+<div class="page-head">
+  <div>
+    <h1>Исследование компонентов</h1>
+    <p class="page-sub">Версии, поддержка и публичные уязвимости библиотек из текущей выгрузки. Решение всегда принимает оператор.</p>
+  </div>
+  <div class="page-actions">
+    <a class="btn" href="/projects/{{ pid }}/components/report?format=md" download>{{ icon("download") }}Отчёт Markdown</a>
+    <a class="btn btn-ghost" href="/projects/{{ pid }}/components/report?format=json" target="_blank" rel="noopener noreferrer" title="Открыть JSON в новой вкладке">JSON</a>
+    <a class="btn btn-ghost" href="/projects/{{ pid }}/sca">Находки SCA</a>
+    {% if identity_known %}<a class="btn btn-ghost" href="/projects/{{ pid }}/identity-report" id="identity-report-link">Отчёт перехода</a>{% endif %}
+  </div>
+</div>
+
+{% if not imp %}
+<section class="panel">
+  {{ empty_state("Выгрузки ещё нет", "Загрузите отчёт AppSec.Hub на странице проекта: компоненты появятся здесь до сборки задания.", "/projects/%d#step1" % pid, "К загрузке отчёта", "upload") }}
+</section>
+{% else %}
+
+<section class="panel panel-compact" aria-label="Сводка исследования компонентов">
+  <div class="stats">
+    <a class="stat-link" href="/projects/{{ pid }}/components">{{ stat(summary.total, "Компоненты") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?status=vulnerable">{{ stat(summary.vulnerable, "Уязвимые", tone="err" if summary.vulnerable else "") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?status=incomplete">{{ stat(summary.incomplete, "Неполные", tone="warn" if summary.incomplete else "") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?status=identity_unresolved">{{ stat(summary.identity_unresolved, "Идентичность не определена", tone="warn" if summary.identity_unresolved else "") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?gaps=1">{{ stat(summary.with_gaps, "С пробелами", sub="исследованы, есть непроверенное") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?support=unknown">{{ stat(summary.support_unknown, "Поддержка неизвестна", sub="среди исследованных") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?status=unresearched">{{ stat(summary.unresearched, "Не исследованы") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?decision=set">{{ stat(summary.decided, "С решением", tone="ok" if summary.decided else "") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?defect=in">{{ stat(summary.in_defect, "В дефекте", sub="дефект приложения по компоненту", tone="ok" if summary.in_defect else "") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?stale=1">{{ stat(summary.stale, "Требуют пересмотра", tone="warn" if summary.stale else "") }}</a>
+  </div>
+</section>
+
+<div class="service-panels{% if task and task.imported_at %} is-compact{% endif %}">
+<details class="panel service-panel" id="component-task" data-remember="component-task-{{ pid }}"{% if not task or not task.imported_at %} open{% endif %}>
+  <summary>Задание исследования{% if task %} · {{ task.researched }} из {{ task.row_count }} исследовано{% endif %}</summary>
+  <div class="service-body">
+  <div class="panel-head">
+    <h2 id="component-task-title">Задание исследования</h2>
+    {% if task %}<span class="badge badge-{{ 'ok' if task.state == 'current' else 'warn' }}">{{ labels.task_state.get(task.state, task.state) }}</span>{% endif %}
+  </div>
+  <p class="hint" id="component-task-ways">Файл для внешнего агента{% if net.profile %} или исследование провайдером (блок ниже){% endif %}.</p>
+  <p class="small muted"><a href="/projects/{{ pid }}/sca#component-research">Отбор компонентов и уточнение имён</a></p>
+  {% if task %}
+  <p class="hint">Строк: {{ task.row_count }} · исследовано: {{ task.researched }} · решений: {{ task.decided }} · ревизия исследования: {{ task.revisions }}. Задание содержит координаты и версии компонентов, но не код и не внутренние идентификаторы выгрузки.</p>
+  <p class="small muted">Подпись <span class="mono">{{ task.task_id }}</span> · создано <time datetime="{{ task.created_at }}">{{ task.created_at|ts }}</time>{% if task.imported_at %} · ответ загружен <time datetime="{{ task.imported_at }}">{{ task.imported_at|ts }}</time>{% endif %}</p>
+  <div class="actions">
+    <a class="btn btn-primary" id="download-task" href="/projects/{{ pid }}/components/task/{{ task.task_id }}.zip" download>{{ icon("download") }}Скачать ZIP</a>
+    <a class="btn" href="/projects/{{ pid }}/components/task.json" target="_blank" rel="noopener noreferrer" title="Открыть манифест в новой вкладке">Манифест</a>
+    <a class="btn" href="/projects/{{ pid }}/components/answer.schema.json" target="_blank" rel="noopener noreferrer" title="Открыть схему ответа в новой вкладке">Схема ответа</a>
+  </div>
+  {% else %}
+  <p class="hint">Соберите задание из текущей выгрузки. В ZIP войдут все строки, заготовка ответа, схема и программа проверки; список компонентов доступен уже сейчас.</p>
+  {% endif %}
+  <form method="post" action="/projects/{{ pid }}/components/task" class="actions">
+    <button type="submit" class="btn{% if not task %} btn-primary{% endif %}" id="build-task" data-busy="Собираю…">{{ icon("refresh") }}{{ "Обновить задание" if task else "Собрать задание" }}</button>
+  </form>
+  {% if task_history %}
+  <details class="compact" id="task-history">
+    <summary class="compact-summary">История заданий: {{ task_history|length }}</summary>
+    <div class="table-wrap">
+      <table class="table table-compact">
+        <thead><tr><th scope="col">Задание</th><th scope="col">Создано</th><th scope="col" class="num">Строк</th><th scope="col">Состояние</th></tr></thead>
+        <tbody>{% for item in task_history %}<tr>
+          <td data-label="Задание"><span class="mono break">{{ item.task_id }}</span></td>
+          <td data-label="Создано"><time datetime="{{ item.created_at }}">{{ item.created_at|ts }}</time></td>
+          <td data-label="Строк" class="num">{{ item.row_count }}</td>
+          <td data-label="Состояние">{{ labels.task_state.get(item.state, item.state) }}</td>
+        </tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </details>
+  {% endif %}
+  </div>
+</details>
+
+<details class="panel service-panel" id="component-research" data-remember="component-research-{{ pid }}"{% if net.run and net.run.state == "running" %} open{% endif %}>
+  <summary>Исследование провайдером{% if net.run %} · {{ net.state_labels.get(net.run.state, net.run.state) }}: сохранено {{ net.run.rows_saved }} из {{ net.run.rows_total }}{% endif %}</summary>
+  <div class="service-body">
+  <div class="panel-head"><h2 id="component-research-title">Исследование провайдером</h2></div>
+  <p class="hint">Второй способ исполнить задание: строки по одной уходят модели из профиля удалённого API (чат-завершения или Anthropic Messages API), ответы проверяются тем же валидатором и сохраняются ревизиями. Файловый путь (ZIP и ответ агента) остаётся как есть.</p>
+  <form method="post" action="/projects/{{ pid }}/components/research-provider" class="inline-form" data-autosubmit>
+    <label class="field"><span class="field-label">Профиль исследования</span>
+      <select name="research_provider_id" id="research-provider">{% for o in net.options %}<option value="{{ o.value }}"{% if o.selected %} selected{% endif %}{% if o.disabled %} disabled{% endif %}>{{ o.label }}</option>{% endfor %}</select>
+    </label>
+    <button type="submit" class="btn btn-ghost">Сменить</button>
+  </form>
+  {% if not task %}
+  <p class="callout callout-info" id="research-no-task">Сначала соберите задание: провайдер исследует строки задания.</p>
+  <form method="post" action="/projects/{{ pid }}/components/task" class="actions">
+    <button type="submit" class="btn btn-primary" id="build-task-research" data-busy="Собираю…">{{ icon("refresh") }}Собрать задание</button>
+  </form>
+  {% elif not net.profile %}
+  <p class="callout callout-info" id="research-no-profile">Выберите профиль «API чат-завершений» или «Anthropic Messages API» для исследования – у проекта выше или в <a href="/settings/providers">«Провайдерах моделей»</a>. Профиль Ollama исследование не исполняет.</p>
+  {% elif net.run and net.run.state == "running" %}
+  <p>Идёт получение <a href="/projects/{{ pid }}/components/research/{{ net.run.id }}">№{{ net.run.id }}</a>: в очереди {{ net.counts.queued }}, отправлено {{ net.counts.sending }}, сохранено {{ net.counts.saved }}.</p>
+  {% else %}
+  <form method="post" action="/projects/{{ pid }}/components/research/preview" class="inline-form" id="research-preview-form">
+    <label class="field"><span class="field-label">Какие строки</span>
+      <select name="selection">
+        <option value="all">все строки задания ({{ task.row_count }})</option>
+        <option value="unresearched"{% if task.researched %} selected{% endif %}>без исследования ({{ task.row_count - task.researched }})</option>
+        <option value="review_due">требующие пересмотра</option>
+        <option value="no_defect">без дефекта ({{ net.no_defect }})</option>
+      </select>
+    </label>
+    <button type="submit" class="btn btn-primary" id="research-preview">{{ icon("search") }}Исследовать провайдером – предпросмотр</button>
+  </form>
+  <p class="small muted">Профиль: {{ net.profile.name }} · модель <span class="mono">{{ net.profile.default_model }}</span>. Перед отправкой – предпросмотр того, что уйдёт, и согласие.</p>
+  {% if net.run %}<p class="small">Последнее получение: <a href="/projects/{{ pid }}/components/research/{{ net.run.id }}">№{{ net.run.id }}</a> – {{ net.state_labels.get(net.run.state, net.run.state) }}{% if net.run.reason %}: {{ net.run.reason }}{% endif %}; сохранено {{ net.run.rows_saved }}, не получено {{ net.run.rows_failed }}{% if net.run.rows_unknown %}, с неизвестным результатом {{ net.run.rows_unknown }}{% endif %}.</p>{% endif %}
+  {% endif %}
+  </div>
+</details>
+
+{% if task %}
+<details class="panel service-panel" id="component-answers" data-remember="component-answers-{{ pid }}"{% if not task.imported_at or error_report or error %} open{% endif %} {% if error_report or error %}data-force-open{% endif %}>
+  <summary>Ответ агента{% if task %} · {{ task.researched }} из {{ task.row_count }} исследовано{% endif %}</summary>
+  <div class="service-body">
+  <div class="panel-head"><h2 id="component-answers-title">Ответ агента</h2></div>
+  {% if error_report and error_report.errors %}
+  <div class="callout callout-err" id="answer-error-report" role="alert">
+    <p><strong>Ответ не принят.</strong> Ни одна строка не сохранена. Исправьте указанные поля и загрузите файл снова.</p>
+    <details open>
+      <summary>Полный протокол: ошибок {{ error_report.errors|length }}</summary>
+      <ol class="component-error-list">
+        {% for item in error_report.errors %}<li><span class="badge badge-err">{{ item.code }}</span> <span class="mono break">{{ item.path }}</span><p>{{ item.message }}</p></li>{% endfor %}
+      </ol>
+    </details>
+    <p class="small muted">Контракт {{ error_report.contract }} · валидатор {{ error_report.validator }}{% if error_report.answer_bytes %} · размер {{ error_report.answer_bytes }} байт{% endif %}</p>
+  </div>
+  {% endif %}
+  <p class="hint">Загрузите <span class="mono">answer.json</span>, собранный по схеме из задания. Приложение повторно проверит все строки и не сохранит часть ответа при ошибке.</p>
+  <form method="post" action="/projects/{{ pid }}/components/answers" enctype="multipart/form-data" class="stack-form" id="component-answers-form">
+    <label class="dropzone">
+      <input type="file" name="file" id="component-answer-file" accept=".json,application/json">
+      <span class="dropzone-text">{{ icon("upload") }} Перетащите answer.json или нажмите, чтобы выбрать</span>
+      <span class="dropzone-file" aria-live="polite"></span>
+    </label>
+    <label class="field" for="component-answer-text">
+      <span class="field-label">или вставьте ответ</span>
+      <textarea class="code-input" name="text" id="component-answer-text" rows="7" spellcheck="false" placeholder='{"contract": "local-triage/sca-answers/2", "rows": []}'></textarea>
+    </label>
+    <div class="actions"><button type="submit" class="btn btn-primary" id="upload-component-answer" data-busy="Проверяю…">{{ icon("upload") }}Проверить и загрузить ответ</button></div>
+  </form>
+  </div>
+</details>
+{% endif %}
+
+</div>
+<section class="panel" id="component-list" aria-labelledby="component-list-title">
+  <div class="panel-head">
+    <h2 id="component-list-title">Компоненты</h2>
+    <span class="panel-actions muted small">показано {{ shown }} из {{ total }}{% if total != summary.total %} · всего {{ summary.total }}{% endif %}</span>
+  </div>
+  {#- фильтры одной строкой, подробные – в «Все фильтры» (список компонентов – на первом экране) -#}
+  {% set ns = namespace(more=0) %}
+  {% for key in ("ecosystem", "stale", "review_due", "cvss_ver", "cvss_from", "cvss_to", "score", "support", "advice", "action", "age", "gaps", "defect") %}{% if filters[key] %}{% set ns.more = ns.more + 1 %}{% endif %}{% endfor %}
+  <form method="get" action="/projects/{{ pid }}/components" class="filters component-filters" id="component-filters" role="search">
+    {% for key in ("group_by", "family", "sort", "page_size") %}<input type="hidden" name="{{ key }}" value="{{ worklist.params.get(key, '') }}">{% endfor %}
+    <div class="filter-bar">
+      <label class="visually-hidden" for="component-q">Поиск: имя, версия, CVE, GHSA, координаты</label>
+      <input type="search" name="q" id="component-q" value="{{ filters.q }}" autocomplete="off" placeholder="Имя, версия, CVE, GHSA, координаты" class="filter-search">
+      <label class="visually-hidden" for="component-status">Состояние</label>
+      <select name="status" id="component-status" title="Состояние">
+        <option value="">Состояние: любое</option>
+        {% for value in ("vulnerable", "no_known_vulnerabilities", "incomplete", "identity_unresolved", "unresearched") %}
+        <option value="{{ value }}"{% if filters.status == value %} selected{% endif %}>{{ "не исследован" if value == "unresearched" else labels.status.get(value, value) }}</option>
+        {% endfor %}
+      </select>
+      <label class="visually-hidden" for="component-decision">Решение</label>
+      <select name="decision" id="component-decision" title="Решение">
+        <option value="">Решение: любое</option>
+        <option value="set"{% if filters.decision == "set" %} selected{% endif %}>решение есть</option>
+        <option value="unset"{% if filters.decision == "unset" %} selected{% endif %}>решения нет</option>
+      </select>
+      <button type="submit" class="btn btn-small">{{ icon("search") }}Показать</button>
+      <a class="btn btn-small btn-ghost" href="/projects/{{ pid }}/components">{{ icon("x") }}Сбросить</a>
+      <a class="small" id="component-quick" href="/projects/{{ pid }}/components?cvss_ver=3.1&amp;cvss_op=gt&amp;cvss_from=7">CVSS 3.1 строго выше 7</a>
+    </div>
+    {% if score_spec.empty %}<p class="small text-warn" id="cvss-empty">Нижняя граница CVSS больше верхней – выборка пуста.</p>{% endif %}
+    <details class="filters-more" id="component-filters-more"{% if ns.more %} open{% endif %}>
+      <summary>Все фильтры{% if ns.more %} · выбрано {{ ns.more }}{% endif %}</summary>
+      <div class="filter-grid">
+        <label class="filter-field"><span class="filter-label">Экосистема</span>
+          <select name="ecosystem" id="component-ecosystem"><option value="">все</option>{% for value in ecosystems %}<option value="{{ value }}"{% if filters.ecosystem == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+        <label class="filter-field"><span class="filter-label">Поддержка</span>
+          <select name="support" id="component-support"><option value="">любая</option>{% for v in support_filters %}<option value="{{ v }}"{% if filters.support == v %} selected{% endif %}>{{ labels.support.get(v, v) }}</option>{% endfor %}</select></label>
+        <label class="filter-field"><span class="filter-label">Совет агента</span>
+          <select name="advice" id="component-advice"><option value="">любой</option>{% for v in advice_filters %}<option value="{{ v }}"{% if filters.advice == v %} selected{% endif %}>{{ labels.advice.get(v, v) }}</option>{% endfor %}</select></label>
+        <label class="filter-field"><span class="filter-label">Действие оператора</span>
+          <select name="action" id="component-action"><option value="">любое</option>{% for v in action_filters %}<option value="{{ v }}"{% if filters.action == v %} selected{% endif %}>{{ "нет решения" if v == "none" else labels.decision.get(v, v) }}</option>{% endfor %}</select></label>
+        <label class="filter-field"><span class="filter-label">Дефект</span>
+          <select name="defect" id="component-defect"><option value="">любой</option><option value="in"{% if filters.defect == "in" %} selected{% endif %}>в дефекте</option><option value="none"{% if filters.defect == "none" %} selected{% endif %}>без дефекта</option></select></label>
+        <label class="filter-field"><span class="filter-label">Ответ агента принят</span>
+          <select name="age" id="component-age"><option value="">когда угодно</option><option value="30"{% if filters.age == "30" %} selected{% endif %}>больше 30 дней назад</option><option value="90"{% if filters.age == "90" %} selected{% endif %}>больше 90 дней назад</option></select></label>
+        <fieldset class="filter-field filter-cvss" id="cvss-filter">
+          <legend class="filter-label">CVSS по ответу агента</legend>
+          <label class="visually-hidden" for="cvss-ver">Версия шкалы</label>
+          <select name="cvss_ver" id="cvss-ver"><option value="">любая версия</option>{% for v in cvss_versions %}<option value="{{ v }}"{% if filters.cvss_ver == v %} selected{% endif %}>CVSS {{ v }}</option>{% endfor %}</select>
+          <label class="visually-hidden" for="cvss-op">Нижняя граница</label>
+          <select name="cvss_op" id="cvss-op"><option value="ge"{% if filters.cvss_op != "gt" %} selected{% endif %}>не ниже</option><option value="gt"{% if filters.cvss_op == "gt" %} selected{% endif %}>строго выше</option></select>
+          <input type="number" name="cvss_from" id="cvss-from" min="0" max="10" step="0.1" value="{{ filters.cvss_from|replace(',', '.') }}" aria-label="Балл от" placeholder="от">
+          <input type="number" name="cvss_to" id="cvss-to" min="0" max="10" step="0.1" value="{{ filters.cvss_to|replace(',', '.') }}" aria-label="Балл до (не выше)" placeholder="до">
+          <label class="visually-hidden" for="score-kind">Строки без балла</label>
+          <select name="score" id="score-kind"><option value="">с баллом – по границам</option>{% for key, label in score_kinds.items() %}<option value="{{ key }}"{% if filters.score == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        </fieldset>
+        <div class="filter-field filter-checks">
+          <span class="filter-label">Ещё</span>
+          <label class="check"><input type="checkbox" name="stale" value="1"{% if filters.stale == "1" %} checked{% endif %}> требуют пересмотра</label>
+          <label class="check"><input type="checkbox" name="review_due" value="1"{% if filters.review_due == "1" %} checked{% endif %}> срок пересмотра наступил</label>
+          <label class="check"><input type="checkbox" name="gaps" value="1"{% if filters.gaps == "1" %} checked{% endif %}> только с пробелами</label>
+        </div>
+      </div>
+    </details>
+  </form>
+  <div class="saved-filters" id="saved-filters">
+    {% if saved_filters %}
+    <ul class="cluster saved-filter-list" aria-label="Сохранённые отборы">
+      <li class="small"><strong>Сохранённые отборы:</strong></li>
+      {% for item in saved_filters %}<li class="saved-filter"><a href="{{ item.url }}" class="chip">{{ item.name }}</a>{% if item.lost %}<span class="badge badge-warn">{{ "ни одно условие больше не действует – откроется весь список" if item.all_lost else "часть условий больше не действует" }}</span><span class="small muted saved-filter-lost">не действуют: <span class="mono">{{ item.lost|join(", ") }}</span></span>{% endif %}<form method="post" action="/projects/{{ pid }}/components/filters/{{ item.id }}/delete" class="saved-filter-delete"><input type="hidden" name="query" value="{{ saved_current[0] }}"><input type="hidden" name="page" value="{{ page }}"><button type="submit" class="btn btn-ghost btn-icon btn-small" aria-label="Удалить отбор «{{ item.name }}»" title="Удалить отбор">{{ icon("x") }}</button></form></li>{% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post" action="/projects/{{ pid }}/components/filters" class="cluster saved-filter-form" id="save-filter-form">
+      <input type="hidden" name="query" value="{{ saved_current[0] }}">
+      <input type="hidden" name="page" value="{{ page }}">
+      <label class="filter-label" for="saved-filter-name">Сохранить показанный отбор как</label>
+      <input type="text" name="name" id="saved-filter-name" value="{{ saved_name }}" maxlength="60" autocomplete="off" title="Сохраняются условия списка после «Показать». До {{ saved_max }} отборов на проект; то же имя заменяет условия.">
+      <button type="submit" class="btn btn-small">Сохранить отбор</button>
+      {% if not saved_current[1] %}<span class="field-hint">Сейчас условий нет – сохранять нечего.</span>{% endif %}
+    </form>
+  </div>
+
+  {{ controls(worklist) }}
+  {{ pager(worklist) }}
+  {% if worklist.groups %}{{ groups(worklist) }}
+  {% elif rows %}
+  {% set can_pick = task and net.profile and not (net.run and net.run.state == "running") %}
+  <form method="post" action="/projects/{{ pid }}/components/decisions/preview?back={{ worklist.url(page=worklist.page)|urlencode }}" id="batch-selection">
+  {% if worklist.family_selected %}<p class="hint">Выберите версии на этой странице для общего решения. Скрытые страницы не выбираются.</p>{% endif %}
+  <div class="table-wrap">
+    <table class="table table-compact table-components" data-rows>
+      <caption class="visually-hidden">Компоненты из выгрузки, результаты исследования и решения оператора</caption>
+      <thead><tr>
+        {% if worklist.family_selected or can_pick %}<th scope="col">Выбор</th>{% endif %}
+        <th scope="col">Компонент и экосистема</th>
+        <th scope="col">Текущая версия</th>
+        <th scope="col">Актуальный стабильный релиз</th>
+        <th scope="col">Поддержка</th>
+        <th scope="col">Публичные уязвимости</th>
+        <th scope="col">Исследование</th>
+        <th scope="col">Решение человека</th>
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr id="component-{{ row.input_ref }}" data-input-ref="{{ row.input_ref }}"{% if row.task_stale %} class="is-missing"{% endif %}>
+          {% if worklist.family_selected or can_pick %}<td>{% if row.live and (worklist.family_selected or row.in_task) %}<input type="checkbox" name="input_ref" value="{{ row.input_ref }}" aria-label="Выбрать {{ row.name }} {{ row.version }}">{% endif %}</td>{% endif %}
+          <td data-label="Компонент и экосистема">
+            <a class="mono rule-link break" data-row-link href="/projects/{{ pid }}/components/{{ row.input_ref }}?back={{ worklist.url(page=worklist.page)|urlencode }}">{{ row.name }}</a>
+            <span class="small muted block">{{ row.ecosystem }} · {{ row.identity_kind_label }}</span>
+            {% if row.archived %}<span class="badge badge-muted" title="Исследования и решения сняты переходом идентичности пакетов">архив</span>{% endif %}
+            {% if row.export_missing %}<span class="badge badge-warn">нет в текущей выгрузке</span>{% elif row.task_stale %}<span class="badge badge-warn">состав устарел</span>{% elif task and not row.in_task %}<span class="badge badge-warn">нужно новое задание</span>{% endif %}
+            {% for d in row.defects %}<a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="Карточка дефекта: {{ d.label }}">{{ d.word }} {{ d.text }}</a>{% endfor %}
+          </td>
+          <td data-label="Текущая версия" class="mono break">{{ row.version }}</td>
+          <td data-label="Актуальный стабильный релиз">
+            {% if row.researched %}<span class="mono break">{{ row.latest_stable or "–" }}</span>
+            <span class="small muted block">{{ row.update_label or labels.update.get(row.update_status, "неизвестно") }}</span>
+            {% if row.version_order_unchecked %}<span class="badge badge-warn">порядок версий не проверен приложением</span>{% endif %}
+            {% else %}<span class="muted">–</span>{% endif %}
+          </td>
+          <td data-label="Поддержка">
+            {% if row.researched %}{{ row.support_label or labels.support.get(row.support_state, "неизвестно") }}
+            <span class="small muted block">{{ scope_label(row.support_scope) }}</span>
+            {% else %}<span class="muted">–</span>{% endif %}
+          </td>
+          <td data-label="Публичные уязвимости">
+            {% if row.researched %}<span>применимых: <strong>{{ row.applicable }}</strong></span>
+            <span class="small muted block">публичных находок: {{ row.findings_total }}</span>
+            {% if row.score_view.score is not none %}<span class="small block">CVSS{% if filters.cvss_ver %} {{ filters.cvss_ver }}{% endif %}: <strong>{{ "%.1f"|format(row.score_view.score) }}</strong>{% if row.score_view.incomplete %} <span class="badge badge-warn">оценка неполная</span>{% endif %}</span>
+            {% else %}<span class="small muted block">CVSS: {{ score_kinds.get(row.score_view.kind, "–") }}</span>{% endif %}
+            {% if row.disputed %}<span class="badge badge-muted">есть оспоренные</span>{% endif %}
+            {% else %}<span class="muted">не исследован</span>{% endif %}
+          </td>
+          <td data-label="Исследование">
+            {{ research_badge(row) }}
+            {% if row.status_note %}<span class="small muted block">{{ row.status_note }}</span>{% endif %}
+            {% if row.researched %}<span class="small muted block">проверено источников: {{ row.coverage.ok }} из {{ row.coverage.checked }}</span>
+            {% if row.coverage.errors %}<span class="small text-warn block">ошибок или ограничений: {{ row.coverage.errors }}</span>{% endif %}
+            {% if row.gaps %}<span class="small muted block">пробелов: {{ row.gaps }}</span>{% endif %}
+            <span class="small muted block">ревизия {{ row.revision }}{% if row.fresh_at %} · ответ принят <time datetime="{{ row.fresh_at }}">{{ row.fresh_at[:10] }}</time>{% endif %}</span>{% endif %}
+          </td>
+          <td data-label="Решение человека">
+            {% if row.decision %}<span class="badge badge-{{ 'warn' if row.decision_stale else 'info' }}">{{ row.decision.action_label }}</span>
+            {% if row.decision_stale %}<span class="badge badge-warn">требует пересмотра</span>{% endif %}
+            <span class="small block">{{ row.decision.rationale }}</span>
+            {% if row.decision.target_version %}<span class="small muted block">версия: <span class="mono">{{ row.decision.target_version }}</span></span>{% endif %}
+            {% else %}<span class="muted">не принято</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if worklist.family_selected %}<button class="btn btn-primary" type="submit">Общее решение для выбранных версий</button>{% endif %}
+  {% if can_pick %}<div class="actions"><button class="btn" type="submit" formaction="/projects/{{ pid }}/components/research/preview" name="selection" value="picked" id="research-picked">{{ icon("search") }}Исследовать отмеченные провайдером – предпросмотр</button>
+  <span class="small muted">Отметьте компоненты галочками на этой странице: провайдеру уйдут только они. Отбор «Дефект: не входит» выше покажет компоненты без дефекта.</span></div>{% endif %}
+  </form>
+  {% else %}
+  <p class="empty">{% if summary.total %}Под этот отбор ничего не попало. <a href="/projects/{{ pid }}/components">Показать все компоненты</a>.{% else %}Компоненты из текущей выгрузки не найдены.{% endif %}</p>
+  {% endif %}
+  {{ pager(worklist, "bottom") }}
+</section>
+{% endif %}
+{% endblock %}

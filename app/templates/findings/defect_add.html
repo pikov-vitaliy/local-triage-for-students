@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Добавить в дефект · {{ project.name }}{% endblock %}
+{% block crumbs %}<a href="/projects/{{ project.id }}/findings">Находки</a><span> / </span><span aria-current="page">Добавить в дефект</span>{% endblock %}
+{% block content %}
+<h1>Добавить находку в дефект</h1>
+{% if finding %}<p id="add-finding">Находка {% if card_url %}<a href="{{ card_url }}">{{ hub_id }}</a>{% else %}{{ hub_id }}{% endif %} · {{ finding.rule }} · {{ finding.file }}:{{ finding.line or '–' }}</p>{% endif %}
+{% if error %}<p class="text-err" role="alert" id="add-error">{{ error }}</p>{% endif %}
+{% if why and why != error %}<p class="text-warn" id="add-why">{{ why }}</p>{% endif %}
+{% if blocker %}<p class="text-warn" id="add-blocker">{{ blocker }}</p>{% endif %}
+{% if retry_note %}<p class="text-warn" id="add-retry-note">{{ retry_note }}</p>{% endif %}
+{% if finding and confirm and parent %}
+<form method="post" action="/projects/{{ project.id }}/hub/add-to-defect" class="stack-form" id="add-form">
+  <input type="hidden" name="hub_id" value="{{ hub_id }}"><input type="hidden" name="defect" value="{{ parent.id }}"><input type="hidden" name="snapshot" value="{{ snapshot }}">
+  <section class="panel"><h2>Предпросмотр: дефект №{{ parent.hub_defect_id }}</h2>
+    <p id="add-summary">{{ parent.summary }}</p>
+    <p class="field-label">Текст дефекта не меняется</p>
+    <pre class="hub-text" id="add-defect-text">{{ parent.command_text }}</pre>
+    <p class="field-label">Решение находки остаётся её решением, в описание дефекта не добавляется</p>
+    <pre class="hub-text" id="add-own-text">{{ text }}</pre>
+    <p class="field-label">Запрос в Hub</p>
+    <p id="add-request">{{ link.method }} {{ link.path }}</p>
+    <pre class="hub-text" id="add-request-body">{{ link_body }}</pre>
+    <p class="field-hint" id="add-next">Затем исполнитель прочитает дефект снова. Заголовок, описание и статус дефекта не меняются. Отметка «Внесено в Hub» появится после подтверждения чтением. Чтобы находка вошла в состав дефекта здесь, в карточке дефекта нажмите «Pull из Hub» и «Применить»; до этого правка и «Push в Hub» закрыты.</p>
+    <label class="check"><input type="checkbox" name="confirm" value="1" id="add-confirm" required> Подтверждаю добавление находки в этот дефект</label>
+    <div class="actions"><button type="submit" name="action" value="apply" class="btn btn-primary" id="add-apply"{% if blocker %} disabled{% endif %}>Добавить в дефект</button>
+      <button type="submit" name="action" value="edit" class="btn" formnovalidate id="add-back">Выбрать другой дефект</button></div>
+  </section>
+</form>
+{% elif finding and (not why or ready) %}
+<form method="post" action="/projects/{{ project.id }}/hub/add-to-defect" class="stack-form" id="add-form">
+  <input type="hidden" name="hub_id" value="{{ hub_id }}">
+  <section class="panel"><h2>Дефект</h2>
+    {% if ready %}
+    <fieldset class="field" id="add-defects"><legend class="field-label">Можно выбрать ({{ ready | length }})</legend>
+      {% for d in ready %}<label class="check"><input type="radio" name="defect" value="{{ d.id }}" required> {{ d.label }} · {{ d.summary }}</label>{% endfor %}
+    </fieldset>
+    <p class="field-hint">Следующий шаг покажет, что уйдёт в Hub. Запроса ещё нет.</p>
+    <button type="submit" name="action" value="preview" class="btn btn-primary" id="add-preview">Показать, что изменится</button>
+    {% else %}<p id="add-none">Подходящих дефектов нет.</p>{% endif %}
+  </section>
+</form>
+{% endif %}
+{% if closed %}<section class="panel" id="add-closed"><h2>Нельзя выбрать ({{ closed | length }})</h2>
+  <ul>{% for d in closed %}<li>{{ d.label }} · {{ d.summary }}: {{ d.why }}</li>{% endfor %}</ul>
+</section>{% endif %}
+{% endblock %}

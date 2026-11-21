@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% from "macros.html" import project_tabs, empty_state, chip %}
+{% block title %}Дефекты · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}defects{% endblock %}
+{% block wide %} wrap-wide{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Дефекты</span>{% endblock %}
+{% block subnav %}{{ project_tabs(project, counts.total, review_stats.sca, "defects", counts.defects) }}{% endblock %}
+{% block content %}
+<h1>Дефекты в Hub</h1>
+{% include "projects/hub_step_note.html" %}
+{% if resync_note %}<p class="callout callout-warn" id="defects-resync-note">{{ resync_note }}</p>{% endif %}
+{% if dropped_total %}<p class="callout callout-warn" id="defects-dropped">{{ dropped_total }} {{ dropped_total | plural("находка выбыла", "находки выбыли", "находок выбыли") }} из дефектов и {{ dropped_total | plural("ждёт", "ждут", "ждут") }} решения: <a href="/projects/{{ project.id }}/findings?dropped=1">открыть список</a>.</p>{% endif %}
+<form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><button class="btn" id="hub-sync-start">Синхронизировать</button></form>
+{% if sync_runs %}<details><summary>Сохранённые синхронизации ({{ sync_runs|length }})</summary><ul>{% for run in sync_runs %}<li><a href="/projects/{{ project.id }}/hub-sync/{{ run.id }}">Синхронизация {{ run.created_at|ts }} ({{ run.state }})</a></li>{% endfor %}</ul></details>{% endif %}
+<p class="hint">Заголовок открывает карточку дефекта: правка текста и остальных полей локального черновика, явная сборка текста из решений и обновление в Hub после предпросмотра. Связанные справочные значения можно менять только при наличии проверенного соответствия.</p>
+{#- «Все фильтры» как у находок -#}
+<details class="filters-more" id="defects-filters"{% if active_filters %} open{% endif %}>
+<summary>Все фильтры{% if active_filters %} · выбрано {{ active_filters }}{% endif %}</summary>
+<section class="filters filter-panel" aria-label="Фильтры дефектов">
+  {% for g in filter_groups %}
+  <div class="filter-group">
+    <span class="filter-label" id="defects-filter-{{ g.key }}">{{ g.label }}</span>
+    <nav class="chips" aria-labelledby="defects-filter-{{ g.key }}">{% for c in g.chips %}{{ chip(c.href, c.label, c.active, c.count) }}{% endfor %}</nav>
+  </div>
+  {% endfor %}
+  {% if active_filters %}<div class="filter-group"><a class="btn btn-small btn-ghost" href="{{ pagination.reset }}">Сбросить фильтры</a></div>{% endif %}
+</section>
+</details>
+<form method="get" class="actions" role="search">
+  {% for k, v in pagination.hidden %}{% if k != "q" %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endif %}{% endfor %}
+  {% if pagination.size != 200 %}<input type="hidden" name="page_size" value="{{ pagination.size }}">{% endif %}
+  <label>Поиск по заголовку или номеру Hub <input type="search" name="q" value="{{ pagination.query }}"></label>
+  <button class="btn" type="submit">Найти</button>
+</form>
+<nav class="actions" aria-label="Страницы каталога дефектов">
+  <span id="hub-defects-total">Всего: {{ pagination.total }}.{% if pagination.attempts %} Неудавшихся попыток: <a id="hub-defects-attempts" href="{{ pagination.attempts_url }}">{{ pagination.attempts }}</a>, в таблице отмечены отдельно.{% endif %} Страница {{ pagination.page }} из {{ pagination.last }}.</span>
+  <form method="get" class="inline-form">{% for k, v in pagination.hidden %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    <label>На странице <select name="page_size" data-autosubmit-select>{% for n in pagination.sizes %}<option value="{{ n }}"{% if n == pagination.size %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+    <button type="submit" class="btn btn-small">Применить</button></form>
+  {% if pagination.page > 1 %}<a href="{{ pagination.previous }}">Предыдущая страница</a>{% endif %}
+  {% if pagination.page < pagination.last %}<a href="{{ pagination.next }}">Следующая страница</a>{% endif %}
+</nav>
+{% if not items and (pagination.query or active_filters) %}
+{{ empty_state("Под этот отбор ничего не попало", "Измените отбор или поисковый запрос.", pagination.reset_all, "Сбросить фильтры и поиск", "search") }}
+<p id="hub-defects-empty" hidden></p>
+{% elif not items %}
+{{ empty_state("Дефектов из приложения ещё нет", "Создайте дефект из карточки находки SAST (решение «Подтверждаю дефект») или SCA (дефект набора): кнопка «Создать дефект в Hub» под разделом «Дефект для Hub». Дефекты, уже заведённые в Hub, приложение заносит само: «Синхронизировать» вверху, затем «Принять состояние Hub».", icon_name="shield") }}
+<p id="hub-defects-empty" hidden></p>
+{% else %}
+{#- как таблицы находок: обёртка, липкая шапка, сортировка ссылкой в заголовке -#}
+{% macro sort_link(key, label) -%}
+<a class="table-sort" href="{{ pagination.sort_url[key] }}">{{ label }} <span aria-hidden="true">{{ '▼' if pagination.sort == key ~ '_desc' else '▲' if pagination.sort == key ~ '_asc' else '↕' }}</span></a>
+{%- endmacro %}
+{% macro aria_sort(key) %}{% if pagination.sort == key ~ '_desc' %} aria-sort="descending"{% elif pagination.sort == key ~ '_asc' %} aria-sort="ascending"{% endif %}{% endmacro %}
+<div class="table-wrap">
+<table class="table table-sticky-head table-defects" id="hub-defects">
+  <thead><tr><th scope="col" class="col-id"{{ aria_sort('number') }}>{{ sort_link('number', 'ID') }}</th><th scope="col">Заголовок</th><th scope="col" class="col-kind"{{ aria_sort('kind') }}>{{ sort_link('kind', 'Вид') }}</th><th scope="col">Находки</th><th scope="col">Приоритет</th><th scope="col">Серьёзность</th><th scope="col">В Hub</th><th scope="col">Состояние</th><th scope="col">Кто и когда</th></tr></thead>
+  <tbody>
+  {% for item in items %}{% set row = item.row %}{% set imp = item.imported %}{% set upd = item.hub_update %}
+  <tr data-defect-id="{{ row.id }}" data-state="{{ row.state }}" data-origin="{{ row.origin or 'app' }}">
+    <td data-label="ID" class="col-id mono">{% if row.number and row.id %}<a href="{{ item.card_url }}">ID{{ row.number }}</a>{% elif row.number %}ID{{ row.number }}{% else %}–{% endif %}</td>
+    <td data-label="Заголовок" class="break">{% set title = row.summary or (imp.preview.summary if imp and imp.preview else "") %}{% if row.id %}<a href="{{ item.card_url }}">{{ title }}</a>{% else %}{{ title or "–" }}{% endif %}{% if row.origin == 'import' %} <span class="badge badge-muted" id="hub-import-origin-{{ row.id }}">занесён из Hub</span>{% endif %}</td>
+    <td data-label="Вид" class="col-kind">{% if row.kind %}<span class="badge badge-kind">{{ row.kind }}</span>{% else %}–{% endif %}</td>
+    <td data-label="Находки">{% for t in item.targets %}{% if t.url %}<a class="mono" href="{{ t.url }}">{{ t.hub_id }}</a>{% else %}<span class="mono">{{ t.hub_id }}</span>{% endif %}{{ ", " if not loop.last }}{% endfor %}{% if not item.targets %}–{% endif %}</td>
+    <td data-label="Приоритет">{{ row.priority or "–" }}</td>
+    <td data-label="Серьёзность">{{ row.severity or "–" }}</td>
+    <td data-label="В Hub">{% if row.hub_defect_id %}{% if row.hub_link %}<a class="mono" href="{{ row.hub_link }}" rel="noopener noreferrer" target="_blank">№{{ row.hub_defect_id }}</a>{% else %}<span class="mono">№{{ row.hub_defect_id }}</span>{% endif %}{% else %}–{% endif %}</td>
+    <td data-label="Состояние"><span class="badge{% if row.state == 'done' %} badge-ok{% elif item.retry and item.retry.superseded %} badge-muted{% elif row.state in ('failed', 'mismatch', 'unknown') %} badge-warn{% else %} badge-muted{% endif %}">{{ item.label }}</span>
+      {%- if item.retry and item.retry.superseded %} <span class="small muted" id="hub-defect-superseded-{{ row.id }}">Hub не принял эту попытку; дефект создан следующей: <a href="{{ item.retry.superseded.card_url }}">{% if item.retry.superseded.hub_defect_id %}№{{ item.retry.superseded.hub_defect_id }}{% else %}карточка{% endif %}</a></span>
+      {%- elif item.retry and item.retry.retry_url %} <a class="small" href="{{ item.retry.retry_url }}" id="hub-defect-retry-{{ row.id }}">Подготовить заново</a>{% endif %}
+      {%- if imp %}
+      {%- if item.view.text %} <span class="small {{ 'text-' ~ item.view.tone if item.view.tone in ('warn', 'err') else 'muted' }} break" id="hub-import-status-{{ row.id }}"{% if not item.view.final %} data-poll="/projects/{{ project.id }}/hub/defects/{{ row.id }}"{% endif %}>{{ item.view.text }}</span>{% endif %}
+      {%- if imp.preview %} <a class="small" href="#hub-import-preview-{{ row.id }}">предпросмотр ниже</a>{% endif %}
+      {%- if imp.sync %} <a class="small" href="#hub-sync-preview-{{ row.id }}">сверка ниже</a>{% endif %}
+      {%- if imp.sync_matches %}{% set unsent = (row.draft_summary or "") != (row.summary or "") or (row.draft_command_text or "") != (row.command_text or "") %} <span class="small {{ 'text-warn' if unsent else 'text-ok' }} hub-sync-matches" id="hub-sync-matches-{{ row.id }}" title="Заголовок и текст в Hub совпадают с принятой версией в приложении">совпадает с Hub · проверено {{ imp.sync_matches | ts }}{% if unsent %} · в черновике неотправленные правки – «Push в Hub»{% endif %}</span>{% endif %}
+      {%- if imp.retry %} <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/import-retry" class="inline-form" id="hub-import-retry-form-{{ row.id }}"><button type="submit" class="btn btn-ghost btn-small" id="hub-import-retry-{{ row.id }}">Повторить чтение</button></form>{% endif %}
+      {%- if imp.can_sync %} <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/sync" class="inline-form" id="hub-sync-form-{{ row.id }}"><button type="submit" class="btn btn-ghost btn-small" id="hub-sync-{{ row.id }}">Pull из Hub</button></form>{% endif %}
+      {#- «Push в Hub» (ADR-0125): кнопки по шагам цепочки #}
+      {%- set upd = imp.hub_update %}
+      {%- if row.conflicts_json and row.conflicts_json != "[]" %} <a class="small text-warn" href="{{ item.card_url }}#defect-conflict-explanation" id="hub-conflict-note-{{ row.id }}">конфликт состава – обновление недоступно, см. карточку</a>{% endif %}
+      {%- if upd and upd.can_prepare %} <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/update" class="inline-form" id="hub-update-form-{{ row.id }}"><button type="submit" class="btn btn-ghost btn-small" id="hub-update-{{ row.id }}">Push в Hub</button></form>{% endif %}
+      {%- if upd and upd.preview %} <a class="small" href="#hub-update-preview-{{ row.id }}">предпросмотр обновления ниже</a>{% endif %}
+      {%- if upd and upd.can_verify %} <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/update-verify" class="inline-form" id="hub-update-verify-form-{{ row.id }}"><button type="submit" class="btn btn-ghost btn-small" id="hub-update-verify-{{ row.id }}">Сверить</button></form>{% endif %}
+      {%- if upd and upd.can_reread %} <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/update-reread" class="inline-form" id="hub-update-reread-form-{{ row.id }}"><button type="submit" class="btn btn-ghost btn-small" id="hub-update-reread-{{ row.id }}">Повторить чтение</button></form>{% endif %}
+      {%- else %}
+      {% if item.owner_url %}<span class="small muted" id="hub-defect-link-row-{{ row.id }}">Привязка находок: действия – в <a href="{{ item.owner_url }}">карточке дефекта</a>.</span>{% endif %}
+      {% include "projects/defect_update_actions.html" %}
+      {#- заменённая попытка: только пометка «заменена» выше, без «Можно попробовать ещё раз» и повтора ошибки #}
+      {% set superseded = item.retry and item.retry.superseded %}
+      {% if item.view.text and not superseded %}<span class="small"{% if not item.view.final %} data-poll="/projects/{{ project.id }}/hub/defects/{{ row.id }}"{% endif %}>{{ item.view.text }}</span>{% endif %}
+      {%- if row.error and not superseded and row.error not in (item.view.text or "") %} <span class="small {{ 'text-warn' if 'не записан' in row.error else 'muted' }} break">{{ row.error }}</span>{% endif %}{% if item.note %} <span class="small muted break">{{ item.note }}</span>{% endif %}{% if row.state == "done" and row.verify_op_id %} <span class="small muted">проверяю в Hub…</span>{% endif %}
+      {%- endif %}</td>
+    <td data-label="Кто и когда" class="small">{% if row.created_by %}{{ row.created_by }} · {% endif %}{{ (row.closed_at or row.created_at)|ts }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% for item in items %}{% set row = item.row %}{% set imp = item.imported %}{% set upd = item.hub_update %}
+{% if imp and imp.preview %}{% set p = imp.preview %}
+{# предпросмотр занесения (ADR-0124 п. 4–5): «Занести» – одна транзакция, номер ID только резервируется #}
+<section class="panel hub-import-preview" id="hub-import-preview-{{ row.id }}" aria-labelledby="hub-import-preview-title-{{ row.id }}">
+  <h2 id="hub-import-preview-title-{{ row.id }}">Предпросмотр занесения: дефект №{{ row.hub_defect_id }}</h2>
+  <p class="small">Заголовок в Hub: <span class="mono break" id="hub-import-summary-{{ row.id }}">{{ p.summary or "–" }}</span></p>
+  <p class="small" id="hub-import-meta-{{ row.id }}">Вид: {{ p.kind or "не поддерживается" }} · Номер: {% if p.number %}<span class="mono">ID{{ p.number }}</span>{% else %}нет{% endif %}{% if p.author %} · Автор в Hub: {{ p.author }}{% endif %}{% if p.modified %} · Изменён в Hub: <time datetime="{{ p.modified }}">{{ p.modified|ts }}</time>{% endif %}</p>
+  {% if p.number_taken %}<p class="small text-warn" id="hub-import-number-{{ row.id }}">{{ p.number_taken }}.</p>{% endif %}
+  <h3>Текст дефекта (поле «Описание» в Hub)</h3>
+  {% if p.command_text %}<pre class="hub-text" id="hub-import-text-{{ row.id }}">{{ p.command_text }}</pre>{% else %}<p class="small muted" id="hub-import-text-{{ row.id }}">Текст дефекта не выделен.</p>{% endif %}
+  {% if p.form_problems %}<p class="small text-warn">Проверка формы по требованиям команды (справочно, текст в Hub не меняется):</p><ul class="small text-warn" id="hub-import-form-problems-{{ row.id }}">{% for problem in p.form_problems %}<li>{{ problem }}</li>{% endfor %}</ul>{% elif p.command_text %}<p class="small muted" id="hub-import-form-problems-{{ row.id }}">Форма текста – по требованиям команды (справочно).</p>{% endif %}
+  <p class="small" id="hub-import-accepted-{{ row.id }}">Войдут находки ({{ p.accepted|length }}): {% for t in p.accepted %}{% if t.url %}<a class="mono" href="{{ t.url }}">{{ t.hub_id }}</a>{% else %}<span class="mono">{{ t.hub_id }}</span>{% endif %}{{ ", " if not loop.last }}{% endfor %}{% if not p.accepted %}нет{% endif %}.</p>
+  {% if p.absent %}<p class="small text-warn" id="hub-import-absent-{{ row.id }}">Нет в текущей выгрузке: {% for e in p.absent %}<span class="mono">{{ e.hub_id }}</span> ({{ e.issue_type }}){{ ", " if not loop.last }}{% endfor %}.</p>{% endif %}
+  {% if p.conflicts %}<p class="small text-warn" id="hub-import-conflicts-{{ row.id }}">Не войдут: {% for e in p.conflicts %}{% if e.url %}<a class="mono" href="{{ e.url }}">{{ e.hub_id }}</a>{% else %}<span class="mono">{{ e.hub_id }}</span>{% endif %} – {{ e.why }}{{ "; " if not loop.last }}{% endfor %}.</p>{% endif %}
+  {% if p.warnings %}<ul class="small text-warn" id="hub-import-warnings-{{ row.id }}">{% for w in p.warnings %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
+  {% if p.hints %}<ul class="small muted" id="hub-import-hints-{{ row.id }}">{% for h in p.hints %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
+  <p class="field-hint" id="hub-import-accept-hint-{{ row.id }}">«Занести» ничего не записывает в Hub: строка становится дефектом «создан» с заголовком и текстом из Hub, номер ID – резервом (новые дефекты приложения его не получат). Отметки «Внесено в Hub» и номера находкам не ставятся – их даст обновление текста дефекта. Состав изменился – «Отменить», затем «Синхронизировать» на вкладке «Дефекты» и «Принять состояние Hub».</p>
+  <div class="actions">
+    {% if p.kind %}<form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/import" class="inline-form" id="hub-import-accept-form-{{ row.id }}"><input type="hidden" name="op" value="{{ p.op }}"><input type="hidden" name="shown" value="{{ p.shown }}"><button type="submit" class="btn btn-primary" id="hub-import-accept-{{ row.id }}">Занести</button></form>{% endif %}
+    <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/import-cancel" class="inline-form" id="hub-import-cancel-form-{{ row.id }}"><button type="submit" class="btn btn-small" id="hub-import-cancel-{{ row.id }}">Отменить</button></form>
+  </div>
+</section>
+{% endif %}
+{% include "projects/defect_sync_preview.html" %}
+{% include "projects/defect_update_preview.html" %}
+{% endfor %}
+{% endif %}
+{% endblock %}

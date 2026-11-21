@@ -1,0 +1,9 @@
+# Сеть демо-ВМ: DHCP на любом адаптере en* (в Workstation – ens33 или ens160, в ESXi – ens160 или ens192).
+network:
+  version: 2
+  ethernets:
+    lan:
+      match:
+        name: "en*"
+      dhcp4: true
+      dhcp-identifier: mac

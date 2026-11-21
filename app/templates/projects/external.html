@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, project_tabs %}
+{% block title %}Код внешнему провайдеру · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}projects{% endblock %}
+{% block subnav %}{{ project_tabs(project, counts.total, review_stats.sca, "overview", counts.defects) }}{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Код внешнему провайдеру</span>{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Предпросмотр и отметка</p>
+    <h1>Отметка «код не секретный»</h1>
+    <p class="page-sub">Ниже – ровно то, что уйдёт внешнему провайдеру по каждой находке SAST: инструкции модели и сообщение с описанием находки и срезом кода, с тем же маскированием, что в прогоне. Отметка только разрешает выбрать внешний профиль профилем модели проекта; код уходит прогоном, вопросом или пересмотром на таком профиле, и каждое обращение оплачивается у провайдера.</p>
+  </div>
+</div>
+
+{% if not external_on %}
+<div class="callout callout-warn"><p>Отправка в интернет в этой установке выключена (переменная LLM_EXTERNAL): отметку поставить нельзя, код никуда не уйдёт.</p></div>
+{% endif %}
+
+<section class="panel" aria-labelledby="whereto-title">
+  <h2 id="whereto-title">Куда может уйти</h2>
+  {% if externals %}
+  <dl class="terms">
+    {% for p in externals %}<dt>{{ p.name }}</dt><dd><span class="mono">{{ p.base_url }}</span>{% if p.default_model %} · модель по умолчанию <span class="mono">{{ p.default_model }}</span>{% endif %}</dd>{% endfor %}
+  </dl>
+  <p class="hint">Код уходит профилю, выбранному профилем модели проекта (после отметки его можно выбрать в параметрах проекта), а вопрос к модели по готовому разбору – профилю, которым этот разбор получен. Отправка идёт по https на адрес профиля; ключ профиля на страницах не показывается, а из журнала обмена вырезается заголовок авторизации.</p>
+  {% else %}
+  <p class="hint">Включённых внешних профилей пока нет – отметку можно поставить заранее, код никуда не уйдёт, пока проекту не выбран внешний профиль. Профили – в <a href="/settings/providers">«Провайдерах моделей»</a>.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="what-title">
+  <h2 id="what-title">Что уходит по каждой находке</h2>
+  <p class="hint">Описание находки из выгрузки (правило анализатора, файл и строка, заметки), срез кода вокруг строки из клона или сохранённого среза, сведения о репозитории. Название проекта, решения оператора, другие находки и остальной код репозитория не отправляются. Что раскрывается косвенно: по путям файлов и коду провайдер узнаёт устройство этой части системы.</p>
+  <p class="hint text-warn" id="masking-note"><strong>Маскирование – эвристика.</strong> Секреты и персональные данные в тексте маскируются по образцам; то, что образцам не соответствует, уйдёт как есть. Срез в прогоне может быть короче показанного, если не помещается в окно модели, – но не шире.</p>
+  {% if messages %}
+  <p class="small">Пример – первая находка очереди SAST (<span class="mono">{{ hub_id }}</span>), {{ messages|length }} {{ messages|length|plural("сообщение", "сообщения", "сообщений") }}:</p>
+  {% for m in messages %}
+  <details class="compact"{% if m.role != "system" %} open{% endif %}><summary class="compact-summary">{{ {"system": "Инструкции модели (системное сообщение)", "user": "Сообщение с находкой и срезом кода"}.get(m.role, m.role) }} – {{ m.content|length }} знаков</summary>
+  <pre class="code-block" id="external-{{ m.role }}">{{ m.content }}</pre></details>
+  {% endfor %}
+  {% else %}
+  <p class="small">{{ note }}</p>
+  {% endif %}
+</section>
+
+<form method="post" action="/projects/{{ project.id }}/external" class="panel stack-form" id="external-consent">
+  <input type="hidden" name="nonce" value="{{ nonce }}">
+  <input type="hidden" name="token" value="{{ token }}">
+  <label class="field">
+    <span class="field-label">Обоснование</span>
+    <textarea name="reason" rows="3" minlength="{{ reason_min }}" maxlength="{{ reason_max }}" required placeholder="Почему код этого проекта можно отдавать внешнему провайдеру: открытый код, демонстрационный проект, разрешение владельца системы…">{{ project.external_reason }}</textarea>
+    <span class="field-hint">От {{ reason_min }} до {{ reason_max }} знаков; сохраняется вместе с датой отметки и видно в параметрах проекта.</span>
+  </label>
+  <label class="check"><input type="checkbox" name="confirm" value="1" required id="external-confirm"{% if not external_on %} disabled{% endif %}> Я посмотрел, что уходит, и подтверждаю: код этого проекта не секретный, его можно отправлять внешнему провайдеру; обращения оплачиваются у провайдера</label>
+  <div class="actions">
+    <button type="submit" class="btn btn-primary" id="external-mark-btn"{% if not external_on or not messages %} disabled{% endif %}>{{ icon("check") }}Поставить отметку</button>
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}#params">Отмена</a>
+  </div>
+</form>
+{% endblock %}

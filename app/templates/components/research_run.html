@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, project_tabs %}
+{% block title %}Получение №{{ run.id }} · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}components{% endblock %}
+{% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">Компоненты</a><span aria-hidden="true"> / </span><span aria-current="page">Получение №{{ run.id }}</span>{% endblock %}
+{% block content %}
+<div id="research-run" data-status="/projects/{{ project.id }}/components/research/{{ run.id }}/status">
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Исследование провайдером</p>
+    <h1>Получение №{{ run.id }} <span id="run-state" class="state state-{{ run.state }}">{{ state_labels.get(run.state, run.state) }}</span></h1>
+    <p class="muted dot-list"><span>исполнитель: {{ executor }}</span><span>модель <span class="mono">{{ consent.model }}</span></span><span>{{ "поиск по источникам" if consent.search_mode != "none" else "без поиска по источникам" }}</span><span>дата среза {{ consent.cutoff_date }}</span><span>{{ selection_labels.get(consent.selection, consent.selection) }}</span></p>
+  </div>
+</div>
+<p class="callout callout-warn" id="run-reason"{% if not run.reason %} hidden{% endif %}>{{ run.reason }}</p>
+<p class="callout callout-info" id="run-live"{% if not live %} hidden{% endif %}>Сейчас: <span class="mono" data-live-ref>{{ live.input_ref if live else "" }}</span> – <span data-live-text>{{ live.text if live else "" }}</span></p>
+
+<section class="panel" aria-label="Ход получения">
+  <p id="run-progress">Строк: {{ run.rows_total }} · сохранено: <span id="n-saved">{{ run.rows_saved }}</span> · без изменений: <span id="n-unchanged">{{ run.rows_unchanged }}</span> · не получено: <span id="n-failed">{{ run.rows_failed }}</span> · результат неизвестен: <span id="n-unknown">{{ run.rows_unknown }}</span></p>
+  <p class="muted small" id="run-usage"{% if not usage %} hidden{% endif %}>Расход (по провайдеру считается у него): обращений к модели <span data-usage="sends">{{ usage.get("sends", 0) }}</span> · поиск <span data-usage="search_calls">{{ usage.get("search_calls", 0) }}</span> · страниц <span data-usage="fetch_calls">{{ usage.get("fetch_calls", 0) }}</span> · запросов OSV <span data-usage="osv_calls">{{ usage.get("osv_calls", 0) }}</span> · токенов промпта <span data-usage="prompt_tokens">{{ usage.get("prompt_tokens", 0) }}</span> (из кэша провайдера <span data-usage="cache_hit_tokens">{{ usage.get("cache_hit_tokens", 0) }}</span>) · ответа <span data-usage="completion_tokens">{{ usage.get("completion_tokens", 0) }}</span> (рассуждение <span data-usage="reasoning_tokens">{{ usage.get("reasoning_tokens", 0) }}</span>)</p>
+  <div class="actions">
+    {# все кнопки – в разметке, показ по состоянию получения: сервером при загрузке, скриптом – по опросу #}
+    <form method="post" action="/projects/{{ project.id }}/components/research/{{ run.id }}/stop" data-when="running"{% if run.state != "running" %} hidden{% endif %}><button type="submit" class="btn" id="research-stop">Остановить</button></form>
+    <form method="post" action="/projects/{{ project.id }}/components/research/{{ run.id }}/resume" data-when="paused"{% if run.state not in ("stopped", "interrupted") %} hidden{% endif %}><button type="submit" class="btn btn-primary" id="research-resume">Продолжить</button></form>
+    <form method="post" action="/projects/{{ project.id }}/components/research/{{ run.id }}/requeue" class="inline-form" id="research-requeue" data-when="leftover"{% if run.state == "running" or not (failed or unknown) %} hidden{% endif %}>
+      <input type="hidden" name="nonce" value="{{ requeue_nonce }}">
+      <input type="hidden" name="token" value="{{ requeue_token }}">
+      <span data-count="failed" hidden>{{ failed }}</span>
+      <label class="check" data-when="unknown"{% if not unknown %} hidden{% endif %}><input type="checkbox" name="include_unknown" value="1" id="include-unknown"{% if unknown and not failed %} checked{% endif %}> включая строки с неизвестным результатом (<span data-count="unknown">{{ unknown }}</span>) – запрос по ним мог быть оплачен</label>
+      <button type="submit" class="btn" id="research-requeue-button"{% if not (failed or unknown) %} disabled{% endif %}>Доисследовать оставшиеся (<span data-count="leftover">{{ failed + (unknown if (unknown and not failed) else 0) }}</span>)</button>
+    </form>
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}/components">К компонентам</a>
+  </div>
+  <p class="hint">«Продолжить» идёт по тому же согласию с сохранёнными датой среза и текстом инструкций. «Доисследовать оставшиеся» – новое получение по тем же инструкциям только на не получившиеся строки; строка, по которой обращение ушло без ответа, берётся лишь по отметке. Это получение остаётся в истории.</p>
+</section>
+
+<section class="panel" aria-labelledby="rows-title">
+  <h2 id="rows-title">Строки</h2>
+  <div class="table-wrap">
+  <table class="table table-compact" id="research-rows">
+    <thead><tr><th scope="col">Компонент</th><th scope="col">Состояние</th><th scope="col" class="num">Ревизия</th><th scope="col" class="num">Шагов</th><th scope="col">Причина</th></tr></thead>
+    <tbody>{% for r in rows %}<tr data-ref="{{ r.input_ref }}">
+      <td data-label="Компонент"><a class="mono break" href="/projects/{{ project.id }}/components/{{ r.input_ref }}">{{ r.name }}</a></td>
+      <td data-label="Состояние"><span class="badge badge-{{ {'saved': 'ok', 'unchanged': 'muted', 'failed': 'err', 'unknown': 'warn', 'sending': 'info', 'queued': 'muted'}.get(r.state, 'muted') }}" data-state>{{ row_labels.get(r.state, r.state) }}</span>{% if r.later_saved %} <span class="badge badge-muted" data-later-saved title="строка сохранена более поздним получением; в доисследование не идёт">исследована позже</span>{% endif %}</td>
+      <td data-label="Ревизия" class="num" data-revision>{{ r.revision or "–" }}</td>
+      <td data-label="Шагов" class="num" data-tools title="{{ r.tools_text }}">{{ r.tools|length }}</td>
+      <td data-label="Причина" class="small" data-reason>{{ r.reason }}</td>
+    </tr>{% endfor %}</tbody>
+  </table>
+  </div>
+</section>
+</div>
+{% endblock %}

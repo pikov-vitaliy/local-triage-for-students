@@ -1,0 +1,14 @@
+[Unit]
+Description=Local triage demo: load images and restore the demo database on first boot, update allowed host names, start containers
+Wants=network-online.target
+Requires=docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/local-triage/bin/start.sh boot
+RemainAfterExit=yes
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

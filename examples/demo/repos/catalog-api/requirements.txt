@@ -1,0 +1,3 @@
+demo-yaml-lib==5.1.0
+demo-http-client==1.0.2
+example-graph-lib==3.0.0

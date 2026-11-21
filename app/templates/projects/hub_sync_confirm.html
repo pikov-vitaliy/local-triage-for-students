@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Подтверждение синхронизации{% endblock %}
+{% block content %}
+<h1>{{ "Продолжить чтение" if run else "Синхронизировать с Hub" }}</h1>
+<p>Проект: {{ project.name }}. Hub: {{ target.hub_url or "не настроен" }}. Приложение: {{ target.app_id or "не настроено" }}.</p>
+<p>Будут прочитаны находки и дефекты в области Hub по умолчанию: страницы, текущие статусы, основания решений, принятые риски и состав дефектов. Известные ID, отсутствующие в списках, будут проверены отдельно.</p>
+<p>Ветки: как в Hub по умолчанию. Полнота страниц проверяется во время чтения; при урезании страницы список перечитывается с меньшим шагом. Итог содержит проверенные количества, встретившиеся ветки и исключения.</p>
+<p>Синхронизация сохраняет ответы и показывает расхождения. Записей в Hub нет. Принятые решения и черновики сохраняются. После чтения кнопка «Принять состояние Hub» с подтверждением заносит прочитанное в приложение: отсутствующие дефекты, их состав, статусы и решения находок. Hub при этом не меняется.</p>
+<p id="hub-sync-app-check-note">Когда прочитан список находок, номер приложения сверяется с выгрузкой проекта: если общих находок нет, чтение останавливается до дефектов и подробностей.{% if app_confirmed %} <strong id="hub-sync-app-confirmed">Номер приложения {{ target.app_id }} подтверждён вами: при расхождении чтение не остановится.</strong>{% endif %}</p>
+{% include "projects/hub_sync_worker.html" %}
+<p>Число запросов уточняется по мере чтения списков и подробностей.</p>
+{% if existing %}
+<section class="panel" id="hub-sync-previous">
+<h2>{{ "Есть завершённый прогон" if previous_data.finished_at else "Есть сохранённый прогон" }}</h2>
+<p>{{ states[existing.state] }}. Hub: {{ existing.hub_url }}. Приложение: {{ existing.app_id }}.</p>
+<p>Чтение: {{ previous_data.started_at|ts }}{% if previous_data.finished_at %} – {{ previous_data.finished_at|ts }}{% endif %}.</p>
+{% if previous_data.comparison_complete %}
+<p>Результат: {% if previous_data.matches_snapshot %}принятая база совпала с прочитанными данными Hub{% else %}{% for group, count in previous_data.groups.items() %}{{ labels[group] }}: {{ count }}{{ "; " if not loop.last }}{% endfor %}{% endif %}.</p>
+{% else %}<p>Сравнение не завершено. {{ previous_data.error }}</p>{% endif %}
+<p><a href="/projects/{{ project.id }}/hub-sync/{{ existing.id }}">Открыть сохранённый результат</a>. Это история чтения, новые запросы при её просмотре не выполняются.</p>
+<p>{% if can_start %}Подтверждение ниже закроет прежний прогон, сохранит его результат и начнёт новое чтение указанного выше Hub и приложения.{% else %}Чтение ещё идёт. Дождитесь завершения либо остановите его на странице запуска, затем вернитесь к подтверждению нового чтения.{% endif %}</p>
+</section>
+{% endif %}
+{% if remaining is defined %}<h2>Оставшиеся и повторяемые запросы ({{ remaining|length }})</h2><ul>{% for path in remaining %}<li><code>GET {{ path }}</code></li>{% endfor %}</ul>{% endif %}
+{% if error %}<p role="alert" class="text-warn">{{ error }}</p>{% endif %}
+{% if run or can_start %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ (run.id|string + '/continue') if run else 'start' }}">
+  <input type="hidden" name="confirmation" value="{{ confirmation }}">
+  {% if app_confirmed and not run %}<input type="hidden" name="app_confirmed" value="yes">{% endif %}
+  <button type="submit" class="btn" name="confirm" value="yes" id="hub-sync-confirm">{{ "Подтвердить продолжение" if run else "Начать новое чтение" if existing else "Подтвердить чтение" }}</button>
+  <a class="btn btn-ghost" href="/projects/{{ project.id }}/defects">Отменить</a>
+</form>{% else %}<a class="btn btn-ghost" href="/projects/{{ project.id }}/defects">Отменить</a>{% endif %}
+{% endblock %}

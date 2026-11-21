@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Удаление проекта · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}delete{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Удаление</span>{% endblock %}
+{% block content %}
+<h1>Удалить проект «{{ project.name }}»?</h1>
+<section class="panel" aria-label="Что удалится">
+  <p>Удалятся без возможности вернуть:</p>
+  <ul>
+    <li>находки из загруженных выгрузок – {{ counts.total + counts.missing }}{% if counts.missing %}, из них нет в новой выгрузке – {{ counts.missing }}{% endif %};</li>
+    <li>решения по находкам: проверено – {{ stats.reviewed + stats.sca_reviewed }}, отмечено «Внесено в Hub» – {{ stats.entered + stats.sca_entered }};</li>
+    <li>срезы кода находок SAST, сохранённые в базе приложения{% if snapshots_count %}, – {{ snapshots_count }}{% endif %}: из базы они удаляются; маскированный код, отправленный модели, остаётся в файлах журнала обмена с моделью (<span class="mono">model-traffic</span>) – их удаляют вручную;</li>
+    <li>загрузки выгрузок – {{ imports_count }}, прогоны модели – {{ runs_count }}, вопросы к модели и ответы по компонентам SCA.</li>
+  </ul>
+  <p class="hint">Файлы выгрузок и клоны на диске не меняются: приложение их только читает. Статусы и комментарии, уже внесённые в AppSec.Hub, остаются в Hub. Если проект ещё понадобится, уберите его в архив – данные сохранятся.</p>
+  {% if running %}<p class="callout callout-warn">У проекта идёт прогон. Остановите его на <a href="/projects/{{ project.id }}#step3">странице проекта</a> и дождитесь окончания текущей находки.</p>{% endif %}
+  <div class="actions">
+    <form method="post" action="/projects/{{ project.id }}/delete">
+      <input type="hidden" name="confirm" value="yes">
+      <button type="submit" class="btn btn-danger"{% if running %} disabled{% endif %}>Удалить навсегда</button>
+    </form>
+    {% if not project.archived %}
+    <form method="post" action="/projects/{{ project.id }}/archive">
+      <input type="hidden" name="action" value="archive">
+      <button type="submit" class="btn">Убрать в архив</button>
+    </form>
+    {% endif %}
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}">Отмена</a>
+  </div>
+</section>
+{% endblock %}

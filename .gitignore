@@ -1,0 +1,53 @@
+# Данные приложения и локальные настройки
+data/
+backups/
+data-dev/
+.env
+.env.*
+!.env.example
+
+# Выгрузки, клоны и рабочие данные в репозиторий не кладутся
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+*.tsv
+# Кроме демо: выдуманная выгрузка нужна, чтобы всё воспроизвести без настоящих данных
+!examples/demo/demo-hub-report.xlsx
+!examples/demo/demo-hub-report-v2.xlsx
+*.db
+*.db-wal
+*.db-shm
+mask.key
+# Пакет и ответы SCA из интерфейса (список библиотек проекта); пример ответа в examples/demo остаётся
+*.zip
+/sca-answer-template*.json
+/sca-answers*.json
+/repos/
+instance.lock
+
+# Окружение и служебные файлы Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Архивы образа
+dist/
+*.tar
+*.tar.sha256
+
+# Служебные файлы Windows и редакторов
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Замер моделей: набор, ключ маскирования стенда, журналы и итоги (scripts/bench)
+/results/
+
+# Пакет npm учебного стенда: зависимости, собранные .tgz, папка сборки
+node_modules/
+*.tgz
+/npm-build/

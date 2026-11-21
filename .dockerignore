@@ -1,0 +1,35 @@
+# В образ попадают только requirements.lock, app/ и демо-выгрузка examples/demo/demo-hub-report.xlsx
+.git
+.gitignore
+.venv
+.env
+.env.*
+data
+backups
+dist
+docs
+examples
+scripts
+tests
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+*.xlsx
+*.csv
+*.tar
+*.ps1
+*.md
+docker-compose*.yml
+Dockerfile
+# Кроме демо-выгрузки: кнопка «Создать демо-проект» найдёт её в образе, даже если папки приложения нет в корне
+# папок с репозиториями
+!examples/demo/demo-hub-report.xlsx
+
+# Пакет npm учебного стенда в образ не входит
+npm
+node_modules
+package.json
+npm-shrinkwrap.json
+npm-build
+*.tgz

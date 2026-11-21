@@ -1,0 +1,6 @@
+{% if upd %}
+{% for action, label, available in [('update', 'Push в Hub', upd.can_prepare), ('update-verify', 'Сверить', upd.can_verify), ('update-reread', 'Повторить чтение', upd.can_reread)] %}
+{% if available %}<form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/{{ action }}" class="inline-form" id="hub-{{ action }}-form-{{ row.id }}"><button class="btn btn-ghost btn-small" id="hub-{{ action }}-{{ row.id }}" type="submit">{{ label }}</button></form>{% endif %}
+{% endfor %}
+{% if upd.preview %}<a class="small" href="#hub-update-preview-{{ row.id }}">предпросмотр обновления ниже</a>{% endif %}
+{% endif %}

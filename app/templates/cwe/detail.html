@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, ext_link, catalog_link with context %}
+{% block title %}{{ record.id }} · Справочник CWE · Локальный триаж{% endblock %}
+{% block page %}cwe{% endblock %}
+{% block crumbs %}<a href="{{ work_link('/') }}">Проекты</a><span aria-hidden="true"> / </span><a href="{{ work_link('/cwe') }}">Справочник CWE</a><span aria-hidden="true"> / </span><span aria-current="page">{{ record.id }}</span>{% endblock %}
+{% block content %}
+{% set r = record %}
+{% set platform_kinds = ["Language", "Technology", "Operating_System", "Architecture"] %}
+{% set link_order = ["ChildOf", "ParentOf", "MemberOf", "HasMember", "CanPrecede", "CanFollow", "PeerOf", "CanAlsoBe", "StartsWith", "Requires", "RequiredBy"] %}
+
+<div class="page-head">
+  <div>
+    <h1><span class="mono">{{ r.id }}</span> <span class="break">{{ r.name }}</span></h1>
+    <p class="page-sub">{% if name_ru %}{{ name_ru }} <span class="muted small">(название по БДУ ФСТЭК России)</span>{% else %}Каталог CWE MITRE, содержимое – как в источнике.{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-ghost" href="{{ work_link('/cwe?q=' ~ (r.id)) }}">{{ icon("list") }}Все классы</a>
+    <a class="btn btn-ghost" href="{{ work_link('/feeds#feed-cwe') }}">{{ icon("book") }}Справочники</a>
+  </div>
+</div>
+
+{% if old %}
+<p class="callout callout-info" id="cwe-old" role="status">{{ icon("info") }}Эта запись сохранена прежней версией приложения: показан только тот текст, который был в ней. Перезагрузите каталог CWE на странице «Справочники», чтобы увидеть полную запись.</p>
+{% endif %}
+
+<section class="panel" aria-labelledby="cwe-about-title">
+  <div class="panel-head"><h2 id="cwe-about-title">{{ "Category" if r.kind == "category" else "Weakness" }}</h2></div>
+  {% if not old %}
+  <dl class="facts">
+    <div><dt>Record Type</dt><dd>{{ "Category" if r.kind == "category" else "Weakness" }}</dd></div>
+    {% if r.abstraction %}<div><dt>Abstraction</dt><dd>{{ r.abstraction }}</dd></div>{% endif %}
+    {% if r.structure %}<div><dt>Structure</dt><dd>{{ r.structure }}</dd></div>{% endif %}
+    {% if r.status %}<div><dt>Status</dt><dd>{{ r.status }}</dd></div>{% endif %}
+    {% if meta.version %}<div><dt>Версия каталога</dt><dd>{{ meta.version }}{% if meta.source_date %} от {{ meta.source_date }}{% endif %}</dd></div>{% endif %}
+    <div><dt>Загружен</dt><dd><time datetime="{{ meta.loaded_at }}">{{ meta.loaded_at|ts }}</time></dd></div>
+  </dl>
+  {% endif %}
+
+  {% if r.description %}<h3>Description</h3><p class="prose">{{ r.description }}</p>{% endif %}
+  {% if r.extended %}<h3>Extended Description</h3>{% for p in r.extended %}<p class="prose">{{ p }}</p>{% endfor %}{% endif %}
+  {% if r.background %}<h3>Background Details</h3>{% for p in r.background %}<p class="prose">{{ p }}</p>{% endfor %}{% endif %}
+  {% if r.alt_terms %}<h3>Alternate Terms</h3>
+    <ul class="dot-list">{% for t in r.alt_terms %}<li>{% if t.term %}{{ t.term }}{% if t.description %} – {{ t.description }}{% endif %}{% else %}{{ t.description }}{% endif %}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if r.ordinalities %}<h3>Weakness Ordinalities</h3><p class="small">{{ r.ordinalities|join(", ") }}</p>{% endif %}
+  {% if r.functional_areas %}<h3>Functional Areas</h3><p class="small">{{ r.functional_areas|join(", ") }}</p>{% endif %}
+  {% if r.affected_resources %}<h3>Affected Resources</h3><p class="small">{{ r.affected_resources|join(", ") }}</p>{% endif %}
+</section>
+
+{% if not old and links %}
+<section class="panel" aria-labelledby="cwe-links-title">
+  <div class="panel-head"><h2 id="cwe-links-title">Relationships</h2><div class="panel-actions"><span class="muted small">Переходы – внутри приложения, без интернета</span></div></div>
+  <div class="grid-2">
+    {% for rel in link_order + (links.keys()|reject("in", link_order)|list) %}
+    {% if links.get(rel) %}
+    <div class="cwe-links">
+      <h3>{{ rel }}</h3>
+      <ul class="cwe-link-list">{% for other in links[rel] %}<li>{{ catalog_link('cwe', other) }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not old and (r.platforms or r.modes or r.likelihood) %}
+<section class="panel" aria-labelledby="cwe-where-title">
+  <div class="panel-head"><h2 id="cwe-where-title">Applicable Platforms and Modes Of Introduction</h2></div>
+  {% if r.platforms %}<h3>Applicable Platforms</h3>
+    {% for kind in platform_kinds %}
+    {% set rows = r.platforms|selectattr("kind", "equalto", kind)|list %}
+    {% if rows %}
+    <p class="section-title">{{ kind|replace('_', ' ') }}</p>
+    <ul class="dot-list">{% for p in rows %}<li>{% if p.class %}{{ p.class }}{% if p.name %} ({{ p.name }}){% endif %}{% elif p.name %}{{ p.name }}{% endif %}{% if p.prevalence %} <span class="muted small">{{ p.prevalence }}</span>{% endif %}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endfor %}
+    {% set others = r.platforms|rejectattr("kind", "in", platform_kinds)|list %}
+    {% if others %}<p class="section-title">Прочее</p><ul class="dot-list">{% for p in others %}<li>{{ p.class or p.name }}</li>{% endfor %}</ul>{% endif %}
+  {% endif %}
+  {% if r.modes %}<h3>Modes Of Introduction</h3>
+    <ul class="dot-list">{% for m in r.modes %}<li>{{ m.phase }}{% if m.note %} – {{ m.note }}{% endif %}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if r.likelihood %}<h3>Likelihood Of Exploit</h3><p class="prose">{{ r.likelihood }}</p>{% endif %}
+</section>
+{% endif %}
+
+{% if not old and r.consequences %}
+<section class="panel" aria-labelledby="cwe-harms-title">
+  <div class="panel-head"><h2 id="cwe-harms-title">Common Consequences</h2></div>
+  <div class="table-wrap">
+    <table class="table table-compact">
+      <thead><tr><th scope="col">Scope</th><th scope="col">Impact</th><th scope="col">Likelihood</th><th scope="col">Note</th></tr></thead>
+      <tbody>
+      {% for c in r.consequences %}
+        <tr>
+          <td data-label="Scope">{{ c.scope|join(", ") or "–" }}</td>
+          <td data-label="Impact">{{ c.impact|join(", ") or "–" }}</td>
+          <td data-label="Likelihood">{{ c.likelihood or "–" }}</td>
+          <td data-label="Note">{{ c.note or "–" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if not old and (r.detection or r.mitigations) %}
+<section class="panel" aria-labelledby="cwe-fix-title">
+  <div class="panel-head"><h2 id="cwe-fix-title">Detection Methods and Potential Mitigations</h2></div>
+  <div class="grid-2">
+    {% if r.detection %}<div><h3>Detection Methods</h3>
+      <ul class="item-list">{% for d in r.detection %}
+        <li class="item"><div class="item-main">
+          <p class="item-title">{{ d.method or "метод не указан" }}</p>
+          {% for p in d.description %}<p class="small">{{ p }}</p>{% endfor %}
+          {% if d.effectiveness or d.effectiveness_notes %}<p class="item-meta">Effectiveness: {{ d.effectiveness or "не указана" }}{% if d.effectiveness_notes %} · {{ d.effectiveness_notes }}{% endif %}</p>{% endif %}
+        </div></li>
+      {% endfor %}</ul>
+    </div>{% endif %}
+    {% if r.mitigations %}<div><h3>Potential Mitigations</h3>
+      <ul class="item-list">{% for m in r.mitigations %}
+        <li class="item"><div class="item-main">
+          <p class="item-title">{{ m.phases|join(", ") or "Этап не указан" }}{% if m.strategy %} · {{ m.strategy }}{% endif %}</p>
+          {% for p in m.description %}<p class="small">{{ p }}</p>{% endfor %}
+          {% if m.effectiveness or m.effectiveness_notes %}<p class="item-meta">Effectiveness: {{ m.effectiveness or "не указана" }}{% if m.effectiveness_notes %} · {{ m.effectiveness_notes }}{% endif %}</p>{% endif %}
+        </div></li>
+      {% endfor %}</ul>
+    </div>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if not old and r.examples %}
+<section class="panel" aria-labelledby="cwe-examples-title">
+  <div class="panel-head"><h2 id="cwe-examples-title">Demonstrative Examples</h2><div class="panel-actions"><span class="muted small">Код из каталога, как в источнике</span></div></div>
+  {% for ex in r.examples %}
+  <div class="cwe-example">
+    {% for p in ex.intro %}<p class="prose">{{ p }}</p>{% endfor %}
+    {% for block in ex.blocks %}
+      {% if block.kind == "code" %}
+      {% set tone = "err" if block.nature in ("Bad", "Attack") else ("ok" if block.nature == "Good" else "muted") %}
+      <figure class="cwe-code cwe-code-{{ tone }}">
+        <figcaption class="cwe-code-cap">{{ block.nature or "Example Code" }}{% if block.language %} · {{ block.language }}{% endif %}</figcaption>
+        <pre class="pre-block"><code>{{ block.code|code_text }}</code></pre>
+      </figure>
+      {% else %}
+      {% for p in block.paragraphs %}<p class="prose">{{ p }}</p>{% endfor %}
+      {% endif %}
+    {% endfor %}
+    {% if ex.refs %}<p class="small muted">Источники примера: {% for ref in ex.refs %}<span class="mono">{{ ref.ref_id }}</span>{% if ref.source.title %} – {{ ref.source.title }}{% endif %}{% if ref.section %} ({{ ref.section }}){% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</p>{% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if not old and r.observed %}
+<section class="panel" aria-labelledby="cwe-observed-title">
+  <div class="panel-head"><h2 id="cwe-observed-title">Observed Examples</h2></div>
+  <ul class="item-list" id="cwe-observed">
+  {% for o in r.observed %}
+    <li class="item"><div class="item-main">
+      <p class="item-title mono">{% if bdu.get(o.reference) %}<a href="{{ work_link('/bdu/' ~ (o.reference)) }}">{{ o.reference }}</a>{% else %}{{ o.reference or "без идентификатора" }}{% endif %}</p>
+      {% if o.description %}<p class="small">{{ o.description }}</p>{% endif %}
+      {% set url = o.link|norm_link %}{% if url %}<p class="item-meta">{{ ext_link(url) }}</p>{% endif %}
+    </div></li>
+  {% endfor %}
+  </ul>
+  <p class="hint">Номер CVE открывает запись БДУ ФСТЭК России внутри приложения, если она есть в загруженной выгрузке; иначе показан только текст каталога и ссылка на описание CVE.</p>
+</section>
+{% endif %}
+
+{% if not old and (r.taxonomies or r.attack_patterns) %}
+<section class="panel" aria-labelledby="cwe-maps-title">
+  <div class="panel-head"><h2 id="cwe-maps-title">Taxonomy Mappings</h2></div>
+  {% if r.taxonomies %}
+  <div class="table-wrap">
+    <table class="table table-compact">
+      <thead><tr><th scope="col">Taxonomy Name</th><th scope="col">Entry ID</th><th scope="col">Entry Name</th><th scope="col">Mapping Fit</th></tr></thead>
+      <tbody>
+      {% for t in r.taxonomies %}
+        <tr>
+          <td data-label="Taxonomy Name">{{ t.name or "–" }}</td>
+          <td data-label="Entry ID" class="mono">{{ t.entry_id or "–" }}</td>
+          <td data-label="Entry Name">{{ t.entry_name or "–" }}</td>
+          <td data-label="Mapping Fit">{{ t.mapping_fit or "–" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% if r.attack_patterns %}<h3>Related Attack Patterns</h3><p class="mono break">{% for id in r.attack_patterns %}{{ catalog_link('capec', id, href='/capec/' ~ id ~ '?back=/cwe/' ~ r.id) }}{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+</section>
+{% endif %}
+
+{% if not old and (r.notes or r.mapping_notes) %}
+<section class="panel" aria-labelledby="cwe-notes-title">
+  <div class="panel-head"><h2 id="cwe-notes-title">Notes</h2></div>
+  {% if r.mapping_notes %}
+  <h3>Vulnerability Mapping Notes</h3>
+  <dl class="facts">
+    {% if r.mapping_notes.usage %}<div><dt>Usage</dt><dd>{{ r.mapping_notes.usage }}</dd></div>{% endif %}
+    {% if r.mapping_notes.rationale %}<div><dt>Rationale</dt><dd>{{ r.mapping_notes.rationale }}</dd></div>{% endif %}
+    {% if r.mapping_notes.comments %}<div><dt>Comments</dt><dd>{{ r.mapping_notes.comments }}</dd></div>{% endif %}
+    {% if r.mapping_notes.reasons %}<div><dt>Reasons</dt><dd>{{ r.mapping_notes.reasons|join(", ") }}</dd></div>{% endif %}
+  </dl>
+  {% endif %}
+  {% if r.notes %}<h3>Other Notes</h3>
+    <ul class="item-list">{% for n in r.notes %}<li class="item"><div class="item-main"><p class="item-title">{{ n.type or "примечание" }}</p><p class="small">{{ n.text }}</p></div></li>{% endfor %}</ul>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if r.references %}
+<section class="panel" aria-labelledby="cwe-refs-title">
+  <div class="panel-head"><h2 id="cwe-refs-title">References</h2><div class="panel-actions"><span class="muted small">Справочник ссылок каталога CWE</span></div></div>
+  <ul class="item-list" id="cwe-refs">
+  {% for ref in r.references %}
+    {% set s = ref.source or {} %}
+    <li class="item"><div class="item-main">
+      <p class="item-title">{% if s.title %}{{ s.title }}{% else %}<span class="mono">{{ ref.ref_id }}</span> – источник в выгрузке каталога отсутствует{% endif %}</p>
+      {% if s.authors %}<p class="small">{{ s.authors|join(", ") }}</p>{% endif %}
+      {% if s.publication or s.publisher %}<p class="small muted">{{ s.publication }}{% if s.publication and s.publisher %}, {% endif %}{{ s.publisher }}</p>{% endif %}
+      <p class="item-meta"><span class="mono">{{ ref.ref_id }}</span>{% if ref.section %} · {{ ref.section }}{% endif %}{% if s.date %} · {{ s.date }}{% endif %}{% if s.url %} · {{ ext_link(s.url, s.url) }}{% endif %}</p>
+    </div></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<p class="hint cwe-terms">Версия каталога CWE {{ meta.version or "неизвестна" }}{% if meta.source_date %} от {{ meta.source_date }}{% endif %}; данные MITRE CWE (© MITRE, распространяется по <a href="{{ work_link((terms_url)) }}" rel="noopener noreferrer" target="_blank">{{ icon("external") }}условиям использования CWE</a>).</p>
+{% endblock %}

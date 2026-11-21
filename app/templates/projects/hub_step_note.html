@@ -1,0 +1,5 @@
+{#- Напоминание на вкладках находок и дефектов (0.10.0.dev13): состояние Hub для текущего номера приложения ещё не
+    принято. Запрета нет – решает оператор; без номера приложения не показывается -#}
+{% if hub_step and not hub_step.done and hub_step.state != "no_target" %}
+<p class="callout callout-info" id="hub-step-note">Состояние Hub: <strong>{{ hub_step.label }}</strong>. Дефекты, уже заведённые в Hub, их состав и статусы находок приложение заносит синхронизацией – <a href="/projects/{{ project.id }}#step-hub">шаг «Состояние Hub»</a>.</p>
+{% endif %}

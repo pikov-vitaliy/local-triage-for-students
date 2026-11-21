@@ -1,0 +1,40 @@
+<fieldset{% if problem %} disabled{% endif %} id="defect-fields"><legend>Остальные поля дефекта</legend>
+<input type="hidden" name="reference_load" value="{{ form_values.get('reference_load', reference_load) }}">
+<p class="hint">«Сохранить как есть» сохраняет значение и присутствие свойства. «Удалить свойство» отличается от пустого значения. Локальное сохранение не обращается в Hub.</p>
+{% if reference_latest %}<p>Варианты из загрузки №{{ reference_latest.id }} ({{ reference_latest.closed_at | ts }}).</p>{% else %}<p>Справочники ещё не загружены. Текущие значения сохраняются; свободные поля доступны для правки.</p>{% endif %}
+{% for control in controls %}{% set key = control.key %}{% set mode = form_values.get('f_' ~ key ~ '_mode', 'keep') %}
+<fieldset class="defect-field" data-defect-field="{{ key }}"><legend>{{ control.label }} · {{ key }}{% if control.changed %} · локальная правка{% endif %}</legend>
+  <p class="small">Черновик: {% if control.observed %}<code>{{ control.observed | tojson }}</code>{% else %}свойство отсутствует{% endif %}</p>
+  {% if control.reference %}<p class="small">Источник выбора: загрузка №{{ control.reference.load_id }}, {{ control.reference.at | ts }}.</p>{% endif %}
+  {% if control.hint %}<p class="hint">{{ control.hint }}</p>{% endif %}
+  <label class="field">Действие с полем {{ key }}<select name="f_{{ key }}_mode" id="f-{{ key }}-mode">
+    <option value="keep"{% if mode == 'keep' %} selected{% endif %}>Сохранить как есть</option>
+    {% if key != 'severity' and (key not in ['priority', 'structureUnitId', 'releaseObject'] or control.options) %}<option value="set"{% if mode == 'set' %} selected{% endif %}>Установить значение</option>{% endif %}
+    {% if not control.required %}<option value="remove"{% if mode == 'remove' %} selected{% endif %}>Удалить свойство</option>{% endif %}
+  </select></label>
+  {% if key in ['source', 'tool', 'stage', 'type', 'dueDate'] %}
+  <label class="field">{% if key == 'dueDate' %}Точная строка даты и времени с зоной{% else %}Значение {{ key }}{% endif %}<input name="f_{{ key }}_value" id="f-{{ key }}-value" value="{{ form_values.get('f_' ~ key ~ '_value', control.value if control.value is string else '') }}"{% if key == 'dueDate' %} placeholder="2026-11-10T18:00:00+01:00"{% endif %}></label>
+  {% elif key == 'isActive' %}<label class="field">Значение isActive<select name="f_isActive_value"><option value="true"{% if form_values.get('f_isActive_value', 'true' if control.value == true else 'false') == 'true' %} selected{% endif %}>true</option><option value="false"{% if form_values.get('f_isActive_value', 'true' if control.value == true else 'false') == 'false' %} selected{% endif %}>false</option></select></label>
+  {% elif key in ['priority', 'structureUnitId', 'releaseObject'] and control.options %}
+  <label class="field">Новый вариант {{ key }}<select name="f_{{ key }}_value">
+  {% for option in control.options %}{% set v = option if key == 'priority' else loop.index0 | string %}<option value="{{ v }}"{% if form_values.get('f_' ~ key ~ '_value') == v %} selected{% endif %}>{{ option if key == 'priority' else option | tojson }}</option>{% endfor %}
+  </select></label>
+  {% elif key == 'settings' %}
+    {% for prop in ['isInheritedFPStatusFromDefect', 'isInheritedARStatusFromDefect'] %}<label class="field">{{ prop }}<select name="setting_{{ prop }}">
+      {% for action, text in [('keep', 'Сохранить как есть'), ('true', 'true'), ('false', 'false'), ('remove', 'Свойство отсутствует')] %}<option value="{{ action }}"{% if form_values.get('setting_' ~ prop, 'keep') == action %} selected{% endif %}>{{ text }}</option>{% endfor %}
+    </select></label>{% endfor %}
+  {% elif key == 'externalBugs' %}
+    <p class="hint">Порядок строк сохраняется. Установить значение без строк означает пустой массив [].</p>
+    <div id="external-bugs" data-next-index="{{ (control.value | length) if control.value is sequence and control.value is not string else 0 }}">
+    {% set bugs = control.value if control.value is sequence and control.value is not string and control.value is not mapping else [] %}
+    {% set order = bug_order if bug_order is defined else range(bugs | length) %}
+    {% for index in order %}{% set i = index | int %}{% set item = bugs[i] if i < bugs | length and bugs[i] is mapping else {} %}
+      <fieldset class="external-bug" data-bug-index="{{ index }}"><legend>Внешний дефект</legend><input type="hidden" name="bug_order" value="{{ index }}">
+      {% for prop in ['product', 'displayName', 'link'] %}{% set prefix = 'bug_' ~ index ~ '_' ~ prop %}<label class="field">{{ prop }}<input name="{{ prefix }}_value" value="{{ form_values.get(prefix ~ '_value', item.get(prop, '') if item.get(prop, '') is string else '') }}"></label>
+      <label class="field">Присутствие {{ prop }}<select name="{{ prefix }}_mode">{% for action, text in [('keep', 'Сохранить как есть'), ('set', 'Установить строку'), ('remove', 'Свойство отсутствует')] %}<option value="{{ action }}"{% if form_values.get(prefix ~ '_mode', 'keep') == action %} selected{% endif %}>{{ text }}</option>{% endfor %}</select></label>{% endfor %}
+      <div class="actions"><button type="button" class="btn" data-bug-action="up">Выше</button><button type="button" class="btn" data-bug-action="down">Ниже</button><button type="button" class="btn" data-bug-action="remove">Удалить строку</button></div></fieldset>
+    {% endfor %}</div><button type="button" class="btn" id="add-external-bug">Добавить внешний дефект</button>
+  {% endif %}
+</fieldset>
+{% endfor %}
+</fieldset>

@@ -1,0 +1,106 @@
+# «Локальный триаж»: интерфейс на http://127.0.0.1:8765 – порт открыт только на этом компьютере.
+# Значения переменных берутся из .env рядом с этим файлом (образец – .env.example).
+# Видеокарта для метрик подключается файлом docker-compose.gpu.yml (start.ps1 делает это сам).
+name: local-triage
+
+services:
+  # Основная база (ADR-0128): данные в томе Docker, порт наружу не публикуется, приложение ходит к ней по имени сервиса.
+  # Копии – scripts/backup-db.ps1. Образ закреплён по версии и дайджесту, как базовый образ приложения
+  db:
+    image: ${TRIAGE_DB_IMAGE:-postgres:17.9-alpine@sha256:6f30057d31f5861b66f3545d4821f987aacf1dd920765f0acadea0c58ff975b1}
+    restart: unless-stopped
+    stop_grace_period: 60s
+    environment:
+      POSTGRES_DB: triage
+      POSTGRES_USER: triage
+      # Создаёт start.ps1 при первом запуске и хранит в .env (в репозиторий и диагностику не попадает)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?нет POSTGRES_PASSWORD в .env – запустите start.ps1}
+      # Байтовый порядок строк – как в прежней базе: порядок списков и страницы не меняются (ADR-0128, раздел 7)
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C --lc-ctype=C.UTF-8
+      TZ: UTC
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U triage -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    mem_limit: ${DB_MEM_LIMIT:-2g}
+    security_opt:
+      - no-new-privileges:true
+
+  triage:
+    image: ${TRIAGE_IMAGE:-local-triage:latest}
+    build:
+      context: .
+      # коммит и время сборки для плашки «Версия · коммит» внизу страниц (start.ps1 ставит их перед сборкой)
+      args:
+        BUILD_COMMIT: ${BUILD_COMMIT:-unknown}
+        BUILD_DIRTY: ${BUILD_DIRTY:-unknown}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    container_name: ${TRIAGE_CONTAINER:-local-triage}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    # Остановка: до 3 с на закрытие потоков событий и до 5 с на текущую находку – с запасом
+    stop_grace_period: 20s
+    ports:
+      - "127.0.0.1:${TRIAGE_PORT:-8765}:8765"
+    environment:
+      # Пути внутри контейнера не меняются: папки с хоста подключаются томами ниже
+      DATA_DIR: /data
+      TMP_DIR: /scratch
+      # Основная база: параметры драйвера, без склейки пароля в адрес (ADR-0128, раздел 10)
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: triage
+      PGUSER: triage
+      PGPASSWORD: ${POSTGRES_PASSWORD:?нет POSTGRES_PASSWORD в .env – запустите start.ps1}
+      # Режим обслуживания (1): чтение без фоновых обработчиков и записей – приёмка после переноса или восстановления
+      TRIAGE_MAINTENANCE: ${TRIAGE_MAINTENANCE:-0}
+      REPOS_ROOT: /repos
+      # Та же папка, как её видно на компьютере пользователя: для подсказок «куда клонировать»
+      REPOS_ROOT_HOST: ${REPOS_ROOT_HOST:-${REPOS_ROOT:-./examples/demo/repos}}
+      # "1" – подключена демо-папка приложения, "0" – другая папка; ставит start.ps1, без него пусто (бэклог 94)
+      REPOS_ROOT_IS_DEMO: ${REPOS_ROOT_IS_DEMO:-}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gpt-oss:20b}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
+      SCA_URGENT_CVSS: ${SCA_URGENT_CVSS:-9.0}
+      MODEL_NUM_CTX: ${MODEL_NUM_CTX:-16384}
+      MODEL_JSON_SCHEMA: ${MODEL_JSON_SCHEMA:-}
+      MODEL_TRAFFIC_LOG: ${MODEL_TRAFFIC_LOG:-on}
+      HUB_STATUS_MAP: ${HUB_STATUS_MAP:-}
+      TRUSTED_HOSTS: ${TRUSTED_HOSTS:-}
+      # Точный запрос OSV перед исследованием компонентов провайдером (ADR-0112): пусто – https://api.osv.dev, off – выключен
+      # для новых согласий (согласие с записанным адресом продолжает его использовать)
+      OSV_URL: ${OSV_URL:-}
+      # Внешние провайдеры моделей (ADR-0104): только LLM_EXTERNAL=1 в .env; адреса этого компьютера задаёт start.ps1 –
+      # внешний профиль не должен вести на сам компьютер
+      LLM_EXTERNAL: ${LLM_EXTERNAL:-0}
+      TRIAGE_HOST_ADDRESSES: ${TRIAGE_HOST_ADDRESSES:-}
+    volumes:
+      - ./data:/data
+      - scratch:/scratch
+      - ${REPOS_ROOT:-./examples/demo/repos}:/repos:ro
+    extra_hosts:
+      # host.docker.internal берётся из файла hosts контейнера, а не из DNS: приложение принимает только этот адрес
+      - "host.docker.internal:host-gateway"
+    read_only: true
+    # В /tmp – буфер загрузки (python-multipart) до разбора: размер – не меньше MAX_UPLOAD_MB с запасом (TMP_SIZE
+    # в .env). Копия выгрузки для разбора лежит в томе /scratch и удаляется после разбора и при запуске после сбоя
+    tmpfs:
+      - /tmp:size=${TMP_SIZE:-128m},noexec,nosuid,nodev
+    # Пределы ресурсов: раздутая выгрузка или тяжёлое маскирование не должны занять память всей машины Docker
+    mem_limit: ${MEM_LIMIT:-4g}
+    pids_limit: 256
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  pgdata:
+  scratch:

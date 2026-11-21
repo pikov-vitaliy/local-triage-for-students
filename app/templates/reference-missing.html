@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "macros.html" import ext_link with context %}
+{% block title %}{{ key or kind|upper }} · Запись недоступна · Локальный триаж{% endblock %}
+{% block page %}{{ kind }}{% endblock %}
+{% block content %}
+<section class="panel" id="reference-{{ reason }}">
+  <h1>{% if reason == 'invalid' %}Некорректный номер {{ kind|upper }}{% elif reason == 'not-loaded' %}Каталог {{ kind|upper }} не загружен{% else %}{{ key }} отсутствует в загруженном каталоге{% endif %}</h1>
+  <p class="lead">{{ message }}</p>
+  {% if key %}<p>Запрошена запись <strong class="mono">{{ key }}</strong>.</p>{% else %}<p>Получено: <span class="mono">{{ requested }}</span>.</p>{% endif %}
+  {% if meta %}<dl class="facts"><div><dt>Версия каталога</dt><dd>{{ meta.version or 'Не указана в источнике' }}</dd></div><div><dt>Дата источника</dt><dd>{{ meta.source_date or 'Не указана' }}</dd></div><div><dt>Загружен</dt><dd><time datetime="{{ meta.loaded_at }}">{{ meta.loaded_at|ts }}</time></dd></div></dl>{% endif %}
+  {% if reason == 'missing' %}<p>Записи с этим ID нет в текущем загруженном файле. По этому факту нельзя заключить, что её удалил MITRE.</p><p class="callout callout-info">Отсутствие записи не означает устранение уязвимости. Исходный ID и решение по находке сохраняются.</p>{% endif %}
+  <div class="actions">{% if back_url %}<a class="btn" id="reference-back" href="{{ work_link(back_url) }}">Назад к результатам</a>{% endif %}<a class="btn" href="{{ work_link(search_url) }}">Поиск по каталогу</a><a class="btn btn-primary" href="{{ work_link('/feeds#feed-' ~ kind) }}">Загрузить каталог</a>{% if original %}{{ ext_link(original, 'Оригинал MITRE') }}{% endif %}</div>
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+[Unit]
+Description=Local triage demo: check the VM address every two minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=2min
+
+[Install]
+WantedBy=timers.target

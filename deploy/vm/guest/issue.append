@@ -1,0 +1,2 @@
+Local triage: the app listens on 127.0.0.1:8765 inside this VM. From your computer:
+  ssh -L 8765:127.0.0.1:8765 triage@\4   then open http://127.0.0.1:8765/

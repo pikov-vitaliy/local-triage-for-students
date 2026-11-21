@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Справочники дефекта{% endblock %}
+{% block content %}
+<h1>Справочники дефекта: загрузка №{{ reference.id }}</h1>
+<p>Hub: {{ reference.hub_url }} · приложение {{ reference.app_id }} · состояние: {{ reference_labels.get(reference.state, reference.state) }}</p>
+<p>Создано {{ reference.created_at | ts }}{% if reference.closed_at %}, завершено {{ reference.closed_at | ts }}{% endif %}.</p>
+<ol>{% for req in plan.requests %}<li><code>{{ req.method }} {{ req.path }}</code>, без тела.</li>{% endfor %}</ol>
+{% if reference.state == 'preview' %}
+<p>Подтверждение поставит ровно три чтения исполнителю. Повторов при ошибке нет.</p>
+<form method="post" action="/projects/{{ project.id }}/defects/{{ row.id }}/references/load"><input type="hidden" name="load_id" value="{{ reference.id }}"><input type="hidden" name="shown" value="{{ shown }}"><button class="btn btn-primary" name="action" value="confirm">Подтвердить загрузку</button> <button class="btn" name="action" value="cancel">Отменить</button></form>
+{% elif reference.state == 'loading' %}<p>Получено ответов: {{ plan.results | length }} из 3. Частичный результат не является полным справочником.</p><a class="btn" href="/projects/{{ project.id }}/defects/{{ row.id }}/references/{{ reference.id }}">Обновить локальное состояние</a>
+{% endif %}
+{% if plan.error %}<p class="text-err">{{ plan.error }}</p>{% endif %}
+{% for key, result in plan.results.items() %}<p>Операция {{ key }} · {{ result.received_at | ts }} · {% if result.error %}{{ result.error }}{% else %}ответ сохранён{% endif %}</p>{% endfor %}
+{% if plan.projection %}<details><summary>Проверенные варианты</summary><pre class="hub-text">{{ plan.projection | json_text }}</pre></details>{% endif %}
+<p><a href="/projects/{{ project.id }}/defects/{{ row.id }}">Вернуться к черновику</a></p>
+{% endblock %}

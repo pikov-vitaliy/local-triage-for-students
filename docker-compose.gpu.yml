@@ -1,0 +1,15 @@
+# Видеокарта NVIDIA в контейнере – только для метрик (nvidia-smi: память, загрузка, температура).
+# Модель работает в Ollama на хосте, не в этом контейнере, поэтому драйвер подключается только с возможностью
+# utility (NVML и nvidia-smi), без вычислительных библиотек. start.ps1 подключает файл сам, если есть nvidia-smi:
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+services:
+  triage:
+    environment:
+      NVIDIA_DRIVER_CAPABILITIES: utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]

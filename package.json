@@ -1,0 +1,20 @@
+{
+  "name": "local-triage",
+  "version": "0.10.0-dev.32",
+  "description": "Учебный стенд «Локальный триаж»: разбор срабатываний SAST и SCA в браузере, со своими Python и PostgreSQL, без Docker",
+  "private": true,
+  "license": "MIT",
+  "bin": {
+    "local-triage": "npm/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "optionalDependencies": {
+    "@embedded-postgres/darwin-arm64": "17.12.0-beta.19",
+    "@embedded-postgres/darwin-x64": "17.12.0-beta.19",
+    "@embedded-postgres/linux-arm64": "17.12.0-beta.19",
+    "@embedded-postgres/linux-x64": "17.12.0-beta.19",
+    "@embedded-postgres/windows-x64": "17.12.0-beta.19"
+  }
+}

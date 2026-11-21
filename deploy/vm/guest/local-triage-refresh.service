@@ -1,0 +1,8 @@
+[Unit]
+Description=Local triage demo: follow the VM address (allowed host names of the web interface)
+Requires=docker.service
+After=docker.service local-triage.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/local-triage/bin/start.sh refresh

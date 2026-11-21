@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "projects/_identity_summary.html" import identity_summary %}
+{% block title %}Смена адреса Hub · Локальный триаж{% endblock %}
+{% block page %}settings{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a href="/settings">Настройки</a><span aria-hidden="true"> / </span><span aria-current="page">Смена адреса Hub</span>{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Подтверждение</p>
+    <h1>Смена адреса Hub</h1>
+    <p class="page-sub">Адрес Hub: <span class="mono">{{ old_url or "не указан" }}</span> → <span class="mono">{{ new_url or "не указан" }}</span>. Остальные настройки уже сохранены. Сведения о библиотеках и решения из Hub относятся к прежнему адресу: при смене они сбрасываются во всех проектах, а новое состояние заносится синхронизацией («Синхронизировать с Hub», затем «Принять состояние Hub»). Запросов к Hub эта смена не делает.</p>
+  </div>
+</div>
+{% if error %}<div class="callout callout-warn" role="alert" id="hub-url-error"><p>{{ error }}</p></div>{% endif %}
+<section class="panel" aria-labelledby="hub-url-change-title">
+  <h2 id="hub-url-change-title">Что изменится</h2>
+  <div class="table-wrap"><table class="table" id="hub-url-summary">
+    <thead><tr><th scope="col">Проект</th><th scope="col">Сведения Hub о библиотеках сбрасываются</th><th scope="col">Решения из Hub уходят в историю</th><th scope="col">Находок с другим пакетом</th><th scope="col">Перенесено / в архив</th><th scope="col">Мест в наборах выбрать заново</th></tr></thead>
+    <tbody>
+    {% for row in rows %}<tr><td>{{ row.name }}</td><td>{{ row.summary.identity_cleared or 0 }}</td><td>{{ row.summary.hub_decisions_withdrawn or 0 }}</td><td>{{ row.summary.findings or 0 }}</td><td>{% for e in row.entities %}{{ e.label }}: {{ e.moved }} / {{ e.archived }}{% if not loop.last %}; {% endif %}{% else %}–{% endfor %}</td><td>{{ row.summary.pending_total or 0 }}</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% for row in rows %}<h3>{{ row.name }}</h3>{{ identity_summary(row.summary, row.entities, "hub-url-project-" ~ loop.index, table_labels) }}{% endfor %}
+  <form method="post" action="/settings/hub-url" class="actions">
+    <input type="hidden" name="url" value="{{ new_url }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <button class="btn btn-primary" type="submit" id="hub-url-apply">Сменить адрес Hub</button>
+    <a class="btn" href="/settings">Отмена</a>
+  </form>
+</section>
+{% endblock %}

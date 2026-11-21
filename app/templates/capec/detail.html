@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "macros.html" import ext_link, catalog_link with context %}
+{% macro node(n) %}
+<div class="capec-node">
+{% if n.tag not in ('p','div','span','b','i','br','ul','li') %}<strong>{{ n.tag|replace('_',' ') }}</strong>{% endif %}
+{% for key,value in n.attrs.items() %}{% if key in ('CAPEC_ID','Exclude_ID') %}{{ catalog_link('capec', 'CAPEC-' ~ value) }}{% elif key=='CWE_ID' %}{{ catalog_link('cwe', 'CWE-' ~ value) }}{% else %}<span class="small muted">{{ key }}: {{ value }}</span>{% endif %} {% endfor %}
+{% if n.text.strip() %}<p class="prose">{{ n.text }}</p>{% endif %}
+{% for child in n.children %}{{ node(child) }}{% endfor %}{% if n.tail.strip() %}<p class="prose">{{ n.tail }}</p>{% endif %}
+</div>
+{% endmacro %}
+{% block title %}{{ record.id }} · CAPEC · Локальный триаж{% endblock %}
+{% block page %}capec{% endblock %}
+{% block crumbs %}<a href="{{ work_link('/') }}">Проекты</a><span aria-hidden="true"> / </span><a href="{{ work_link('/capec') }}">Справочник CAPEC</a><span aria-hidden="true"> / </span><span aria-current="page">{{ record.id }}</span>{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ record.id }} {{ record.name }}</h1><p class="page-sub">{{ {"pattern":"Attack Pattern","category":"Category","view":"View"}.get(record.kind,record.kind) }} · {{ record.abstraction }} · {{ record.status }} · CAPEC {{ meta.version }} от {{ meta.source_date }}</p></div><div class="actions"><a class="btn" href="{{ work_link((back_url)) }}">Назад к результатам</a>{{ ext_link('https://capec.mitre.org/data/definitions/'+record.id.split('-')[-1]+'.html','Оригинал MITRE') }}</div></div>
+<p class="callout callout-info">Справочный сценарий помогает проверить предпосылки. Наличие связи с CWE не подтверждает уязвимость этой находки.</p>
+<p class="hint">Загружен: <time datetime="{{ meta.loaded_at }}">{{ meta.loaded_at|ts }}</time>. Показана запись текущего каталога.</p>
+{% if record.kind=='view' %}<p><a class="btn btn-primary" href="{{ work_link('/capec?kind=all&include_retired=1&view=' ~ (record.id)) }}">Открыть состав представления</a></p>{% endif %}
+{% if record.kind=='pattern' %}<dl class="facts facts-inline"><div><dt>Typical Severity</dt><dd>{{ record.severity or 'Не указано' }}</dd></div><div><dt>Likelihood Of Attack</dt><dd>{{ record.likelihood or 'Не указано' }}</dd></div><div><dt>Related Weaknesses</dt><dd>{% for cwe in record.cwes %}{{ catalog_link('cwe', cwe) }} {% else %}Не указано{% endfor %}</dd></div></dl>{% endif %}
+<nav class="chips" aria-label="Разделы записи">{% for s in record.sections %}<a class="chip" href="#capec-{{ loop.index }}">{{ s.tag|replace('_',' ') }}</a>{% endfor %}</nav>
+{% for section in record.sections %}<details class="panel" id="capec-{{ loop.index }}" data-remember="capec-{{ record.id }}-{{ loop.index }}"{% if section.tag in ('Description','Objective','Summary','Prerequisites','Execution_Flow','Consequences','Mitigations') %} open{% endif %}><summary>{{ section.tag|replace('_',' ') }}</summary>{{ rich(section,False) }}</details>{% endfor %}
+{% if not record.has_flow and record.kind=='pattern' %}<p class="hint">Execution Flow не указан в источнике.</p>{% endif %}
+{% if links %}<section class="panel"><h2>Связанные записи</h2><ul>{% for l in links %}<li>{{ l.rel }} · {{ catalog_link('capec', l.id, l.id ~ ' ' ~ l.name) }}</li>{% endfor %}</ul></section>{% endif %}
+<details class="panel"><summary>Источники записи</summary><ul>{% for section in record.sections if section.tag=='References' %}{% for ref in section.children %}{% set source=refs.get(ref.attrs.get('External_Reference_ID',''),{}) %}<li>{{ source.title or ref.attrs.get('External_Reference_ID','Источник отсутствует') }} {% if source.url %}{{ ext_link(source.url,'Открыть источник') }}{% endif %}{% if source.tree %}<details><summary>Полные сведения об источнике</summary>{{ rich(source.tree,False) }}</details>{% endif %}</li>{% endfor %}{% endfor %}</ul></details>
+<details class="panel"><summary>Подготовить заметку для проверки применимости</summary><p>Предпосылки взяты из источника; факты и вывод заполняет оператор.</p><textarea rows="9" readonly id="capec-check-note">{{ check_note }}</textarea><button class="btn" type="button" data-copy-target="capec-check-note">Скопировать заметку</button></details>
+<p class="hint">© MITRE CAPEC · <a href="/static/capec-license.txt" target="_blank" rel="noopener">Лицензия и условия использования</a></p>
+{% endblock %}

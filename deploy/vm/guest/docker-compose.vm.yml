@@ -1,0 +1,43 @@
+# Дополнение к docker-compose.yml для демо-ВМ: приложение на 127.0.0.1 ВМ (доступ – SSH-туннель), Ollama на процессоре – в отдельном
+# контейнере в закрытой сети Docker (без выхода наружу и без открытого порта).
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.vm.yml up -d --no-build --pull never
+# (это делает /opt/local-triage/bin/start.sh при каждой загрузке).
+# Основная база – сервис db из docker-compose.yml без изменений: том pgdata, порт наружу не публикуется. Его образ в ВМ задаёт
+# TRIAGE_DB_IMAGE в .env: docker load может не сохранить дайджест, поэтому там образ берётся по тегу, а содержимое закрепляет
+# build.sh (ссылка с дайджестом из docker-compose.yml, шаг images). Пароль создаёт start.sh при первой загрузке.
+services:
+  triage:
+    image: ${TRIAGE_IMAGE:-local-triage:0.2.0}
+    # Порт – только на 127.0.0.1 ВМ: у интерфейса нет входа по паролю, с компьютера он открывается через
+    # SSH-туннель. Публикация на адрес ВМ (TRIAGE_BIND в .env) – только с ограничением источника в цепочке
+    # DOCKER-USER (docs/vm-image.md, «Доступ к приложению»). Имена хоста – в TRUSTED_HOSTS, их обновляет start.sh
+    ports: !override
+      - "${TRIAGE_BIND:-127.0.0.1}:${TRIAGE_PORT:-8765}:8765"
+    networks:
+      - default
+      - llm
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
+  ollama:
+    image: ${OLLAMA_IMAGE:-local-triage-ollama-cpu:0.40.4}
+    container_name: local-triage-ollama
+    restart: unless-stopped
+    environment:
+      OLLAMA_KEEP_ALIVE: 24h
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    volumes:
+      - ./ollama:/root/.ollama/models
+    networks:
+      - llm
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  # internal: у сети нет выхода за пределы ВМ – модель работает без интернета
+  llm:
+    internal: true

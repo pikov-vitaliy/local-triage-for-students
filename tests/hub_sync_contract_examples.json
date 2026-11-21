@@ -1,0 +1,284 @@
+{
+  "issues": {
+    "filteredEntities": [
+      {
+        "id": 1,
+        "appId": 7,
+        "appName": "Демо",
+        "application": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "type": "SAST",
+        "source": "demo",
+        "category": "demo",
+        "severity": 1,
+        "status": "To verify",
+        "cwes": [],
+        "cveId": null,
+        "cveLink": null,
+        "tool": "demo",
+        "state": "Active",
+        "scanObject": {
+          "id": 1,
+          "name": "Демо",
+          "url": "",
+          "type": "repository"
+        },
+        "branch": "main",
+        "currentBranch": "main"
+      },
+      {
+        "id": 2,
+        "appId": 7,
+        "appName": "Демо",
+        "application": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "type": "SCA_S",
+        "source": "demo",
+        "category": "demo",
+        "severity": 1,
+        "status": "Open",
+        "cwes": [],
+        "cveId": null,
+        "cveLink": null,
+        "tool": "demo",
+        "state": "Active",
+        "scanObject": {
+          "id": 1,
+          "name": "Демо",
+          "url": "",
+          "type": "repository"
+        },
+        "branch": "main",
+        "currentBranch": "main"
+      },
+      {
+        "id": 3,
+        "appId": 7,
+        "appName": "Демо",
+        "application": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "type": "SAST",
+        "source": "demo",
+        "category": "demo",
+        "severity": 1,
+        "status": "Open",
+        "cwes": [],
+        "cveId": null,
+        "cveLink": null,
+        "tool": "demo",
+        "state": "Active",
+        "scanObject": {
+          "id": 1,
+          "name": "Демо",
+          "url": "",
+          "type": "repository"
+        },
+        "branch": "release",
+        "currentBranch": "release"
+      }
+    ],
+    "totalEntitiesCount": 3
+  },
+  "defects": {
+    "filteredEntities": [
+      {
+        "id": 1,
+        "app": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "summary": "Демо",
+        "status": "Registered",
+        "priority": {
+          "name": "Normal",
+          "rank": 2
+        },
+        "severity": {
+          "name": "Low",
+          "rank": 1
+        },
+        "source": "demo",
+        "tool": "demo",
+        "stage": "demo",
+        "externalBugs": [],
+        "isActive": true,
+        "createTs": 0,
+        "updateTs": 0,
+        "author": {
+          "id": 1,
+          "fullName": ""
+        },
+        "syncStatus": "None",
+        "structureUnit": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "releaseObject": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "linkedIssuesStatusAlert": false
+      },
+      {
+        "id": 2,
+        "app": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "summary": "Демо",
+        "status": "Registered",
+        "priority": {
+          "name": "Normal",
+          "rank": 2
+        },
+        "severity": {
+          "name": "Low",
+          "rank": 1
+        },
+        "source": "demo",
+        "tool": "demo",
+        "stage": "demo",
+        "externalBugs": [],
+        "isActive": true,
+        "createTs": 0,
+        "updateTs": 0,
+        "author": {
+          "id": 1,
+          "fullName": ""
+        },
+        "syncStatus": "None",
+        "structureUnit": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "releaseObject": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "linkedIssuesStatusAlert": false
+      },
+      {
+        "id": 3,
+        "app": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "summary": "Демо",
+        "status": "Registered",
+        "priority": {
+          "name": "Normal",
+          "rank": 2
+        },
+        "severity": {
+          "name": "Low",
+          "rank": 1
+        },
+        "source": "demo",
+        "tool": "demo",
+        "stage": "demo",
+        "externalBugs": [],
+        "isActive": true,
+        "createTs": 0,
+        "updateTs": 0,
+        "author": {
+          "id": 1,
+          "fullName": ""
+        },
+        "syncStatus": "None",
+        "structureUnit": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "releaseObject": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "linkedIssuesStatusAlert": false
+      },
+      {
+        "id": 4,
+        "app": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "summary": "Демо",
+        "status": "Registered",
+        "priority": {
+          "name": "Normal",
+          "rank": 2
+        },
+        "severity": {
+          "name": "Low",
+          "rank": 1
+        },
+        "source": "demo",
+        "tool": "demo",
+        "stage": "demo",
+        "externalBugs": [],
+        "isActive": true,
+        "createTs": 0,
+        "updateTs": 0,
+        "author": {
+          "id": 1,
+          "fullName": ""
+        },
+        "syncStatus": "None",
+        "structureUnit": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "releaseObject": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "linkedIssuesStatusAlert": false
+      },
+      {
+        "id": 5,
+        "app": {
+          "id": 7,
+          "name": "Демо"
+        },
+        "summary": "Демо",
+        "status": "Registered",
+        "priority": {
+          "name": "Normal",
+          "rank": 2
+        },
+        "severity": {
+          "name": "Low",
+          "rank": 1
+        },
+        "source": "demo",
+        "tool": "demo",
+        "stage": "demo",
+        "externalBugs": [],
+        "isActive": true,
+        "createTs": 0,
+        "updateTs": 0,
+        "author": {
+          "id": 1,
+          "fullName": ""
+        },
+        "syncStatus": "None",
+        "structureUnit": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "releaseObject": {
+          "id": 1,
+          "name": "Демо"
+        },
+        "linkedIssuesStatusAlert": false
+      }
+    ],
+    "totalEntitiesCount": 5
+  },
+  "manual": null
+}

@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+{% from "macros.html" import cwe_link, verdict_badge, test_code_badge with context %}
+{% block title %}{{ f.hub_id }} · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}finding{% endblock %}
+{% block wide %} wrap-wide{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/findings{{ ('?' ~ sel_query) if sel_query else '' }}">Находки</a><span aria-hidden="true"> / </span><span aria-current="page">{{ f.hub_id }}</span>{% endblock %}
+{% block subnav %}{% from "macros.html" import project_tabs %}{{ project_tabs(project, counts.total, review_stats.sca, "findings", counts.defects) }}{% endblock %}
+{% block content %}
+{% include 'projects/hub_accepted.html' %}
+{% include 'projects/hub_state_note.html' %}
+{% if entered_scope_note %}<p class="text-warn" id="entered-scope-note">{{ entered_scope_note }}</p>{% endif %}
+{% set sel_q = ("?" ~ sel_query) if sel_query else "" %}
+{% set card_base = "/projects/" ~ project.id ~ "/findings/" ~ row.id %}
+{#- создание дефекта из приложения доступно (Hub настроен); go_create – этот шаг ещё впереди: дефекта нет, попытка не удалась или открыт предпросмотр -#}
+{% set auto_defect = hub_defect and not hub_defect.blocker %}
+{% set go_create = auto_defect and (not hub_defect.row or hub_defect.row.state in ("failed", "preview")) %}
+<div class="card-top">
+<p class="card-back"><a class="btn btn-small" href="{{ back_url }}">← К списку находок</a></p>
+<nav class="card-nav" aria-label="Переход между непроверенными">
+  <div class="nav-side">{% if prev_id %}<a class="btn btn-ghost" id="nav-prev" href="/projects/{{ project.id }}/findings/{{ prev_id }}{{ sel_q }}">← {{ "Предыдущая в выборке" if walk_all else "Предыдущая непроверенная" }} <kbd>k</kbd></a>{% endif %}</div>
+  {% if f.kind == "SAST" and progress.total %}
+  <div class="nav-progress" id="nav-progress" data-total="{{ progress.total }}">
+    <progress id="progress-bar" max="{{ progress.total }}" value="{{ progress.reviewed }}" aria-label="Проверено находок"></progress>
+    <span id="progress-label">Проверено {{ progress.reviewed }} из {{ progress.total }} · осталось {{ progress.total - progress.reviewed }}</span>
+  </div>
+  {% endif %}
+  <div class="nav-side nav-end">{% if next_id %}<a class="btn btn-ghost" id="nav-next" href="/projects/{{ project.id }}/findings/{{ next_id }}{{ sel_q }}">{{ "Следующая в выборке" if walk_all else "Следующая непроверенная" }} <kbd>j</kbd> →</a>{% elif walk_all %}<span class="muted small">Других в выборке нет</span>{% elif f.kind == "SAST" and not (review and review.reviewed) %}<span class="muted small">Других непроверенных нет</span>{% else %}<span class="muted small">Непроверенных нет</span>{% endif %}</div>
+</nav>
+</div>
+{% if selection_labels %}<p class="selection small">В выборке: {{ selection_labels|join(" · ") }} <a class="selection-clear" href="/projects/{{ project.id }}/findings/{{ row.id }}" title="Снять выборку" aria-label="Снять выборку">×</a></p>{% endif %}
+{% if saved_row %}<p class="flash flash-ok saved-note" role="status">Сохранено: <span class="mono">{{ saved_row.hub_id }}</span> · <a href="/projects/{{ project.id }}/findings/{{ saved_row.id }}{{ sel_q }}">вернуться</a></p>{% endif %}
+
+<header class="finding-head">
+  <h1 class="finding-title"><span class="mono finding-id">{{ f.hub_id }}</span><span class="title-sep" aria-hidden="true"> · </span>{% if f.kind in ("SCA", "SCA-license") %}<span class="mono">{{ f.component }}{% if f.version %}@{{ f.version }}{% endif %}</span>{% else %}{{ f.rule|code_text if f.rule else "правило не указано" }}{% endif %}</h1>
+  <div class="finding-tags">
+    {% if f.cwe %}<span>{{ f.cwe|join(", ") }}</span>{% endif %}
+    {% if f.severity %}<span class="sev sev-{{ f.severity }}">{{ SEVERITY_LABELS.get(f.severity, f.severity) }}</span>{% endif %}
+    {% if f.cvss is not none %}<span>CVSS {{ f.cvss|num }}</span>{% endif %}
+    {% if f.policy_severity %}<span class="muted">политика Hub: {{ f.policy_severity }}</span>{% endif %}
+    {% if row.urgent %}<span class="badge badge-urgent">срочная</span>{% endif %}
+    {% if row.missing %}<span class="badge badge-warn" title="Находки нет в последней загруженной выгрузке">нет в новой выгрузке</span>{% endif %}
+    {{ test_code_badge(f.file) }}
+    <span class="badge badge-ok" id="reviewed-badge"{% if not (review and review.reviewed) %} hidden{% endif %}>✓ проверено</span>
+    <span class="badge badge-accent" id="entered-badge"{% if not entered %} hidden{% endif %}{% if entered and review and review.entered_hub_at %} title="{{ review.entered_hub_at|ts }}"{% endif %}>✓ {% if sast_outcome == "true_positive" %}дефект создан в Hub{% else %}статус и комментарий в Hub{% endif %}</span>
+    {% if hub_defect and hub_defect.bound_summary %}{% set d = hub_defect.bound_summary %}<a id="finding-defect-badge" class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="Карточка дефекта: {{ d.label }}">{{ d.word }} {{ d.text }}</a>{% endif %}
+    <button type="button" class="btn btn-small" data-copy-text="{{ f.hub_id }}">Скопировать ID</button>
+    <span class="copy-status" role="status" aria-live="polite"></span>
+  </div>
+{% if review and review.dropped_info %}{% set d = review.dropped_info %}
+<div class="callout callout-warn" id="defect-dropped">
+  <p><strong>Выбыла из дефекта{% if d.number %} ID{{ d.number }}{% endif %}{% if d.hub_defect_id %} (в Hub – дефект {{ d.hub_defect_id }}){% endif %}</strong>{% if d.at %}, <time datetime="{{ d.at }}">{{ d.at|ts }}</time>{% endif %}. {% if d.via == "confirm" %}Подтверждающее чтение Hub не нашло её в составе дефекта{% else %}В Hub её больше нет в составе дефекта{% endif %}, отметки «Внесено в Hub» по этому дефекту у неё нет.{% if d.defect_id %} <a href="/projects/{{ project.id }}/defects/{{ d.defect_id }}">Карточка дефекта</a>.{% endif %}</p>
+  <p>Решите, что с ней дальше: сохраните решение заново, включите в другой дефект или оставьте как есть.</p>
+  <form method="post" action="/projects/{{ project.id }}/findings/{{ row.id }}/defect-dropped/clear{{ sel_q }}" class="inline-form">
+    <input type="hidden" name="dropped_shown" value="{{ review.defect_dropped }}">
+    <button class="btn btn-small" id="defect-dropped-clear">Оставить как есть</button>
+  </form>
+</div>
+{% endif %}
+  <p class="finding-where small muted dot-list">
+    {% if f.codebase %}<span class="mono">{{ f.codebase }}</span>{% endif %}
+    {% if f.file %}<span class="mono break" title="{{ f.file }}">{{ f.file|code_text }}{% if f.line is not none %}:{{ f.line }}{% endif %}</span>{% endif %}
+    {% if f.location %}<span class="mono break">{{ f.location }}</span>{% endif %}
+    <span>{{ KIND_LABELS.get(f.kind, f.kind) }}{% if f.language %}, {{ f.language }}{% endif %}</span>
+    {% if f.tool %}<span>анализатор {{ f.tool }}</span>{% endif %}
+    <span id="hub-status-now">в Hub: {{ hub_status_now.status or "статус не указан" }} <span class="muted">({{ hub_status_now.source }}{% if hub_status_now.at %} от {{ hub_status_now.at|ts }}{% endif %})</span></span>
+  </p>
+</header>
+{# Наверху – главное для решения; сценарии атак у SAST – ниже кода и вердикта, среди подробностей #}
+{#- Карточка SAST – маршрут оператора: шаги 1–7, одна нумерация на странице. Текущий шаг по прокрутке и «пройдено» по
+    сохранённым данным показывает скрипт (initRoute в app.js); без скрипта – обычные ссылки на шаги. -#}
+{% if f.kind == "SAST" %}
+{% set check = ctx.export_line_check if ctx else "" %}
+{% set saved_outcome = ("later" if review.decision == "later" else (review.final_verdict if review.decision in ("agree", "disagree") and review.final_verdict in ("false_positive", "true_positive") else "")) if review else "" %}
+<nav class="route" id="route" aria-label="Маршрут разбора" data-saved-outcome="{{ saved_outcome }}">
+  <a class="route-project" href="/projects/{{ project.id }}" title="Проект: {{ project.name }}">{{ project.name }}</a>
+  {# номер находки под рукой внизу карточки (бэклог 31): щелчок копирует его #}
+  <button type="button" class="route-id mono" id="route-id" data-copy-text="{{ f.hub_id }}" data-copy-done="Номер находки {{ f.hub_id }} скопирован" title="Находка {{ f.hub_id }} – скопировать номер" aria-label="Находка {{ f.hub_id }}: скопировать номер">{{ f.hub_id }}</button>
+  <ol class="route-list">
+    <li class="route-step" data-step="1"><a class="route-link" href="#trace"><span class="route-no" aria-hidden="true">1</span>Сверка</a></li>
+    <li class="route-step" data-step="2"><a class="route-link" href="#step-2"><span class="route-no" aria-hidden="true">2</span>Вердикт</a></li>
+    <li class="route-step" data-step="3"><a class="route-link" href="#step-3"><span class="route-no" aria-hidden="true">3</span>Код</a></li>
+    <li class="route-step route-optional" data-step="4"><a class="route-link" href="#step-4"><span class="route-no" aria-hidden="true">4</span>Второе мнение<span class="route-opt"> · необязательно</span></a></li>
+    <li class="route-step{% if saved_outcome %} is-done{% endif %}" data-step="5"><a class="route-link" href="#decision"><span class="route-no" aria-hidden="true">5</span>Решение<span class="route-done visually-hidden">{% if saved_outcome %} – сохранено{% endif %}</span></a></li>
+    <li class="route-step{% if entered %} is-done{% endif %}{% if saved_outcome == 'later' %} is-na{% endif %}" data-step="6"><a class="route-link" href="#step-6"><span class="route-no" aria-hidden="true">6</span>Перенос в Hub<span class="route-done visually-hidden">{% if entered %} – внесено{% endif %}</span></a></li>
+    <li class="route-step" data-step="7"><a class="route-link" href="#step-7"><span class="route-no" aria-hidden="true">7</span>Дальше</a></li>
+  </ol>
+</nav>
+
+<div class="route-pair">
+{% include 'findings/trace.html' %}
+
+<section class="panel step-panel verdict-panel" id="step-2" data-route-step="2" aria-labelledby="verdict-title">
+  <div class="step-title-row">
+    <h2 id="verdict-title" class="step-head"><span class="step-no" aria-hidden="true">2</span> Вердикт модели</h2>
+    <span class="hint-tag">подсказка – решает человек</span>
+  </div>
+  {% if pending_run %}
+  <div class="callout callout-info" id="pending-run" role="status" data-poll="{{ card_base }}/state" data-poll-interval="2000">
+    <p><span class="spinner" aria-hidden="true"></span> <strong>Модель разбирает находку</strong> – <a href="/runs/{{ pending_run.id }}">прогон №{{ pending_run.id }}</a>, модель <span class="mono">{{ pending_run.model }}</span> ({{ RUN_STATE_LABELS.get(pending_run.state, pending_run.state) }}). Карточка обновится, когда придёт ответ.</p>
+  </div>
+  {% endif %}
+  {% if verdict %}
+  {% set tp = verdict.verdict == "true_positive" %}
+  <div class="verdict-hero verdict-hero-{{ verdict.verdict }}">
+    <span class="verdict-big verdict-{{ verdict.verdict }}" title="Вердикт модели и её уверенность">{{ VERDICT_LABELS.get(verdict.verdict, verdict.verdict) }} · {{ verdict.confidence }}%</span>
+    <span class="conf{% if verdict.confidence < 50 or no_clone %} conf-low{% endif %}" title="Уверенность модели в вердикте"><span class="conf-bar" aria-hidden="true"><span class="conf-fill p-{{ [[verdict.confidence, 0]|max, 100]|min }}"></span></span>{% if no_clone %}предварительно – модель видела одну строку{% else %}уверенность {{ confidence_words }}{% endif %}</span>
+    {% if verdict.cwe_fit %}<span class="muted small">CWE подходит: {{ verdict.cwe_fit }}</span>{% endif %}
+  </div>
+  {% if verdict.summary %}<p class="prose verdict-summary"><strong>{{ verdict.summary|model_text(shown_lines) }}</strong></p>{% endif %}
+  {#- существенные предупреждения – рядом с итогом и не сворачиваются -#}
+  {% if no_clone %}
+  <div class="callout callout-warn callout-compact" role="note">
+    <p><strong>Предварительно – модель видела только строку из выгрузки.</strong> {% if f.codebase %}Клонируйте <span class="mono">{{ f.codebase }}</span>{% else %}Добавьте клон кодовой базы{% endif %} и запустите триаж заново (<a href="/projects/{{ project.id }}#step2">шаг 2 на странице проекта</a>).</p>
+  </div>
+  {% endif %}
+  {% if verdict_changed %}
+  <div class="callout {{ 'callout-warn' if verdict_disagrees or not decision_in_force else 'callout-info' }} callout-compact" role="note" id="verdict-changed">
+    <p><strong>Модель разобрала находку заново после вашего решения.</strong> {% if decision_in_force %}Ваше решение остаётся в силе: отметки и текст для Hub не сброшены.{% if verdict_disagrees %} Новый разбор расходится с вашим решением – сравните разборы в истории ниже и, если нужно, поменяйте решение.{% endif %}{% else %}Находка или код изменились после вашего решения: сверьте его с текущим кодом и сохраните заново.{% endif %}</p>
+  </div>
+  {% endif %}
+  {% if confidence_capped %}<p class="callout callout-warn callout-compact" id="confidence-capped"><span class="badge badge-warn">уверенность ограничена</span> {{ {"commented": "фрагмент из выгрузки найден только в комментарии", "partial": "фрагмент из выгрузки совпал только частично"}.get(check, "фрагмент из выгрузки не найден рядом со строкой сканера" if export_shift_at else "фрагмент из выгрузки не найден в коде") }}, поэтому не выше {{ confidence_max }} %{% if confidence_raw is number and confidence_raw > confidence_max %} (модель указала {{ confidence_raw }} %){% endif %}.</p>{% endif %}
+  {% if target_hidden %}<p class="callout callout-warn callout-compact" id="target-line-hidden">Строка срабатывания скрыта меткой, вердикт модели по такой находке ненадёжен: сверьте с фрагментом выгрузки и с кодом в Hub.</p>{% endif %}
+  {% set has_more = is_v3 and (verdict.what_code_does or verdict.why or verdict.data_flow) or (not is_v3 and (verdict.explanation or verdict.data_flow)) %}
+  {% if has_more %}
+  <details class="verdict-more" id="verdict-more" data-remember="verdict-more">
+    <summary>Подробности разбора{% if is_v3 %}: что делает код, почему такой вердикт, путь данных{% endif %}</summary>
+    {% if is_v3 %}
+    {% if verdict.what_code_does %}<h3>Что делает код</h3><p class="prose">{{ verdict.what_code_does|reveal_labels(label_values)|model_text(shown_lines) }}</p>{% endif %}
+    {% if verdict.why %}<h3>Почему такой вердикт</h3><ol class="steps">{% for step in verdict.why %}<li>{{ step|reveal_labels(label_values)|model_text(shown_lines) }}</li>{% endfor %}</ol>{% endif %}
+    {% if verdict.data_flow %}<h3>Путь данных</h3><ol class="flow">{% for step in verdict.data_flow %}<li>{{ step|reveal_labels(label_values)|model_text(shown_lines) }}</li>{% endfor %}</ol>{% endif %}
+    {% else %}
+    {% if verdict.explanation %}<h3>Почему такой вердикт</h3><p class="prose">{{ verdict.explanation|reveal_labels(label_values)|model_text(shown_lines) }}</p>{% endif %}
+    {% if verdict.data_flow %}<h3>Путь данных</h3><ol class="flow">{% for step in verdict.data_flow %}<li>{{ step|reveal_labels(label_values)|model_text(shown_lines) }}</li>{% endfor %}</ol>{% endif %}
+    {% endif %}
+    {% if labels_note %}<p class="muted small" id="labels-note">{% if labels_note.revealed %}Показ без масок: метки маскирования в этих текстах заменены значениями из текущего файла клона и выгрузки. Модель видела метки, а не значения.{% endif %}{% if labels_note.left %} <span id="labels-left">{% for label in labels_note.left %}<span class="mono">{{ label }}</span>{% if not loop.last %}, {% endif %}{% endfor %} – значение в базе не хранится: в текущем файле клона и в выгрузке его нет.</span>{% endif %}</p>{% endif %}
+    {% set st = verdict_meta.stats or {} %}
+    <p class="model-meta">Модель <span class="mono">{{ verdict_meta.model }}</span>{% if verdict_executor %} · <span class="verdict-executor">{{ verdict_executor }}</span>{% endif %} · <time datetime="{{ verdict_meta.created_at }}">{{ verdict_meta.created_at|ts }}</time>{% if st.eval_tps %} · {{ st.eval_tps|num }} ток/с{% endif %}{% if st.total_s %} · {{ st.total_s|duration }}{% endif %}{% if st.attempts and st.attempts > 1 %} · попыток: {{ st.attempts }}{% endif %}{% if st.drop_retries %} · <span class="drop-retry" title="Первый запрос остался без ответа (обрыв связи у провайдера), приложение один раз отправило его заново по отметке профиля">повтор после обрыва связи</span>{% endif %}{% if verdict_meta.prompt_version != prompt_version %} · <span title="Разбор по прежней версии промпта {{ verdict_meta.prompt_version }}{% if verdict_meta.prompt_version in short_explanation_versions %}: объяснение короче, без шагов и словарика{% endif %}">разбор прежней версии</span>{% endif %}</p>
+  </details>
+  {% else %}
+  {% set st = verdict_meta.stats or {} %}
+  <p class="model-meta">Модель <span class="mono">{{ verdict_meta.model }}</span>{% if verdict_executor %} · <span class="verdict-executor">{{ verdict_executor }}</span>{% endif %} · <time datetime="{{ verdict_meta.created_at }}">{{ verdict_meta.created_at|ts }}</time>{% if st.eval_tps %} · {{ st.eval_tps|num }} ток/с{% endif %}{% if st.total_s %} · {{ st.total_s|duration }}{% endif %}{% if st.attempts and st.attempts > 1 %} · попыток: {{ st.attempts }}{% endif %}{% if st.drop_retries %} · <span class="drop-retry" title="Первый запрос остался без ответа (обрыв связи у провайдера), приложение один раз отправило его заново по отметке профиля">повтор после обрыва связи</span>{% endif %}{% if verdict_meta.prompt_version != prompt_version %} · <span title="Разбор по прежней версии промпта {{ verdict_meta.prompt_version }}{% if verdict_meta.prompt_version in short_explanation_versions %}: объяснение короче, без шагов и словарика{% endif %}">разбор прежней версии</span>{% endif %}</p>
+  {% endif %}
+  {% else %}
+  <p class="empty">Модель эту находку ещё не разбирала. Разберите её здесь или запустите триаж на <a href="/projects/{{ project.id }}#step3">странице проекта</a>.</p>
+  <form method="post" action="{{ card_base }}/reanalyze{{ sel_q }}" class="inline-form reanalyze-form" id="reanalyze-form">
+    <label class="field">
+      <span class="field-label">Модель</span>
+      <select name="model" id="reanalyze-model"{% if not run_models %} disabled{% endif %}>
+        {% for m in run_models %}<option value="{{ m.name }}"{% if m.name == analyze_model %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
+      </select>
+    </label>
+    <input type="hidden" name="fresh" value="0">
+    <button type="submit" class="btn btn-primary" id="reanalyze-btn"{% if not run_models or pending_run or row.missing %} disabled{% endif %}>Разобрать моделью</button>
+  </form>
+  {% if not run_models %}<p class="hint">Ollama недоступна или в ней нет моделей: проверьте адрес Ollama в настройках.</p>{% endif %}
+  {% if code_profile_external %}<p class="hint" id="analyze-paid">Профиль проекта – внешний провайдер «{{ code_profile_name }}»: код находки уйдёт ему, каждый разбор – платный запрос.</p>{% endif %}
+  {% endif %}
+  {% if model_history and model_history.show %}
+  <details class="model-history" id="model-history" data-remember="model-history">
+    <summary>История разборов моделью · {{ model_history.count }}{% if model_history.disagree %} · <span class="badge badge-warn">модели расходятся</span>{% endif %}</summary>
+    <ol class="history-list">
+      {% for h in model_history.rows %}
+      <li class="history-row{% if h.current %} is-current{% endif %}" id="answer-{{ h.id }}">
+        <p class="history-head">{{ verdict_badge(h.verdict, h.confidence) }} <span class="mono">{{ h.model }}</span>{% if h.executor %} · {{ h.executor }}{% endif %} · <time datetime="{{ h.created_at }}">{{ h.created_at|ts }}</time>{% if h.stats.total_s %} · {{ h.stats.total_s|duration }}{% endif %}{% if h.stats.eval_tps %} · {{ h.stats.eval_tps|num }} ток/с{% endif %}
+          {% if h.current %} <span class="badge badge-info">показан сейчас</span>{% endif %}
+          {% if h.decided %} <span class="badge badge-muted">по нему принято ваше решение</span>{% endif %}
+          {% if h.disagrees %} <span class="badge badge-warn">расходится с вашим решением</span>{% endif %}
+          {% if h.note %} <span class="badge badge-muted">{{ h.note }}</span>{% endif %}</p>
+        <p class="small muted">{% for run in h.runs %}прогон №{{ run.run_id }} – {{ run.origin }}{% if not loop.last %}; {% endif %}{% endfor %}{% if h.cached %}{% if h.runs %}; {% endif %}из кэша: {{ h.cached }}{% endif %}</p>
+        {% if not h.current %}
+        <details class="history-more">
+          <summary>{% if h.fix %}Разбор и {{ "как исправить" if h.verdict == "true_positive" else ("что проверить" if h.verdict == "uncertain" else "рекомендация") }}{% elif h.verdict == "false_positive" %}Разбор (рекомендаций нет – срабатывание ложное){% else %}Разбор (рекомендаций модель не дала){% endif %}</summary>
+          {% if h.summary %}<p class="prose"><strong>{{ h.summary }}</strong></p>{% endif %}
+          {% if h.why %}<ol class="steps">{% for step in h.why %}<li>{{ step }}</li>{% endfor %}</ol>{% endif %}
+          {% if h.fix %}<div class="prose">{{ h.fix|fix_text(shown_lines) }}</div>{% endif %}
+          {% if h.points %}<button type="button" class="btn btn-ghost btn-small take-history-fix" hidden data-points="{{ h.points|join("\n") }}">Взять пункты из этого разбора</button>{% endif %}
+        </details>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+    {% if model_history.attempts %}<p class="small muted">Попытки без ответа{% if model_history.attempts_total > model_history.attempts|length %} (последние {{ model_history.attempts|length }} из {{ model_history.attempts_total }}){% endif %}: {% for a in model_history.attempts %}прогон №{{ a.run_id }} – {{ a.label }}{% if a.error %} ({{ a.error }}){% endif %}{% if not loop.last %}; {% endif %}{% endfor %}.</p>{% endif %}
+  </details>
+  {% endif %}
+</section>
+  <section class="panel step-panel code-panel" id="step-3" data-route-step="3" aria-labelledby="code-title">
+    <div class="code-head">
+      <h2 id="code-title" class="step-head"><span class="step-no" aria-hidden="true">3</span> Код и чек-лист</h2>
+      {% if f.file %}<span class="code-where mono small" title="{{ f.file }}">{{ (f.file.replace("\\", "/").rsplit("/", 1)[-1])|code_text }}{% if f.line is not none %}:{{ f.line }}{% endif %}</span>{% endif %}
+      <div class="code-actions">
+        {% if ctx and code_rows %}<button type="button" class="btn btn-small" id="wrap-toggle" aria-pressed="true">Переносить строки</button>
+        <button type="button" class="btn btn-small" id="code-toggle" aria-expanded="true" aria-controls="code-body" data-label-open="Свернуть код" data-label-closed="Развернуть код">Свернуть код</button>{% endif %}
+        <a class="btn btn-small btn-ghost" href="#decision" id="to-decision">К решению ↓</a>
+      </div>
+    </div>
+    {% if ctx %}
+    {% if code_changed %}
+    <div class="callout callout-warn" role="note" id="code-changed">
+      <p><strong>Срез кода не совпадает с тем, который разбирала модель.</strong> Изменился код в клоне или способ построения среза в новой версии приложения. Ниже – код, который видела модель; её вердикт относится к нему. Перед решением сверьте строку с текущим файлом в клоне или в Hub. Ваше решение сохраняется и отмечается проверенным как обычно. Чтобы модель посмотрела текущий код, нажмите «Разобрать заново».</p>
+      <form method="post" action="{{ card_base }}/reanalyze{{ sel_q }}" class="inline-form">
+        <input type="hidden" name="model" value="{{ verdict_meta.model if verdict_meta else '' }}">
+        <input type="hidden" name="fresh" value="0">
+        <button type="submit" class="btn btn-small"{% if pending_run %} disabled{% endif %}>Разобрать заново</button>
+      </form>
+    </div>
+    {% endif %}
+    {% if steer_lines or steer_fields %}
+    <div class="callout callout-err" role="note">
+      <p><strong>В данных находки есть текст, похожий на указания для модели</strong>{% if steer_lines %}: строки {{ steer_lines|join(", ") }}{% endif %}{% if steer_fields %}{{ "; " if steer_lines else ": " }}{{ steer_fields|join(", ") }}{% endif %}.</p>
+      {% if invis_lines %}<p class="small" id="invisible-note">Невидимые знаки в строках {{ invis_lines|join(", ") }} показаны метками вида ⟨U+202E⟩. Знаки направления текста меняют то, как строка выглядит на экране, но не то, как её выполняет компьютер: читайте строку по меткам.</p>{% endif %}
+      <p class="small">Это может быть попыткой повлиять на разбор: вердикт модели проверьте по коду сами. Комментарий модели в текст для Hub не подставлен.</p>
+    </div>
+    {% endif %}
+    {% if code_reason %}<p class="callout callout-warn" id="code-reason">{{ code_reason }}</p>{% endif %}
+    {% if steer_outside or invis_outside %}<p class="small text-warn" id="display-outside-note">Вне окна модели{% if steer_outside %} похоже на указания для модели: строки {{ steer_outside|join(", ") }}{% endif %}{% if invis_outside %}{{ "; " if steer_outside else " " }}невидимые знаки: строки {{ invis_outside|join(", ") }}{% endif %}. Модель этих строк не видела, на её ответ они не повлияли.</p>{% endif %}
+    {#- Сворачивается только тело кода; предупреждения выше видны всегда. Состояние – предпочтение оператора (initCodeFold) -#}
+    <div class="code-body" id="code-body">
+    <p class="muted small dot-list"><span>{{ "срез из базы приложения" if code_from_db else CONTEXT_LABELS.get(ctx.status, ctx.status) }}</span>{% if ctx.file %}<span class="mono break">{{ ctx.file }}</span>{% endif %}{% if ctx.start_line %}<span>строки {{ ctx.start_line }}–{{ ctx.end_line }}</span>{% endif %}</p>
+    {% if ctx.enclosing %}<p class="small">{{ "Функция" if ctx.language == "python" else "Метод" }}: <code class="break">{{ ctx.enclosing|code_text }}</code></p>{% endif %}
+    {% if code_from_db %}
+    <p class="muted small" id="code-from-db">Клона с этим файлом нет: показан срез кода, сохранённый в базе приложения{% if verdict %}, – тот, который видела модель{% endif %}. Секреты в нём замаскированы. Решение, «Скопировать короткий текст для Hub» и текст дефекта работают с этим срезом.</p>
+    {% endif %}
+    {% if ctx_note %}<p class="muted small">{{ ctx_note }}</p>{% endif %}
+    {% if ctx.masked %}<p class="muted small">Скрыто: {{ ctx.masked|masked_summary }}.</p>{% endif %}
+    {% if code_rows %}
+    <div class="code code-wrap" id="code" tabindex="0" role="region" aria-label="Код вокруг находки">
+      <table class="code-table">
+        <tbody>
+        {% for r in code_rows %}{% set cls = (("is-target" if r.target else ("is-evidence" if r.evidence else "")) ~ (" is-export" if r.export else "") ~ (" is-steering" if r.steering else "") ~ (" is-outside" if r.outside else ""))|trim %}<tr{% if r.n %} id="L{{ r.n }}"{% endif %}{% if cls %} class="{{ cls }}"{% endif %}><td class="ln">{% if r.target %}<span class="mark" aria-hidden="true">▶</span>{% elif r.steering %}<span class="mark mark-steer" aria-hidden="true">!</span>{% endif %}{{ r.n if r.n else "" }}</td><td class="src">{{ r.text|code_text }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="code-tools">
+      <p class="legend small">
+        <span class="swatch swatch-target" aria-hidden="true">▶</span> строка срабатывания
+        <span class="swatch swatch-evidence" aria-hidden="true"></span> строки из объяснения модели
+        {% if ctx.export_line_check in ("near", "commented", "partial") and ctx.export_line_at %}<span class="swatch swatch-export" aria-hidden="true"></span> {{ {"commented": "фрагмент из выгрузки (в комментарии)", "partial": "фрагмент из выгрузки (частично)"}.get(ctx.export_line_check, "фрагмент из выгрузки AppSec.Hub") }}{% elif export_shift_at %}<span class="swatch swatch-export" aria-hidden="true"></span> фрагмент из выгрузки (сдвинут){% endif %}
+        {% if steer_lines or steer_outside %}<span class="swatch swatch-steer" aria-hidden="true">!</span>
+        похоже на указания для модели или невидимые знаки{% endif %}
+        {% if display_wide %}<span class="swatch swatch-outside" aria-hidden="true"></span> <span id="display-wide-note">модель видела строки {{ ctx.start_line }}–{{ ctx.end_line }}, остальные показаны только вам</span>{% endif %}
+      </p>
+    </div>
+    {% else %}
+    <p class="empty">Кода нет: ни клона, ни строки в выгрузке.</p>
+    {% endif %}
+    {#- бэклог 112: разбор устарел – текущий срез клона с теми же масками, отличия от среза модели подсвечены -#}
+    {% if current_code %}
+    <div class="code-current" id="code-current">
+      <p class="small"><strong>Текущий срез в клоне</strong> – строки {{ current_code.start }}–{{ current_code.end }}{% if current_code.masked %}, секреты замаскированы{% endif %}. Модель этот код не разбирала. <span id="code-current-diff">{% if current_code.changed %}Отличаются от среза модели строки {{ current_code.changed }}{% if current_code.removed %}; строк среза модели, которых здесь нет: {{ current_code.removed }}{% endif %}.{% elif current_code.removed %}Новых и изменённых строк нет; строк среза модели, которых здесь нет: {{ current_code.removed }}.{% else %}Строки те же, что в срезе модели: изменились данные находки или способ построения среза.{% endif %}</span></p>
+      <div class="code code-wrap" tabindex="0" role="region" aria-label="Текущий срез кода в клоне">
+        <table class="code-table"><tbody>
+        {% for r in current_code.rows %}{% set cls = (("is-target" if r.target else "") ~ (" is-changed" if r.changed else ""))|trim %}<tr{% if cls %} class="{{ cls }}"{% endif %}><td class="ln">{% if r.target %}<span class="mark" aria-hidden="true">▶</span>{% endif %}{{ r.n }}</td><td class="src">{{ r.text|code_text }}</td></tr>
+        {% endfor %}
+        </tbody></table>
+      </div>
+    </div>
+    {% endif %}
+    {#- dev14, ADR-0141: маскирование при показе выключено в параметрах проекта – текущий файл без масок отдельно от среза
+        разбора; ничего о совпадении со срезом не утверждается -#}
+    {% if not mask_shown %}
+    {% if plain_ctx and plain_ctx.status == "ok" and plain_ctx.lines %}
+    <div class="code-plain" id="code-plain">
+      <p class="small"><strong>Текущий файл в клоне, без масок</strong> – строки {{ plain_ctx.start_line }}–{{ plain_ctx.end_line }}. Это текущее содержимое файла, а не срез разбора выше: модели код уходит с масками.</p>
+      <div class="code code-wrap" tabindex="0" role="region" aria-label="Текущий файл в клоне без масок">
+        <table class="code-table"><tbody>
+        {% for line in plain_ctx.lines %}{% set n = plain_ctx.start_line + loop.index0 %}<tr{% if n == plain_ctx.target_line %} class="is-target"{% endif %}><td class="ln">{% if n == plain_ctx.target_line %}<span class="mark" aria-hidden="true">▶</span>{% endif %}{{ n }}</td><td class="src">{{ line|code_text }}</td></tr>
+        {% endfor %}
+        </tbody></table>
+      </div>
+    </div>
+    {% else %}
+    <p class="muted small" id="code-plain-missing">Показ без масок включён, но текущий файл из клона не показан{% if plain_ctx and plain_ctx.note %}: {{ plain_ctx.note }}{% endif %} – виден только срез с масками.</p>
+    {% endif %}
+    {% endif %}
+    </div>
+    {% else %}
+    <p class="empty">Кода нет: ни клона, ни строки в выгрузке.</p>
+    {% endif %}
+    <p class="code-missing small text-warn" id="code-missing" role="status" aria-live="polite" hidden></p>
+  </section>
+</div>
+
+<div class="route-grid route-grid-aside">
+  <div class="step-aside" aria-label="Шаг 3: что проверить">
+    {% if verdict and is_v3 and verdict.check_by_eye %}
+    <section class="panel check-panel" aria-labelledby="check-title">
+      <h3 id="check-title" class="aside-head">Что проверить глазами</h3>
+      <ul class="checklist" id="check-by-eye" data-store-key="finding-{{ row.id }}-v{{ verdict_meta.id }}">
+        {% for item in verdict.check_by_eye %}<li><label><input type="checkbox"> <span>{{ item|model_text(shown_lines) }}</span></label></li>
+        {% endfor %}
+      </ul>
+      <p class="hint" data-checklist-count></p>
+    </section>
+    {% endif %}
+    {% if verdict and is_v3 and verdict.terms %}
+    <details class="panel glossary" id="glossary" data-remember="glossary">
+      <summary>Термины ({{ verdict.terms|length }})</summary>
+      <dl class="terms">{% for t in verdict.terms %}<dt>{{ t.term|model_text }}</dt><dd>{{ t.meaning|model_text(shown_lines) }}</dd>{% endfor %}</dl>
+    </details>
+    {% endif %}
+    {% if verdict and not verdict.fix %}
+    <section class="panel fix-panel" id="model-fix-none" aria-labelledby="model-fix-none-title">
+      <h3 id="model-fix-none-title" class="aside-head">Рекомендации – от модели</h3>
+      <p class="small muted">{% if verdict.verdict == "false_positive" %}Нет: по разбору модели срабатывание ложное – исправлять нечего.{% if is_v3 and verdict.check_by_eye %} Что всё же проверить – выше, «Что проверить глазами».{% endif %}{% else %}Нет: модель их не дала.{% endif %}</p>
+    </section>
+    {% endif %}
+    {% if verdict and verdict.fix %}
+    <details class="panel fix-panel" id="model-fix" data-remember="model-fix">
+      <summary>{{ "Как исправить" if verdict.verdict == "true_positive" else ("Что проверить" if verdict.verdict == "uncertain" else "Рекомендации") }} – от модели</summary>
+      <div class="prose">{{ verdict.fix|fix_text(shown_lines) }}</div>
+    </details>
+    {% endif %}
+    {% if cwe_info %}
+    <section class="panel cwe-panel" id="cwe-info" aria-labelledby="cwe-title">
+      <details class="cwe-details" data-remember="cwe-info">
+        <summary><span id="cwe-title">Класс слабости (CWE)</span> · {{ cwe_info.keys()|join(", ") }}</summary>
+        {% for key, info in cwe_info.items() %}
+        <h3>{{ cwe_link(key, key ~ " · " ~ info.name if info.name else key) }}</h3>
+        {% if info.name_ru %}<p class="small muted">БДУ ФСТЭК России: {{ info.name_ru }}</p>{% endif %}
+        {% if info.description %}<p class="prose small">{{ info.description }}</p>{% endif %}
+        {% endfor %}
+        <p class="hint">Подробное описание класса, связи и примеры кода – в <a href="{{ work_link('/cwe') }}">справочнике CWE</a>, русские названия классов – по справочникам на странице <a href="{{ work_link('/feeds') }}">«Справочники»</a>.</p>
+      </details>
+    </section>
+    {% endif %}
+  </div>
+</div>
+
+<section class="panel step-panel step-optional" id="step-4" data-route-step="4" aria-labelledby="step-4-title">
+  <h2 id="step-4-title" class="step-head"><span class="step-no" aria-hidden="true">4</span> Второе мнение и сценарии атак <span class="step-opt">необязательно</span></h2>
+  <div class="opinion-grid">
+    {% if verdict %}
+    <details class="opinion" id="reanalyze-box" data-remember="reanalyze">
+      <summary>Пересмотреть моделью</summary>
+      <form method="post" action="{{ card_base }}/reanalyze{{ sel_q }}" class="inline-form reanalyze-form" id="reanalyze-form">
+        <label class="field">
+          <span class="field-label">Модель</span>
+          <select name="model" id="reanalyze-model"{% if not run_models %} disabled{% endif %}>
+            {% for m in run_models %}<option value="{{ m.name }}"{% if m.name == reanalyze_model %} selected{% endif %}>{{ m|model_option }}{% if verdict_meta and m.name == verdict_meta.model %} – дала этот вердикт{% endif %}</option>{% endfor %}
+          </select>
+        </label>
+        <input type="hidden" name="fresh" value="1">
+        <button type="submit" class="btn" id="reanalyze-btn"{% if not run_models or pending_run or row.missing %} disabled{% endif %}>Пересмотреть вердикт</button>
+      </form>
+      <p class="hint">Новый разбор этой находки. Та же модель на том же коде обычно отвечает так же – для второго мнения выберите другую. Ваше решение новый разбор не сбрасывает, прежние разборы остаются в истории (шаг 2).{% if not run_models %} Ollama недоступна или в ней нет моделей.{% endif %}{% if code_profile_external %} <span id="reanalyze-paid">Профиль проекта – внешний провайдер «{{ code_profile_name }}»: повтор – новый платный запрос, готовый ответ из кэша не подставляется.</span>{% endif %}</p>
+      {% if model_history and model_history.reanalyzed %}<p class="hint" id="reanalyzed-count">Уже пересматривали: {{ model_history.reanalyzed }}, последний раз – <span class="mono">{{ model_history.last_card.model }}</span>, <time datetime="{{ model_history.last_card.created_at }}">{{ model_history.last_card.created_at|ts }}</time>.</p>{% elif model_history and model_history.count > 1 %}<p class="hint" id="reanalyzed-count">Разборов моделью: {{ model_history.count }} (вид запуска прежних прогонов не записан).</p>{% endif %}
+    </details>
+    <section class="opinion ask-panel" id="ask" aria-labelledby="ask-title">
+      <details class="opinion-details" data-remember="ask"{% if questions and questions|selectattr("state", "equalto", "pending")|list %} data-force-open{% endif %}>
+        <summary><span id="ask-title">Вопросы к модели</span>{% if questions %} · {{ questions|length }}{% endif %}</summary>
+        <p class="hint">Модель получает тот же код, сведения о находке и свой разбор. Вопрос и ответ сохраняются у находки. {% if ask_profile_external %}<span id="ask-paid">Отвечает внешний провайдер «{{ ask_profile_name }}»: каждый вопрос – платный запрос.</span>{% else %}Отвечает модель профиля разбора – Ollama этого компьютера или сети организации.{% endif %}</p>
+        {% if questions %}
+        <ol class="qa" id="qa-list">
+          {% for q in questions %}
+          <li class="qa-item{% if q.state == 'pending' %} is-pending{% elif q.state == 'error' %} is-error{% endif %}" id="q{{ q.id }}"{% if q.state == "pending" %} data-poll="{{ card_base }}/questions/{{ q.id }}" data-poll-interval="2000"{% endif %}>
+            <p class="qa-q">{{ q.question }}</p>
+            {% if q.state == "done" %}
+            <div class="qa-a prose">{{ q.answer|fix_text(shown_lines) }}</div>
+            {% if q.verdict_changes == "да" and not q.old %}<p class="hint text-warn">Модель считает, что после этого ответа её вердикт другой. Если согласны – выберите решение по своему выводу в шаге 5.</p>{% endif %}
+            {% elif q.state == "error" %}
+            <p class="qa-a">Ответа нет: {{ q.error }}</p>
+            {% else %}
+            <p class="qa-a"><span class="spinner" aria-hidden="true"></span> Модель отвечает…</p>
+            {% endif %}
+            <p class="qa-meta">Модель <span class="mono">{{ q.model }}</span> · <time datetime="{{ q.created_at }}">{{ q.created_at|ts }}</time>{% if q.tps %} · {{ q.tps|num }} ток/с{% endif %}{% if q.seconds %} · {{ q.seconds|duration }}{% endif %}{% if q.old %} · к прежнему вердикту{% endif %}</p>
+          </li>
+          {% endfor %}
+        </ol>
+        {% endif %}
+        <form method="post" action="{{ card_base }}/ask{{ sel_q }}" class="ask-form" id="ask-form" data-ajax>
+          <label class="field">
+            <span class="field-label">Ваш вопрос</span>
+            <textarea name="question" id="ask-question" rows="3" maxlength="2000" required placeholder="Например: а если id приходит из сессии, а не из запроса?">{{ ask_draft }}</textarea>
+          </label>
+          <div class="actions">
+            <label class="field">
+              <span class="field-label">Модель</span>
+              <select name="model" id="ask-model"{% if not models %} disabled{% endif %}>
+                {% for m in models %}<option value="{{ m.name }}"{% if m.name == ask_model %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
+              </select>
+            </label>
+            <button type="submit" class="btn" id="ask-btn" data-busy="Модель отвечает…"{% if not models %} disabled{% endif %}>Спросить модель</button>
+            {% if ask_busy %}<span class="hint" id="ask-busy">Модель сейчас отвечает на другой вопрос.</span>{% elif ask_run_busy %}<span class="hint" id="ask-busy">Идёт разбор находок в прогоне: спросить можно, когда прогон закончится или встанет на паузу.</span>{% endif %}
+          </div>
+        </form>
+      </details>
+    </section>
+    {% endif %}
+    {% include 'capec/context.html' %}
+  </div>
+</section>
+
+<section class="panel step-panel decision-panel" id="decision" data-route-step="5" aria-labelledby="decision-title">
+  <h2 id="decision-title" class="step-head"><span class="step-no" aria-hidden="true">5</span> Моё решение</h2>
+  {% if model_history and model_history.count %}{% set tally = model_history.tally %}
+  <div class="model-tally" id="model-tally" aria-label="Разборы моделью – подсказка">
+    <p class="small">Разборов моделью: <strong>{{ model_history.count }}</strong>{% for p in tally.parts %} · {{ VERDICT_LABELS.get(p.verdict, p.verdict) }} – <strong>{{ p.count }}</strong>{% if p.confidences %} ({{ p.confidences|join(" %, ") }} %){% endif %}{% endfor %}{% if tally.split %} · <span class="badge badge-warn">модели расходятся</span>{% endif %} · <span class="muted">подсказка – решает человек</span></p>
+    {% if tally.latest %}{% set last = tally.latest %}<p class="model-tally-last" id="model-tally-last">Последний разбор: {{ verdict_badge(last.verdict, last.confidence) }} <span class="mono">{{ last.model }}</span> · <time datetime="{{ last.created_at }}">{{ last.created_at|ts }}</time>{% if last.current %} <span class="badge badge-info">показан в шаге 2</span>{% endif %}{% if last.note %} <span class="badge badge-muted">{{ last.note }}</span>{% endif %} <a class="small" href="#step-2">к разбору ↑</a></p>{% endif %}
+  </div>
+  {% endif %}
+  <form method="post" action="/projects/{{ project.id }}/findings/{{ row.id }}/review{{ sel_q }}" id="review-form"
+        data-copied-url="/projects/{{ project.id }}/findings/{{ row.id }}/copied"{% if is_draft %} data-draft="1"{% endif %}
+        data-model-verdict="{{ verdict.verdict if verdict else '' }}" data-model-comment="{{ model_comment }}" data-model-comment-for="{{ model_comment_for }}"
+        data-need-reason="{{ need_texts.reason }}" data-need-verdict="{{ need_texts.verdict }}"
+        data-need-reason-fp="{{ need_texts.reason_fp }}" data-need-reason-tp="{{ need_texts.reason_tp }}"
+        data-need-fix="{{ need_texts.fix }}">
+    <input type="hidden" name="finding_version" value="{{ finding_version }}">
+    <input type="hidden" name="verdict_id" value="{{ shown_verdict_id }}">
+    <input type="hidden" name="review_revision" value="{{ review_revision }}" id="review-revision">
+    <input type="hidden" name="code_hash" value="{{ code_hash }}">
+    <input type="hidden" name="code_chars" value="{{ code_chars }}">
+    {% if legacy_outcome %}
+    <div class="callout callout-warn" role="note" id="legacy-outcome">
+      <p><strong>Прежнее решение «{{ VERDICT_LABELS.get(final_verdict, final_verdict) if decision != "risk_accepted" else "риск принят" }}».</strong> Для находки SAST теперь два решения: «Ложное срабатывание» – короткий комментарий в Hub, или «Подтверждаю дефект» – дефект в Hub. Выберите решение заново.</p>
+    </div>
+    {% endif %}
+    {#- Решение человека – большие кнопки-переключатели; вердикт модели в шаге 2 только подсказка -#}
+    {% set hub_fixed = hub_send and hub_send.fixed %}
+    {# находка исправлена в Hub (бэклог 100): статус Fixed Hub менять не даёт; дефект по ней возможен (ADR-0089) #}
+    {% if hub_fixed %}<p class="callout callout-info" id="hub-fixed-note">В Hub находка уже исправлена (Fixed): статус в Hub не меняется.</p>{% endif %}
+    <fieldset class="segmented decision-choice" data-toast-avoid>
+      <legend class="visually-hidden">Решение</legend>
+      <label class="choice-fp" title="{% if hub_fixed %}Срабатывание ложное: комментарий остаётся в приложении, статус Fixed в Hub не меняется, дефект не создаётся{% else %}Срабатывание ложное: в Hub – статус и короткий комментарий, дефект не создаётся{% endif %}"><input type="radio" name="decision" value="false_positive" form="review-form"{% if sast_outcome == "false_positive" %} checked{% endif %}> <span class="choice-text"><span class="choice-name">Ложное срабатывание</span><span class="choice-sub">{% if hub_fixed %}комментарий останется в приложении: статус Fixed в Hub не трогается{% else %}комментарий и смена статуса в Hub{% endif %}</span></span> <kbd>n</kbd></label>
+      <label class="choice-tp" title="Слабость (CWE) в коде подтверждена и может привести к уязвимости: в Hub создаётся дефект"><input type="radio" name="decision" value="true_positive" form="review-form"{% if sast_outcome == "true_positive" %} checked{% endif %}> <span class="choice-text"><span class="choice-name">Подтверждаю дефект</span><span class="choice-sub">обоснование, рекомендация, дефект в Hub</span></span> <kbd>y</kbd></label>
+      <label class="choice-later"><input type="radio" name="decision" value="later" form="review-form"{% if sast_outcome == "later" %} checked{% endif %}> <span class="choice-text"><span class="choice-name">Отложить</span><span class="choice-sub">останется непроверенной</span></span> <kbd>l</kbd></label>
+    </fieldset>
+    {% if group_merge_notice %}<p class="small text-warn" id="group-merge-notice">{{ group_merge_notice }}</p>{% endif %}
+    {% if siblings %}
+    <div class="callout callout-info group-box" role="note" id="group-siblings">
+      <p><strong>Та же строка, та же категория и тот же код ещё в {{ group_total }} {{ "месте" if group_total % 10 == 1 and group_total % 100 != 11 else "местах" }}.</strong>{% if defect.merge_split %} Группа объединена при обновлении приложения, и у её находок разные номера дефектов: в Hub могли быть два дефекта. Сверьте в Hub, к какому дефекту относится каждая находка, и оставьте её номер – номера не сводятся. Решение на группу само не распространяется.{% else %} В Hub это один дефект или одно решение о ложном срабатывании: дайте им одно решение и один текст, а дефект создайте сразу из всех этих находок, отметив их галочками. Решение на группу само не распространяется.{% endif %}{% if not group_compared %} Код этих находок не сравнивался (нет полного среза кода) – если код в них разный, решения могут отличаться: проверьте код в карточке каждой.{% endif %}</p>
+      {% set group_outcomes = siblings|selectattr("state", "equalto", "ok")|selectattr("final_verdict", "in", ["false_positive", "true_positive"])|map(attribute="final_verdict")|unique|list %}
+      {% if group_outcomes|length > 1 %}<p class="small text-warn group-conflict"><strong>У находок группы разные решения.</strong> Пока решения и тексты не совпадут, приложение откажет в копировании текста для Hub.</p>{% endif %}
+      {% if group_take_all %}
+      <p class="small group-take"><button type="button" class="btn btn-small" id="group-take-all" data-take-outcome="{{ group_take_all.outcome }}" data-take-comment="{{ group_take_all.comment }}" data-take-fix="{{ group_take_all.fix }}">Взять решение и текст у всех</button> <span class="muted">у всех находок группы одно решение и один текст</span></p>
+      {% endif %}
+      <ul class="small group-list">
+        {% for s in siblings %}<li><a class="mono" href="/projects/{{ project.id }}/findings/{{ s.id }}{{ sel_q }}">{{ s.hub_id }}</a>{% if s.codebase %} · <span class="mono">{{ s.codebase }}</span>{% endif %} · {% if s.decision == "later" %}отложено{% elif s.decision %}{{ {"false_positive": "ложное срабатывание", "true_positive": "дефект"}.get(s.final_verdict, "прежнее решение – выбрать заново") }}{% else %}решения нет{% endif %}{% if s.defect_number is not none %} · <span class="mono">ID{{ s.defect_number }}</span>{% endif %}{% if s.decision in ("agree", "disagree") and s.state != "ok" %} <span class="badge badge-warn">устарело – сверьте</span>{% endif %}{% if saved_outcome in ("false_positive", "true_positive") and s.final_verdict in ("false_positive", "true_positive") and s.final_verdict != saved_outcome and s.state == "ok" %} <span class="badge badge-warn">другое решение</span>{% endif %}{% if s.state == "ok" and s.final_verdict in ("false_positive", "true_positive") and s.final_comment %} <button type="button" class="btn btn-ghost btn-small" data-take-outcome="{{ s.final_verdict }}" data-take-comment="{{ s.final_comment }}" data-take-fix="{{ s.take_fix }}">Взять решение и текст</button>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% if group_total > siblings|length %}<p class="small muted">Показаны первые {{ siblings|length }} из {{ group_total }} – <a id="group-all" href="{{ group_list_url }}">вся группа в списке находок ({{ group_size }})</a>.</p>{% endif %}
+    </div>
+    {% endif %}
+    {% if group_other %}
+    <div class="callout group-box group-other" role="note" id="group-other">
+      <p><strong>Та же строка и категория, другой код – ещё {{ group_other_total }}.</strong> Код вокруг строки срабатывания в этих находках отличается{% if not group_compared %} или не сравнивался{% endif %}: решение и текст могут быть другими, на копирование и дефект этой находки они не влияют.</p>
+      <ul class="small group-list">
+        {% for s in group_other %}<li><a class="mono" href="/projects/{{ project.id }}/findings/{{ s.id }}{{ sel_q }}">{{ s.hub_id }}</a>{% if s.codebase %} · <span class="mono">{{ s.codebase }}</span>{% endif %} · {% if s.decision == "later" %}отложено{% elif s.decision %}{{ {"false_positive": "ложное срабатывание", "true_positive": "дефект"}.get(s.final_verdict, "прежнее решение – выбрать заново") }}{% else %}решения нет{% endif %}{% if s.defect_number is not none %} · <span class="mono">ID{{ s.defect_number }}</span>{% endif %}{% if s.decision in ("agree", "disagree") and s.state != "ok" %} <span class="badge badge-warn">устарело – сверьте</span>{% endif %}{% if s.state == "ok" and s.final_verdict in ("false_positive", "true_positive") and s.final_comment %} <button type="button" class="btn btn-ghost btn-small" data-take-outcome="{{ s.final_verdict }}" data-take-comment="{{ s.final_comment }}" data-take-fix="{{ s.take_fix }}">Взять решение и текст</button>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% if group_other_total > group_other|length %}<p class="small muted">Показаны первые {{ group_other|length }} из {{ group_other_total }} – <a id="group-other-all" href="{{ group_list_url }}">вся группа в списке находок ({{ group_size }})</a>.</p>{% endif %}
+    </div>
+    {% endif %}
+    {% if near %}
+    <details class="small near-category" id="near-category">
+      <summary>Рядом та же категория: {{ near_total }}</summary>
+      <p class="muted">Не та же группа: другая строка рядом в том же файле или тот же код в другом месте. «Взять текст» заполняет решение, обоснование и рекомендацию в форме. Проверьте их и сохраните. Номер дефекта не переносится.</p>
+      <ul class="item-list">{% for n in near %}<li><a class="mono" href="/projects/{{ project.id }}/findings/{{ n.id }}{{ sel_q }}">{{ n.hub_id }}</a>{% if n.codebase %} · <span class="mono">{{ n.codebase }}</span>{% endif %} · <span class="mono break">{{ n.g2_file }}:{{ n.g2_line }}</span>{% if n.near %} · рядом{% endif %}{% if n.same_code %} · тот же код{% endif %}{% if n.near and n.state == "ok" and n.final_verdict in ("false_positive", "true_positive") and n.final_comment %} <button type="button" class="btn btn-ghost btn-small" data-take-outcome="{{ n.final_verdict }}" data-take-comment="{{ n.final_comment }}" data-take-fix="{{ n.take_fix }}">Взять текст</button>{% elif n.decision in ("agree", "disagree") and n.state != "ok" %} <span class="badge badge-warn">устарело – сверьте</span>{% endif %}</li>{% endfor %}</ul>
+      {% if near_total > near|length %}<p class="muted">и ещё {{ near_total - near|length }}</p>{% endif %}
+    </details>
+    {% endif %}
+    <div class="form-grid sast-form" id="sast-form" data-outcome="{{ sast_outcome }}">
+      <label class="field field-wide" id="comment-field">
+        <span class="field-label" id="comment-label" data-label-fp="Комментарий для Hub – почему срабатывание ложное" data-label-tp="Обоснование дефекта" data-label-none="Комментарий для Hub">{{ "Обоснование дефекта" if sast_outcome == "true_positive" else ("Комментарий для Hub – почему срабатывание ложное" if sast_outcome == "false_positive" else "Комментарий для Hub") }}</span>
+        <textarea name="comment" id="comment" rows="3" maxlength="20000" placeholder="{{ 'Откуда приходят данные, что за ошибка и чем она опасна' if sast_outcome == 'true_positive' else 'Одной-двумя фразами: например, «Имя таблицы берётся из заранее заданной строки, поэтому SQL-инъекция исключена»' }}" data-placeholder-fp="Одной-двумя фразами: например, «Имя таблицы берётся из заранее заданной строки, поэтому SQL-инъекция исключена»" data-placeholder-tp="Откуда приходят данные, что за ошибка и чем она опасна" data-comment-for="{{ comment_for }}" aria-describedby="comment-stale comment-count"{% if comment_stale %} class="is-stale" aria-invalid="true"{% endif %}>{{ comment }}</textarea>
+        <span class="hint" id="comment-count" data-fp-hint="Hub обрезает длинные комментарии в списке: пишите ёмко, одной-двумя фразами."></span>
+      </label>
+      <label class="field field-wide" id="fix-field"{% if sast_outcome != "true_positive" %} hidden{% endif %}>
+        <span class="field-label">Рекомендация – пункты дефекта «1)», «2)»</span>
+        <textarea name="fix" id="fix" rows="4" maxlength="20000" placeholder="По пункту в строке: что исправить и как">{{ final_fix }}</textarea>
+        <span class="hint" id="fix-hint">Каждая строка или пункт списка станет пунктом «1)», «2)»; пример кода в Hub не переносится – только меры словами. Без рекомендации дефект не выдаётся.</span>
+        <span class="hint" id="fix-preview" hidden></span>
+        <span class="hint text-warn" id="fix-code-warn" hidden>Похоже на строки кода без ограды ``` – каждая станет отдельным пунктом дефекта. Опишите меру словами или уберите код.</span>
+        {% if model_points %}<span class="fix-take"><button type="button" class="btn btn-ghost btn-small" id="take-model-fix" data-points="{{ model_points }}" data-code-dropped="{{ '1' if model_code_dropped else '' }}">Взять пункты из рекомендации модели</button>{% if model_code_dropped %} <span class="muted small">пример кода модели в пункты не переносится</span>{% endif %}</span>{% elif model_fix %}<span class="muted small">Рекомендация модели – только пример кода: в пункты дефекта он не переносится, напишите пункты словами.</span>{% endif %}
+      </label>
+    </div>
+    <p class="small comment-hint" id="comment-hint" hidden>Комментарий написан под вердикт модели – проверьте, что он подходит к вашему решению.</p>
+    <p class="small text-warn comment-stale" id="comment-stale"{% if not comment_stale %} hidden{% endif %}>Проверьте текст – он написан моделью к {% if comment_for %}вердикту «{{ VERDICT_LABELS.get(comment_for, comment_for) }}»{% else %}другому вердикту{% endif %}, а в Hub уйдёт другой. Поправьте комментарий или отметьте, что он подходит.</p>
+    {% if comment_missing_lines %}<p class="small text-warn" id="comment-lines">В комментарии есть ссылки на строки, которых нет в показанном коде: {{ comment_missing_lines|join(", ") }}. Модель могла ошибиться номером – проверьте текст, он уйдёт в Hub.</p>{% endif %}
+    <label class="check" id="comment-confirm-label"{% if not comment_stale %} hidden{% endif %}><input type="checkbox" name="comment_confirmed" value="1" id="comment-confirm"> Текст проверен – подходит к итоговому вердикту</label>
+    {# находка в дефекте, созданном в Hub (ADR-0121 п. 2): смена решения – только с подтверждением; флажок открывает отказ сервера #}
+    <div class="callout callout-warn" role="note" id="defect-bound-row"{% if not defect_bound_open %} hidden{% endif %}>
+      <p id="defect-bound-text">{{ defect_bound_open }}</p>
+      <label class="check"><input type="checkbox" name="defect_confirm" value="1" id="defect-bound-confirm"> Сохранить решение: дефект в Hub останется прежним</label>
+    </div>
+    <div class="actions decision-actions">
+      <button type="submit" class="btn" name="action" value="save" id="save-btn">Сохранить</button>
+      <label class="check reviewed-check"><input type="checkbox" name="reviewed" value="1" form="review-form" id="reviewed-box"{% if reviewed_checked %} checked{% endif %}> Проверено <kbd>v</kbd></label>
+      <span class="hint reviewed-hint" id="reviewed-hint">отметка ставится при выборе решения</span>
+      <span class="unreviewed-warn" id="unreviewed-warn" role="status" hidden>Без отметки «Проверено» находка останется непроверенной</span>
+    </div>
+    <p class="muted small" id="review-times"><span id="reviewed-at">{% if review and review.reviewed_at %}Проверено <time datetime="{{ review.reviewed_at }}">{{ review.reviewed_at|ts }}</time>. {% endif %}</span><span id="copied-at">{% if review and review.copied_at %}Скопировано для Hub <time datetime="{{ review.copied_at }}">{{ review.copied_at|ts }}</time>.{% endif %}</span> <span id="entered-at">{% if entered and review and review.entered_hub_at %}Внесено в Hub <time datetime="{{ review.entered_hub_at }}">{{ review.entered_hub_at|ts }}</time>.{% endif %}</span></p>
+  </form>
+  {% if text_history %}
+  <details class="review-history small" id="review-history">
+    <summary>Прежние редакции текста: {{ text_history_total }}</summary>
+    <ol class="item-list">{% for t in text_history %}<li>
+      <strong>{% if t.decision == "later" %}отложено{% else %}{{ {"false_positive": "ложное срабатывание", "true_positive": "дефект"}.get(t.final_verdict, "без итога") }}{% endif %}</strong>
+      <span class="muted">{% if t.decided_at %}· <time datetime="{{ t.decided_at }}">{{ t.decided_at|ts }}</time> {% endif %}· заменено <time datetime="{{ t.replaced_at }}">{{ t.replaced_at|ts }}</time></span>
+      {% if t.final_comment %}<p class="prose">{{ t.final_comment }}</p>{% endif %}
+      {% if t.final_fix %}<p class="prose"><span class="muted">Рекомендация:</span> {{ t.final_fix }}</p>{% endif %}
+    </li>{% endfor %}</ol>
+    {% if text_history_total > text_history|length %}<p class="muted">Показаны последние {{ text_history|length }}; более ранние хранятся в базе.</p>{% endif %}
+  </details>
+  {% endif %}
+</section>
+
+{#- Шаг 6 зависит от решения: видимость блоков – по выбранному переключателю (CSS :has), без скрипта тоже -#}
+<section class="panel step-panel hub-step" id="step-6" data-route-step="6" aria-labelledby="step-6-title">
+  <h2 id="step-6-title" class="step-head"><span class="step-no" aria-hidden="true">6</span> Перенос в Hub</h2>
+  {% if entered_changed %}
+  <div class="callout callout-warn" role="note" id="entered-changed">
+    <p><strong>Текст для Hub изменился после отметки «Внесено в Hub».</strong> {% if entered_reasons %}Изменилось: {{ entered_reasons|join(", ") }}.{% elif entered_reasons is none %}Отметка поставлена до версии 0.9.9, что именно изменилось – неизвестно: например, название команды или формат текста.{% else %}Например, сменились название команды или текст решения.{% endif %} В Hub лежит прежний текст: скопируйте новый, вставьте его в Hub и отметьте «Внесено в Hub» ещё раз.</p>
+  </div>
+  {% endif %}
+  {% if entered_bulk %}
+  <div class="callout callout-info" role="note" id="entered-bulk">
+    <p><strong>Внесено в Hub общим комментарием из списка находок.</strong> Статус и срок в Hub стоят; комментарий в Hub – общий для нескольких находок, текст решения здесь не менялся. Повторная установка того же статуса Hub отклоняет: заменить комментарий можно кнопкой «Обновить комментарий в Hub» ниже (статус снимается и ставится снова с текстом этой карточки).</p>
+  </div>
+  {% endif %}
+  {% if entered_format_updated %}
+  <div class="callout callout-info" role="note" id="entered-format-updated">
+    <p><strong>Формат текста для Hub обновился, решение прежнее.</strong> Отметка «Внесено в Hub» поставлена по тексту прежнего формата. Если хотите, чтобы в Hub лежал текст нового формата, скопируйте его, вставьте в Hub и нажмите «Подтвердить: {% if sast_outcome == "true_positive" %}дефект создан в Hub{% else %}статус и комментарий внесены в Hub{% endif %}».</p>
+  </div>
+  {% endif %}
+  {% if entered_unconfirmed %}
+  <div class="callout callout-warn" role="note" id="entered-unconfirmed">
+    <p><strong>Текст не подтверждён после обновления.</strong> Отметка «Внесено в Hub» поставлена до обновления приложения, и неизвестно, совпадает ли текст в Hub с текущим (например, статусы Hub стали русскими). Сверьте текст для Hub с тем, что в Hub, при необходимости вставьте новый и нажмите «Подтвердить: {% if sast_outcome == "true_positive" %}дефект создан в Hub{% else %}статус и комментарий внесены в Hub{% endif %}».</p>
+  </div>
+  {% endif %}
+  <p class="step-wait hub-when-none">Сначала выберите решение в <a href="#decision">шаге 5</a>.</p>
+  <p class="step-wait hub-when-later">«Отложить»: в Hub ничего не переносится, находка останется непроверенной.</p>
+  <div class="hub-when-fp">
+    {% if not hub_send or hub_send.blocker %}<p class="hub-instr" id="hub-manual-instr">В Hub смените статус находки на «{{ status_map.false_positive or "статус не задан" }}» и вставьте комментарий. Копирование само сохраняет решение.</p>{% endif %}
+    {# статус «Fixed»: в Hub менять нечего – копирования и отметки нет #}
+    {% if not (hub_send and hub_send.fixed) %}<div class="actions"><button type="button" class="btn" id="copy-hub-step" data-press="copy-hub">Скопировать комментарий для Hub</button></div>{% endif %}
+    <details class="hub-preview" id="hub-preview"{% if sast_outcome == "true_positive" %} hidden{% elif sast_outcome == "false_positive" %} open{% endif %}>
+      <summary>Предпросмотр комментария для Hub</summary>
+      {% if hub_historic %}<p class="small text-warn" id="hub-historic"><strong>Исторический текст.</strong> Решение принято по прежнему состоянию находки (или находки уже нет в выгрузке): в Hub такой текст не уйдёт, пока вы не сверите и не сохраните решение заново.</p>{% endif %}
+      <p class="small text-warn" id="hub-preview-note"{% if not hub_preview_note %} hidden{% endif %}>{{ hub_preview_note }}</p>
+      <pre id="hub-text" class="hub-text">{{ hub_preview }}</pre>
+      <p class="small hub-stale" id="hub-stale" hidden>Решение изменено, но ещё не сохранено: текст обновится после «Сохранить» или «Скопировать комментарий для Hub».</p>
+      <button type="button" class="btn btn-small" id="copied-manually" hidden>Скопировал вручную</button>
+    </details>
+    {% if hub_send %}{% from "macros.html" import hub_send_panel %}{{ hub_send_panel(hub_send, card_base ~ "/hub-status" ~ sel_q, project.id, saved_stale, review_revision) }}{% endif %}
+    {% if defect.can_release %}
+    <form method="post" action="{{ card_base }}/defect-number/release{{ sel_q }}" id="defect-number-release-form" class="inline-form">
+      <input type="hidden" name="number_shown" value="{{ defect.saved_number }}">
+      <button type="submit" class="btn" id="defect-number-release">Снять номер ID{{ defect.saved_number }}</button>
+      <span class="field-hint">Решение – ложное срабатывание: дефект не создаётся, а номер, оставшийся от прежней выдачи текста, занимает номер из заголовка Hub у другого дефекта.</span>
+    </form>
+    {% endif %}
+  </div>
+  <div class="hub-when-tp">
+    <p class="step-wait defect-wait" id="defect-wait">Дефект готовится после сохранения решения «Подтверждаю дефект»: нажмите «Сохранить». После новой правки обоснования или рекомендации сохраните ещё раз.</p>
+    {% from "macros.html" import defect_panel_sast %}
+    {% if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix") %}
+    <div class="callout callout-warn" role="note" id="defect-blocked">
+      <p><strong>Дефект для Hub не готовится.</strong> {{ defect.hint }}</p>
+    </div>
+    {% endif %}
+    {{ defect_panel_sast(defect, card_base ~ "/defect" ~ sel_q, hub_defect.bound_summary if hub_defect else none, auto_defect) }}
+    {# новая заготовка – только при «Подтверждаю дефект»; уже начатый дефект показывается ниже, при любом решении #}
+    {% if hub_defect and not (hub_defect.row and hub_defect.row.state != "failed") %}{% from "macros.html" import hub_defect_panel %}{{ hub_defect_panel(hub_defect, card_base ~ "/hub-defect" ~ sel_q, project.id, entered_hash, review_revision, defect.ready, ("причина в плашке «Дефект для Hub не готовится» выше." if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix") else defect.hint)) }}{% endif %}
+    {% if siblings and not defect.merge_split and not auto_defect %}<p class="small hub-group-reminder">Создайте дефект сразу из всех находок группы: в Hub отметьте галочками эту находку и находки из списка «Та же строка и та же категория» (шаг 5).</p>{% endif %}
+  </div>
+  {% if hub_defect and hub_defect.row and hub_defect.row.state != "failed" %}{% from "macros.html" import hub_defect_panel %}
+  <div class="hub-defect-current" id="hub-defect-current">{{ hub_defect_panel(hub_defect, card_base ~ "/hub-defect" ~ sel_q, project.id, entered_hash, review_revision, defect.ready, ("причина в плашке «Дефект для Hub не готовится» выше." if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix") else defect.hint)) }}</div>
+  {% endif %}
+</section>
+
+<section class="panel step-panel next-step" id="step-7" data-route-step="7" aria-labelledby="step-7-title">
+  <h2 id="step-7-title" class="step-head"><span class="step-no" aria-hidden="true">7</span> Дальше</h2>
+  <p>«Дальше» в нижней панели (<kbd>Ctrl</kbd>+<kbd>Enter</kbd>) сохраняет решение и открывает следующую {{ "находку в выборке" if walk_all else "непроверенную находку" }}.</p>
+  <details class="legend-box" data-remember="status-legend">
+    <summary>Как решения переносятся в Hub · клавиши</summary>
+    <div class="muted small status-legend" id="status-legend"><p>Два решения. «Ложное срабатывание» – в Hub статус «{{ status_map.false_positive or "статус не задан" }}» и короткий комментарий, дефект не создаётся. «Подтверждаю дефект» – {% if auto_defect %}дефект создаётся кнопкой «Создать дефект» в шаге 6, копирование – если заводите его вручную; статус находок менять не нужно.{% else %}в Hub {% if defect and defect.merge_split %}отметьте галочкой только находки этого дефекта (группа объединена при обновлении приложения, номера у её находок разные) и создайте дефект{% else %}отметьте галочкой эту находку и находки из списка «Та же строка, та же категория и тот же код» и создайте из них дефект{% endif %}: заголовок и текст – из раздела «Дефект для Hub»; статус находок менять не нужно.{% endif %}</p>
+      <p>«Отложить» – вернуться позже: находка останется непроверенной. Копирование не ставит отметку «Внесено в Hub»: отметьте её сами, когда вставите текст.</p></div>
+    <p class="muted small keys-line">Клавиши: <kbd>n</kbd> – ложное срабатывание; <kbd>y</kbd> – подтверждаю дефект; <kbd>l</kbd> – отложить; <kbd>c</kbd> – скопировать комментарий (ложное срабатывание); <kbd>f</kbd> – скопировать текст дефекта; <kbd>h</kbd> – внесено в Hub; <kbd>v</kbd> – проверено; <kbd>j</kbd> <kbd>k</kbd> – следующая и предыдущая {{ "в выборке" if walk_all else "непроверенная" }}; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> – сохранить и к следующей; <kbd>?</kbd> – все клавиши.</p>
+  </details>
+</section>
+
+{% else %}
+{% include 'capec/context.html' %}
+<section class="panel">
+  <h2>Данные из выгрузки</h2>
+  <dl class="facts facts-grid">
+    {% if f.component %}<div><dt>Компонент</dt><dd class="mono break">{{ f.component }}</dd></div>{% endif %}
+    {% if f.version %}<div><dt>Версия</dt><dd class="mono">{{ f.version }}</dd></div>{% endif %}
+    {% if f.fixed_version %}<div><dt>Версия исправления (Hub)</dt><dd class="mono break">{{ f.fixed_version }}</dd></div>{% endif %}
+    {% if f.cve %}<div class="wide"><dt>CVE</dt><dd class="mono break">{{ f.cve|join(", ") }}</dd></div>{% endif %}
+    {% if f.vuln_ids %}<div class="wide"><dt>Другие идентификаторы</dt><dd class="mono break">{{ f.vuln_ids|join(", ") }}</dd></div>{% endif %}
+    {% if f.dep_path %}<div class="wide"><dt>Путь зависимости</dt><dd class="mono break">{{ f.dep_path }}</dd></div>{% endif %}
+    {% if f.build_type %}<div><dt>Тип сборки</dt><dd>{{ f.build_type }}</dd></div>{% endif %}
+    {% if f.licenses %}<div class="wide"><dt>Лицензии</dt><dd class="break">{{ f.licenses }}</dd></div>{% endif %}
+  </dl>
+  {% if f.kind == "SCA" %}<p class="muted">Компоненты SCA разбираются на вкладке <a href="/projects/{{ project.id }}/sca">SCA</a>: там пакет для внешних агентов, их ответы и текст для Hub.</p>{% else %}<p class="muted">Такие находки только видны в списке: моделью разбираются находки SAST, компоненты SCA – на вкладке SCA проекта.</p>{% endif %}
+</section>
+{% endif %}
+
+
+{% if extra %}
+<details class="panel extra">
+  <summary>Прочие колонки выгрузки ({{ extra|length }})</summary>
+  <dl class="facts">
+    {% for k, v in extra.items() %}<div><dt>{{ k }}</dt><dd class="break">{{ v }}</dd></div>{% endfor %}
+  </dl>
+</details>
+{% endif %}
+
+{% if f.kind == "SAST" %}
+{#- Нижняя панель: текущее решение, одна главная кнопка по этапу (data-stage ставит скрипт), «Дальше». Решение
+    выбирают в шаге 5; клавиши n, y, l работают отовсюду. -#}
+<div class="action-bar" role="region" aria-label="Решение по находке" data-stage=""{% if hub_send and hub_send.fixed %} data-hub-fixed="1"{% if sast_outcome == "false_positive" %} data-fixed-fp="{{ "copy" if entered else "all" }}"{% endif %}{% endif %}>
+  <p class="bar-decision" id="bar-decision"><span class="muted">Решение:</span> <strong id="bar-decision-value" data-none="не выбрано" data-fp="ложное срабатывание" data-tp="подтверждаю дефект" data-later="отложено">{{ {"false_positive": "ложное срабатывание", "true_positive": "подтверждаю дефект", "later": "отложено"}.get(sast_outcome, "не выбрано") }}</strong> <a class="bar-link" href="#decision">изменить</a></p>
+  <div class="bar-actions">
+    <button type="submit" class="btn" form="review-form" name="action" value="save" id="save-bar"{% if sast_outcome != "true_positive" or defect.ready %} hidden{% endif %}>Сохранить решение</button>
+    {% if hub_send and not hub_send.blocker and not hub_send.in_defect and not hub_send.fixed %}<a class="btn" id="go-send" href="#hub-send"{% if sast_outcome != "false_positive" %} hidden{% endif %}>Перейти к отправке</a>{% endif %}
+    {% if go_create %}<a class="btn" id="go-create" href="#hub-defect" hidden>{% if hub_defect.link %}Привязать к дефекту{% else %}Создать дефект{% endif %}</a>{% endif %}
+    <button type="button" class="btn btn-primary" id="copy-hub" title="Комментарий к смене статуса на «Ложное срабатывание» в Hub"{% if sast_outcome == "true_positive" %} hidden{% endif %}>Скопировать комментарий для Hub <kbd>c</kbd></button>
+    <button type="submit" form="defect-form" name="part" value="title" class="btn" id="copy-title-bar" title="Заголовок дефекта – в название дефекта в Hub"{% if not defect.ready %} hidden{% endif %}>Скопировать заголовок дефекта</button>
+    <button type="submit" form="defect-form" name="part" value="body" class="btn btn-primary" id="copy-defect-bar" title="Текст дефекта – в описание дефекта в Hub; заголовок – кнопкой «Скопировать заголовок дефекта»"{% if not defect.ready %} hidden{% endif %}>Скопировать текст дефекта <kbd>f</kbd></button>
+    <form method="post" action="{{ card_base }}/entered{{ sel_q }}" id="entered-form" class="bar-form" data-ajax data-include="review-revision">
+      <input type="hidden" name="entered" value="1">
+      <input type="hidden" name="review_revision" value="{{ review_revision }}">
+      <input type="hidden" name="text_hash" id="entered-text-hash" value="{{ entered_hash }}">
+      <label class="check small" id="entered-confirm-label"{% if not saved_stale %} hidden{% endif %}><input type="checkbox" name="comment_confirmed" value="1" id="entered-comment-confirm"> Текст проверен – обоснование подходит к итоговому вердикту</label>
+      <button type="submit" class="btn" id="mark-entered"{% if (entered and not (entered_changed or entered_unconfirmed or entered_format_updated)) or not (review and review.decision) or (not entered and sast_outcome not in ("false_positive", "true_positive")) %} hidden{% endif %}>{% if entered %}Подтвердить: {% else %}Отметить: {% endif %}{% if sast_outcome == "true_positive" %}дефект создан в Hub{% else %}статус и комментарий внесены в Hub{% endif %} <kbd>h</kbd></button>
+    </form>
+    <button type="submit" class="btn" form="review-form" name="action" value="next" id="next-btn">Дальше → <kbd>Ctrl+Enter</kbd></button>
+  </div>
+  <p class="small muted bar-hint" id="copy-where" data-ready="{% if go_create %}Дефект готов: нажмите «Создать дефект» (шаг 6). Копирование нужно, только если заводите дефект в Hub вручную.{% else %}Дефект: текст – в описание дефекта в Hub, заголовок – в его название (шаг 6).{% endif %}" data-fp="{% if hub_send and hub_send.fixed %}Ложное срабатывание: у находки в Hub статус «Fixed», менять в Hub нечего.{% elif hub_send and not hub_send.blocker and not hub_send.in_defect %}Ложное срабатывание: отправьте статус в Hub (шаг 6); копирование – если вносите вручную.{% else %}Ложное срабатывание: скопируйте комментарий и вставьте его в Hub при смене статуса находки (шаг 6).{% endif %}" {% if hub_send and hub_send.fixed %}data-fp-dirty="Ложное срабатывание: у находки в Hub статус «Fixed», менять в Hub нечего – сохраните решение." {% endif %}data-tp="{% if go_create %}Подтверждённый дефект: сохраните решение, затем создайте дефект (шаг 6).{% else %}Подтверждённый дефект: сохраните решение, затем скопируйте заголовок и текст дефекта (шаг 6).{% endif %}" data-later="Отложено: в Hub ничего не переносится, вернитесь к находке позже." data-none="Выберите решение в шаге 5: ложное срабатывание или подтверждённый дефект." data-dirty="Решение изменено: сохраните его (комментарий ложного срабатывания сохраняется и при копировании), затем копируйте текст для Hub.">{% if defect.ready %}{% if go_create %}Дефект готов: нажмите «Создать дефект» (шаг 6). Копирование нужно, только если заводите дефект в Hub вручную.{% else %}Дефект: текст – в описание дефекта в Hub, заголовок – в его название (шаг 6).{% endif %}{% elif sast_outcome == "false_positive" and hub_send and hub_send.fixed %}Ложное срабатывание: у находки в Hub статус «Fixed», менять в Hub нечего.{% if is_draft %} Сохраните решение.{% endif %}{% elif sast_outcome == "false_positive" %}Ложное срабатывание: скопируйте комментарий и вставьте его в Hub при смене статуса находки (шаг 6).{% elif sast_outcome == "true_positive" %}{% if go_create %}Подтверждённый дефект: сохраните решение, затем создайте дефект (шаг 6).{% else %}Подтверждённый дефект: сохраните решение, затем скопируйте заголовок и текст дефекта (шаг 6).{% endif %}{% elif sast_outcome == "later" %}Отложено: в Hub ничего не переносится, вернитесь к находке позже.{% else %}Выберите решение в шаге 5: ложное срабатывание или подтверждённый дефект.{% endif %}</p>
+  <p class="bar-status"><span class="dirty-note small" id="dirty-note" hidden>Есть несохранённые изменения</span><span class="take-note small" id="take-note" role="status" aria-live="polite" data-text="Решение подставлено – сохраните" hidden></span><span class="copy-status" id="copy-status" role="status" aria-live="polite"></span><span class="unreviewed-note small" id="unreviewed-note" hidden>Находка останется непроверенной</span><span class="entered-note small" id="entered-note"{% if not entered %} hidden{% endif %}>Внесено в Hub. <button type="submit" class="btn btn-ghost btn-small" form="unenter-form" id="unmark-entered">Снять отметку</button></span>{% if hub_defect and hub_defect.unenter %}<span class="small text-warn" id="unenter-defect-row"{% if not entered %} hidden{% endif %}><span id="unenter-defect-text">{{ hub_defect.unenter }}</span> <label class="check"><input type="checkbox" name="defect_confirm" value="1" form="unenter-form" id="unenter-defect-confirm"> снять, дефект в Hub останется прежним</label></span>{% endif %}</p>
+  <form method="post" action="{{ card_base }}/entered{{ sel_q }}" id="unenter-form" data-ajax data-include="review-revision" hidden>
+    <input type="hidden" name="entered" value="0">
+  </form>
+</div>
+{% endif %}
+{% endblock %}

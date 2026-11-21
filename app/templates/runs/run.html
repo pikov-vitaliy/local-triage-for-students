@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Прогон №{{ run.id }} · {{ project.name }} · Локальный триаж{% endblock %}
+{% block page %}run{% endblock %}
+{% block wide %} wrap-wide{% endblock %}
+{% block subnav %}{% from "macros.html" import project_tabs %}{{ project_tabs(project, counts.total, review_stats.sca, "overview", counts.defects) }}{% endblock %}
+{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Прогон&nbsp;№{{ run.id }}</span>{% endblock %}
+{% block content %}
+{% from "macros.html" import verdict_badge, icon, collector_warning %}
+{% set s = status %}
+{% set m = s.metrics %}
+{% set r = s.run %}
+<div id="run" data-events="/runs/{{ run.id }}/events">
+  <div class="page-head">
+    <h1>Прогон&nbsp;№{{ run.id }} <span id="run-state" class="state state-{{ r.state }}">{{ r.state_label }}</span></h1>
+    <p class="muted dot-list" title="Версия промпта {{ r.prompt_version }}"><span>модель <span class="mono">{{ r.model }}</span></span>{% if executor %}<span id="run-executor">профиль: {{ executor }}</span>{% endif %}<span>охват: {{ SCOPE_LABELS.get(r.scope, r.scope) }}</span><span>находок {{ r.total }}</span>{% if r.fresh %}<span>заново, без готовых вердиктов</span>{% endif %}</p>
+    {% if excluded is none %}<p class="small muted" id="run-excluded">Исправленные и закрытые в Hub: сведений нет.</p>
+    {% elif excluded %}<p class="small muted" id="run-excluded">Исправлено в Hub – {{ excluded.fixed }}, закрыто решением – {{ excluded.closed }}: не разбиралось.</p>{% endif %}
+    {% if summary and summary.total %}<p class="small" id="run-summary" data-final="{{ 1 if run_final else 0 }}">Итог прогона ({{ summary.new }} новых ответов модели, {{ summary.cached }} готовых): истинных – {{ summary.verdicts.get('true_positive', 0) }}, ложных – {{ summary.verdicts.get('false_positive', 0) }}, неясно – {{ summary.verdicts.get('uncertain', 0) }}{% if summary.verdicts.get('uncertain') %}, из них без кода в клоне – {{ summary.uncertain_no_code }} (по текущим срезам){% endif %}. Hub и модель разошлись – {{ summary.hub_model_diff }} (по текущему состоянию Hub).</p>
+    {% elif not run_final %}<p class="small" id="run-summary" data-final="0" hidden></p>{% endif %}
+    <p class="actions run-review-actions">
+      <a class="btn btn-ghost" id="review-findings" href="{% if first_unreviewed %}/projects/{{ project.id }}/findings/{{ first_unreviewed }}{% else %}/projects/{{ project.id }}/findings?kind=SAST{% endif %}">Разбирать находки</a>
+      <a class="btn btn-ghost" href="/projects/{{ project.id }}/findings?kind=SAST">К находкам</a>
+    </p>
+  </div>
+
+  <section class="panel" aria-label="Ход прогона">
+    <p id="conn-lost" class="callout callout-warn" role="status" hidden>Нет связи с приложением: данные на странице могут быть устаревшими. Переподключение…</p>
+    <div class="run-progress">
+      <div class="progress-line">
+        <progress id="run-progress" max="{{ r.total or 1 }}" value="{{ r.done }}" aria-label="Обработано находок"></progress>
+        <strong id="progress-pct">{{ s.progress|round|int }}%</strong>
+      </div>
+      <p class="eta"><span class="muted small">Осталось</span> <strong id="eta">{% if s.eta_s is not none %}~{{ s.eta_s|duration }}{% elif r.state in ("done", "stopped", "error") %}–{% elif r.state == "paused" %}на паузе{% else %}оценка после трёх ответов{% endif %}</strong></p>
+    </div>
+    <p id="progress-text" aria-live="polite">Обработано {{ r.done }} из {{ r.total }}{% if s.new_verdicts %} · новых вердиктов {{ s.new_verdicts }}{% endif %}{% if r.cached %} · готовых {{ r.cached }}{% endif %}{% if r.skipped %} · пропущено {{ r.skipped }}{% endif %}{% if r.failed %} · ошибок {{ r.failed }}{% endif %}</p>
+    <dl class="facts facts-inline">
+      <div><dt>Длительность</dt><dd id="elapsed">{{ s.elapsed_s|duration }}</dd></div>
+      <div><dt>В среднем на находку</dt><dd id="avg-call">{{ s.avg_call_s|duration }}</dd></div>
+    </dl>
+    <p id="current" class="current"{% if not s.current %} hidden{% endif %}>Сейчас: <a id="current-link" class="mono" href="{{ s.current.url if s.current and s.current.url else '#' }}">{{ s.current.hub_id if s.current else "" }}</a> <span id="current-phase" class="muted">{{ s.current.phase_label if s.current else "" }}</span></p>
+    <p id="control-note" class="muted"{% if not s.control %} hidden{% endif %}>{% if s.control == "stop" %}Остановка после текущей находки…{% else %}Пауза после текущей находки…{% endif %}</p>
+    <p id="run-notice" class="callout callout-warn" role="status"{% if not r.notice %} hidden{% endif %}>{{ r.notice }}</p>
+    <p id="journal-warning" class="callout callout-warn" role="status"{% if not s.journal_warning %} hidden{% endif %}>{{ s.journal_warning }}</p>
+    <p id="slow-model" class="callout {{ 'callout-warn' if s.slow_model and s.slow_model.warning else 'callout-info' }}" role="status"{% if not s.slow_model %} hidden{% endif %}>{{ s.slow_model.text if s.slow_model else "" }}</p>
+    <div class="actions run-actions" id="run-actions" data-state="{{ r.state }}">
+      <form method="post" action="/runs/{{ run.id }}/pause" class="act act-pause"><button type="submit" class="btn">Пауза</button></form>
+      <form method="post" action="/runs/{{ run.id }}/resume" class="act act-resume"><button type="submit" class="btn">Продолжить</button></form>
+      <form method="post" action="/runs/{{ run.id }}/stop" class="act act-stop" data-confirm="Остановить прогон?">
+        <button type="submit" class="btn btn-danger">Стоп</button></form>
+      <a class="btn btn-ghost act act-new" href="/projects/{{ project.id }}#step3">Новый прогон</a>
+    </div>
+  </section>
+
+  {% set e = s.errors %}
+  <section class="panel run-errors" id="run-errors" aria-labelledby="errors-title"{% if not e.total %} hidden{% endif %}>
+    <div class="panel-head">
+      <h2 id="errors-title">Ошибки: <span id="errors-total">{{ e.total }}</span></h2>
+      <p class="hint" id="errors-breakdown">{% for g in e.groups if g.count %}{{ g.label }}: {{ g.count }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+    </div>
+    <details class="run-errors-details">
+      <summary>Показать находки с ошибкой</summary>
+      <div id="errors-groups">
+      {% for g in e.groups if g.count %}
+        <section class="error-group" data-error-group="{{ g.key }}">
+          <h3>{{ g.label }} <span class="muted">· {{ g.count }}</span></h3>
+          <p class="hint">{{ g.hint }}</p>
+          <ul class="error-list">
+          {% for item in g.rows %}
+            <li class="error-item">
+              {% if item.url %}<a class="mono" href="{{ item.url }}">{{ item.hub_id }}</a>{% else %}<span class="mono">{{ item.hub_id }}</span>{% endif %}
+              {% if item.rule %}<span class="muted small"> · {{ item.rule }}</span>{% endif %}
+              <span class="error-reason"> – {{ item.reason }}</span>
+              <details class="error-detail"><summary>Подробности</summary><p class="small mono">{{ item.detail }}</p></details>
+            </li>
+          {% endfor %}
+          </ul>
+        </section>
+      {% endfor %}
+      </div>
+    </details>
+    <form method="post" action="/runs/{{ run.id }}/retry-errors" id="retry-errors" class="actions"
+          data-confirm="Запустить новый прогон по находкам с ошибкой ({{ e.retryable }})? Прежний прогон останется в истории; если он на паузе, он будет остановлен."
+          {% if r.state not in ("done", "stopped", "error", "paused") or not (e.retryable or e.unknown) %}hidden{% endif %}>
+      <label class="check" id="retry-unknown"{% if not e.unknown %} hidden{% endif %}><input type="checkbox" name="include_unknown" value="1"> включая «результат неизвестен» (<span id="retry-unknown-count">{{ e.unknown }}</span>) – запрос по ним мог быть оплачен, повтор – новый платный запрос</label>
+      <button type="submit" class="btn" id="retry-errors-button">Повторить ошибочные ({{ e.retryable }})</button>
+      <span class="muted small" id="retry-errors-note">{{ e.note }}</span>
+    </form>
+    <p class="hint">Повтор идёт по сохранённым срезам кода той же моделью и без готовых вердиктов: клоны для него не нужны.</p>
+  </section>
+
+  {# сборщик метрик компьютера не работает – о модели на этом компьютере (у сервера в сети этих метрик нет) #}
+  {% if s.remote_executor %}
+  {# модель у провайдера: видеокарты и памяти этого компьютера прогон не занимает; без сборщика не уходят внешние
+     запросы – предупреждение о нём здесь про это (при упавшем сборщике прогон встаёт на паузу) #}
+  {% if run.execution_id and (s.remote_where or "").startswith("у внешнего") %}{{ collector_warning(collector, "external", external_on, hidden=not (collector.state in ("stale", "missing")), id="collector-warning-external") }}{% endif %}
+  <section class="tiles" aria-label="Скорость ответа модели">
+    <div class="tile tile-wide"><div class="tile-label">Где работает модель</div><div class="tile-value tile-value-text">{{ s.remote_where }}</div><div class="tile-sub">Видеокарта и память этого компьютера к прогону не относятся – их метрики здесь не показываются.</div></div>
+    <div class="tile">
+      <div class="tile-label">Скорость ответа, ток/с</div>
+      <div class="tile-value" id="m-tps">{{ s.tps_last|num }}</div>
+      <div class="tile-sub">в среднем по ответам прогона, с ожиданием сервера <span id="m-tps-avg" hidden>{{ s.tps_avg|num }}</span><span id="m-tps-partial" title="У стольких находок ответа модели целиком нет (сбой связи или сервера): что модель успела сгенерировать, в среднюю скорость не вошло"{% if not r.partial_stats %} hidden{% endif %}>{% if r.partial_stats %} · замеры неполные: {{ r.partial_stats }}{% endif %}</span></div>
+    </div>
+  </section>
+  {% else %}
+  {{ collector_warning(collector, "metrics", external_on, hidden=not (collector.state in ("stale", "missing") and (m.host or {}).status != "remote")) }}
+  <section class="tiles" aria-label="Метрики видеокарты и модели">
+    <div class="tile"><div class="tile-label">RAM компьютера с Ollama</div><div class="tile-value" id="obs-ram">Ожидаем измерение</div><div class="tile-sub" id="obs-ram-source">Нужен сборщик Windows-хоста</div></div>
+    <div class="tile"><div class="tile-label">CPU компьютера</div><div class="tile-value" id="obs-cpu">–</div><div class="tile-sub">Измерение Windows-хоста</div></div>
+    <div class="tile">
+      <div class="tile-label">Последний завершённый ответ, ток/с</div>
+      <div class="tile-value" id="m-tps">{{ s.tps_last|num }}</div>
+      <div class="tile-sub">в среднем <span id="m-tps-avg">{{ s.tps_avg|num }}</span><span id="m-tps-partial" title="У стольких находок ответа модели целиком нет (сбой связи или сервера): что модель успела сгенерировать, в среднюю скорость не вошло"{% if not r.partial_stats %} hidden{% endif %}>{% if r.partial_stats %} · замеры неполные: {{ r.partial_stats }}{% endif %}</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Видеопамять</div>
+      <div class="tile-value" id="m-vram">{{ m.vram_used_mb|mib }}</div>
+      <div class="tile-sub">
+        <progress id="m-vram-bar" max="{{ m.vram_total_mb or 1 }}" value="{{ m.vram_used_mb or 0 }}" aria-label="Занятая видеопамять"{% if not m.vram_total_mb %} hidden{% endif %}></progress>
+        <span id="m-vram-total">{% if m.vram_total_mb %}из {{ m.vram_total_mb|mib }}{% elif m.vram_source == "ollama" %}по данным Ollama{% endif %}</span>
+      </div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Загрузка видеокарты</div>
+      <div class="tile-value" id="m-util">{% if m.gpu and m.gpu.util_pct is not none %}{{ m.gpu.util_pct|num(0) }}%{% else %}–{% endif %}</div>
+      <div class="tile-sub" id="m-power">{% if m.gpu and m.gpu.power_w is not none %}{{ m.gpu.power_w|num(0) }} Вт{% endif %}</div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Температура</div>
+      <div class="tile-value" id="m-temp">{% if m.gpu and m.gpu.temp_c is not none %}{{ m.gpu.temp_c|num(0) }} °C{% else %}–{% endif %}</div>
+      <div class="tile-sub" id="m-gpu-name">{% if m.gpu %}{{ m.gpu.name }}{% elif m.pending %}измерение ещё не готово{% elif m.server and m.server.local == false %}видеокарта сервера в сети не показывается{% else %}nvidia-smi недоступна{% endif %}</div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Модель прогона в памяти</div>
+      {% set lm = s.run_model %}
+      {% set others = m.models|rejectattr("name", "equalto", lm.name if lm else "")|map(attribute="name")|list %}
+      <div class="tile-value tile-value-text mono" id="m-model">{{ lm.name if lm else ("ещё не измерено" if m.pending else "не загружена") }}</div>
+      <div class="tile-sub" id="m-model-vram">{% if lm and lm.vram_pct is not none %}{{ lm.vram_pct }}% в видеопамяти{% elif others %}в памяти: {{ others|join(", ") }}{% endif %}</div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="panel" id="run-observer" aria-labelledby="obs-title"><h2 id="obs-title">Состояние обработки</h2><p id="obs-health" role="status">Получаем свежие данные…</p><p class="small" id="obs-result-time"></p><p class="small muted" id="obs-resource-time"></p>{% if not s.remote_executor %}<label>История ресурсов <select id="obs-window"><option value="15m">15 минут</option><option value="24h">24 часа</option></select></label><div class="resource-charts"><figure><figcaption>GPU, %</figcaption><svg id="obs-gpu-chart" role="img" aria-label="Загрузка GPU" viewBox="0 0 320 85"></svg></figure><figure><figcaption>Видеопамять, MiB</figcaption><svg id="obs-vram-chart" role="img" aria-label="Видеопамять" viewBox="0 0 320 85"></svg></figure><figure><figcaption>RAM компьютера, GiB</figcaption><svg id="obs-ram-chart" role="img" aria-label="Оперативная память компьютера" viewBox="0 0 320 85"></svg></figure></div><p class="hint">Общая загрузка видеокарты включает другие программы. Наличие модели в памяти само по себе не подтверждает обработку запроса.</p><details><summary>Как включить RAM/CPU хоста</summary>{% if STAND == "npm" %}<p>В учебном стенде сведения о компьютере пишет окно стенда: если их нет, закройте окно и запустите стенд снова командой <code>npx local-triage</code>.</p>{% else %}<p>При запуске через start.ps1 сборщик запускается автоматически. Для отдельного запуска в PowerShell: <code>.\scripts\host-metrics.ps1 -Action Start</code>. Память контейнера не подменяет RAM компьютера.</p>{% endif %}</details>{% endif %}</section>
+  <details class="panel" id="obs-gpus" hidden><summary>Отдельные видеокарты</summary><p class="hint">Общая память и мощность суммируются; загрузка и температура показывают максимум среди известных значений.</p><ul id="obs-gpu-list"></ul></details>
+  <section class="panel" aria-labelledby="feed-title">
+    <h2 id="feed-title">Последние вердикты</h2>
+    <div class="table-wrap">
+    <table class="table table-feed">
+      <thead><tr><th scope="col">ID</th><th scope="col">Вердикт</th><th scope="col">Правило</th><th scope="col" class="num">Время</th><th scope="col" class="num">ток/с</th></tr></thead>
+      <tbody id="feed">
+      {% for item in s.feed %}
+        <tr>
+          <td data-label="ID">{% if item.url %}<a class="mono" href="{{ item.url }}">{{ item.hub_id }}</a>{% else %}<span class="mono">{{ item.hub_id }}</span>{% endif %}</td>
+          <td data-label="Вердикт">{% if item.verdict %}{{ verdict_badge(item.verdict, item.confidence) }}{% if item.state == "cached" %} <span class="muted small">готовый</span>{% endif %}{% else %}<span class="badge item-{{ item.state }}"{% if item.error %} title="{{ item.error }}"{% endif %}>{{ item.error_label if item.state == "error" and item.error_label else item.state_label }}</span>{% if item.error and item.state != "error" %}<span class="muted small block">{{ item.error }}</span>{% endif %}{% endif %}</td>
+          <td data-label="Правило" class="small">{{ item.rule }}</td>
+          <td data-label="Время" class="num">{{ item.seconds|duration if item.seconds is not none else "–" }}</td>
+          <td data-label="ток/с" class="num">{{ item.eval_tps|num }}</td>
+        </tr>
+      {% else %}
+        <tr class="feed-empty"><td colspan="5" class="muted">Пока ничего не обработано.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

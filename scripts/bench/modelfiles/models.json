@@ -1,0 +1,33 @@
+{
+ "about": "Модели замера, собранные из весов с hf.co или из другой модели Ollama: источник, шаблон диалога (RENDERER, PARSER) и параметры. По ним make_modelfile.py готовит Modelfile для ollama create.",
+ "models": {
+  "qwen36-a3b-iq3": {
+   "source": "hf.co/unsloth/Qwen3.6-35B-A3B-GGUF:UD-IQ3_XXS",
+   "keep_projector": false,
+   "renderer": "qwen3.5",
+   "parser": "qwen3.5",
+   "parameters": {"num_ctx": 16384, "temperature": 0.7, "top_p": 0.8, "top_k": 20}
+  },
+  "qwen38-27b-iq3": {
+   "source": "hf.co/ISTA-DASLab/Qwen3.8-27B-GSQ-RCO-GGUF:IQ3_S",
+   "keep_projector": false,
+   "renderer": "qwen3.8",
+   "parser": "qwen3.5",
+   "parameters": {"num_ctx": 16384, "temperature": 0.7, "top_p": 0.8, "top_k": 20}
+  },
+  "gemma4-26b-a4b-q3-text": {
+   "source": "hf.co/unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q3_K_XL",
+   "keep_projector": false,
+   "renderer": "gemma4",
+   "parser": "gemma4",
+   "parameters": {"temperature": 1, "top_k": 64, "top_p": 0.95}
+  },
+  "ornith-1.5-9b-qwen35": {
+   "source": "ornith-1.5:9b",
+   "keep_projector": true,
+   "renderer": "qwen3.5",
+   "parser": "qwen3.5",
+   "parameters": {"presence_penalty": 1.5, "temperature": 1, "top_k": 20, "top_p": 0.95}
+  }
+ }
+}

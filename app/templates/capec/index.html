@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% from "worklists.html" import pager, sort_heading with context %}
+{% from "macros.html" import catalog_link, icon, stat, project_tabs with context %}
+{% block wide %} wrap-wide{% endblock %}
+{% block title %}Справочник CAPEC · Локальный триаж{% endblock %}
+{% block page %}capec{% endblock %}
+{% block crumbs %}<a href="{{ work_link('/') }}">Проекты</a><span aria-hidden="true"> / </span>{% if project %}<a class="crumb-project" href="{{ work_link('/projects/' ~ project.id) }}">{{ project.name }}</a><span aria-hidden="true"> / </span>{% endif %}<span aria-current="page">Справочник CAPEC</span>{% endblock %}
+{% block subnav %}{% if project and counts %}{{ project_tabs(project, counts.total, review_stats.sca, "capec", counts.defects) }}{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Справочник CAPEC</h1>
+    <p class="page-sub">Сценарии атак для проверки предпосылок и разбора находок. Связь с CWE не подтверждает эксплуатацию.</p>
+  </div>
+  <div class="page-actions"><a class="btn btn-ghost" href="{{ work_link('/feeds#feed-capec') }}">{{ icon("book") }}Загрузить каталог</a></div>
+</div>
+{% if not meta %}<p class="empty">Загрузите полный архив <span class="mono">capec_latest.zip</span> на странице <a href="{{ work_link('/feeds#feed-capec') }}">«Справочники»</a>.</p>
+{% else %}
+<section class="panel panel-compact" aria-label="Сведения о каталоге">
+  <div class="stats">
+    {% if coverage is defined %}
+    {{ stat(coverage.total, "Находок в выборке") }}
+    {{ stat(coverage.cwe, "С CWE") }}
+    {{ stat(coverage.linked, "С прямой связью CAPEC") }}
+    {% endif %}
+    {% for item in kind_stats %}{% if item.count or not project %}
+    {{ stat(item.count, item.label, sub=("CAPEC " ~ meta.version ~ " от " ~ meta.source_date) if loop.first else "", href=work_link(item.url), active=item.active) }}
+    {% endif %}{% endfor %}
+  </div>
+  {% if coverage is defined %}<p class="hint capec-coverage-note">Числа находок – справочное покрытие, а не число подтверждённых уязвимостей. Здесь сценарии находок проекта; весь каталог – <a id="capec-whole-catalog" href="{{ work_link('/capec') }}">справочник CAPEC</a>.</p>{% endif %}
+</section>
+
+{% set extra_keys = ["abstraction", "status", "likelihood", "taxonomy", "view", "has_flow", "include_retired", "finding_kind", "codebase", "finding_severity", "reviewed", "cvss_min", "cvss_max", "cvss_version"] %}
+{% set extra_count = namespace(n=0) %}
+{% for key in extra_keys %}{% if filters.get(key) %}{% set extra_count.n = extra_count.n + 1 %}{% endif %}{% endfor %}
+{% if filters.get("cwe_mode") == "all" %}{% set extra_count.n = extra_count.n + 1 %}{% endif %}
+{% set has_filters = extra_count.n or filters.get("q") or filters.get("cwe") or filters.get("severity") or (filters.get("kind") and filters.get("kind") != "pattern") or (filters.get("sort") and filters.get("sort") != "id_asc") %}
+<form method="get" action="{{ path }}" class="filters catalog-filters" id="capec-filters">{% include 'navigation-fields.html' %}
+  <input type="hidden" name="page_size" value="{{ worklist.size }}">
+  <div class="catalog-filter-grid">
+    <label class="filter-group catalog-filter-wide"><span class="filter-label">Поиск по номеру или названию</span><input type="search" name="q" value="{{ filters.q }}" placeholder="CAPEC-66, CWE-89, SQL injection" autocomplete="off"></label>
+    <label class="filter-group"><span class="filter-label">Вид записи</span><select name="kind">{% for k,label in kind_labels.items() %}<option value="{{ k }}"{% if filters.kind==k %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label class="filter-group"><span class="filter-label">Typical Severity</span><select name="severity"><option value="">все</option>{% for v in choices.severity %}<option value="{{ v }}"{% if filters.severity==v %} selected{% endif %}>{{ v }}</option>{% endfor %}<option value="__empty__"{% if filters.severity=='__empty__' %} selected{% endif %}>не указано</option></select></label>
+    <label class="filter-group"><span class="filter-label">CWE</span><input type="text" name="cwe" value="{{ filters.cwe }}" placeholder="CWE-89, CWE-22"></label>
+    <div class="filter-actions">
+      <button type="submit" class="btn">Показать</button>
+      {% if has_filters %}<a class="btn btn-ghost" href="{{ work_link((path)) }}">Сбросить</a>{% endif %}
+    </div>
+  </div>
+  <details class="filters-more" id="capec-filters-more"{% if extra_count.n %} open{% endif %}>
+    <summary>Все фильтры{% if extra_count.n %} · выбрано {{ extra_count.n }}{% endif %}</summary>
+    <div class="catalog-filter-grid">
+      {% for key,label in [('abstraction','Abstraction'),('status','Status'),('likelihood','Likelihood Of Attack'),('taxonomy','Taxonomy Mappings')] %}
+      <label class="filter-group"><span class="filter-label">{{ label }}</span><select name="{{ key }}"><option value="">все</option>{% for v in choices[key] %}<option value="{{ v }}"{% if filters[key]==v %} selected{% endif %}>{{ v }}</option>{% endfor %}<option value="__empty__"{% if filters[key]=='__empty__' %} selected{% endif %}>не указано</option></select></label>
+      {% endfor %}
+      <label class="filter-group"><span class="filter-label">Несколько CWE</span><select name="cwe_mode"><option value="any">любой</option><option value="all"{% if filters.cwe_mode=='all' %} selected{% endif %}>все</option></select></label>
+      <label class="filter-group"><span class="filter-label">View</span><select name="view"><option value="">все</option>{% for v in views %}<option value="{{ v.id }}"{% if filters.view in (v.id,v.id.split('-')[-1]) %} selected{% endif %}>{{ v.name }}</option>{% endfor %}</select></label>
+      <label class="filter-group"><span class="filter-label">Execution Flow</span><select name="has_flow"><option value="">все</option><option value="yes"{% if filters.has_flow=='yes' %} selected{% endif %}>есть</option><option value="no"{% if filters.has_flow=='no' %} selected{% endif %}>нет</option></select></label>
+      <label class="filter-group"><span class="filter-label">Сортировка</span><select name="sort">{% for key,label in [('id','ID'),('name','Name'),('abstraction','Abstraction'),('severity','Typical Severity'),('likelihood','Likelihood Of Attack')] %}{% for direction,arrow in [('asc','↑'),('desc','↓')] %}<option value="{{ key }}_{{ direction }}"{% if filters.sort==key+'_'+direction %} selected{% endif %}>{{ label }} {{ arrow }}</option>{% endfor %}{% endfor %}</select></label>
+      <label class="check catalog-filter-check"><input type="checkbox" name="include_retired" value="1"{% if filters.include_retired %} checked{% endif %}> Включая Deprecated и Obsolete</label>
+    </div>
+    {% if project %}
+    <fieldset class="capec-source-filters">
+      <legend class="filter-label">Исходные находки проекта {{ project.name }}</legend>
+      <div class="catalog-filter-grid">
+        <label class="filter-group"><span class="filter-label">Вид анализа</span><select name="finding_kind"><option value="">все</option>{% for k in ['SAST','SCA','SCA-license','DAST'] %}<option{% if filters.finding_kind==k %} selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+        <label class="filter-group"><span class="filter-label">Кодовая база</span><select name="codebase"><option value="">все</option>{% for k in project_codebases if k %}<option{% if filters.codebase==k %} selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+        <label class="filter-group"><span class="filter-label">Критичность находки</span><select name="finding_severity"><option value="">все</option>{% for k in ['critical','high','medium','low','info'] %}<option{% if filters.finding_severity==k %} selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+        <label class="filter-group"><span class="filter-label">Проверено</span><select name="reviewed"><option value="">все</option><option value="yes"{% if filters.reviewed=='yes' %} selected{% endif %}>да</option><option value="no"{% if filters.reviewed=='no' %} selected{% endif %}>нет</option></select></label>
+        <label class="filter-group"><span class="filter-label">CVSS от</span><input name="cvss_min" type="number" min="0" max="10" step="0.1" value="{{ filters.cvss_min }}"></label>
+        <label class="filter-group"><span class="filter-label">CVSS до</span><input name="cvss_max" type="number" min="0" max="10" step="0.1" value="{{ filters.cvss_max }}"></label>
+        <label class="filter-group"><span class="filter-label">Версия CVSS</span><select name="cvss_version"><option value="">все</option>{% for k in ['3.1','3.0','4.0','2.0'] %}<option{% if filters.cvss_version==k %} selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+      </div>
+    </fieldset>
+    {% endif %}
+  </details>
+</form>
+{% if notice %}<p class="callout callout-warn">{{ notice }}</p>{% endif %}
+
+<section class="panel panel-flush" id="capec-results" aria-labelledby="capec-list-title">
+  <div class="panel-head">
+    <h2 id="capec-list-title">Сценарии атак</h2>
+    <div class="panel-actions"><span class="muted small" id="capec-hidden-note">{{ "Сценариев находок проекта этого вида" if project else "В каталоге этого вида записей" }}: {{ catalog_size }}{% if hidden_count %}, из них устаревших (Deprecated, Obsolete) скрыто: {{ hidden_count }} · <a id="capec-show-retired" href="{{ work_link(worklist.url(include_retired='1', page=1) ~ '#capec-results') }}">показать</a>{% endif %}</span></div>
+  </div>
+  {{ pager(worklist, 'top') }}
+  <div class="table-wrap">
+    <table class="table table-compact">
+      <thead><tr>
+        <th scope="col"{% if filters.sort == "id_asc" %} aria-sort="ascending"{% elif filters.sort == "id_desc" %} aria-sort="descending"{% elif filters.sort == "name_asc" %} aria-sort="ascending"{% elif filters.sort == "name_desc" %} aria-sort="descending"{% endif %}>{{ sort_heading(worklist, "id", "ID") }} / {{ sort_heading(worklist, "name", "Name") }}</th>
+        {% for key, label in [("abstraction", "Abstraction"), ("severity", "Typical Severity"), ("likelihood", "Likelihood Of Attack")] %}
+        <th scope="col"{% if filters.sort == key ~ "_asc" %} aria-sort="ascending"{% elif filters.sort == key ~ "_desc" %} aria-sort="descending"{% endif %}>{{ sort_heading(worklist, key, label) }}</th>
+        {% endfor %}
+        <th scope="col">Related Weaknesses</th>
+        {% if project %}<th scope="col">Находок</th>{% endif %}
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td data-label="ID / Name"><a class="rule-link" href="{{ work_link('/capec/' ~ (row.id) ~ '?back=' ~ (current_url|urlencode)) }}"><strong class="catalog-id">{{ row.id }}</strong> · {{ row.name }}</a><span class="small muted block">{{ kind_labels[row.kind] }} · {{ row.status }}</span></td>
+          <td data-label="Abstraction">{{ row.abstraction or '–' }}</td>
+          <td data-label="Typical Severity">{{ row.severity or '–' }}</td>
+          <td data-label="Likelihood Of Attack">{{ row.likelihood or '–' }}</td>
+          <td data-label="Related Weaknesses"><details class="capec-cwes"><summary>CWE: {{ row.cwes|length }}{% if row.has_flow %} · есть шаги{% endif %}</summary>{% for cwe in row.cwes %}{{ catalog_link('cwe', cwe) }} {% endfor %}</details></td>
+          {% if project %}<td data-label="Находок" class="nowrap"><a title="Показать связанные находки {{ row.id }}" href="{{ work_link((path) ~ '?' ~ (scenario_query) ~ '&scenario=' ~ (row.id) ~ '#source-findings') }}">{{ matches.get(row.id,[])|length }}</a></td>{% endif %}
+        </tr>
+      {% else %}
+        <tr><td colspan="6">Ничего не найдено. Измените или сбросьте фильтры.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{ pager(worklist, 'bottom') }}
+
+{% if scenario %}
+<section class="panel" id="source-findings" tabindex="-1">
+  <div class="panel-head">
+    <h2>Исходные находки · {{ scenario }} · {{ finding_count }}</h2>
+    <div class="panel-actions"><a id="clear-scenario" class="btn btn-ghost btn-small" href="{{ work_link(scenario_reset) }}">Вернуться к таблице сценариев</a></div>
+  </div>
+  <p class="hint">Каждый исходный ID сохранён. Связь справочная, вывод о применимости принимает оператор.</p>
+  <ul class="capec-findings">{% for r in project_findings %}<li><a href="{{ work_link('/projects/' ~ (project.id) ~ '/findings/' ~ (r.id)) }}">{{ r.hub_id }}</a> · {{ r.kind }} · {{ r.severity }}</li>{% else %}<li>Для этого сценария в текущей выборке находок нет.</li>{% endfor %}</ul>
+  <div class="cluster capec-findings-pages"><span class="muted small">Страница {{ finding_page }} из {{ finding_pages }}</span>{% if finding_prev %}<a class="btn btn-small" href="{{ work_link((finding_prev)) }}">← Предыдущие находки</a>{% endif %}{% if finding_next %}<a class="btn btn-small" href="{{ work_link((finding_next)) }}">Следующие находки →</a>{% endif %}</div>
+</section>
+{% endif %}
+
+<p class="hint">Типовая тяжесть и вероятность относятся к шаблону, не к оценке риска проекта. Данные MITRE CAPEC {{ meta.version }} от {{ meta.source_date }}, загружены {{ meta.loaded_at|ts }} · <a href="/static/capec-license.txt" target="_blank" rel="noopener">{{ icon("external") }}Условия использования</a></p>
+{% endif %}{% endblock %}

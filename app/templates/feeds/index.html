@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon %}
+{% block title %}Справочники · Локальный триаж{% endblock %}
+{% block page %}feeds{% endblock %}
+{% block crumbs %}<a href="{{ work_link('/') }}">Проекты</a><span aria-hidden="true"> / </span><span aria-current="page">Справочники</span>{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Справочники уязвимостей</h1>
+    <p class="page-sub">Сведения об уязвимостях на языке источников без интернета: файлы скачиваете вы, приложение только читает их. Справочники общие для всех проектов.</p>
+  </div>
+</div>
+
+{% if job.state == "running" %}
+<div class="callout callout-info" id="feed-job" role="status" data-poll="/feeds/job" data-poll-interval="2000">
+  <p><span class="spinner" aria-hidden="true"></span> <strong>Загружается {{ job.label }}</strong> – файл <span class="mono">{{ job.filename }}</span>. Выгрузка БДУ разбирается около минуты; страница обновится сама. Карточки пока видят прежний справочник.</p>
+  <form method="post" action="/feeds/cancel" class="inline-form"><button type="submit" class="btn btn-small" id="feed-cancel">Остановить загрузку</button></form>
+</div>
+{% elif job.message %}
+<p class="callout {{ 'callout-err' if job.state == 'error' else 'callout-ok' }}" id="feed-job" role="status">{{ job.message }}</p>
+{% endif %}
+
+<div class="cards">
+{% for kind, label in kinds.items() %}
+{% set s = status.get(kind) %}
+<section class="panel" id="feed-{{ kind }}" aria-labelledby="feed-{{ kind }}-title">
+  <h2 id="feed-{{ kind }}-title">{{ icon("book") }} {{ label }}</h2>
+  {% if s %}
+  <dl class="facts">
+    <div><dt>Записей</dt><dd id="feed-{{ kind }}-records">{{ s.records }}</dd></div>
+    {% if s.source_date %}<div><dt>{{ "Дата каталога" if kind in ("cwe","capec") else "Последнее обновление записи" }}</dt><dd>{{ s.source_date }}</dd></div>{% endif %}
+    {% if s.version %}<div><dt>Версия</dt><dd>{{ s.version }}</dd></div>{% endif %}
+    <div><dt>Файл</dt><dd class="mono break">{{ s.filename }}</dd></div>
+    <div><dt>Загружен</dt><dd><time datetime="{{ s.loaded_at }}">{{ s.loaded_at|ts }}</time>{% if s.seconds %} · {{ s.seconds|duration }}{% endif %}</dd></div>
+    <div><dt>Объём XML</dt><dd>{{ s.xml_bytes|size }}</dd></div>
+  </dl>
+  {% else %}
+  <p class="empty" id="feed-{{ kind }}-empty">Ещё не загружен.</p>
+  {% endif %}
+  {% if kind == "capec" and capec_profile %}<p class="hint">Шаблонов {{ capec_profile.counts.pattern }}, категорий {{ capec_profile.counts.category }}, представлений {{ capec_profile.counts.view }}. <a href="{{ work_link('/capec') }}">Открыть каталог CAPEC</a></p>{% endif %}
+  {% if kind == "bdu" %}
+  <p class="hint">Выгрузка базы данных угроз безопасности информации ФСТЭК России – архив <span class="mono">vulxml.zip</span> с сайта БДУ (раздел выгрузки уязвимостей). Даёт описание, уровень опасности, способ устранения и источники по-русски для находок SCA – по CVE, которые знает приложение (из выгрузки Hub, ответа агента или соответствия AST → CVE), а также русские названия классов CWE.</p>
+  {% elif kind == 'cwe' %}
+  <p class="hint">Каталог классов уязвимостей MITRE – архив <span class="mono">cwec_latest.xml.zip</span> с сайта CWE. Даёт название и описание класса CWE в карточке SAST и в тексте дефекта.</p>
+  {% endif %}
+  {% if kind == 'capec' %}<p class="hint">Полный каталог MITRE: <a href="https://capec.mitre.org/data/archive/capec_latest.zip" target="_blank" rel="noopener noreferrer">capec_latest.zip</a>. Шаблоны атак, категории, представления и связи с CWE.</p><p><a class="btn" href="{{ work_link('/capec') }}">Открыть каталог CAPEC</a></p>{% endif %}
+  <form method="post" action="/feeds/{{ kind }}" enctype="multipart/form-data" class="stack-form upload-form">
+    <label class="dropzone">
+      <input type="file" name="file" accept=".zip" required id="feed-{{ kind }}-file">
+      <span class="dropzone-text">{{ icon("upload") }} Перетащите архив .zip или нажмите, чтобы выбрать</span>
+      <span class="dropzone-file" aria-live="polite"></span>
+    </label>
+    <div class="actions"><button type="submit" class="btn{{ ' btn-primary' if not s }}" data-busy="Загружаю…"{% if job.state == "running" %} disabled{% endif %}>{{ "Обновить" if s else "Загрузить" }}</button></div>
+  </form>
+</section>
+{% endfor %}
+</div>
+
+<section class="panel" aria-labelledby="feeds-rules-title">
+  <h2 id="feeds-rules-title">Как это устроено</h2>
+  <p class="hint">Файлы не уходят никуда: приложение не обращается к сайтам и не скачивает обновления само. Обновить справочник – загрузить новый архив: прежний заменяется, когда новый разобран целиком.</p>
+  <p class="hint">Архив – до {{ max_upload_mb }} МБ (предел MAX_UPLOAD_MB). XML с объявлениями DOCTYPE или ENTITY не принимается. Загрузка длится не дольше 30 минут; её можно остановить – прежний справочник при этом остаётся.</p>
+  <p class="hint">Справочники хранятся отдельно от проектов, в базе приложения; в репозиторий и образ они не входят.</p>
+</section>
+{% endblock %}

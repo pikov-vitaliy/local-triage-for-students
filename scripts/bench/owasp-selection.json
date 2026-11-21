@@ -1,0 +1,341 @@
+{
+ "about": "Отобранные тесты OWASP Benchmark для замера моделей: только номера и категории. Код тестов и ожидаемые ответы в репозиторий не кладутся: build_cases.py берёт их из клона OWASP Benchmark.",
+ "url": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+ "commit": "0a3113b7054a56a072e694ab65a2f8cd7405aeb7",
+ "expected_results": "expectedresults-1.2.csv",
+ "expected_results_sha256": "f0311c850dea7f15125113f7cfdbd7ad612d7f5951c7331584f6981b6ae2d630",
+ "categories": [
+  "sqli",
+  "cmdi",
+  "pathtraver",
+  "xss",
+  "ldapi",
+  "xpathi",
+  "trustbound",
+  "weakrand"
+ ],
+ "per_group": 5,
+ "rule": "в каждой категории – первые 5 настоящих и первые 5 ложных срабатываний по номеру теста (BenchmarkTestNNNNN), без исключений",
+ "tests": [
+  {
+   "id": "BenchmarkTest00001",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00002",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00004",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00006",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00007",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00008",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00010",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00011",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00012",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00013",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00014",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00015",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00017",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00018",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00021",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00023",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00024",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00025",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00026",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00028",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00030",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00031",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00036",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00040",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00041",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00042",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00044",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00051",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00052",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00063",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00064",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00066",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00067",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00068",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00077",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00078",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00090",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00093",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00094",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00095",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00096",
+   "category": "weakrand"
+  },
+  {
+   "id": "BenchmarkTest00097",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00098",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00099",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00104",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00105",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00107",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00110",
+   "category": "sqli"
+  },
+  {
+   "id": "BenchmarkTest00116",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00117",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00118",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00131",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00132",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00134",
+   "category": "pathtraver"
+  },
+  {
+   "id": "BenchmarkTest00138",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00139",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00147",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00151",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00158",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00171",
+   "category": "cmdi"
+  },
+  {
+   "id": "BenchmarkTest00189",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00207",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00250",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00251",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00252",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00275",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00277",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00278",
+   "category": "xss"
+  },
+  {
+   "id": "BenchmarkTest00321",
+   "category": "trustbound"
+  },
+  {
+   "id": "BenchmarkTest00367",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00442",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00520",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00530",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00607",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00630",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00683",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest00694",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest00701",
+   "category": "ldapi"
+  },
+  {
+   "id": "BenchmarkTest01223",
+   "category": "xpathi"
+  },
+  {
+   "id": "BenchmarkTest01224",
+   "category": "xpathi"
+  }
+ ]
+}

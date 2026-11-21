@@ -1,0 +1,51 @@
+{
+  "format": "local-triage/sca-answers/1",
+  "source": "Демо-агент",
+  "components": [
+    {
+      "ecosystem": "maven",
+      "component": "org.example.thirdparty:example-xml-parser",
+      "version": "2.3.1",
+      "vulnerabilities": ["CVE-2099-10001", "AST-2026-000101"],
+      "hub_safe_version": "2.3.9",
+      "conclusion": "update",
+      "recommended_version": "2.3.9",
+      "ids": {"AST-2026-000101": ["CVE-2099-10002"]},
+      "explanation": "Обе уязвимости – в разборе XML. CVE-2099-10002 (это AST-2026-000101): парсер по умолчанию подгружает внешние сущности (XXE), и через них можно прочитать файл сервера. CVE-2099-10001: вложенные сущности раскрываются без предела, и небольшой документ занимает всю память. Обе исправлены в 2.3.9 – там DTD и внешние сущности по умолчанию выключены. Обновление в пределах 2.3.x, старшая версия не меняется.",
+      "links": [
+        "https://vulndb.example/CVE-2099-10001",
+        "https://vulndb.example/CVE-2099-10002",
+        "https://repo.example/maven2/org/example/thirdparty/example-xml-parser/2.3.9/"
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "component": "demo-yaml-lib",
+      "version": "5.1.0",
+      "vulnerabilities": ["GHSA-abcd-1234-efgh"],
+      "hub_safe_version": "5.4.1",
+      "conclusion": "not_applicable",
+      "recommended_version": "",
+      "ids": {"GHSA-abcd-1234-efgh": []},
+      "explanation": "Сообщение GHSA-abcd-1234-efgh отозвано: авторы библиотеки и база уязвимостей признали его ошибочным – небезопасная загрузка YAML в версиях 5.x не подтвердилась. Затронутых версий нет, номер CVE не присваивался.",
+      "links": [
+        "https://vulndb.example/GHSA-abcd-1234-efgh",
+        "https://demo-yaml-lib.example/changelog"
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "component": "demo-http-client",
+      "version": "1.0.2",
+      "vulnerabilities": ["AST-2026-000102"],
+      "hub_safe_version": "1.0.7",
+      "conclusion": "unclear",
+      "recommended_version": "1.0.7",
+      "ids": {"AST-2026-000102": []},
+      "explanation": "Описания AST-2026-000102 в открытых базах нет. Похожая уязвимость CVE-2099-10004 – медленное регулярное выражение при разборе заголовков (CWE-1333) – исправлена в 1.0.7, но совпадение с AST-2026-000102 не подтверждено. Нужна выгрузка соответствия AST → CVE от поставщика анализатора.",
+      "links": [
+        "https://vulndb.example/CVE-2099-10004"
+      ]
+    }
+  ]
+}

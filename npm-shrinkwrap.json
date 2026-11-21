@@ -1,0 +1,111 @@
+{
+  "name": "local-triage",
+  "version": "0.10.0-dev.32",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "local-triage",
+      "version": "0.10.0-dev.32",
+      "license": "MIT",
+      "bin": {
+        "local-triage": "npm/cli.js"
+      },
+      "engines": {
+        "node": ">=20"
+      },
+      "optionalDependencies": {
+        "@embedded-postgres/darwin-arm64": "17.12.0-beta.19",
+        "@embedded-postgres/darwin-x64": "17.12.0-beta.19",
+        "@embedded-postgres/linux-arm64": "17.12.0-beta.19",
+        "@embedded-postgres/linux-x64": "17.12.0-beta.19",
+        "@embedded-postgres/windows-x64": "17.12.0-beta.19"
+      }
+    },
+    "node_modules/@embedded-postgres/darwin-arm64": {
+      "version": "17.12.0-beta.19",
+      "resolved": "https://registry.npmjs.org/@embedded-postgres/darwin-arm64/-/darwin-arm64-17.12.0-beta.19.tgz",
+      "integrity": "sha512-9JObUQ/ocZG31vGTi6dRppA98Y5SaYFs2xfyEtioMTs2V79aO+kb5l2U7ElnVNcmKr+/uXLzsVkAiNEwD81BMw==",
+      "cpu": [
+        "arm64"
+      ],
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "engines": {
+        "node": ">=16"
+      }
+    },
+    "node_modules/@embedded-postgres/darwin-x64": {
+      "version": "17.12.0-beta.19",
+      "resolved": "https://registry.npmjs.org/@embedded-postgres/darwin-x64/-/darwin-x64-17.12.0-beta.19.tgz",
+      "integrity": "sha512-zHseOdcPUfHkbUfvqSzsblUZYucSdPGUxDLOHUX4yGVpyD5r4UcWceQNaRd66URZYjhPGguL2FBRLLIQbT4C2g==",
+      "cpu": [
+        "x64"
+      ],
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "engines": {
+        "node": ">=16"
+      }
+    },
+    "node_modules/@embedded-postgres/linux-arm64": {
+      "version": "17.12.0-beta.19",
+      "resolved": "https://registry.npmjs.org/@embedded-postgres/linux-arm64/-/linux-arm64-17.12.0-beta.19.tgz",
+      "integrity": "sha512-bPk8zsRrSSTxWR8Hd2UMeurcEHVmebpA870mbHBkFLN8VoxRURrj3sZ0ab/KksI6AsBa0QTedHxjensGjyBokQ==",
+      "cpu": [
+        "arm64"
+      ],
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "linux"
+      ],
+      "engines": {
+        "node": ">=16"
+      }
+    },
+    "node_modules/@embedded-postgres/linux-x64": {
+      "version": "17.12.0-beta.19",
+      "resolved": "https://registry.npmjs.org/@embedded-postgres/linux-x64/-/linux-x64-17.12.0-beta.19.tgz",
+      "integrity": "sha512-8N6O9R9fadbb8Fnab2DUwhjVr4zKck8+Z1kTuEKiMdPvlzySv1vVNZLCttsv3ErkIkDwvHq0eWBNi9kAmfrPcw==",
+      "cpu": [
+        "x64"
+      ],
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "linux"
+      ],
+      "engines": {
+        "node": ">=16"
+      }
+    },
+    "node_modules/@embedded-postgres/windows-x64": {
+      "version": "17.12.0-beta.19",
+      "resolved": "https://registry.npmjs.org/@embedded-postgres/windows-x64/-/windows-x64-17.12.0-beta.19.tgz",
+      "integrity": "sha512-BAbR0nRsyJZs/4wO7b5fyF3HsrhTevEo74zUr5nmFS+zX1s7MbrIOVSos0fGQoLNmpP1Ljj+Jik0B3JDz6xx9w==",
+      "cpu": [
+        "x64"
+      ],
+      "hasInstallScript": true,
+      "license": "MIT",
+      "optional": true,
+      "os": [
+        "win32"
+      ],
+      "engines": {
+        "node": ">=16"
+      }
+    }
+  }
+}
