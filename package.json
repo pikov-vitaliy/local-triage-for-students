@@ -23,6 +23,9 @@
   "bin": {
     "local-triage": "npm/cli.js"
   },
+  "scripts": {
+    "prepublishOnly": "node -e \"console.error('Публикуется только проверенный архив: node npm/pack.mjs pack, затем npm publish <файл .tgz>');process.exit(1)\""
+  },
   "engines": {
     "node": ">=20"
   },

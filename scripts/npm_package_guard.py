@@ -340,7 +340,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="npm_package_guard.py", description=__doc__.splitlines()[0])
     parser.add_argument("tgz", type=Path)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--without-private-rules", action="store_true",
+                        help="проверить без файла правил с реальными значениями (не для выпуска)")
     args = parser.parse_args(argv)
+    import hygiene_rules  # noqa: PLC0415 – тот же модуль, что выше
+    if not hygiene_rules.PRIVATE_RULES_LOADED and not args.without_private_rules:
+        # без файла правил названия проектов, подсеть и слова о месте работы не проверены – выпуск не «чистый»
+        print("Страж пакета: файл правил с реальными значениями не найден (LOCAL_TRIAGE_PRIVATE_RULES или "
+              "~/.local-triage-private-rules.txt): проверка неполная, пакет не выдан. Для проверки без него – "
+              "--without-private-rules (не для выпуска).", file=sys.stderr)
+        return 3
     try:
         problems = check(args.tgz, args.manifest)
     except (OSError, tarfile.TarError) as e:

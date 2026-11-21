@@ -248,3 +248,15 @@ def test_guard_hyperlink_argument_forms(tmp_path: Path):
     files = {"package.json": b"{}", "examples/demo/book.xlsx": book.getvalue()}
     text = "\n".join(guard.check(make_tgz(tmp_path, files), manifest(tmp_path, list(files))))
     assert "example.org" not in text and "статически не проверить «B1»" in text  # B1 пустая – цель не определить
+
+
+def test_guard_refuses_release_without_private_rules(tmp_path: Path):
+    """Без файла правил с реальными значениями страж не объявляет пакет чистым (код 3); явный флаг – только проверка."""
+    rules = tmp_path / "rules.txt"
+    rules.write_text("# пусто\n", encoding="utf-8")
+    tgz = make_tgz(tmp_path, {"package.json": b"{}"})
+    env = {**__import__("os").environ, "LOCAL_TRIAGE_PRIVATE_RULES": str(rules)}
+    script = Path(__file__).resolve().parents[1] / "scripts" / "npm_package_guard.py"
+    base = [sys.executable, "-X", "utf8", str(script), str(tgz), "--manifest", str(manifest(tmp_path, ["package.json"]))]
+    assert subprocess.run(base, env=env, capture_output=True, timeout=60).returncode == 3
+    assert subprocess.run(base + ["--without-private-rules"], env=env, capture_output=True, timeout=60).returncode == 0
