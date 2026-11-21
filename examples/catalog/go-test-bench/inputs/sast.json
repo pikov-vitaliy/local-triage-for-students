@@ -1,0 +1,330 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "92445700823205281369911a72b7127f18c8c9ed",
+ "dropped": {
+  "вендорские и собранные файлы": 0,
+  "повтор той же строки": 5,
+  "сверх предела": 0,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.go.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "78"
+   ],
+   "file": "cmd/go-swagger/regen/regen.go",
+   "line": 101,
+   "rule": "lt.go.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "78"
+   ],
+   "file": "cmd/go-swagger/regen/regen.go",
+   "line": 125,
+   "rule": "lt.go.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "78"
+   ],
+   "file": "internal/injection/cmdi/cmd-injection.go",
+   "line": 47,
+   "rule": "lt.go.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "78"
+   ],
+   "file": "internal/injection/cmdi/cmd-injection.go",
+   "line": 53,
+   "rule": "lt.go.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G114 http.ListenAndServe без таймаутов",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "676"
+   ],
+   "file": "cmd/chi/app.go",
+   "line": 22,
+   "rule": "G114",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "G304 Путь к файлу из переменной",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "22"
+   ],
+   "file": "cmd/go-swagger/regen/regen.go",
+   "line": 57,
+   "rule": "G304",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "G304 Путь к файлу из переменной",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "22"
+   ],
+   "file": "cmd/go-swagger/regen/regen.go",
+   "line": 89,
+   "rule": "G304",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.go.path-traversal: Путь к файлу из данных запроса – возможен обход каталога",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "22"
+   ],
+   "file": "cmd/go-swagger/restapi/server.go",
+   "line": 276,
+   "rule": "lt.go.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G114 http.ListenAndServe без таймаутов",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "676"
+   ],
+   "file": "cmd/julienschmidt/app.go",
+   "line": 22,
+   "rule": "G114",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "G114 http.ListenAndServe без таймаутов",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "676"
+   ],
+   "file": "cmd/std/app.go",
+   "line": 22,
+   "rule": "G114",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.go.ssrf: Запрос по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "918"
+   ],
+   "file": "internal/common/commontest/request_gen.go",
+   "line": 44,
+   "rule": "lt.go.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G601 Адрес переменной цикла",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "118"
+   ],
+   "file": "internal/common/commontest/request_gen.go",
+   "line": 68,
+   "rule": "G601",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "79"
+   ],
+   "file": "internal/common/templateFns.go",
+   "line": 66,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G204 Запуск процесса с переменными аргументами",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "78"
+   ],
+   "file": "internal/injection/cmdi/cmd-injection.go",
+   "line": 84,
+   "rule": "G204",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "G201 SQL-запрос из fmt.Sprintf",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "89"
+   ],
+   "file": "internal/injection/sqli/sql-injection.go",
+   "line": 56,
+   "rule": "G201",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.go.path-traversal: Путь к файлу из данных запроса – возможен обход каталога",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "22"
+   ],
+   "file": "internal/pathtraversal/path-traversal.go",
+   "line": 74,
+   "rule": "lt.go.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.path-traversal: Путь к файлу из данных запроса – возможен обход каталога",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "22"
+   ],
+   "file": "internal/pathtraversal/path-traversal.go",
+   "line": 87,
+   "rule": "lt.go.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G306 Права записываемого файла шире нужного",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "276"
+   ],
+   "file": "internal/pathtraversal/path-traversal.go",
+   "line": 103,
+   "rule": "G306",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "G304 Путь к файлу из переменной",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "22"
+   ],
+   "file": "internal/pathtraversal/path-traversal.go",
+   "line": 110,
+   "rule": "G304",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.go.ssrf: Запрос по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "918"
+   ],
+   "file": "internal/ssrf/ssrf.go",
+   "line": 51,
+   "rule": "lt.go.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "79"
+   ],
+   "file": "pkg/servechi/servechi.go",
+   "line": 99,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "79"
+   ],
+   "file": "pkg/servejschmidt/servejschmidt.go",
+   "line": 88,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "79"
+   ],
+   "file": "pkg/servestd/servestd.go",
+   "line": 83,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "79"
+   ],
+   "file": "pkg/serveswagger/setup.go",
+   "line": 137,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G104 Ошибка не проверяется",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "703"
+   ],
+   "file": "cmd/exercise/exercise.go",
+   "line": 87,
+   "rule": "G104",
+   "severity": "Low",
+   "tool": "gosec"
+  },
+  {
+   "category": "G104 Ошибка не проверяется",
+   "codebase": "go-test-bench",
+   "cwe": [
+    "703"
+   ],
+   "file": "internal/injection/sqli/sql-injection.go",
+   "line": 84,
+   "rule": "G104",
+   "severity": "Low",
+   "tool": "gosec"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import cwe_link, verdict_badge, test_code_badge with context %}
+{% from "macros.html" import cwe_link, icon, verdict_badge, test_code_badge with context %}
 {% block title %}{{ f.hub_id }} · {{ project.name }} · Локальный триаж{% endblock %}
 {% block page %}finding{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
@@ -81,7 +81,7 @@
     <li class="route-step" data-step="3"><a class="route-link" href="#step-3"><span class="route-no" aria-hidden="true">3</span>Код</a></li>
     <li class="route-step route-optional" data-step="4"><a class="route-link" href="#step-4"><span class="route-no" aria-hidden="true">4</span>Второе мнение<span class="route-opt"> · необязательно</span></a></li>
     <li class="route-step{% if saved_outcome %} is-done{% endif %}" data-step="5"><a class="route-link" href="#decision"><span class="route-no" aria-hidden="true">5</span>Решение<span class="route-done visually-hidden">{% if saved_outcome %} – сохранено{% endif %}</span></a></li>
-    <li class="route-step{% if entered %} is-done{% endif %}{% if saved_outcome == 'later' %} is-na{% endif %}" data-step="6"><a class="route-link" href="#step-6"><span class="route-no" aria-hidden="true">6</span>Перенос в Hub<span class="route-done visually-hidden">{% if entered %} – внесено{% endif %}</span></a></li>
+    <li class="route-step{% if entered %} is-done{% endif %}{% if saved_outcome == 'later' %} is-na{% endif %}" data-step="6"><a class="route-link" href="#step-6"><span class="route-no" aria-hidden="true">6</span>Перенос в Hub (ASOC)<span class="route-done visually-hidden">{% if entered %} – внесено{% endif %}</span></a></li>
     <li class="route-step" data-step="7"><a class="route-link" href="#step-7"><span class="route-no" aria-hidden="true">7</span>Дальше</a></li>
   </ol>
 </nav>
@@ -216,6 +216,7 @@
     {#- Сворачивается только тело кода; предупреждения выше видны всегда. Состояние – предпочтение оператора (initCodeFold) -#}
     <div class="code-body" id="code-body">
     <p class="muted small dot-list"><span>{{ "срез из базы приложения" if code_from_db else CONTEXT_LABELS.get(ctx.status, ctx.status) }}</span>{% if ctx.file %}<span class="mono break">{{ ctx.file }}</span>{% endif %}{% if ctx.start_line %}<span>строки {{ ctx.start_line }}–{{ ctx.end_line }}</span>{% endif %}</p>
+    {% if editor %}<p class="small cluster" id="editor-link"><span class="mono break">{{ editor.path }}</span><button type="button" class="btn btn-small" data-copy-text="{{ editor.path }}">{{ icon("copy") }}Скопировать путь</button><a class="btn btn-small" href="{{ editor.url }}">{{ icon("external") }}Открыть в VS Code</a></p>{% elif ctx.file %}<p class="small muted" id="editor-missing">Ссылки на редактор нет: файл не найден в клоне однозначно – показан путь из выгрузки.</p>{% endif %}
     {% if ctx.enclosing %}<p class="small">{{ "Функция" if ctx.language == "python" else "Метод" }}: <code class="break">{{ ctx.enclosing|code_text }}</code></p>{% endif %}
     {% if code_from_db %}
     <p class="muted small" id="code-from-db">Клона с этим файлом нет: показан срез кода, сохранённый в базе приложения{% if verdict %}, – тот, который видела модель{% endif %}. Секреты в нём замаскированы. Решение, «Скопировать короткий текст для Hub» и текст дефекта работают с этим срезом.</p>
@@ -507,7 +508,8 @@
 
 {#- Шаг 6 зависит от решения: видимость блоков – по выбранному переключателю (CSS :has), без скрипта тоже -#}
 <section class="panel step-panel hub-step" id="step-6" data-route-step="6" aria-labelledby="step-6-title">
-  <h2 id="step-6-title" class="step-head"><span class="step-no" aria-hidden="true">6</span> Перенос в Hub</h2>
+  <h2 id="step-6-title" class="step-head"><span class="step-no" aria-hidden="true">6</span> Перенос в Hub (ASOC)</h2>
+  <p class="field-hint" id="asoc-note">AppSec.Hub – система класса ASOC (Application Security Orchestration and Correlation – оркестрация и корреляция результатов анализа защищённости): в ней собираются находки всех анализаторов, решения по ним и дефекты для команд разработки.{% if settings and settings.stand == "npm" %} На учебном стенде связи с Hub нет: решение сохраняется на стенде, текст для Hub можно скопировать как образец.{% endif %}</p>
   {% if entered_changed %}
   <div class="callout callout-warn" role="note" id="entered-changed">
     <p><strong>Текст для Hub изменился после отметки «Внесено в Hub».</strong> {% if entered_reasons %}Изменилось: {{ entered_reasons|join(", ") }}.{% elif entered_reasons is none %}Отметка поставлена до версии 0.9.9, что именно изменилось – неизвестно: например, название команды или формат текста.{% else %}Например, сменились название команды или текст решения.{% endif %} В Hub лежит прежний текст: скопируйте новый, вставьте его в Hub и отметьте «Внесено в Hub» ещё раз.</p>

@@ -1,0 +1,81 @@
+# Учебные правила стенда «Локальный триаж» для PHP (лицензия репозитория – MIT).
+rules:
+  - id: lt.php.sql-concat
+    languages: [php]
+    severity: ERROR
+    message: SQL-запрос собирается из строк с данными – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: mysqli_query($C, "..." . $X)
+      - pattern: mysqli_query($C, $Q)
+      - pattern: $DB->query("..." . $X)
+      - pattern: $DB->query($Q)
+  - id: lt.php.command-exec
+    languages: [php]
+    severity: ERROR
+    message: Команда операционной системы из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: shell_exec($X)
+      - pattern: exec($X, ...)
+      - pattern: system($X, ...)
+      - pattern: passthru($X, ...)
+      - pattern: popen($X, ...)
+  - id: lt.php.file-include
+    languages: [php]
+    severity: ERROR
+    message: Подключение файла по имени из данных – возможно включение чужого файла
+    metadata: {cwe: ["CWE-98"], category: Включение файла}
+    pattern-either:
+      - pattern: include($X);
+      - pattern: include_once($X);
+      - pattern: require($X);
+      - pattern: require_once($X);
+  - id: lt.php.xss-echo
+    languages: [php]
+    severity: WARNING
+    message: Данные запроса выводятся без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: echo $_GET[...];
+      - pattern: echo $_POST[...];
+      - pattern: echo $_REQUEST[...];
+      - pattern: echo "..." . $X . "...";
+  - id: lt.php.eval
+    languages: [php]
+    severity: ERROR
+    message: eval или assert выполняют строку как код
+    metadata: {cwe: ["CWE-95"], category: Внедрение кода}
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: assert($X)
+      - pattern: create_function(...)
+  - id: lt.php.unserialize
+    languages: [php]
+    severity: ERROR
+    message: unserialize данных пользователя – возможна небезопасная десериализация
+    metadata: {cwe: ["CWE-502"], category: Небезопасная десериализация}
+    pattern: unserialize($X)
+  - id: lt.php.weak-hash
+    languages: [php]
+    severity: WARNING
+    message: MD5 или SHA-1 для пароля – слабое хеширование
+    metadata: {cwe: ["CWE-328"], category: Слабая криптография}
+    pattern-either:
+      - pattern: md5($X)
+      - pattern: sha1($X)
+  - id: lt.php.file-upload
+    languages: [php]
+    severity: WARNING
+    message: Загруженный файл сохраняется под именем от пользователя без проверки типа
+    metadata: {cwe: ["CWE-434"], category: Загрузка файла}
+    pattern: move_uploaded_file($TMP, $DEST)
+  - id: lt.php.insecure-random
+    languages: [php]
+    severity: INFO
+    message: rand и mt_rand не годятся для токенов – нужен random_bytes
+    metadata: {cwe: ["CWE-338"], category: Слабая случайность}
+    pattern-either:
+      - pattern: rand(...)
+      - pattern: mt_rand(...)
+      - pattern: uniqid(...)

@@ -1,0 +1,322 @@
+{
+ "build_date": "2026-11-20",
+ "examples": [
+  {
+   "id": "juice-shop",
+   "number": 1,
+   "title": "OWASP Juice Shop",
+   "repo_url": "https://github.com/juice-shop/juice-shop",
+   "commit": "c9f99228d9d56afb5f5ca7925376292f7fa44b13",
+   "commit_date": "2026-11-19T22:39:05Z",
+   "license": "MIT",
+   "license_evidence": "LICENSE: \"Permission is hereby granted, free of charge, to any person obtaining a copy\"; README.md, раздел Licensing: \"under the terms of the [MIT license](LICENSE)\"",
+   "codebases": [
+    {
+     "name": "juice-shop",
+     "path": "",
+     "languages": "TypeScript, JavaScript"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "package.json",
+     "ecosystem": "npm",
+     "lockfile": "",
+     "codebase": "juice-shop"
+    },
+    {
+     "path": "frontend/package.json",
+     "ecosystem": "npm",
+     "lockfile": "",
+     "codebase": "juice-shop"
+    }
+   ]
+  },
+  {
+   "id": "webgoat",
+   "number": 2,
+   "title": "OWASP WebGoat",
+   "repo_url": "https://github.com/WebGoat/WebGoat",
+   "commit": "4e98f1cbbf896fdd06edcc9930515ebe0ade7c69",
+   "commit_date": "2026-11-09T07:54:04Z",
+   "license": "GPL-2.0-or-later",
+   "license_evidence": "LICENSE.txt: \"SPDX-License-Identifier: GPL-2.0-or-later\"; \"either version 2 of the License, or (at your option) any later version\" (то же в COPYRIGHT.txt)",
+   "codebases": [
+    {
+     "name": "webgoat",
+     "path": "",
+     "languages": "Java, JavaScript"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "pom.xml",
+     "ecosystem": "maven",
+     "lockfile": "",
+     "codebase": "webgoat"
+    }
+   ]
+  },
+  {
+   "id": "pygoat",
+   "number": 3,
+   "title": "PyGoat",
+   "repo_url": "https://github.com/adeyosemanputra/pygoat",
+   "commit": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+   "commit_date": "2026-11-01T14:43:03Z",
+   "license": "MIT",
+   "license_evidence": "LICENSE.md: \"MIT License ... Copyright (c) 2020 pygoat ... Permission is hereby granted, free of charge\"",
+   "codebases": [
+    {
+     "name": "pygoat",
+     "path": "",
+     "languages": "Python (Django)"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "requirements.txt",
+     "ecosystem": "pypi",
+     "lockfile": "",
+     "codebase": "pygoat"
+    }
+   ]
+  },
+  {
+   "id": "nodegoat",
+   "number": 4,
+   "title": "OWASP NodeGoat",
+   "repo_url": "https://github.com/OWASP/NodeGoat",
+   "commit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+   "commit_date": "2023-06-21T07:23:23Z",
+   "license": "Apache-2.0",
+   "license_evidence": "LICENSE: \"Apache License Version 2.0, January 2004\"; README.md, раздел License: \"Code licensed under the Apache License v2.0.\"",
+   "codebases": [
+    {
+     "name": "nodegoat",
+     "path": "",
+     "languages": "JavaScript (Node.js)"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "package.json",
+     "ecosystem": "npm",
+     "lockfile": "package-lock.json",
+     "codebase": "nodegoat"
+    }
+   ]
+  },
+  {
+   "id": "dvwa",
+   "number": 5,
+   "title": "DVWA",
+   "repo_url": "https://github.com/digininja/DVWA",
+   "commit": "502ac150ce37c20ca6e04cab7c5ca959f315f2d0",
+   "commit_date": "2026-11-17T09:29:18Z",
+   "license": "GPL-3.0-or-later",
+   "license_evidence": "README.md, раздел License: \"either version 3 of the License, or (at your option) any later version\". Файл лицензии в корне: COPYING.txt (полный текст GNU GPL Version 3, 29 June 2007); файла LICENSE нет.",
+   "codebases": [
+    {
+     "name": "dvwa",
+     "path": "",
+     "languages": "PHP"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "vulnerabilities/api/composer.json",
+     "ecosystem": "packagist",
+     "lockfile": "vulnerabilities/api/composer.lock",
+     "codebase": "dvwa"
+    }
+   ]
+  },
+  {
+   "id": "railsgoat",
+   "number": 6,
+   "title": "OWASP RailsGoat",
+   "repo_url": "https://github.com/OWASP/railsgoat",
+   "commit": "f5951f13089d85c979de09e7da3c8c0fb982f94a",
+   "commit_date": "2026-09-08T12:46:31Z",
+   "license": "MIT",
+   "license_evidence": "LICENSE.md: \"The MIT License (MIT)\"; README.md, раздел License: \"[The MIT License (MIT)](./LICENSE.md)\"",
+   "codebases": [
+    {
+     "name": "railsgoat",
+     "path": "",
+     "languages": "Ruby (Rails)"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "Gemfile",
+     "ecosystem": "rubygems",
+     "lockfile": "Gemfile.lock",
+     "codebase": "railsgoat"
+    }
+   ]
+  },
+  {
+   "id": "dvga",
+   "number": 7,
+   "title": "Damn Vulnerable GraphQL Application",
+   "repo_url": "https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application",
+   "commit": "a961308c02d1fb462b192681c336b0739e432da7",
+   "commit_date": "2025-05-24T16:37:37Z",
+   "license": "MIT",
+   "license_evidence": "LICENSE.md: \"MIT License ... Copyright (c) 2020 Exposed Atoms\"; README.md, раздел License: \"It is distributed under the MIT License. See LICENSE for more information.\"",
+   "codebases": [
+    {
+     "name": "dvga",
+     "path": "",
+     "languages": "Python (GraphQL)"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "requirements.txt",
+     "ecosystem": "pypi",
+     "lockfile": "",
+     "codebase": "dvga"
+    }
+   ]
+  },
+  {
+   "id": "go-test-bench",
+   "number": 8,
+   "title": "go-test-bench",
+   "repo_url": "https://github.com/Contrast-Security-OSS/go-test-bench",
+   "commit": "92445700823205281369911a72b7127f18c8c9ed",
+   "commit_date": "2025-05-19T17:15:41Z",
+   "license": "MIT",
+   "license_evidence": "LICENSE: «MIT License … Copyright (c) 2025 Contrast Security … Permission is hereby granted, free of charge»",
+   "codebases": [
+    {
+     "name": "go-test-bench",
+     "path": "",
+     "languages": "Go"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "go.mod",
+     "ecosystem": "go",
+     "lockfile": "go.sum",
+     "codebase": "go-test-bench"
+    }
+   ]
+  },
+  {
+   "id": "vulnerablelightapp",
+   "number": 9,
+   "title": "VulnerableLightApp",
+   "repo_url": "https://github.com/Aif4thah/VulnerableLightApp",
+   "commit": "8998b55caab6a4a5bb2d725ad054c797c7d101f4",
+   "commit_date": "2026-02-25T11:40:42Z",
+   "license": "GPL-3.0-only",
+   "license_evidence": "LICENSE: \"GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007\" – голый текст без уведомления \"or later\"; README – только бейдж \"License: GNU GPL v3\"",
+   "codebases": [
+    {
+     "name": "VulnerableLightApp",
+     "path": "",
+     "languages": "C#"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "VulnerableWebApplication.csproj",
+     "ecosystem": "nuget",
+     "lockfile": "отсутствует в дереве (packages.lock.json создаётся при сборке каталога: dotnet restore --use-lock-file)",
+     "codebase": "VulnerableLightApp"
+    }
+   ]
+  },
+  {
+   "id": "crapi",
+   "number": 10,
+   "title": "OWASP crAPI",
+   "repo_url": "https://github.com/OWASP/crAPI",
+   "commit": "b5fc307f3e5f875809b095b771108ef342a33724",
+   "commit_date": "2026-09-09T03:43:54Z",
+   "license": "Apache-2.0",
+   "license_evidence": "LICENSE.md: \"Apache License / Version 2.0, January 2004\" (полный текст Apache-2.0, 199 строк); в README.md раздела License нет",
+   "codebases": [
+    {
+     "name": "identity",
+     "path": "services/identity",
+     "languages": "Java"
+    },
+    {
+     "name": "community",
+     "path": "services/community",
+     "languages": "Go"
+    },
+    {
+     "name": "gateway-service",
+     "path": "services/gateway-service",
+     "languages": "Go"
+    },
+    {
+     "name": "workshop",
+     "path": "services/workshop",
+     "languages": "Python (Django)"
+    },
+    {
+     "name": "chatbot",
+     "path": "services/chatbot",
+     "languages": "Python"
+    },
+    {
+     "name": "web",
+     "path": "services/web",
+     "languages": "TypeScript, JavaScript"
+    }
+   ],
+   "manifests": [
+    {
+     "path": "services/web/package.json",
+     "ecosystem": "npm",
+     "lockfile": "services/web/package-lock.json",
+     "codebase": "web"
+    },
+    {
+     "path": "services/community/go.mod",
+     "ecosystem": "go",
+     "lockfile": "services/community/go.sum",
+     "codebase": "community"
+    },
+    {
+     "path": "services/gateway-service/go.mod",
+     "ecosystem": "go",
+     "lockfile": "services/gateway-service/go.sum",
+     "codebase": "gateway-service"
+    },
+    {
+     "path": "services/workshop/requirements.txt",
+     "ecosystem": "pypi",
+     "lockfile": "",
+     "codebase": "workshop"
+    },
+    {
+     "path": "services/chatbot/requirements.txt",
+     "ecosystem": "pypi",
+     "lockfile": "",
+     "codebase": "chatbot"
+    },
+    {
+     "path": "services/chatbot/requirements-dev.txt",
+     "ecosystem": "pypi",
+     "lockfile": "",
+     "codebase": "chatbot"
+    },
+    {
+     "path": "services/identity/build.gradle.kts",
+     "ecosystem": "gradle",
+     "lockfile": "",
+     "codebase": "identity"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,121 @@
+# Учебные правила стенда «Локальный триаж» для Python (лицензия репозитория – MIT).
+rules:
+  - id: lt.py.sql-format
+    languages: [python]
+    severity: ERROR
+    message: Запрос к базе собирается форматированием строки – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: $C.execute("..." % $X, ...)
+      - pattern: $C.execute("...".format(...), ...)
+      - pattern: $C.execute(f"...", ...)
+      - pattern: $C.execute("..." + $X, ...)
+      - pattern: $M.objects.raw("..." % $X, ...)
+      - pattern: $M.objects.raw(f"...", ...)
+      - pattern: $DB.engine.execute(f"...", ...)
+      - pattern: text(f"...")
+  - id: lt.py.command-injection
+    languages: [python]
+    severity: ERROR
+    message: Команда запускается через оболочку со строкой из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: os.system($X)
+      - pattern: os.popen($X, ...)
+      - pattern: subprocess.$F($X, ..., shell=True, ...)
+      - pattern: subprocess.getoutput($X)
+  - id: lt.py.eval-exec
+    languages: [python]
+    severity: ERROR
+    message: eval или exec выполняет строку как код
+    metadata: {cwe: ["CWE-95"], category: Внедрение кода}
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: exec($X)
+  - id: lt.py.pickle-yaml
+    languages: [python]
+    severity: ERROR
+    message: Десериализация pickle или yaml.load без безопасного загрузчика выполняет код из данных
+    metadata: {cwe: ["CWE-502"], category: Небезопасная десериализация}
+    pattern-either:
+      - pattern: pickle.loads(...)
+      - pattern: pickle.load(...)
+      - pattern: yaml.load($X)
+      - pattern: yaml.load($X, Loader=yaml.Loader)
+      - pattern: yaml.load($X, Loader=yaml.UnsafeLoader)
+  - id: lt.py.path-traversal
+    languages: [python]
+    severity: WARNING
+    message: Путь к файлу строится из данных запроса – возможен обход каталога
+    metadata: {cwe: ["CWE-22"], category: Обход пути}
+    pattern-either:
+      - pattern: open($REQ.GET.get(...), ...)
+      - pattern: open($REQ.args.get(...), ...)
+      - pattern: open(os.path.join(..., $REQ.GET.get(...), ...), ...)
+      - pattern: open(os.path.join(..., $REQ.args.get(...), ...), ...)
+      - pattern: send_file($REQ.args.get(...), ...)
+      - pattern: open(f"...", ...)
+  - id: lt.py.ssrf
+    languages: [python]
+    severity: WARNING
+    message: Запрос по адресу из данных пользователя – возможна подделка запроса со стороны сервера
+    metadata: {cwe: ["CWE-918"], category: SSRF}
+    pattern-either:
+      - pattern: requests.get($REQ.GET.get(...), ...)
+      - pattern: requests.get($REQ.args.get(...), ...)
+      - pattern: requests.get($URL, ...)
+      - pattern: urllib.request.urlopen($URL, ...)
+  - id: lt.py.xss-mark-safe
+    languages: [python]
+    severity: WARNING
+    message: Разметка помечается безопасной без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: mark_safe($X)
+      - pattern: Markup($X)
+      - pattern: render_template_string($X, ...)
+      - pattern: HttpResponse(f"...", ...)
+      - pattern: HttpResponse("..." + $X, ...)
+  - id: lt.py.weak-hash
+    languages: [python]
+    severity: WARNING
+    message: Устаревшая хеш-функция MD5 или SHA-1 – не годится для паролей и подписи
+    metadata: {cwe: ["CWE-328"], category: Слабая криптография}
+    pattern-either:
+      - pattern: hashlib.md5(...)
+      - pattern: hashlib.sha1(...)
+  - id: lt.py.hardcoded-secret
+    languages: [python]
+    severity: WARNING
+    message: Секрет записан в коде строкой
+    metadata: {cwe: ["CWE-798"], category: Секрет в коде}
+    patterns:
+      - pattern: $K = "..."
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i)^(SECRET_KEY|.*PASSWORD.*|.*API_KEY.*|.*TOKEN.*|JWT_SECRET.*)$
+  - id: lt.py.debug-true
+    languages: [python]
+    severity: INFO
+    message: Отладочный режим включён – в работе приложение раскрывает внутренние сведения
+    metadata: {cwe: ["CWE-489"], category: Отладка в работе}
+    pattern-either:
+      - pattern: DEBUG = True
+      - pattern: $APP.run(..., debug=True, ...)
+  - id: lt.py.jwt-no-verify
+    languages: [python]
+    severity: ERROR
+    message: Токен JWT разбирается без проверки подписи
+    metadata: {cwe: ["CWE-347"], category: Проверка подписи}
+    pattern-either:
+      - pattern: 'jwt.decode($T, ..., options={..., "verify_signature": False, ...}, ...)'
+      - pattern: jwt.decode($T, verify=False, ...)
+  - id: lt.py.insecure-random
+    languages: [python]
+    severity: INFO
+    message: Модуль random не годится для токенов и паролей – нужен secrets
+    metadata: {cwe: ["CWE-338"], category: Слабая случайность}
+    pattern-either:
+      - pattern: random.randint(...)
+      - pattern: random.choice(...)
+      - pattern: random.random()

@@ -108,11 +108,13 @@ def test_keys_help_and_theme_choice(ui):
     expect(page.locator("#keys-dialog")).to_contain_text("отметить «Внесено в Hub»")
     page.keyboard.press("Escape")
     expect(page.locator("#keys-dialog")).to_be_hidden()
+    before = page.evaluate("document.documentElement.getAttribute('data-theme')")  # по времени суток
+    flipped = "light" if before == "dark" else "dark"
     page.click("#theme-toggle")
-    assert page.evaluate("document.documentElement.getAttribute('data-theme')") == "dark"
+    assert page.evaluate("document.documentElement.getAttribute('data-theme')") == flipped
     page.reload()
-    assert page.evaluate("document.documentElement.getAttribute('data-theme')") == "dark"
-    expect(page.locator("#theme-toggle")).to_have_attribute("data-mode", "dark")
+    assert page.evaluate("document.documentElement.getAttribute('data-theme')") == flipped
+    expect(page.locator("#theme-toggle")).to_have_attribute("data-mode", flipped)
 
 
 def test_pages_fit_narrow_screens_in_both_themes(browser, app_server):

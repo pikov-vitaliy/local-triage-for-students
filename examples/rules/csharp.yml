@@ -1,0 +1,90 @@
+# Учебные правила стенда «Локальный триаж» для C# (лицензия репозитория – MIT).
+rules:
+  - id: lt.cs.sql-concat
+    languages: [csharp]
+    severity: ERROR
+    message: SQL-запрос собирается из строк с данными – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: new SqlCommand("..." + $X, ...)
+      - pattern: new SqliteCommand("..." + $X, ...)
+      - pattern: $C.CommandText = "..." + $X
+      - pattern: $C.CommandText = $"..."
+      - pattern: $DB.FromSqlRaw($"...")
+  - id: lt.cs.command-exec
+    languages: [csharp]
+    severity: ERROR
+    message: Запуск процесса с аргументами из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: Process.Start($X, ...)
+      - pattern: new ProcessStartInfo(...)
+  - id: lt.cs.path-traversal
+    languages: [csharp]
+    severity: WARNING
+    message: Путь к файлу из данных – возможен обход каталога
+    metadata: {cwe: ["CWE-22"], category: Обход пути}
+    pattern-either:
+      - pattern: File.ReadAllText($X)
+      - pattern: File.ReadAllBytes($X)
+      - pattern: File.WriteAllText($X, ...)
+      - pattern: File.OpenRead($X)
+      - pattern: Path.Combine(..., $X)
+  - id: lt.cs.deserialization
+    languages: [csharp]
+    severity: ERROR
+    message: Небезопасная десериализация – тип объекта задают данные
+    metadata: {cwe: ["CWE-502"], category: Небезопасная десериализация}
+    pattern-either:
+      - pattern: new BinaryFormatter().Deserialize(...)
+      - pattern: (BinaryFormatter $B).Deserialize(...)
+      - pattern: 'new JsonSerializerSettings { ..., TypeNameHandling = TypeNameHandling.All, ... }'
+      - pattern: JsonConvert.DeserializeObject($X, $S)
+  - id: lt.cs.xxe
+    languages: [csharp]
+    severity: ERROR
+    message: Разбор XML с разрешёнными внешними сущностями – возможна атака XXE
+    metadata: {cwe: ["CWE-611"], category: XXE}
+    pattern-either:
+      - pattern: $S.DtdProcessing = DtdProcessing.Parse
+      - pattern: new XmlDocument()
+      - pattern: $D.XmlResolver = new XmlUrlResolver()
+  - id: lt.cs.ssrf
+    languages: [csharp]
+    severity: WARNING
+    message: Запрос по адресу из данных – возможна подделка запроса со стороны сервера
+    metadata: {cwe: ["CWE-918"], category: SSRF}
+    pattern-either:
+      - pattern: $H.GetAsync($X)
+      - pattern: $H.GetStringAsync($X)
+      - pattern: WebRequest.Create($X)
+  - id: lt.cs.weak-crypto
+    languages: [csharp]
+    severity: WARNING
+    message: Устаревший алгоритм хеширования
+    metadata: {cwe: ["CWE-328"], category: Слабая криптография}
+    pattern-either:
+      - pattern: MD5.Create()
+      - pattern: SHA1.Create()
+      - pattern: new MD5CryptoServiceProvider()
+  - id: lt.cs.hardcoded-secret
+    languages: [csharp]
+    severity: WARNING
+    message: Секрет записан в коде строкой
+    metadata: {cwe: ["CWE-798"], category: Секрет в коде}
+    patterns:
+      - pattern-either:
+          - pattern: $T $K = "...";
+          - pattern: var $K = "...";
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i).*(secret|password|key|token).*
+  - id: lt.cs.xss-raw
+    languages: [csharp]
+    severity: WARNING
+    message: Данные выводятся без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: Html.Raw($X)
+      - pattern: new HtmlString($X)
+      - pattern: Results.Content($X, "text/html")

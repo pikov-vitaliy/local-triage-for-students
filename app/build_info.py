@@ -31,7 +31,8 @@ def _git(root: Path, *args: str) -> subprocess.CompletedProcess | None:
 
 # что определяет содержимое образа (Dockerfile, .dockerignore, COPY): правки в этом, включая новые файлы, –
 # «правки вне коммита»
-_IMAGE_PATHS = ("app", "Dockerfile", ".dockerignore", "requirements.lock", "examples/demo/demo-hub-report.xlsx")
+_IMAGE_PATHS = ("app", "Dockerfile", ".dockerignore", "requirements.lock", "examples/demo/demo-hub-report.xlsx",
+                "examples/catalog")
 
 
 def _from_git(root: Path | None = None) -> tuple[str, bool | None]:

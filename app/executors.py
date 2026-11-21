@@ -641,6 +641,16 @@ def external_code_allowed(db: Any, execution: Mapping[str, Any], project_id: int
     if not project or not project.get("external_allowed"):
         raise SendNotAllowed("Код этого проекта внешнему провайдеру не отправляется: отметки «код не секретный» нет.",
                              note=EXTERNAL_MARK_NOTE)
+    link = db.catalog_link(int(project_id)) if hasattr(db, "catalog_link") else None
+    if link is not None:  # и Demo Library из каталога: согласие – для корня, где дано (ревью круга 7)
+        # проект из каталога: согласие давалось на код папки примеров, где оно поставлено; папка сменилась (другой
+        # корень с той же базой) или сверка корня при запуске не прошла – отправки нет (ADR-0157)
+        from app.examples import ROOT_NOW
+        now = ROOT_NOW["value"]  # корень этого процесса после успешной сверки при запуске; не сверено – None
+        if not now or link.get("mark_root") != now:
+            raise SendNotAllowed("Код проекта из каталога внешнему провайдеру не отправляется: отметка «код не "
+                                 "секретный» дана для другой папки примеров. Поставьте отметку заново на странице "
+                                 "предпросмотра.", note=EXTERNAL_MARK_NOTE)
 
 
 def send_guard(db: Any, execution: Mapping[str, Any], project_id: int | None = None) -> Callable[[], None]:

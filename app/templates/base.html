@@ -22,9 +22,11 @@
     <a class="brand" href="/" title="К проектам">{{ icon("logo") }}<span>Локальный триаж</span></a>
     <nav class="crumbs" aria-label="Навигация">{% block crumbs %}{% endblock %}</nav>
     <div class="topbar-actions">
+      <a class="topnav-link" href="{{ work_link('/examples') }}"{% if self.page()|trim == "examples" %} aria-current="page"{% endif %} title="Каталог учебных примеров">{{ icon("package") }}<span>Примеры</span></a>
       <a class="topnav-link" href="{{ work_link('/feeds') }}"{% if self.page()|trim == "feeds" %} aria-current="page"{% endif %} title="Справочники уязвимостей">{{ icon("book") }}<span>Справочники</span></a>
       <a class="topnav-link" href="{{ work_link('/cwe') }}"{% if self.page()|trim == "cwe" or self.page()|trim == "bdu" %} aria-current="page"{% endif %} title="Справочник классов CWE">{{ icon("list") }}<span>CWE</span></a>
       <a class="topnav-link" href="{{ work_link('/capec') }}"{% if self.page()|trim == "capec" %} aria-current="page"{% endif %} title="Справочник сценариев CAPEC">{{ icon("list") }}<span>CAPEC</span></a>
+      <a class="topnav-link" href="/help" target="_blank" rel="noopener"{% if self.page()|trim == "help" %} aria-current="page"{% endif %} title="Справка – в новой вкладке">{{ icon("info") }}<span>Справка</span></a>
       <a class="topnav-link" href="{{ work_link('/settings') }}"{% if self.page()|trim == "settings" %} aria-current="page"{% endif %} title="Настройки">{{ icon("settings") }}<span>Настройки</span></a>
       <a class="topnav-link" href="{{ work_link('/journal') }}"{% if self.page()|trim == "journal" %} aria-current="page"{% endif %} title="Статистика работы локальных моделей">{{ icon("list") }}<span>Журнал</span></a>
       <button type="button" class="icon-btn keys-open" id="keys-open" data-dialog-open="keys-dialog" aria-haspopup="dialog" aria-label="Клавиши" title="Клавиши (?)">{{ icon("keyboard") }}</button>

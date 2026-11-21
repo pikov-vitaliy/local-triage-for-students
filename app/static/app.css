@@ -2800,3 +2800,21 @@ body[data-page="finding"] .action-bar .bar-status { order: 3; }
 .fields-diff .fields-diff-name { width: 8rem; }
 .fields-diff th, .fields-diff td { vertical-align: top; overflow-wrap: anywhere; }
 @media (max-width: 760px) { .fields-diff { table-layout: auto; } .fields-diff .fields-diff-name { width: auto; } }
+
+/* Каталог учебных примеров (/examples, ADR-0156) */
+.example-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.example-card { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.example-head { display: flex; gap: 10px; align-items: baseline; }
+.example-head h2 { margin: 0; font-size: 1.1rem; }
+.example-num { display: inline-grid; place-items: center; min-width: 1.8em; height: 1.8em; border-radius: 50%;
+  background: var(--info-bg, var(--surface)); color: var(--info-ink, var(--text)); font-weight: 600; }
+.example-facts { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; font-size: .92rem; }
+.example-facts dt { color: var(--muted, inherit); }
+.example-facts dd { margin: 0; overflow-wrap: anywhere; }
+.example-state { margin: 0; overflow-wrap: anywhere; }
+.example-state[data-state="failed"] { color: var(--warn-ink); }
+.example-card .cluster { margin-top: auto; }
+.start-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; }
+.start-steps .inline-form { margin-top: 6px; }
+.help-toc ol { margin: 0; padding-left: 1.4em; columns: 2 220px; }

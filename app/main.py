@@ -36,7 +36,7 @@ from app.llm_ollama import OllamaClient
 from app.lockfile import InstanceLock, LockBusy, LockLost, LockUnsure
 from app.logsafe import log_failure
 from app.model_traffic import Recorder, set_recorder
-from app.routes import (api, capec, components, cwe, feeds, findings, hub, hub_bulk, hub_defect_routes, defect_card_routes,
+from app.routes import (api, capec, components, cwe, examples, feeds, findings, hub, hub_bulk, hub_defect_routes, defect_card_routes,
                         hub_status_routes, hub_sync_routes, journal, projects, decision_selected, defect_add, defect_selected,
                         providers, runs, sca)
 from app.routes import settings as settings_routes
@@ -259,6 +259,12 @@ def create_app(settings: Settings | None = None,
         if not settings.maintenance:
             observer.start()
         STARTUP_COMPLETE.set()  # для app/serve.py: дальше запуск может сорваться только на занятом порту
+        if not settings.maintenance:
+            try:  # сменился корень примеров (другой -ReposRoot с той же базой) – прежние отметки снимаются (ADR-0157)
+                examples.revoke_marks_on_root_change(db, settings)
+            except Exception as e:  # noqa: BLE001 – не мешает запуску; отправка без отметки всё равно не пройдёт
+                log_failure(log, "отметки проектов из каталога не сверены с корнем примеров", e)
+            examples.start_background(settings)  # стенд npm: недостающие учебные примеры – в фоне (ADR-0156)
         try:
             yield
         finally:
@@ -312,7 +318,7 @@ def create_app(settings: Settings | None = None,
                              metrics_cache=Cached(METRICS_TTL_S, functools.partial(
                                  compute_metrics, make_client,
                                  db=lambda: getattr(app.state, "db", None))))
-    for section in (api, projects, findings, runs, settings_routes, providers, sca, components, feeds, cwe, capec,
+    for section in (api, projects, examples, findings, runs, settings_routes, providers, sca, components, feeds, cwe, capec,
                     journal, hub, hub_status_routes, hub_sync_routes, hub_bulk, hub_defect_routes, defect_card_routes,
                     defect_selected, decision_selected, defect_add):
         app.include_router(section.router)

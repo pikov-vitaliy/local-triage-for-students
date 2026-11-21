@@ -1,0 +1,25 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "8998b55caab6a4a5bb2d725ad054c797c7d101f4",
+ "entries": [
+  {
+   "codebase": "VulnerableLightApp",
+   "cve": "CVE-2026-49451",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "NuGet",
+   "fixed": "2.7.5",
+   "manifest": "VulnerableWebApplication.csproj",
+   "name": "Microsoft.OpenApi",
+   "osv_aliases": [
+    "CVE-2026-49451"
+   ],
+   "osv_id": "GHSA-v5pm-xwqc-g5wc",
+   "osv_modified": "2026-07-06T13:15:09Z",
+   "version": "2.3.0"
+  }
+ ],
+ "excluded_manifests": [],
+ "osv_date": "2026-11-21",
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

@@ -33,5 +33,7 @@ related: [../README.md, ARCHITECTURE.md]
 | [sca-component-mvp.md](sca-component-mvp.md) | MVP исследования компонентов из Excel |
 | [sca-cvss-table.md](sca-cvss-table.md) | Таблица SCA: компактный вид и отбор по CVSS |
 | [sca-evidence-contract.md](sca-evidence-contract.md) | Контракт доказательств SCA и задание внешнему агенту |
+| [stand-student-guide.md](stand-student-guide.md) | Учебный стенд: руководство студента |
+| [stand-teacher-guide.md](stand-teacher-guide.md) | Учебный стенд: руководство преподавателя |
 | [vm-image.md](vm-image.md) | Образ ВМ «Локального триажа»: сборка, проверка, работа |
 | [vulnerability-lookup.md](vulnerability-lookup.md) | Vulnerability-Lookup (CIRCL) – оценка для проекта |

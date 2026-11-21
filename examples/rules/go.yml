@@ -1,0 +1,79 @@
+# Учебные правила стенда «Локальный триаж» для Go (лицензия репозитория – MIT).
+rules:
+  - id: lt.go.sql-format
+    languages: [go]
+    severity: ERROR
+    message: SQL-запрос собирается форматированием строки – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: $DB.Query(fmt.Sprintf(...), ...)
+      - pattern: $DB.Exec(fmt.Sprintf(...), ...)
+      - pattern: $DB.QueryRow(fmt.Sprintf(...), ...)
+      - pattern: $DB.Query("..." + $X, ...)
+      - pattern: $DB.Exec("..." + $X, ...)
+  - id: lt.go.command-exec
+    languages: [go]
+    severity: ERROR
+    message: Команда операционной системы из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: exec.Command("sh", "-c", $X)
+      - pattern: exec.Command("bash", "-c", $X)
+      - pattern: exec.Command($X, ...)
+  - id: lt.go.path-traversal
+    languages: [go]
+    severity: WARNING
+    message: Путь к файлу из данных запроса – возможен обход каталога
+    metadata: {cwe: ["CWE-22"], category: Обход пути}
+    pattern-either:
+      - pattern: os.Open($X)
+      - pattern: ioutil.ReadFile($X)
+      - pattern: os.ReadFile($X)
+      - pattern: http.ServeFile($W, $R, $X)
+  - id: lt.go.ssrf
+    languages: [go]
+    severity: WARNING
+    message: Запрос по адресу из данных – возможна подделка запроса со стороны сервера
+    metadata: {cwe: ["CWE-918"], category: SSRF}
+    pattern-either:
+      - pattern: http.Get($X)
+      - pattern: http.Post($X, ...)
+      - pattern: http.NewRequest($M, $X, ...)
+  - id: lt.go.xss-template
+    languages: [go]
+    severity: WARNING
+    message: Строка помечена безопасной разметкой без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: template.HTML($X)
+      - pattern: $W.Write([]byte($X))
+      - pattern: fmt.Fprintf($W, $F, ...)
+  - id: lt.go.weak-crypto
+    languages: [go]
+    severity: WARNING
+    message: MD5 или SHA-1 – устаревшая хеш-функция
+    metadata: {cwe: ["CWE-328"], category: Слабая криптография}
+    pattern-either:
+      - pattern: md5.New()
+      - pattern: md5.Sum(...)
+      - pattern: sha1.New()
+      - pattern: sha1.Sum(...)
+  - id: lt.go.tls-skip-verify
+    languages: [go]
+    severity: ERROR
+    message: Проверка сертификата TLS отключена
+    metadata: {cwe: ["CWE-295"], category: Проверка сертификата}
+    pattern: 'tls.Config{..., InsecureSkipVerify: true, ...}'
+  - id: lt.go.hardcoded-secret
+    languages: [go]
+    severity: WARNING
+    message: Секрет записан в коде строкой
+    metadata: {cwe: ["CWE-798"], category: Секрет в коде}
+    patterns:
+      - pattern-either:
+          - pattern: $K := "..."
+          - pattern: var $K = "..."
+          - pattern: const $K = "..."
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i).*(secret|password|apikey|api_key|token|jwtkey).*

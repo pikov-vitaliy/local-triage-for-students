@@ -1,0 +1,978 @@
+{
+ "build_date": "2026-11-20",
+ "examples": [
+  {
+   "builtin": "demo",
+   "codebases": [
+    {
+     "languages": "Java",
+     "name": "billing-core",
+     "path": ""
+    },
+    {
+     "languages": "Python",
+     "name": "catalog-api",
+     "path": ""
+    }
+   ],
+   "cwe": [],
+   "description": "Выдуманная библиотека из двух кодовых баз на Java и Python: тот же демо-проект, что кнопка «Создать демо-проект».",
+   "excluded_manifests": [],
+   "expected_missing": [],
+   "export": null,
+   "id": "demo-library",
+   "languages": [
+    "Java",
+    "Python"
+   ],
+   "level": "начальный",
+   "number": 0,
+   "sca_inputs": [],
+   "source": null,
+   "title": "Demo Library (выдуманная)"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "TypeScript, JavaScript",
+     "name": "juice-shop",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "79",
+    "89",
+    "95",
+    "328",
+    "338",
+    "347",
+    "502",
+    "601",
+    "798",
+    "943"
+   ],
+   "description": "Интернет-магазин на Node.js и Angular с десятками учебных уязвимостей OWASP Top 10.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 24,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 0,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 11,
+      "повтор той же строки": 1,
+      "сверх предела": 16,
+      "тесты": 59
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 0
+     }
+    },
+    "file": "juice-shop/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 80,
+    "sca": 57,
+    "sha256": "74a42f4522cce763e7107156944405b0810eff04311dd51939278731ea71c469",
+    "start_id": 910001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "juice-shop",
+   "languages": [
+    "TypeScript",
+    "JavaScript"
+   ],
+   "level": "средний",
+   "number": 1,
+   "sca_inputs": [
+    {
+     "codebase": "juice-shop",
+     "ecosystem": "npm",
+     "excluded": false,
+     "manifest": "package.json",
+     "snapshot": "inputs/lock/package.json/package-lock.json"
+    },
+    {
+     "codebase": "juice-shop",
+     "ecosystem": "npm",
+     "excluded": false,
+     "manifest": "frontend/package.json",
+     "snapshot": "inputs/lock/frontend__package.json/package-lock.json"
+    }
+   ],
+   "source": {
+    "archive_bytes": 20344553,
+    "archive_url": "https://codeload.github.com/juice-shop/juice-shop/tar.gz/c9f99228d9d56afb5f5ca7925376292f7fa44b13",
+    "commit": "c9f99228d9d56afb5f5ca7925376292f7fa44b13",
+    "commit_date": "2026-11-19T22:39:05Z",
+    "files": 1498,
+    "license": "MIT",
+    "max_dirpath": 105,
+    "max_relpath": 162,
+    "repo_url": "https://github.com/juice-shop/juice-shop",
+    "tar_bytes": 33505280,
+    "tree_sha256": "d2645db133580ebce20798427f71df23bb4c469c1c0758dda54e8b83d57664cc",
+    "unpacked_bytes": 32238024
+   },
+   "title": "OWASP Juice Shop"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "Java, JavaScript",
+     "name": "webgoat",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "22",
+    "78",
+    "79",
+    "89",
+    "95",
+    "327",
+    "338",
+    "502",
+    "611",
+    "798",
+    "918"
+   ],
+   "description": "Учебное приложение OWASP на Java (Spring Boot): уроки по инъекциям, XSS, XXE, десериализации.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 8,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 0,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 113,
+      "повтор той же строки": 0,
+      "сверх предела": 1,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 0
+     }
+    },
+    "file": "webgoat/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 80,
+    "sca": 36,
+    "sha256": "e04c48e1de10c0f900b69d472cafb4bd0c2fa4afe4c96d48fccf5b50e18c043e",
+    "start_id": 920001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "webgoat",
+   "languages": [
+    "Java",
+    "JavaScript"
+   ],
+   "level": "средний",
+   "number": 2,
+   "sca_inputs": [
+    {
+     "codebase": "webgoat",
+     "ecosystem": "maven",
+     "excluded": false,
+     "manifest": "pom.xml",
+     "snapshot": "inputs/lock/pom.xml/pom.xml"
+    }
+   ],
+   "source": {
+    "archive_bytes": 16259827,
+    "archive_url": "https://codeload.github.com/WebGoat/WebGoat/tar.gz/4e98f1cbbf896fdd06edcc9930515ebe0ade7c69",
+    "commit": "4e98f1cbbf896fdd06edcc9930515ebe0ade7c69",
+    "commit_date": "2026-11-09T07:54:04Z",
+    "files": 1391,
+    "license": "GPL-2.0-or-later",
+    "max_dirpath": 91,
+    "max_relpath": 114,
+    "repo_url": "https://github.com/WebGoat/WebGoat",
+    "tar_bytes": 22937600,
+    "tree_sha256": "98274882a99242f64c6c8dbd41eb87c64f3846b1a539063f04dd79da80696223",
+    "unpacked_bytes": 21620193
+   },
+   "title": "OWASP WebGoat"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "Python (Django)",
+     "name": "pygoat",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "20",
+    "78",
+    "79",
+    "89",
+    "95",
+    "259",
+    "328",
+    "330",
+    "338",
+    "489",
+    "502",
+    "605",
+    "703",
+    "798",
+    "918"
+   ],
+   "description": "Учебное приложение на Django с лабораторными по OWASP Top 10.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 11,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 0,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 0,
+      "повтор той же строки": 52,
+      "сверх предела": 22,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 130
+     }
+    },
+    "file": "pygoat/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 80,
+    "sca": 60,
+    "sha256": "1c881ee829e432ec37cc3f07f5ba2c5cedbed46a7e7278ce829a76be438312e5",
+    "start_id": 930001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "pygoat",
+   "languages": [
+    "Python (Django)"
+   ],
+   "level": "начальный",
+   "number": 3,
+   "sca_inputs": [
+    {
+     "codebase": "pygoat",
+     "ecosystem": "pypi",
+     "excluded": false,
+     "manifest": "requirements.txt",
+     "snapshot": "inputs/lock/requirements.txt/requirements.txt"
+    }
+   ],
+   "source": {
+    "archive_bytes": 704626,
+    "archive_url": "https://codeload.github.com/adeyosemanputra/pygoat/tar.gz/2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+    "commit": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+    "commit_date": "2026-11-01T14:43:03Z",
+    "files": 463,
+    "license": "MIT",
+    "max_dirpath": 70,
+    "max_relpath": 87,
+    "repo_url": "https://github.com/adeyosemanputra/pygoat",
+    "tar_bytes": 2181120,
+    "tree_sha256": "7f27ca50f6d31ff2ecb9c456610fab4e309c6af44d5affaabe494bd7c4721a6b",
+    "unpacked_bytes": 1743460
+   },
+   "title": "PyGoat"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "JavaScript (Node.js)",
+     "name": "nodegoat",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "78",
+    "95",
+    "338",
+    "601",
+    "798"
+   ],
+   "description": "Учебное приложение OWASP на Node.js и MongoDB: внедрение кода, NoSQL-инъекции, XSS.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 30,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 0,
+      "сверх предела": 17
+     },
+     "sast": {
+      "вендорские и собранные файлы": 0,
+      "повтор той же строки": 0,
+      "сверх предела": 0,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 251
+     }
+    },
+    "file": "nodegoat/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 28,
+    "sca": 60,
+    "sha256": "66d2bab4b634d51f3bd8e20602f09bf37580825cd7db515f30c49038dbf0dbf3",
+    "start_id": 940001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "nodegoat",
+   "languages": [
+    "JavaScript (Node.js)"
+   ],
+   "level": "начальный",
+   "number": 4,
+   "sca_inputs": [
+    {
+     "codebase": "nodegoat",
+     "ecosystem": "npm",
+     "excluded": false,
+     "manifest": "package.json",
+     "snapshot": "inputs/lock/package.json/package-lock.json"
+    }
+   ],
+   "source": {
+    "archive_bytes": 936952,
+    "archive_url": "https://codeload.github.com/OWASP/NodeGoat/tar.gz/c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+    "commit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+    "commit_date": "2023-06-21T07:23:23Z",
+    "files": 111,
+    "license": "Apache-2.0",
+    "max_dirpath": 42,
+    "max_relpath": 67,
+    "repo_url": "https://github.com/OWASP/NodeGoat",
+    "tar_bytes": 3082240,
+    "tree_sha256": "85e97430a57d9d41c8b20897be2fa393f5185fb3857d526723e266c8c77f383c",
+    "unpacked_bytes": 2976004
+   },
+   "title": "OWASP NodeGoat"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "PHP",
+     "name": "dvwa",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "78",
+    "79",
+    "89",
+    "95",
+    "98",
+    "328",
+    "338",
+    "434",
+    "798"
+   ],
+   "description": "Классическое уязвимое веб-приложение на PHP: SQL-инъекции, XSS, включение файлов, команды.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 0,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 6,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 1,
+      "повтор той же строки": 1,
+      "сверх предела": 116,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 0
+     }
+    },
+    "file": "dvwa/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 80,
+    "sca": 0,
+    "sha256": "f6c4db3c1ad37a118ba2773588e30629fd046110a4bfadd99ba2199649b0488b",
+    "start_id": 950001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "dvwa",
+   "languages": [
+    "PHP"
+   ],
+   "level": "начальный",
+   "number": 5,
+   "sca_inputs": [
+    {
+     "codebase": "dvwa",
+     "ecosystem": "packagist",
+     "excluded": false,
+     "manifest": "vulnerabilities/api/composer.json",
+     "snapshot": "inputs/lock/vulnerabilities__api__composer.json/composer.lock"
+    }
+   ],
+   "source": {
+    "archive_bytes": 932045,
+    "archive_url": "https://codeload.github.com/digininja/DVWA/tar.gz/502ac150ce37c20ca6e04cab7c5ca959f315f2d0",
+    "commit": "502ac150ce37c20ca6e04cab7c5ca959f315f2d0",
+    "commit_date": "2026-11-17T09:29:18Z",
+    "files": 250,
+    "license": "GPL-3.0-or-later",
+    "max_dirpath": 36,
+    "max_relpath": 64,
+    "repo_url": "https://github.com/digininja/DVWA",
+    "tar_bytes": 2027520,
+    "tree_sha256": "9479080076953a00276c9ae44fab767be3c8f380d9745b695b6aa7c898568f56",
+    "unpacked_bytes": 1791435
+   },
+   "title": "DVWA"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "Ruby (Rails)",
+     "name": "railsgoat",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "78",
+    "79",
+    "89",
+    "328",
+    "338",
+    "502",
+    "639",
+    "798"
+   ],
+   "description": "Учебное приложение OWASP на Ruby on Rails: SQL-инъекции, XSS, IDOR, массовое присваивание.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 0,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 167,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 15,
+      "повтор той же строки": 1,
+      "сверх предела": 0,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 54
+     }
+    },
+    "file": "railsgoat/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 17,
+    "sca": 60,
+    "sha256": "cc1d5623507ddfdf1372c6f27c1cfeeb05fe671b6611d51934281268148396dd",
+    "start_id": 960001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "railsgoat",
+   "languages": [
+    "Ruby (Rails)"
+   ],
+   "level": "средний",
+   "number": 6,
+   "sca_inputs": [
+    {
+     "codebase": "railsgoat",
+     "ecosystem": "rubygems",
+     "excluded": false,
+     "manifest": "Gemfile",
+     "snapshot": "inputs/lock/Gemfile/Gemfile.lock"
+    }
+   ],
+   "source": {
+    "archive_bytes": 6313839,
+    "archive_url": "https://codeload.github.com/OWASP/railsgoat/tar.gz/f5951f13089d85c979de09e7da3c8c0fb982f94a",
+    "commit": "f5951f13089d85c979de09e7da3c8c0fb982f94a",
+    "commit_date": "2026-09-08T12:46:31Z",
+    "files": 276,
+    "license": "MIT",
+    "max_dirpath": 34,
+    "max_relpath": 60,
+    "repo_url": "https://github.com/OWASP/railsgoat",
+    "tar_bytes": 8785920,
+    "tree_sha256": "0234446f8a40735d44b01309098bfc216ecc327c7fea15845e1efd314da264e7",
+    "unpacked_bytes": 8524058
+   },
+   "title": "OWASP RailsGoat"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "Python (GraphQL)",
+     "name": "dvga",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "78",
+    "259",
+    "338",
+    "347"
+   ],
+   "description": "Уязвимое приложение GraphQL на Python: SSRF, внедрение команд, обход авторизации.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 10,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 0,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 0,
+      "повтор той же строки": 10,
+      "сверх предела": 0,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 0
+     }
+    },
+    "file": "dvga/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 13,
+    "sca": 56,
+    "sha256": "4dc4a52bdea7bbfcb7a30673011f970cdcc5036bc9499877d1d0f81f92cf8327",
+    "start_id": 970001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "dvga",
+   "languages": [
+    "Python (GraphQL)"
+   ],
+   "level": "средний",
+   "number": 7,
+   "sca_inputs": [
+    {
+     "codebase": "dvga",
+     "ecosystem": "pypi",
+     "excluded": false,
+     "manifest": "requirements.txt",
+     "snapshot": "inputs/lock/requirements.txt/requirements.txt"
+    }
+   ],
+   "source": {
+    "archive_bytes": 2954586,
+    "archive_url": "https://codeload.github.com/dolevf/Damn-Vulnerable-GraphQL-Application/tar.gz/a961308c02d1fb462b192681c336b0739e432da7",
+    "commit": "a961308c02d1fb462b192681c336b0739e432da7",
+    "commit_date": "2025-05-24T16:37:37Z",
+    "files": 129,
+    "license": "MIT",
+    "max_dirpath": 28,
+    "max_relpath": 49,
+    "repo_url": "https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application",
+    "tar_bytes": 8540160,
+    "tree_sha256": "d928c3ed4a12e8f119502b84e468905a86162d0fb2af607d5842599c22585e4f",
+    "unpacked_bytes": 8418616
+   },
+   "title": "Damn Vulnerable GraphQL Application"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "Go",
+     "name": "go-test-bench",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "22",
+    "78",
+    "79",
+    "89",
+    "118",
+    "276",
+    "676",
+    "703",
+    "918"
+   ],
+   "description": "Набор уязвимых обработчиков на Go для проверки анализаторов: команды, SQL, пути, SSRF.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 0,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 1,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 0,
+      "повтор той же строки": 5,
+      "сверх предела": 0,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 128,
+      "сверх предела": 7
+     }
+    },
+    "file": "go-test-bench/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 26,
+    "sca": 60,
+    "sha256": "5e70aee4ef42d4decc1f1600597b639e526b86e67b00c3605cf9019a25099b99",
+    "start_id": 980001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "go-test-bench",
+   "languages": [
+    "Go"
+   ],
+   "level": "начальный",
+   "number": 8,
+   "sca_inputs": [
+    {
+     "codebase": "go-test-bench",
+     "ecosystem": "go",
+     "excluded": false,
+     "manifest": "go.mod",
+     "snapshot": "inputs/lock/go.mod/go.mod"
+    }
+   ],
+   "source": {
+    "archive_bytes": 90357,
+    "archive_url": "https://codeload.github.com/Contrast-Security-OSS/go-test-bench/tar.gz/92445700823205281369911a72b7127f18c8c9ed",
+    "commit": "92445700823205281369911a72b7127f18c8c9ed",
+    "commit_date": "2025-05-19T17:15:41Z",
+    "files": 162,
+    "license": "MIT",
+    "max_dirpath": 48,
+    "max_relpath": 107,
+    "repo_url": "https://github.com/Contrast-Security-OSS/go-test-bench",
+    "tar_bytes": 634880,
+    "tree_sha256": "62c2d721bdb7d16c3a6ed05001c1676b1c4dc3496b4e3fc9755b93dfb88d21e2",
+    "unpacked_bytes": 485534
+   },
+   "title": "go-test-bench"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "C#",
+     "name": "VulnerableLightApp",
+     "path": ""
+    }
+   ],
+   "cwe": [
+    "22",
+    "502",
+    "611",
+    "918"
+   ],
+   "description": "Небольшое уязвимое приложение на C# (.NET): пути, XXE, десериализация, SSRF.",
+   "excluded_manifests": [],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 0,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 0,
+      "сверх предела": 0
+     },
+     "sast": {
+      "вендорские и собранные файлы": 0,
+      "повтор той же строки": 1,
+      "сверх предела": 0,
+      "тесты": 0
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 0,
+      "сверх предела": 0
+     }
+    },
+    "file": "vulnerablelightapp/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 9,
+    "sca": 1,
+    "sha256": "5d295e425b7cfad36fdd853d224d7ee1f2400d3bee25a2a596865f0a3af8c934",
+    "start_id": 990001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "vulnerablelightapp",
+   "languages": [
+    "C#"
+   ],
+   "level": "начальный",
+   "number": 9,
+   "sca_inputs": [
+    {
+     "codebase": "VulnerableLightApp",
+     "ecosystem": "nuget",
+     "excluded": false,
+     "manifest": "VulnerableWebApplication.csproj",
+     "snapshot": "inputs/lock/VulnerableWebApplication.csproj/packages.lock.json"
+    }
+   ],
+   "source": {
+    "archive_bytes": 115993,
+    "archive_url": "https://codeload.github.com/Aif4thah/VulnerableLightApp/tar.gz/8998b55caab6a4a5bb2d725ad054c797c7d101f4",
+    "commit": "8998b55caab6a4a5bb2d725ad054c797c7d101f4",
+    "commit_date": "2026-02-25T11:40:42Z",
+    "files": 27,
+    "license": "GPL-3.0-only",
+    "max_dirpath": 17,
+    "max_relpath": 31,
+    "repo_url": "https://github.com/Aif4thah/VulnerableLightApp",
+    "tar_bytes": 245760,
+    "tree_sha256": "8767b04f3b07deb66eb5c6e1b6bcbc85bd3ab7b84ab8996795398fb06139f40e",
+    "unpacked_bytes": 210300
+   },
+   "title": "VulnerableLightApp"
+  },
+  {
+   "codebases": [
+    {
+     "languages": "Java",
+     "name": "identity",
+     "path": "services/identity"
+    },
+    {
+     "languages": "Go",
+     "name": "community",
+     "path": "services/community"
+    },
+    {
+     "languages": "Go",
+     "name": "gateway-service",
+     "path": "services/gateway-service"
+    },
+    {
+     "languages": "Python (Django)",
+     "name": "workshop",
+     "path": "services/workshop"
+    },
+    {
+     "languages": "Python",
+     "name": "chatbot",
+     "path": "services/chatbot"
+    },
+    {
+     "languages": "TypeScript, JavaScript",
+     "name": "web",
+     "path": "services/web"
+    }
+   ],
+   "cwe": [
+    "79",
+    "89",
+    "200",
+    "259",
+    "295",
+    "338",
+    "347",
+    "400",
+    "489",
+    "605",
+    "676",
+    "703",
+    "798",
+    "918"
+   ],
+   "description": "Уязвимое API автосервиса OWASP из нескольких сервисов (Java, Go, Python, TypeScript).",
+   "excluded_manifests": [
+    {
+     "codebase": "identity",
+     "manifest": "services/identity/build.gradle.kts",
+     "reason": "экосистема gradle не поддерживается сборщиком (нет файла блокировки)"
+    }
+   ],
+   "excluded_modules": [],
+   "expected_missing": [],
+   "export": {
+    "compliance": 30,
+    "dropped": {
+     "licenses": {
+      "нет данных о лицензиях экосистемы": 2,
+      "сверх предела": 15
+     },
+     "sast": {
+      "вендорские и собранные файлы": 0,
+      "повтор той же строки": 19,
+      "сверх предела": 59,
+      "тесты": 19
+     },
+     "sca": {
+      "псевдопакет Go (stdlib, toolchain)": 162,
+      "сверх предела": 339
+     }
+    },
+    "file": "crapi/export.xlsx",
+    "osv_date": "2026-11-21",
+    "sast": 80,
+    "sca": 60,
+    "sha256": "31534c709d020327c2778c9a5e295c1ca87688b00de3af8dc618b3b1ec3a644a",
+    "start_id": 9100001,
+    "tools": {
+     "bandit": "Bandit 1.8.6",
+     "gosec": "gosec 2.22.10",
+     "osv-scanner": "OSV-Scanner 2.2.4",
+     "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+    }
+   },
+   "id": "crapi",
+   "languages": [
+    "Java",
+    "Go",
+    "Python (Django)",
+    "Python",
+    "TypeScript",
+    "JavaScript"
+   ],
+   "level": "продвинутый",
+   "number": 10,
+   "sca_inputs": [
+    {
+     "codebase": "web",
+     "ecosystem": "npm",
+     "excluded": false,
+     "manifest": "services/web/package.json",
+     "snapshot": "inputs/lock/services__web__package.json/package-lock.json"
+    },
+    {
+     "codebase": "community",
+     "ecosystem": "go",
+     "excluded": false,
+     "manifest": "services/community/go.mod",
+     "snapshot": "inputs/lock/services__community__go.mod/go.mod"
+    },
+    {
+     "codebase": "gateway-service",
+     "ecosystem": "go",
+     "excluded": false,
+     "manifest": "services/gateway-service/go.mod",
+     "snapshot": "inputs/lock/services__gateway-service__go.mod/go.mod"
+    },
+    {
+     "codebase": "workshop",
+     "ecosystem": "pypi",
+     "excluded": false,
+     "manifest": "services/workshop/requirements.txt",
+     "snapshot": "inputs/lock/services__workshop__requirements.txt/requirements.txt"
+    },
+    {
+     "codebase": "chatbot",
+     "ecosystem": "pypi",
+     "excluded": false,
+     "manifest": "services/chatbot/requirements.txt",
+     "snapshot": "inputs/lock/services__chatbot__requirements.txt/requirements.txt"
+    },
+    {
+     "codebase": "chatbot",
+     "ecosystem": "pypi",
+     "excluded": false,
+     "manifest": "services/chatbot/requirements-dev.txt",
+     "snapshot": "inputs/lock/services__chatbot__requirements-dev.txt/requirements.txt"
+    },
+    {
+     "codebase": "identity",
+     "ecosystem": "gradle",
+     "excluded": true,
+     "manifest": "services/identity/build.gradle.kts",
+     "snapshot": ""
+    }
+   ],
+   "source": {
+    "archive_bytes": 2388339,
+    "archive_url": "https://codeload.github.com/OWASP/crAPI/tar.gz/b5fc307f3e5f875809b095b771108ef342a33724",
+    "commit": "b5fc307f3e5f875809b095b771108ef342a33724",
+    "commit_date": "2026-09-09T03:43:54Z",
+    "files": 1043,
+    "license": "Apache-2.0",
+    "max_dirpath": 89,
+    "max_relpath": 117,
+    "repo_url": "https://github.com/OWASP/crAPI",
+    "tar_bytes": 9789440,
+    "tree_sha256": "5af6808500381a356035bf66401e801f7daecb8dd9469d38d67967f511adcb57",
+    "unpacked_bytes": 8840688
+   },
+   "title": "OWASP crAPI"
+  }
+ ],
+ "schema": 1,
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

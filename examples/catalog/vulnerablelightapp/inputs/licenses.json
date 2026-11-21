@@ -1,0 +1,31 @@
+{
+ "allowed": [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "0BSD",
+  "BlueOak-1.0.0",
+  "CC0-1.0",
+  "Unlicense",
+  "Python-2.0",
+  "PSF-2.0",
+  "Zlib",
+  "CC-BY-4.0",
+  "BSD-3-Clause-Clear",
+  "X11",
+  "MIT-0",
+  "HPND",
+  "Artistic-2.0",
+  "Ruby",
+  "BSL-1.0",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "W3C"
+ ],
+ "build_date": "2026-11-20",
+ "commit": "8998b55caab6a4a5bb2d725ad054c797c7d101f4",
+ "entries": [],
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

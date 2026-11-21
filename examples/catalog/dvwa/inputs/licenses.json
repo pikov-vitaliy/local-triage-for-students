@@ -1,0 +1,116 @@
+{
+ "allowed": [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "0BSD",
+  "BlueOak-1.0.0",
+  "CC0-1.0",
+  "Unlicense",
+  "Python-2.0",
+  "PSF-2.0",
+  "Zlib",
+  "CC-BY-4.0",
+  "BSD-3-Clause-Clear",
+  "X11",
+  "MIT-0",
+  "HPND",
+  "Artistic-2.0",
+  "Ruby",
+  "BSL-1.0",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "W3C"
+ ],
+ "build_date": "2026-11-20",
+ "commit": "502ac150ce37c20ca6e04cab7c5ca959f315f2d0",
+ "entries": [
+  {
+   "codebase": "dvwa",
+   "dependency_groups": [],
+   "ecosystem": "Packagist",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "vulnerabilities/api/composer.json",
+   "name": "psr/log",
+   "version": "3.0.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "dvwa",
+   "dependency_groups": [],
+   "ecosystem": "Packagist",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "vulnerabilities/api/composer.json",
+   "name": "symfony/deprecation-contracts",
+   "version": "v3.8.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "dvwa",
+   "dependency_groups": [],
+   "ecosystem": "Packagist",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "vulnerabilities/api/composer.json",
+   "name": "symfony/finder",
+   "version": "v7.2.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "dvwa",
+   "dependency_groups": [],
+   "ecosystem": "Packagist",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "vulnerabilities/api/composer.json",
+   "name": "symfony/polyfill-ctype",
+   "version": "v1.37.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "dvwa",
+   "dependency_groups": [],
+   "ecosystem": "Packagist",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "vulnerabilities/api/composer.json",
+   "name": "symfony/yaml",
+   "version": "v8.1.11",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "dvwa",
+   "dependency_groups": [],
+   "ecosystem": "Packagist",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "vulnerabilities/api/composer.json",
+   "name": "zircote/swagger-php",
+   "version": "4.11.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  }
+ ],
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

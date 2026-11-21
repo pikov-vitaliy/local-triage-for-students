@@ -1,0 +1,8 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "502ac150ce37c20ca6e04cab7c5ca959f315f2d0",
+ "entries": [],
+ "excluded_manifests": [],
+ "osv_date": "2026-11-21",
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

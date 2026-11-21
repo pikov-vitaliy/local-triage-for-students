@@ -29,6 +29,7 @@ ENV LT_BUILD_COMMIT=$BUILD_COMMIT \
 # Демо-выгрузка для кнопки «Создать демо-проект»: выдуманные данные, код демо-репозиториев в образ не входит –
 # приложение читает его из корня папок с репозиториями
 COPY examples/demo/demo-hub-report.xlsx ./examples/demo/demo-hub-report.xlsx
+COPY examples/catalog ./examples/catalog
 
 # Непривилегированный пользователь; запись – только в /data
 RUN useradd --system --uid 1000 --user-group --no-create-home --shell /usr/sbin/nologin triage \

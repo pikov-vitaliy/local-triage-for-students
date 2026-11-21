@@ -965,7 +965,9 @@ class Database:
 
     # ------------------------------------------------------------------ проекты
 
-    def create_project(self, name: str, model: str = "", mask_secrets: bool = True) -> int:
+    def create_project(self, name: str, model: str = "", mask_secrets: bool = True,
+                       after: Callable[[Any, int], None] | None = None) -> int:
+        """after(c, project_id) – запись в той же транзакции (связь проекта из каталога примеров, ADR-0156)."""
         ts = now_iso()
         with self._tx() as c:
             cur = c.execute("INSERT INTO projects(name, repos_dir, created_at, updated_at, model, last_activity)"
@@ -973,7 +975,97 @@ class Database:
             project_id = int(cur.fetchone()[0])
             if not mask_secrets:  # по умолчанию колонку заполняет база (DEFAULT 1, схема 35)
                 c.execute("UPDATE projects SET mask_secrets = 0 WHERE id = ?", (project_id,))
+            if after is not None:
+                after(c, project_id)
             return project_id
+
+    @staticmethod
+    def set_json_entry_in(c: Any, setting: str, key: str, value: Any) -> None:
+        """Одна запись словаря-настройки (значение JSON-объект) в переданной транзакции; value None – удалить запись."""
+        row = c.execute("SELECT value_json FROM settings WHERE key = ?", (setting,)).fetchone()
+        try:
+            data = json.loads(row["value_json"]) if row is not None else {}
+        except ValueError:
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+        if value is None:
+            data.pop(key, None)
+        else:
+            data[key] = value
+        c.execute("INSERT INTO settings(key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET"
+                  " value_json = excluded.value_json, updated_at = excluded.updated_at", (setting, dumps(data), now_iso()))
+
+    def update_json_entry(self, setting: str, key: str, value: Any) -> None:
+        with self._tx() as c:
+            self.set_json_entry_in(c, setting, key, value)
+
+    def restore_codebase_map(self, project_id: int, mapping: Mapping[str, str], expect: str | None = None) -> int:
+        """Карта кодовых баз из связи примера – ручными соответствиями одной транзакцией; сколько отметок снято.
+        expect – отпечаток страницы подтверждения (restore_fingerprint): показанные изменения и число удаляемых срезов
+        сверяются в той же транзакции; не совпали – ValueError, ничего не записано (ревью сборки Б, круг 2)."""
+        ts = now_iso()
+        with self.source_gate(project_id), self._tx() as c:
+            if expect is not None and self._restore_fingerprint_in(c, project_id, mapping) != expect:
+                raise ValueError("Соответствия или сохранённые срезы изменились после страницы подтверждения.")
+            return sum(self._set_codebase_folder_in(c, project_id, codebase, folder, True, ts)
+                       for codebase, folder in mapping.items())
+
+    def restore_fingerprint(self, project_id: int, mapping: Mapping[str, str]) -> str:
+        with self._tx() as c:
+            return self._restore_fingerprint_in(c, project_id, mapping)
+
+    def restore_effects(self, project_id: int, mapping: Mapping[str, str]) -> dict[str, int]:
+        """Что снимется при восстановлении: {cases: срезов, reviewed: отметок «Проверено»}."""
+        with self._tx() as c:
+            return self._restore_effects_in(c, project_id, mapping)
+
+    def restore_preview(self, project_id: int, mapping: Mapping[str, str]) -> dict[str, Any]:
+        """Страница подтверждения из одного снимка: текущие папки, последствия и отпечаток, посчитанный из этих же
+        чисел (ревью сборки Б, круг 4): срез, сохранённый после показа, меняет отпечаток – POST его не удалит."""
+        with self._tx() as c:
+            current = {r["codebase"]: r["folder"] for r in c.execute(
+                "SELECT codebase, folder FROM codebase_map WHERE project_id = ?", (project_id,)).fetchall()}
+            effects = self._restore_effects_in(c, project_id, mapping)
+        changing = sorted(cb for cb, folder in mapping.items() if current.get(cb) != folder)
+        shown = [[cb, current.get(cb, ""), mapping[cb]] for cb in changing]
+        return {"current": current, "effects": effects, "expect": self._fingerprint_of(shown, effects)}
+
+    @staticmethod
+    def _fingerprint_of(shown: list, effects: Mapping[str, int]) -> str:
+        return hashlib.sha256(dumps({"changes": shown, "cases": int(effects["cases"]),
+                                     "reviewed": int(effects["reviewed"])}).encode("utf-8")).hexdigest()[:32]
+
+    @staticmethod
+    def _restore_effects_in(c: Any, project_id: int, mapping: Mapping[str, str]) -> dict[str, int]:
+        current = {r["codebase"]: r["folder"] for r in c.execute(
+            "SELECT codebase, folder FROM codebase_map WHERE project_id = ?", (project_id,)).fetchall()}
+        cases = reviewed = 0
+        for cb in (cb for cb, folder in mapping.items() if current.get(cb) != folder):
+            cases += int(c.execute("SELECT count(*) AS n FROM cases WHERE project_id = ? AND hub_id IN"
+                                   " (SELECT hub_id FROM findings WHERE project_id = ? AND codebase = ?)",
+                                   (project_id, project_id, cb)).fetchone()["n"] or 0)
+            reviewed += int(c.execute("SELECT count(*) AS n FROM reviews WHERE project_id = ? AND reviewed = 1 AND hub_id IN"
+                                      " (SELECT hub_id FROM findings WHERE project_id = ? AND codebase = ? AND kind = 'SAST'"
+                                      " AND missing = 0)", (project_id, project_id, cb)).fetchone()["n"] or 0)
+        return {"cases": cases, "reviewed": reviewed}
+
+    @staticmethod
+    def _restore_fingerprint_in(c: Any, project_id: int, mapping: Mapping[str, str]) -> str:
+        """Что изменит восстановление: текущие и новые папки затронутых баз, число срезов, которые удалятся, и отметок
+        «Проверено», которые снимутся."""
+        current = {r["codebase"]: r["folder"] for r in c.execute(
+            "SELECT codebase, folder FROM codebase_map WHERE project_id = ?", (project_id,)).fetchall()}
+        changing = sorted(cb for cb, folder in mapping.items() if current.get(cb) != folder)
+        cases = 0
+        for cb in changing:
+            row = c.execute("SELECT count(*) AS n FROM cases WHERE project_id = ? AND hub_id IN"
+                            " (SELECT hub_id FROM findings WHERE project_id = ? AND codebase = ?)",
+                            (project_id, project_id, cb)).fetchone()
+            cases += int(row["n"] or 0)
+        shown = [[cb, current.get(cb, ""), mapping[cb]] for cb in changing]
+        effects = Database._restore_effects_in(c, project_id, mapping)
+        return Database._fingerprint_of(shown, {"cases": cases, "reviewed": effects["reviewed"]})
 
     def get_project(self, project_id: int) -> dict | None:
         return self._one("SELECT * FROM projects WHERE id = ?", (project_id,))
@@ -1162,6 +1254,55 @@ class Database:
                 self._bump_external_revision(c, project_id)
         return changed > 0
 
+    @classmethod
+    def _clear_example_mark_in(cls, c: Any, project_id: int, ts: str) -> bool:
+        """Проект из каталога учебных примеров (связь в settings, ключ examples_projects; ADR-0157): отметка «код не
+        секретный» снимается в той же транзакции, что и смена источника кода – папки проекта, соответствий кодовых баз,
+        импорта выгрузки. Ревизия отметки растёт: метки предпросмотра, подписанные до смены, не проходят. У прочих
+        проектов ничего не меняется."""
+        row = c.execute("SELECT value_json FROM settings WHERE key = 'examples_projects'").fetchone()
+        try:
+            links = json.loads(row["value_json"]) if row is not None else {}
+        except ValueError:
+            links = {}
+        ids = {int(v.get("project_id") or 0) for v in (links.values() if isinstance(links, dict) else [])
+               if isinstance(v, dict) and str(v.get("project_id") or "").isdigit()}
+        if int(project_id) not in ids:
+            return False
+        changed = c.execute("UPDATE projects SET external_allowed = 0, updated_at = ? WHERE id = ? AND external_allowed = 1",
+                            (ts, project_id)).rowcount
+        # ревизия растёт и без стоявшей отметки: форма предпросмотра, открытая до смены источника, недействительна
+        # (ревью сборки Б, круг 2)
+        cls._bump_external_revision(c, project_id)
+        return changed > 0
+
+    def catalog_link(self, project_id: int) -> dict | None:
+        """Запись связи проекта с каталогом примеров (settings, ключ examples_projects) или None."""
+        value = self.get_settings().get("examples_projects")
+        if not isinstance(value, dict):
+            return None
+        for record in value.values():
+            if isinstance(record, dict) and str(record.get("project_id") or "") == str(project_id):
+                return record
+        return None
+
+    def catalog_project(self, project_id: int) -> bool:
+        """Проект связан с записью каталога учебных примеров (settings, ключ examples_projects)."""
+        value = self.get_settings().get("examples_projects")
+        return isinstance(value, dict) and any(isinstance(v, dict) and str(v.get("project_id") or "") == str(project_id)
+                                               for v in value.values())
+
+    def source_gate(self, project_id: int) -> Any:
+        """Смена источника кода у проекта из каталога – под той же исключительной блокировкой проекта, что и ручное
+        снятие отметки «код не секретный» (executors.project_gate): начатая отправка кода дописывает байты, следующая
+        не проходит допуск. У прочих проектов – без блокировки, как раньше."""
+        import contextlib
+
+        if not self.catalog_project(project_id):
+            return contextlib.nullcontext()
+        from app.executors import project_gate
+        return project_gate(project_id).write()
+
     @staticmethod
     def _bump_external_revision(c: Connection, project_id: int) -> None:
         key = f"external_rev:{int(project_id)}"
@@ -1222,7 +1363,7 @@ class Database:
         """Папка проекта внутри REPOS_ROOT. Смена папки меняет код всех кодовых баз: срезы и привязки
         к вердиктам сбрасываются (сами вердикты остаются в кэше), а у находок кодовых баз с выбранной папкой
         снимается отметка «проверено» – решение принималось по другому коду. Возвращает, у скольких снята."""
-        with self._tx() as c:
+        with self.source_gate(project_id), self._tx() as c:
             return self._set_repos_dir_in(c, project_id, repos_dir, now_iso())
 
     @staticmethod
@@ -1233,6 +1374,7 @@ class Database:
                   (repos_dir, ts, ts, project_id))
         if old is None or old["repos_dir"] == repos_dir:
             return 0
+        Database._clear_example_mark_in(c, project_id, ts)
         c.execute("DELETE FROM cases WHERE project_id = ?", (project_id,))
         # ревизии и отвязка прежних клонов больше не относятся к проекту
         for prefix in (_revision_prefix(project_id), _detached_prefix(project_id)):
@@ -1280,7 +1422,7 @@ class Database:
         set_repos_dir и set_codebase_folder (manual = 1); ошибка любой записи откатывает обе. Возвращает, у скольких
         находок снято «Проверено»."""
         ts = now_iso()
-        with self._tx() as c:
+        with self.source_gate(project_id), self._tx() as c:
             old = c.execute("SELECT repos_dir FROM projects WHERE id = ?", (project_id,)).fetchone()
             if old is None or (old["repos_dir"] or "") != (expect_repos_dir or ""):
                 raise ValueError("Папка проекта изменилась после открытия страницы: откройте её заново.")
@@ -1387,7 +1529,8 @@ class Database:
     # ------------------------------------------------------------------ выгрузки и находки
 
     def save_import(self, project_id: int, filename: str, fmt: str, sheets: list[dict], summary: dict,
-                    warnings: list[str], rows: Iterable[dict]) -> dict:
+                    warnings: list[str], rows: Iterable[dict],
+                    after: Callable[[Any, int], None] | None = None) -> dict:
         """Сохраняет выгрузку: её находки становятся текущими находками проекта.
 
         rows – словари {hub_id, pos, kind, severity, cvss, urgent, codebase, group_key, data}; data – поля
@@ -1404,7 +1547,8 @@ class Database:
         """
         ts = now_iso()
         stats = {"new": 0, "updated": 0, "unchanged": 0, "removed": 0, "returned": 0, "missing": 0, "reopened": 0}
-        with self._tx() as c:
+        with self.source_gate(project_id), self._tx() as c:
+            self._clear_example_mark_in(c, project_id, now_iso())
             import_id = int(c.execute(
                 "INSERT INTO imports(project_id, filename, format, sheets_json, summary_json, warnings_json,"
                 " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)" " RETURNING id",
@@ -1492,6 +1636,8 @@ class Database:
             from app.hub_pull import overlay_file_import
             overlay_file_import(c, project_id)
             c.execute("UPDATE projects SET updated_at = ?, last_activity = ? WHERE id = ?", (ts, ts, project_id))
+            if after is not None:  # номер импорта – в той же транзакции (связь проекта из каталога, ADR-0156)
+                after(c, import_id)
         return {"import_id": import_id, "total": len(seen), **stats}
 
     def hub_ids(self, project_id: int) -> set[str]:
@@ -1932,13 +2078,15 @@ class Database:
         текущей выгрузки снимается отметка «проверено» (решение и комментарий остаются; решение по SCA от кода
         не зависит, а пропавшая из выгрузки находка сверится по версии, когда вернётся). Возвращает, у скольких
         снята."""
-        with self._tx() as c:
+        with self.source_gate(project_id), self._tx() as c:
             return self._set_codebase_folder_in(c, project_id, codebase, folder, manual, now_iso())
 
     def _set_codebase_folder_in(self, c: Any, project_id: int, codebase: str, folder: str, manual: bool, ts: str) -> int:
         """Тело set_codebase_folder в переданной транзакции (общее с set_repos_dir_and_folder, бэклог 95)."""
         old = c.execute("SELECT folder FROM codebase_map WHERE project_id = ? AND codebase = ?",
                         (project_id, codebase)).fetchone()
+        if old is None or old["folder"] != folder:
+            self._clear_example_mark_in(c, project_id, ts)
         c.execute("""
             INSERT INTO codebase_map(project_id, codebase, folder, manual, updated_at) VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(project_id, codebase) DO UPDATE SET

@@ -1,0 +1,172 @@
+{
+ "allowed": [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "0BSD",
+  "BlueOak-1.0.0",
+  "CC0-1.0",
+  "Unlicense",
+  "Python-2.0",
+  "PSF-2.0",
+  "Zlib",
+  "CC-BY-4.0",
+  "BSD-3-Clause-Clear",
+  "X11",
+  "MIT-0",
+  "HPND",
+  "Artistic-2.0",
+  "Ruby",
+  "BSL-1.0",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "W3C"
+ ],
+ "build_date": "2026-11-20",
+ "commit": "a961308c02d1fb462b192681c336b0739e432da7",
+ "entries": [
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "aniso8601",
+   "version": "7.0.0",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "MPL-2.0"
+   ],
+   "manifest": "requirements.txt",
+   "name": "bidict",
+   "version": "0.22.0",
+   "violations": [
+    "MPL-2.0"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "MPL-2.0"
+   ],
+   "manifest": "requirements.txt",
+   "name": "certifi",
+   "version": "2022.12.7",
+   "violations": [
+    "MPL-2.0"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "colorama",
+   "version": "0.4.6",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "gevent-websocket",
+   "version": "0.10.1",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "idna",
+   "version": "3.4",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "packaging",
+   "version": "22.0",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "rx",
+   "version": "1.6.1",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "ZPL-2.1"
+   ],
+   "manifest": "requirements.txt",
+   "name": "zope-event",
+   "version": "4.5.0",
+   "violations": [
+    "ZPL-2.1"
+   ]
+  },
+  {
+   "codebase": "dvga",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "ZPL-2.1"
+   ],
+   "manifest": "requirements.txt",
+   "name": "zope-interface",
+   "version": "5.5.2",
+   "violations": [
+    "ZPL-2.1"
+   ]
+  }
+ ],
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

@@ -1,0 +1,174 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "a961308c02d1fb462b192681c336b0739e432da7",
+ "dropped": {
+  "вендорские и собранные файлы": 0,
+  "повтор той же строки": 10,
+  "сверх предела": 0,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.py.command-injection: Команда запускается через оболочку со строкой из данных – возможно внедрение команд",
+   "codebase": "dvga",
+   "cwe": [
+    "78"
+   ],
+   "file": "app.py",
+   "line": 28,
+   "rule": "lt.py.command-injection",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.command-injection: Команда запускается через оболочку со строкой из данных – возможно внедрение команд",
+   "codebase": "dvga",
+   "cwe": [
+    "78"
+   ],
+   "file": "core/helpers.py",
+   "line": 9,
+   "rule": "lt.py.command-injection",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.jwt-no-verify: Токен JWT разбирается без проверки подписи",
+   "codebase": "dvga",
+   "cwe": [
+    "347"
+   ],
+   "file": "core/helpers.py",
+   "line": 21,
+   "rule": "lt.py.jwt-no-verify",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "dvga",
+   "cwe": [
+    "259"
+   ],
+   "file": "app.py",
+   "line": 14,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "dvga",
+   "cwe": [
+    "259"
+   ],
+   "file": "app.py",
+   "line": 15,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "core/security.py",
+   "line": 11,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "setup.py",
+   "line": 34,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "setup.py",
+   "line": 37,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "setup.py",
+   "line": 40,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "setup.py",
+   "line": 46,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "setup.py",
+   "line": 50,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "dvga",
+   "cwe": [
+    "338"
+   ],
+   "file": "setup.py",
+   "line": 56,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "dvga",
+   "cwe": [
+    "259"
+   ],
+   "file": "setup.py",
+   "line": 64,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

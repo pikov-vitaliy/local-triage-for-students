@@ -1,0 +1,5586 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+ "entries": [
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-1002204",
+   "cvss": "5.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.4.11",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2018-1002204"
+   ],
+   "osv_id": "GHSA-3v6h-hqm4-2rg6",
+   "osv_modified": "2023-11-08T03:59:42Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-77301",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.1",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-77301"
+   ],
+   "osv_id": "GHSA-7q85-xj36-vmfc",
+   "osv_modified": "2026-09-18T17:30:08Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-114102",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.1",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-114102"
+   ],
+   "osv_id": "GHSA-8238-w5pm-2374",
+   "osv_modified": "2026-10-21T10:57:20Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-114103",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.1",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-114103"
+   ],
+   "osv_id": "GHSA-c6fg-446q-cg94",
+   "osv_modified": "2026-10-21T10:57:29Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102282",
+   "cvss": "7.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.1",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-102282"
+   ],
+   "osv_id": "GHSA-j5f4-cc29-5x44",
+   "osv_modified": "2026-10-08T10:56:40Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-114104",
+   "cvss": "5.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.1",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-114104"
+   ],
+   "osv_id": "GHSA-p634-w6r4-rjp2",
+   "osv_modified": "2026-10-21T10:57:22Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-92000",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.1",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-92000"
+   ],
+   "osv_id": "GHSA-rcw4-f5rp-g42v",
+   "osv_modified": "2026-09-29T18:30:41Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-39244",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.0",
+   "manifest": "package.json",
+   "name": "adm-zip",
+   "osv_aliases": [
+    "CVE-2026-39244"
+   ],
+   "osv_id": "GHSA-xcpc-8h2w-3j85",
+   "osv_modified": "2026-09-10T03:51:12Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-69873",
+   "cvss": "5.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.14.0",
+   "manifest": "package.json",
+   "name": "ajv",
+   "osv_aliases": [
+    "CVE-2025-69873"
+   ],
+   "osv_id": "GHSA-2g4f-4pwh-qvx6",
+   "osv_modified": "2026-09-10T03:50:33Z",
+   "version": "6.10.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-15366",
+   "cvss": "5.6",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.12.3",
+   "manifest": "package.json",
+   "name": "ajv",
+   "osv_aliases": [
+    "CVE-2020-15366"
+   ],
+   "osv_id": "GHSA-v88g-cgmw-v5xw",
+   "osv_modified": "2024-06-21T21:33:48Z",
+   "version": "6.10.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-3807",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.1",
+   "manifest": "package.json",
+   "name": "ansi-regex",
+   "osv_aliases": [
+    "CVE-2021-3807"
+   ],
+   "osv_id": "GHSA-93q8-gq69-wqmw",
+   "osv_modified": "2026-09-10T03:49:08Z",
+   "version": "3.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-43138",
+   "cvss": "7.8",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.6.4",
+   "manifest": "package.json",
+   "name": "async",
+   "osv_aliases": [
+    "CVE-2021-43138"
+   ],
+   "osv_id": "GHSA-fwr7-v2mv-hh25",
+   "osv_modified": "2024-06-24T21:23:09Z",
+   "version": "2.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-45133",
+   "cvss": "9.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "babel-traverse",
+   "osv_aliases": [
+    "CVE-2023-45133"
+   ],
+   "osv_id": "GHSA-67hx-6x53-jw92",
+   "osv_modified": "2026-09-10T03:50:03Z",
+   "version": "6.11.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-8244",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.2.3",
+   "manifest": "package.json",
+   "name": "bl",
+   "osv_aliases": [
+    "CVE-2020-8244"
+   ],
+   "osv_id": "GHSA-pp7h-53gx-mx7r",
+   "osv_modified": "2023-11-08T04:04:15Z",
+   "version": "1.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-8244",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.2.3",
+   "manifest": "package.json",
+   "name": "bl",
+   "osv_aliases": [
+    "CVE-2020-8244"
+   ],
+   "osv_id": "GHSA-pp7h-53gx-mx7r",
+   "osv_modified": "2023-11-08T04:04:15Z",
+   "version": "1.1.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-111181",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.20.9",
+   "manifest": "package.json",
+   "name": "body-parser",
+   "osv_aliases": [
+    "CVE-2026-111181"
+   ],
+   "osv_id": "GHSA-27r3-jxmh-p828",
+   "osv_modified": "2026-10-23T21:00:06Z",
+   "version": "1.18.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-45590",
+   "cvss": "8.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.20.3",
+   "manifest": "package.json",
+   "name": "body-parser",
+   "osv_aliases": [
+    "CVE-2024-45590"
+   ],
+   "osv_id": "GHSA-qwcr-r2fm-qrc7",
+   "osv_modified": "2026-09-10T03:50:18Z",
+   "version": "1.18.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-12590",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.20.6",
+   "manifest": "package.json",
+   "name": "body-parser",
+   "osv_aliases": [
+    "CVE-2026-12590"
+   ],
+   "osv_id": "GHSA-v422-hmwv-36x6",
+   "osv_modified": "2026-09-10T03:50:53Z",
+   "version": "1.18.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-13149",
+   "cvss": "7.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.16",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-13149"
+   ],
+   "osv_id": "GHSA-3jxr-9vmj-r5cp",
+   "osv_modified": "2026-09-10T03:51:10Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102276",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.19",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-102276"
+   ],
+   "osv_id": "GHSA-6j4f-fj2g-mc7p",
+   "osv_modified": "2026-09-30T00:00:03Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33750",
+   "cvss": "6.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.13",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-33750"
+   ],
+   "osv_id": "GHSA-f886-m6hf-6m8v",
+   "osv_modified": "2026-09-10T03:51:00Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-14257",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.17",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-14257"
+   ],
+   "osv_id": "GHSA-mh99-v99m-4gvg",
+   "osv_modified": "2026-09-10T03:50:12Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102277",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.21",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-102277"
+   ],
+   "osv_id": "GHSA-q2hr-2g5m-vwhr",
+   "osv_modified": "2026-09-30T00:00:03Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102278",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.20",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-102278"
+   ],
+   "osv_id": "GHSA-qhr7-859c-m2p7",
+   "osv_modified": "2026-09-30T00:00:04Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-69152",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.18",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-69152"
+   ],
+   "osv_id": "GHSA-rgw5-rvv9-x895",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-5889",
+   "cvss": "3.1",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.12",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2025-5889"
+   ],
+   "osv_id": "GHSA-v6h2-p8h4-qcjw",
+   "osv_modified": "2026-09-10T03:50:25Z",
+   "version": "1.1.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-13149",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.16",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-13149"
+   ],
+   "osv_id": "GHSA-3jxr-9vmj-r5cp",
+   "osv_modified": "2026-09-10T03:51:10Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102276",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.19",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-102276"
+   ],
+   "osv_id": "GHSA-6j4f-fj2g-mc7p",
+   "osv_modified": "2026-09-30T00:00:03Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-18077",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.7",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2017-18077"
+   ],
+   "osv_id": "GHSA-832h-xg76-4gv6",
+   "osv_modified": "2023-11-08T03:59:15Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33750",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.13",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-33750"
+   ],
+   "osv_id": "GHSA-f886-m6hf-6m8v",
+   "osv_modified": "2026-09-10T03:51:00Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-14257",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.17",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-14257"
+   ],
+   "osv_id": "GHSA-mh99-v99m-4gvg",
+   "osv_modified": "2026-09-10T03:50:12Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102277",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.21",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-102277"
+   ],
+   "osv_id": "GHSA-q2hr-2g5m-vwhr",
+   "osv_modified": "2026-09-30T00:00:03Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-102278",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.20",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-102278"
+   ],
+   "osv_id": "GHSA-qhr7-859c-m2p7",
+   "osv_modified": "2026-09-30T00:00:04Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-69152",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.18",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2026-69152"
+   ],
+   "osv_id": "GHSA-rgw5-rvv9-x895",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-5889",
+   "cvss": "3.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.12",
+   "manifest": "package.json",
+   "name": "brace-expansion",
+   "osv_aliases": [
+    "CVE-2025-5889"
+   ],
+   "osv_id": "GHSA-v6h2-p8h4-qcjw",
+   "osv_modified": "2026-09-10T03:50:25Z",
+   "version": "1.1.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-4068",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.3",
+   "manifest": "package.json",
+   "name": "braces",
+   "osv_aliases": [
+    "CVE-2024-4068"
+   ],
+   "osv_id": "GHSA-grv7-fg5c-xmjg",
+   "osv_modified": "2026-09-10T03:50:00Z",
+   "version": "1.8.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-4068",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.0.3",
+   "manifest": "package.json",
+   "name": "braces",
+   "osv_aliases": [
+    "CVE-2024-4068"
+   ],
+   "osv_id": "GHSA-grv7-fg5c-xmjg",
+   "osv_modified": "2026-09-10T03:50:00Z",
+   "version": "2.3.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-2391",
+   "cvss": "5.4",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.4",
+   "manifest": "package.json",
+   "name": "bson",
+   "osv_aliases": [
+    "CVE-2019-2391"
+   ],
+   "osv_id": "GHSA-4jwp-vfvf-657p",
+   "osv_modified": "2023-11-08T04:01:31Z",
+   "version": "1.0.9"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7610",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.4",
+   "manifest": "package.json",
+   "name": "bson",
+   "osv_aliases": [
+    "CVE-2020-7610",
+    "SNYK-JS-BSON-561052"
+   ],
+   "osv_id": "GHSA-v8w9-2789-6hhr",
+   "osv_modified": "2026-07-08T06:49:50Z",
+   "version": "1.0.9"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-18869",
+   "cvss": "2.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.1.0",
+   "manifest": "package.json",
+   "name": "chownr",
+   "osv_aliases": [
+    "CVE-2017-18869"
+   ],
+   "osv_id": "GHSA-c6rq-rjc2-86v2",
+   "osv_modified": "2023-11-08T03:59:16Z",
+   "version": "1.0.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-47764",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.7.0",
+   "manifest": "package.json",
+   "name": "cookie",
+   "osv_aliases": [
+    "CVE-2024-47764"
+   ],
+   "osv_id": "GHSA-pxg6-pf52-xh8x",
+   "osv_modified": "2026-09-10T03:50:19Z",
+   "version": "0.3.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-21538",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.0.6",
+   "manifest": "package.json",
+   "name": "cross-spawn",
+   "osv_aliases": [
+    "CVE-2024-21538"
+   ],
+   "osv_id": "GHSA-3xgq-45jj-v275",
+   "osv_modified": "2026-09-10T03:50:20Z",
+   "version": "4.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-21538",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.0.6",
+   "manifest": "package.json",
+   "name": "cross-spawn",
+   "osv_aliases": [
+    "CVE-2024-21538"
+   ],
+   "osv_id": "GHSA-3xgq-45jj-v275",
+   "osv_modified": "2026-09-10T03:50:20Z",
+   "version": "4.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-21538",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.0.6",
+   "manifest": "package.json",
+   "name": "cross-spawn",
+   "osv_aliases": [
+    "CVE-2024-21538"
+   ],
+   "osv_id": "GHSA-3xgq-45jj-v275",
+   "osv_modified": "2026-09-10T03:50:20Z",
+   "version": "5.1.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-21538",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.0.6",
+   "manifest": "package.json",
+   "name": "cross-spawn",
+   "osv_aliases": [
+    "CVE-2024-21538"
+   ],
+   "osv_id": "GHSA-3xgq-45jj-v275",
+   "osv_modified": "2026-09-10T03:50:20Z",
+   "version": "6.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-21538",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.0.5",
+   "manifest": "package.json",
+   "name": "cross-spawn",
+   "osv_aliases": [
+    "CVE-2024-21538"
+   ],
+   "osv_id": "GHSA-3xgq-45jj-v275",
+   "osv_modified": "2026-09-10T03:50:20Z",
+   "version": "7.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-20165",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.6.9",
+   "manifest": "package.json",
+   "name": "debug",
+   "osv_aliases": [
+    "CVE-2017-20165"
+   ],
+   "osv_id": "GHSA-9vvw-cc9w-f27h",
+   "osv_modified": "2023-11-08T03:59:17Z",
+   "version": "2.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16137",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.6.9",
+   "manifest": "package.json",
+   "name": "debug",
+   "osv_aliases": [
+    "CVE-2017-16137"
+   ],
+   "osv_id": "GHSA-gxpj-cx7g-858c",
+   "osv_modified": "2026-09-10T03:47:07Z",
+   "version": "2.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16137",
+   "cvss": "3.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.2.7",
+   "manifest": "package.json",
+   "name": "debug",
+   "osv_aliases": [
+    "CVE-2017-16137"
+   ],
+   "osv_id": "GHSA-gxpj-cx7g-858c",
+   "osv_modified": "2026-09-10T03:47:07Z",
+   "version": "3.2.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16137",
+   "cvss": "3.7",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.3.1",
+   "manifest": "package.json",
+   "name": "debug",
+   "osv_aliases": [
+    "CVE-2017-16137"
+   ],
+   "osv_id": "GHSA-gxpj-cx7g-858c",
+   "osv_modified": "2026-09-10T03:47:07Z",
+   "version": "4.1.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-118664",
+   "cvss": "8.2",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.5.1",
+   "manifest": "package.json",
+   "name": "decode-uri-component",
+   "osv_aliases": [
+    "CVE-2026-118664"
+   ],
+   "osv_id": "GHSA-qr28-fpjm-wq7f",
+   "osv_modified": "2026-10-29T17:00:04Z",
+   "version": "0.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-45822",
+   "cvss": "6.6",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.5.0",
+   "manifest": "package.json",
+   "name": "decode-uri-component",
+   "osv_aliases": [
+    "CVE-2026-45822"
+   ],
+   "osv_id": "GHSA-vcc3-ghjq-m6fr",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "0.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-38900",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.2.1",
+   "manifest": "package.json",
+   "name": "decode-uri-component",
+   "osv_aliases": [
+    "CVE-2022-38900"
+   ],
+   "osv_id": "GHSA-w573-4hg7-7wgq",
+   "osv_modified": "2023-11-08T04:10:14Z",
+   "version": "0.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-24001",
+   "cvss": "2.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.5.1",
+   "manifest": "package.json",
+   "name": "diff",
+   "osv_aliases": [
+    "CVE-2026-24001"
+   ],
+   "osv_id": "GHSA-73rr-hh4g-fpgx",
+   "osv_modified": "2026-09-10T03:50:32Z",
+   "version": "1.4.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-h6ch-v84p-w6p9",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.5.0",
+   "manifest": "package.json",
+   "name": "diff",
+   "osv_aliases": [],
+   "osv_id": "GHSA-h6ch-v84p-w6p9",
+   "osv_modified": "2026-09-10T03:48:23Z",
+   "version": "1.4.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-8116",
+   "cvss": "7.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.2.1",
+   "manifest": "package.json",
+   "name": "dot-prop",
+   "osv_aliases": [
+    "CVE-2020-8116"
+   ],
+   "osv_id": "GHSA-ff7x-qrg7-qggm",
+   "osv_modified": "2026-09-10T03:49:25Z",
+   "version": "4.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-27088",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.10.63",
+   "manifest": "package.json",
+   "name": "es5-ext",
+   "osv_aliases": [
+    "CVE-2024-27088"
+   ],
+   "osv_id": "GHSA-4gmj-3p3h-gm8h",
+   "osv_modified": "2026-09-10T03:50:05Z",
+   "version": "0.10.12"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-43796",
+   "cvss": "5.0",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "4.20.0",
+   "manifest": "package.json",
+   "name": "express",
+   "osv_aliases": [
+    "CVE-2024-43796"
+   ],
+   "osv_id": "GHSA-qw6h-vgh9-j6wx",
+   "osv_modified": "2026-09-10T03:50:18Z",
+   "version": "4.16.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-29041",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "4.19.2",
+   "manifest": "package.json",
+   "name": "express",
+   "osv_aliases": [
+    "CVE-2024-29041"
+   ],
+   "osv_id": "GHSA-rv95-896h-c2vc",
+   "osv_modified": "2026-09-10T03:50:10Z",
+   "version": "4.16.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-16492",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.2",
+   "manifest": "package.json",
+   "name": "extend",
+   "osv_aliases": [
+    "CVE-2018-16492"
+   ],
+   "osv_id": "GHSA-qrmc-fj45-qfc2",
+   "osv_modified": "2026-02-03T03:09:19Z",
+   "version": "3.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-19693",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "extract-zip",
+   "osv_aliases": [
+    "CVE-2026-19693"
+   ],
+   "osv_id": "GHSA-7pqw-9j4j-h8q3",
+   "osv_modified": "2026-09-08T21:10:57Z",
+   "version": "1.6.7"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-56876",
+   "cvss": "8.6",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "extract-zip",
+   "osv_aliases": [
+    "CVE-2026-56876"
+   ],
+   "osv_id": "GHSA-jmr9-qjv8-65gv",
+   "osv_modified": "2026-09-10T03:51:08Z",
+   "version": "1.6.7"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-7783",
+   "cvss": "9.4",
+   "dependency_groups": [
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.4",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2025-7783"
+   ],
+   "osv_id": "GHSA-fjxv-7rqg-78g4",
+   "osv_modified": "2026-09-10T03:50:57Z",
+   "version": "0.1.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-12143",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.6",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2026-12143"
+   ],
+   "osv_id": "GHSA-hmw2-7cc7-3qxx",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "0.1.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-7783",
+   "cvss": "9.4",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.4",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2025-7783"
+   ],
+   "osv_id": "GHSA-fjxv-7rqg-78g4",
+   "osv_modified": "2026-09-10T03:50:57Z",
+   "version": "1.0.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-12143",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.6",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2026-12143"
+   ],
+   "osv_id": "GHSA-hmw2-7cc7-3qxx",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "1.0.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-7783",
+   "cvss": "9.4",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.4",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2025-7783"
+   ],
+   "osv_id": "GHSA-fjxv-7rqg-78g4",
+   "osv_modified": "2026-09-10T03:50:57Z",
+   "version": "2.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-12143",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.6",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2026-12143"
+   ],
+   "osv_id": "GHSA-hmw2-7cc7-3qxx",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "2.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-7783",
+   "cvss": "9.4",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.4",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2025-7783"
+   ],
+   "osv_id": "GHSA-fjxv-7rqg-78g4",
+   "osv_modified": "2026-09-10T03:50:57Z",
+   "version": "2.1.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-12143",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.6",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2026-12143"
+   ],
+   "osv_id": "GHSA-hmw2-7cc7-3qxx",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "2.1.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-7783",
+   "cvss": "9.4",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.4",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2025-7783"
+   ],
+   "osv_id": "GHSA-fjxv-7rqg-78g4",
+   "osv_modified": "2026-09-10T03:50:57Z",
+   "version": "2.3.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-12143",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.5.6",
+   "manifest": "package.json",
+   "name": "form-data",
+   "osv_aliases": [
+    "CVE-2026-12143"
+   ],
+   "osv_id": "GHSA-hmw2-7cc7-3qxx",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "2.3.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "MAL-2023-462",
+   "cvss": "",
+   "dependency_groups": [
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.2.11",
+   "manifest": "package.json",
+   "name": "fsevents",
+   "osv_aliases": [
+    "GHSA-xv2f-5jw4-v95m"
+   ],
+   "osv_id": "MAL-2023-462",
+   "osv_modified": "2023-11-08T04:24:32Z",
+   "version": "1.2.9"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-45311",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.2.11",
+   "manifest": "package.json",
+   "name": "fsevents",
+   "osv_aliases": [
+    "CVE-2023-45311"
+   ],
+   "osv_id": "GHSA-8r6j-v8pm-fqw3",
+   "osv_modified": "2023-11-08T04:13:38Z",
+   "version": "1.2.9"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-13173",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.0.12",
+   "manifest": "package.json",
+   "name": "fstream",
+   "osv_aliases": [
+    "CVE-2019-13173"
+   ],
+   "osv_id": "GHSA-xf7w-r453-m56c",
+   "osv_modified": "2023-11-08T04:01:07Z",
+   "version": "1.0.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-28282",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.0.0",
+   "manifest": "package.json",
+   "name": "getobject",
+   "osv_aliases": [
+    "CVE-2020-28282"
+   ],
+   "osv_id": "GHSA-957j-59c2-j692",
+   "osv_modified": "2023-11-08T04:03:24Z",
+   "version": "0.1.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-33987",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "11.8.5",
+   "manifest": "package.json",
+   "name": "got",
+   "osv_aliases": [
+    "CVE-2022-33987"
+   ],
+   "osv_id": "GHSA-pfrx-2q88-qq97",
+   "osv_modified": "2026-09-10T03:49:55Z",
+   "version": "6.7.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16042",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.10.0",
+   "manifest": "package.json",
+   "name": "growl",
+   "osv_aliases": [
+    "CVE-2017-16042"
+   ],
+   "osv_id": "GHSA-qh2h-chj9-jffq",
+   "osv_modified": "2023-11-08T03:59:01Z",
+   "version": "1.9.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-0436",
+   "cvss": "5.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.5.2",
+   "manifest": "package.json",
+   "name": "grunt",
+   "osv_aliases": [
+    "CVE-2022-0436"
+   ],
+   "osv_id": "GHSA-j383-35pm-c5h4",
+   "osv_modified": "2026-09-10T03:49:18Z",
+   "version": "1.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7729",
+   "cvss": "7.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.3.0",
+   "manifest": "package.json",
+   "name": "grunt",
+   "osv_aliases": [
+    "CVE-2020-7729"
+   ],
+   "osv_id": "GHSA-m5pj-vjjf-4m3h",
+   "osv_modified": "2026-09-10T03:49:05Z",
+   "version": "1.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-1537",
+   "cvss": "7.0",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.5.3",
+   "manifest": "package.json",
+   "name": "grunt",
+   "osv_aliases": [
+    "CVE-2022-1537"
+   ],
+   "osv_id": "GHSA-rm36-94g8-835r",
+   "osv_modified": "2026-09-10T03:49:40Z",
+   "version": "1.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-2cf5-4w76-r9qv",
+   "cvss": "7.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.5.2",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [],
+   "osv_id": "GHSA-2cf5-4w76-r9qv",
+   "osv_modified": "2026-09-10T03:48:33Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33916",
+   "cvss": "4.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-33916"
+   ],
+   "osv_id": "GHSA-2qvq-rjwj-gvw9",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33937",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-33937"
+   ],
+   "osv_id": "GHSA-2w6w-674q-4c4q",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-20920",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.5.3",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2019-20920",
+    "SNYK-JS-HANDLEBARS-534478"
+   ],
+   "osv_id": "GHSA-3cqr-58rm-57f8",
+   "osv_modified": "2026-09-10T03:49:16Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33938",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-33938"
+   ],
+   "osv_id": "GHSA-3mfm-83xf-c92r",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-442j-39wm-28r2",
+   "cvss": "3.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [],
+   "osv_id": "GHSA-442j-39wm-28r2",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-20922",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.5",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2019-20922",
+    "SNYK-JS-HANDLEBARS-480388"
+   ],
+   "osv_id": "GHSA-62gr-4qp9-h98f",
+   "osv_modified": "2026-07-08T06:49:32Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23383",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.7",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2021-23383"
+   ],
+   "osv_id": "GHSA-765h-qjxv-5f44",
+   "osv_modified": "2026-09-10T03:49:11Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-106446",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.10",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-106446"
+   ],
+   "osv_id": "GHSA-8r5x-fm3f-whwj",
+   "osv_modified": "2026-10-08T18:00:08Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33939",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-33939"
+   ],
+   "osv_id": "GHSA-9cx6-37pm-9jff",
+   "osv_modified": "2026-09-10T03:51:00Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23369",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.7",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2021-23369"
+   ],
+   "osv_id": "GHSA-f2jv-r9rf-7988",
+   "osv_modified": "2026-09-10T03:49:14Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-f52g-6jhx-586p",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.5",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [],
+   "osv_id": "GHSA-f52g-6jhx-586p",
+   "osv_modified": "2020-08-31T18:54:21Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-g9r4-xpmj-mj65",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.5.3",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [],
+   "osv_id": "GHSA-g9r4-xpmj-mj65",
+   "osv_modified": "2026-09-10T03:49:13Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-106445",
+   "cvss": "9.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.10",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-106445"
+   ],
+   "osv_id": "GHSA-p8wg-vrv2-v86f",
+   "osv_modified": "2026-10-12T14:45:06Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-q2c6-c6pm-g3gh",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.5.3",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [],
+   "osv_id": "GHSA-q2c6-c6pm-g3gh",
+   "osv_modified": "2026-09-10T03:48:58Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-q42p-pg8m-cqh6",
+   "cvss": "7.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.0.14",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [],
+   "osv_id": "GHSA-q42p-pg8m-cqh6",
+   "osv_modified": "2026-09-10T03:48:23Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-19919",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.3.0",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2019-19919"
+   ],
+   "osv_id": "GHSA-w457-6q6x-cgp9",
+   "osv_modified": "2026-09-10T03:49:25Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33940",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-33940"
+   ],
+   "osv_id": "GHSA-xhpv-hc6g-r9c6",
+   "osv_modified": "2026-09-10T03:50:41Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-33941",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.9",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-33941"
+   ],
+   "osv_id": "GHSA-xjpj-3mr7-gcpf",
+   "osv_modified": "2026-09-10T03:50:41Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-106444",
+   "cvss": "4.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.7.10",
+   "manifest": "package.json",
+   "name": "handlebars",
+   "osv_aliases": [
+    "CVE-2026-106444"
+   ],
+   "osv_id": "GHSA-xw65-4hp5-5hc7",
+   "osv_modified": "2026-10-08T18:00:09Z",
+   "version": "4.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-29167",
+   "cvss": "7.4",
+   "dependency_groups": [
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "9.0.1",
+   "manifest": "package.json",
+   "name": "hawk",
+   "osv_aliases": [
+    "CVE-2022-29167"
+   ],
+   "osv_id": "GHSA-44pw-h2cw-w3vq",
+   "osv_modified": "2023-11-08T04:09:08Z",
+   "version": "1.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2016-2515",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "hawk",
+   "osv_aliases": [
+    "CVE-2016-2515"
+   ],
+   "osv_id": "GHSA-jcpv-g9rr-qxrc",
+   "osv_modified": "2023-11-08T03:58:24Z",
+   "version": "1.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-29167",
+   "cvss": "7.4",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "9.0.1",
+   "manifest": "package.json",
+   "name": "hawk",
+   "osv_aliases": [
+    "CVE-2022-29167"
+   ],
+   "osv_id": "GHSA-44pw-h2cw-w3vq",
+   "osv_modified": "2023-11-08T04:09:08Z",
+   "version": "3.1.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-c3m8-x3cg-qm2c",
+   "cvss": "6.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.9.1",
+   "manifest": "package.json",
+   "name": "helmet-csp",
+   "osv_aliases": [],
+   "osv_id": "GHSA-c3m8-x3cg-qm2c",
+   "osv_modified": "2021-09-29T18:45:07Z",
+   "version": "1.2.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-36604",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "hoek",
+   "osv_aliases": [
+    "CVE-2020-36604"
+   ],
+   "osv_id": "GHSA-c429-5p7v-vgjp",
+   "osv_modified": "2026-09-10T03:49:45Z",
+   "version": "0.9.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-3728",
+   "cvss": "8.8",
+   "dependency_groups": [
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.2.1",
+   "manifest": "package.json",
+   "name": "hoek",
+   "osv_aliases": [
+    "CVE-2018-3728"
+   ],
+   "osv_id": "GHSA-jp4x-w63m-7wgm",
+   "osv_modified": "2025-05-29T22:49:49Z",
+   "version": "0.9.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-36604",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "hoek",
+   "osv_aliases": [
+    "CVE-2020-36604"
+   ],
+   "osv_id": "GHSA-c429-5p7v-vgjp",
+   "osv_modified": "2026-09-10T03:49:45Z",
+   "version": "2.16.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-3728",
+   "cvss": "8.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.2.1",
+   "manifest": "package.json",
+   "name": "hoek",
+   "osv_aliases": [
+    "CVE-2018-3728"
+   ],
+   "osv_id": "GHSA-jp4x-w63m-7wgm",
+   "osv_modified": "2025-05-29T22:49:49Z",
+   "version": "2.16.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23362",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.8.9",
+   "manifest": "package.json",
+   "name": "hosted-git-info",
+   "osv_aliases": [
+    "CVE-2021-23362"
+   ],
+   "osv_id": "GHSA-43f8-2h32-f4cj",
+   "osv_modified": "2025-01-14T08:57:25Z",
+   "version": "2.1.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23362",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.8.9",
+   "manifest": "package.json",
+   "name": "hosted-git-info",
+   "osv_aliases": [
+    "CVE-2021-23362"
+   ],
+   "osv_id": "GHSA-43f8-2h32-f4cj",
+   "osv_modified": "2025-01-14T08:57:25Z",
+   "version": "2.7.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-3820",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.3.7",
+   "manifest": "package.json",
+   "name": "i",
+   "osv_aliases": [
+    "CVE-2021-3820"
+   ],
+   "osv_id": "GHSA-x55w-vjjp-222r",
+   "osv_modified": "2023-11-08T04:06:26Z",
+   "version": "0.3.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7788",
+   "cvss": "7.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.3.6",
+   "manifest": "package.json",
+   "name": "ini",
+   "osv_aliases": [
+    "CVE-2020-7788",
+    "SNYK-JS-INI-1048974"
+   ],
+   "osv_id": "GHSA-qqgx-2p2h-9c37",
+   "osv_modified": "2026-09-10T03:49:13Z",
+   "version": "1.3.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7788",
+   "cvss": "7.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.3.6",
+   "manifest": "package.json",
+   "name": "ini",
+   "osv_aliases": [
+    "CVE-2020-7788",
+    "SNYK-JS-INI-1048974"
+   ],
+   "osv_id": "GHSA-qqgx-2p2h-9c37",
+   "osv_modified": "2026-09-10T03:49:13Z",
+   "version": "1.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-1107",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.17.2",
+   "manifest": "package.json",
+   "name": "is-my-json-valid",
+   "osv_aliases": [
+    "CVE-2018-1107"
+   ],
+   "osv_id": "GHSA-4hpf-3wq7-5rpr",
+   "osv_modified": "2023-11-08T03:59:45Z",
+   "version": "2.15.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-84375",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.2",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2026-84375"
+   ],
+   "osv_id": "GHSA-2883-xcg3-v3hh",
+   "osv_modified": "2026-09-08T21:30:05Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-2pr6-76vf-7546",
+   "cvss": "5.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.13.0",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [],
+   "osv_id": "GHSA-2pr6-76vf-7546",
+   "osv_modified": "2021-08-04T21:32:56Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59869",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.0",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2026-59869"
+   ],
+   "osv_id": "GHSA-52cp-r559-cp3m",
+   "osv_modified": "2026-09-10T03:50:12Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-5p4m-2wfm-xmqj",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.1",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [],
+   "osv_id": "GHSA-5p4m-2wfm-xmqj",
+   "osv_modified": "2026-09-10T03:50:53Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-8j8c-7jfh-h6hx",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.13.1",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [],
+   "osv_id": "GHSA-8j8c-7jfh-h6hx",
+   "osv_modified": "2020-08-31T18:36:43Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-53550",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.0",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2026-53550"
+   ],
+   "osv_id": "GHSA-h67p-54hq-rp68",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-64718",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.14.2",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2025-64718"
+   ],
+   "osv_id": "GHSA-mh29-5h37-fv8m",
+   "osv_modified": "2026-09-10T03:50:58Z",
+   "version": "3.5.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-84375",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.2",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2026-84375"
+   ],
+   "osv_id": "GHSA-2883-xcg3-v3hh",
+   "osv_modified": "2026-09-08T21:30:05Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-2pr6-76vf-7546",
+   "cvss": "5.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.13.0",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [],
+   "osv_id": "GHSA-2pr6-76vf-7546",
+   "osv_modified": "2021-08-04T21:32:56Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59869",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.0",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2026-59869"
+   ],
+   "osv_id": "GHSA-52cp-r559-cp3m",
+   "osv_modified": "2026-09-10T03:50:12Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-5p4m-2wfm-xmqj",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.1",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [],
+   "osv_id": "GHSA-5p4m-2wfm-xmqj",
+   "osv_modified": "2026-09-10T03:50:53Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-8j8c-7jfh-h6hx",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.13.1",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [],
+   "osv_id": "GHSA-8j8c-7jfh-h6hx",
+   "osv_modified": "2020-08-31T18:36:43Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-53550",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.15.0",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2026-53550"
+   ],
+   "osv_id": "GHSA-h67p-54hq-rp68",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-64718",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.14.2",
+   "manifest": "package.json",
+   "name": "js-yaml",
+   "osv_aliases": [
+    "CVE-2025-64718"
+   ],
+   "osv_id": "GHSA-mh29-5h37-fv8m",
+   "osv_modified": "2026-09-10T03:50:58Z",
+   "version": "3.6.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-3918",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.4.0",
+   "manifest": "package.json",
+   "name": "json-schema",
+   "osv_aliases": [
+    "CVE-2021-3918"
+   ],
+   "osv_id": "GHSA-896r-f27r-55mw",
+   "osv_modified": "2025-01-17T21:31:38Z",
+   "version": "0.2.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23807",
+   "cvss": "5.6",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.0.0",
+   "manifest": "package.json",
+   "name": "jsonpointer",
+   "osv_aliases": [
+    "CVE-2021-23807"
+   ],
+   "osv_id": "GHSA-282f-qqgm-c34q",
+   "osv_modified": "2026-09-10T03:49:09Z",
+   "version": "4.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23807",
+   "cvss": "5.6",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.0.0",
+   "manifest": "package.json",
+   "name": "jsonpointer",
+   "osv_aliases": [
+    "CVE-2021-23807"
+   ],
+   "osv_id": "GHSA-282f-qqgm-c34q",
+   "osv_modified": "2026-09-10T03:49:09Z",
+   "version": "4.0.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-20149",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "6.0.3",
+   "manifest": "package.json",
+   "name": "kind-of",
+   "osv_aliases": [
+    "CVE-2019-20149"
+   ],
+   "osv_id": "GHSA-6c8f-qphg-qjgp",
+   "osv_modified": "2023-11-08T04:01:30Z",
+   "version": "6.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23337",
+   "cvss": "7.2",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2021-23337"
+   ],
+   "osv_id": "GHSA-35jh-r3h4-6jhm",
+   "osv_modified": "2026-10-17T02:55:38Z",
+   "version": "2.4.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-16487",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.11",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2018-16487"
+   ],
+   "osv_id": "GHSA-4xc9-xhrj-v574",
+   "osv_modified": "2025-08-12T21:55:35Z",
+   "version": "2.4.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-3721",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.5",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2018-3721"
+   ],
+   "osv_id": "GHSA-fvqr-27wr-82fm",
+   "osv_modified": "2025-08-12T21:55:16Z",
+   "version": "2.4.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10744",
+   "cvss": "9.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.12",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2019-10744",
+    "SNYK-JS-LODASH-450202"
+   ],
+   "osv_id": "GHSA-jf85-cpcp-j695",
+   "osv_modified": "2026-09-10T03:47:55Z",
+   "version": "2.4.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-28500",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2020-28500"
+   ],
+   "osv_id": "GHSA-29mw-wpgm-hmr9",
+   "osv_modified": "2025-09-29T21:12:31Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23337",
+   "cvss": "7.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2021-23337"
+   ],
+   "osv_id": "GHSA-35jh-r3h4-6jhm",
+   "osv_modified": "2026-10-17T02:55:38Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-16487",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.11",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2018-16487"
+   ],
+   "osv_id": "GHSA-4xc9-xhrj-v574",
+   "osv_modified": "2025-08-12T21:55:35Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-3721",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.5",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2018-3721"
+   ],
+   "osv_id": "GHSA-fvqr-27wr-82fm",
+   "osv_modified": "2025-08-12T21:55:16Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10744",
+   "cvss": "9.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.12",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2019-10744",
+    "SNYK-JS-LODASH-450202"
+   ],
+   "osv_id": "GHSA-jf85-cpcp-j695",
+   "osv_modified": "2026-09-10T03:47:55Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-8203",
+   "cvss": "7.4",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.19",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2020-8203"
+   ],
+   "osv_id": "GHSA-p6mc-m468-83gw",
+   "osv_modified": "2025-08-12T21:56:17Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-4800",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.18.0",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2026-4800"
+   ],
+   "osv_id": "GHSA-r5fr-rjxr-66jc",
+   "osv_modified": "2026-10-17T02:56:15Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-1010266",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.11",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2019-1010266",
+    "SNYK-JS-LODASH-73639"
+   ],
+   "osv_id": "GHSA-x5rq-j2xg-h7qm",
+   "osv_modified": "2026-09-10T03:48:25Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-13465",
+   "cvss": "6.9",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.23",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2025-13465"
+   ],
+   "osv_id": "GHSA-xxjr-mmjv-4gpg",
+   "osv_modified": "2026-11-04T03:15:10Z",
+   "version": "4.13.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-28500",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2020-28500"
+   ],
+   "osv_id": "GHSA-29mw-wpgm-hmr9",
+   "osv_modified": "2025-09-29T21:12:31Z",
+   "version": "4.17.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23337",
+   "cvss": "7.2",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2021-23337"
+   ],
+   "osv_id": "GHSA-35jh-r3h4-6jhm",
+   "osv_modified": "2026-10-17T02:55:38Z",
+   "version": "4.17.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10744",
+   "cvss": "9.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.12",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2019-10744",
+    "SNYK-JS-LODASH-450202"
+   ],
+   "osv_id": "GHSA-jf85-cpcp-j695",
+   "osv_modified": "2026-09-10T03:47:55Z",
+   "version": "4.17.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-8203",
+   "cvss": "7.4",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.19",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2020-8203"
+   ],
+   "osv_id": "GHSA-p6mc-m468-83gw",
+   "osv_modified": "2025-08-12T21:56:17Z",
+   "version": "4.17.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-4800",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.18.0",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2026-4800"
+   ],
+   "osv_id": "GHSA-r5fr-rjxr-66jc",
+   "osv_modified": "2026-10-17T02:56:15Z",
+   "version": "4.17.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-13465",
+   "cvss": "6.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.23",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2025-13465"
+   ],
+   "osv_id": "GHSA-xxjr-mmjv-4gpg",
+   "osv_modified": "2026-11-04T03:15:10Z",
+   "version": "4.17.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-28500",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2020-28500"
+   ],
+   "osv_id": "GHSA-29mw-wpgm-hmr9",
+   "osv_modified": "2025-09-29T21:12:31Z",
+   "version": "4.17.20"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23337",
+   "cvss": "7.2",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.21",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2021-23337"
+   ],
+   "osv_id": "GHSA-35jh-r3h4-6jhm",
+   "osv_modified": "2026-10-17T02:55:38Z",
+   "version": "4.17.20"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-4800",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.18.0",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2026-4800"
+   ],
+   "osv_id": "GHSA-r5fr-rjxr-66jc",
+   "osv_modified": "2026-10-17T02:56:15Z",
+   "version": "4.17.20"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-13465",
+   "cvss": "6.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.23",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2025-13465"
+   ],
+   "osv_id": "GHSA-xxjr-mmjv-4gpg",
+   "osv_modified": "2026-11-04T03:15:10Z",
+   "version": "4.17.20"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-4800",
+   "cvss": "8.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.18.0",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2026-4800"
+   ],
+   "osv_id": "GHSA-r5fr-rjxr-66jc",
+   "osv_modified": "2026-10-17T02:56:15Z",
+   "version": "4.17.21"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-13465",
+   "cvss": "6.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.17.23",
+   "manifest": "package.json",
+   "name": "lodash",
+   "osv_aliases": [
+    "CVE-2025-13465"
+   ],
+   "osv_id": "GHSA-xxjr-mmjv-4gpg",
+   "osv_modified": "2026-11-04T03:15:10Z",
+   "version": "4.17.21"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-21681",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "4.0.10",
+   "manifest": "package.json",
+   "name": "marked",
+   "osv_aliases": [
+    "CVE-2022-21681"
+   ],
+   "osv_id": "GHSA-5v2h-r2cx-5xgj",
+   "osv_modified": "2026-09-10T03:49:10Z",
+   "version": "0.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-1000427",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.3.7",
+   "manifest": "package.json",
+   "name": "marked",
+   "osv_aliases": [
+    "CVE-2017-1000427"
+   ],
+   "osv_id": "GHSA-7px7-7xjx-hxm8",
+   "osv_modified": "2023-11-08T03:58:46Z",
+   "version": "0.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-25110",
+   "cvss": "6.9",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.3.17",
+   "manifest": "package.json",
+   "name": "marked",
+   "osv_aliases": [
+    "CVE-2018-25110"
+   ],
+   "osv_id": "GHSA-p9wx-2529-fp83",
+   "osv_modified": "2025-05-27T15:27:40Z",
+   "version": "0.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-21680",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "4.0.10",
+   "manifest": "package.json",
+   "name": "marked",
+   "osv_aliases": [
+    "CVE-2022-21680"
+   ],
+   "osv_id": "GHSA-rrrm-qjm4-v8hf",
+   "osv_modified": "2026-09-10T03:49:11Z",
+   "version": "0.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2016-10531",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.3.6",
+   "manifest": "package.json",
+   "name": "marked",
+   "osv_aliases": [
+    "CVE-2016-10531"
+   ],
+   "osv_id": "GHSA-vfvf-mqq8-rwqc",
+   "osv_modified": "2023-11-08T03:58:10Z",
+   "version": "0.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16114",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.3.9",
+   "manifest": "package.json",
+   "name": "marked",
+   "osv_aliases": [
+    "CVE-2017-16114"
+   ],
+   "osv_id": "GHSA-x5pg-88wf-qq4p",
+   "osv_modified": "2023-11-08T03:59:05Z",
+   "version": "0.3.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-4067",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.0.8",
+   "manifest": "package.json",
+   "name": "micromatch",
+   "osv_aliases": [
+    "CVE-2024-4067"
+   ],
+   "osv_id": "GHSA-952p-6rrq-rcjv",
+   "osv_modified": "2026-09-10T03:50:13Z",
+   "version": "2.3.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-4067",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "4.0.8",
+   "manifest": "package.json",
+   "name": "micromatch",
+   "osv_aliases": [
+    "CVE-2024-4067"
+   ],
+   "osv_id": "GHSA-952p-6rrq-rcjv",
+   "osv_modified": "2026-09-10T03:50:13Z",
+   "version": "3.1.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16138",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.4.1",
+   "manifest": "package.json",
+   "name": "mime",
+   "osv_aliases": [
+    "CVE-2017-16138"
+   ],
+   "osv_id": "GHSA-wrvr-8mpx-r7pp",
+   "osv_modified": "2023-11-08T03:59:07Z",
+   "version": "1.2.11"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27904",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.4",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27904"
+   ],
+   "osv_id": "GHSA-23c5-xmqv-rm74",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-26996",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-26996"
+   ],
+   "osv_id": "GHSA-3ppc-4f35-3m26",
+   "osv_modified": "2026-09-10T03:50:33Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27903",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27903"
+   ],
+   "osv_id": "GHSA-7r86-cg39-jmmj",
+   "osv_modified": "2026-09-10T03:50:34Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-3517",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.5",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2022-3517"
+   ],
+   "osv_id": "GHSA-f8q6-p94x-37v3",
+   "osv_modified": "2026-09-10T03:49:46Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2016-10540",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.2",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2016-10540"
+   ],
+   "osv_id": "GHSA-hxm2-r34f-qmc5",
+   "osv_modified": "2023-11-08T03:58:11Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27904",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.4",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27904"
+   ],
+   "osv_id": "GHSA-23c5-xmqv-rm74",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "3.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-26996",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-26996"
+   ],
+   "osv_id": "GHSA-3ppc-4f35-3m26",
+   "osv_modified": "2026-09-10T03:50:33Z",
+   "version": "3.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27903",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27903"
+   ],
+   "osv_id": "GHSA-7r86-cg39-jmmj",
+   "osv_modified": "2026-09-10T03:50:34Z",
+   "version": "3.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-3517",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.5",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2022-3517"
+   ],
+   "osv_id": "GHSA-f8q6-p94x-37v3",
+   "osv_modified": "2026-09-10T03:49:46Z",
+   "version": "3.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27904",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.4",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27904"
+   ],
+   "osv_id": "GHSA-23c5-xmqv-rm74",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "3.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-26996",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-26996"
+   ],
+   "osv_id": "GHSA-3ppc-4f35-3m26",
+   "osv_modified": "2026-09-10T03:50:33Z",
+   "version": "3.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27903",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27903"
+   ],
+   "osv_id": "GHSA-7r86-cg39-jmmj",
+   "osv_modified": "2026-09-10T03:50:34Z",
+   "version": "3.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-3517",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.5",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2022-3517"
+   ],
+   "osv_id": "GHSA-f8q6-p94x-37v3",
+   "osv_modified": "2026-09-10T03:49:46Z",
+   "version": "3.0.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27904",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.1.4",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27904"
+   ],
+   "osv_id": "GHSA-23c5-xmqv-rm74",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "3.0.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-26996",
+   "cvss": "8.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-26996"
+   ],
+   "osv_id": "GHSA-3ppc-4f35-3m26",
+   "osv_modified": "2026-09-10T03:50:33Z",
+   "version": "3.0.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27903",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.1.3",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2026-27903"
+   ],
+   "osv_id": "GHSA-7r86-cg39-jmmj",
+   "osv_modified": "2026-09-10T03:50:34Z",
+   "version": "3.0.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-3517",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.0.5",
+   "manifest": "package.json",
+   "name": "minimatch",
+   "osv_aliases": [
+    "CVE-2022-3517"
+   ],
+   "osv_id": "GHSA-f8q6-p94x-37v3",
+   "osv_modified": "2026-09-10T03:49:46Z",
+   "version": "3.0.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7598",
+   "cvss": "5.6",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.2.1",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2020-7598"
+   ],
+   "osv_id": "GHSA-vh95-rmgr-6w4m",
+   "osv_modified": "2026-03-13T22:11:31Z",
+   "version": "0.0.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-44906",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.2.4",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2021-44906"
+   ],
+   "osv_id": "GHSA-xvch-5gv4-984h",
+   "osv_modified": "2026-03-13T22:11:59Z",
+   "version": "0.0.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7598",
+   "cvss": "5.6",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.2.1",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2020-7598"
+   ],
+   "osv_id": "GHSA-vh95-rmgr-6w4m",
+   "osv_modified": "2026-03-13T22:11:31Z",
+   "version": "0.0.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-44906",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.2.4",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2021-44906"
+   ],
+   "osv_id": "GHSA-xvch-5gv4-984h",
+   "osv_modified": "2026-03-13T22:11:59Z",
+   "version": "0.0.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7598",
+   "cvss": "5.6",
+   "dependency_groups": [
+    "bundled",
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.2.3",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2020-7598"
+   ],
+   "osv_id": "GHSA-vh95-rmgr-6w4m",
+   "osv_modified": "2026-03-13T22:11:31Z",
+   "version": "1.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-44906",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "bundled",
+    "dev",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.2.6",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2021-44906"
+   ],
+   "osv_id": "GHSA-xvch-5gv4-984h",
+   "osv_modified": "2026-03-13T22:11:59Z",
+   "version": "1.2.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-44906",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.2.6",
+   "manifest": "package.json",
+   "name": "minimist",
+   "osv_aliases": [
+    "CVE-2021-44906"
+   ],
+   "osv_id": "GHSA-xvch-5gv4-984h",
+   "osv_modified": "2026-03-13T22:11:59Z",
+   "version": "1.2.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10746",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.3.2",
+   "manifest": "package.json",
+   "name": "mixin-deep",
+   "osv_aliases": [
+    "CVE-2019-10746",
+    "SNYK-JS-MIXINDEEP-450212"
+   ],
+   "osv_id": "GHSA-fhjf-83wg-r2j9",
+   "osv_modified": "2026-09-10T03:48:25Z",
+   "version": "1.3.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-24785",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.29.2",
+   "manifest": "package.json",
+   "name": "moment",
+   "osv_aliases": [
+    "CVE-2022-24785"
+   ],
+   "osv_id": "GHSA-8hfj-j24r-96c4",
+   "osv_modified": "2026-09-10T03:49:28Z",
+   "version": "2.24.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-31129",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.29.4",
+   "manifest": "package.json",
+   "name": "moment",
+   "osv_aliases": [
+    "CVE-2022-31129"
+   ],
+   "osv_id": "GHSA-wc69-rhjr-hc9g",
+   "osv_modified": "2026-09-10T03:49:45Z",
+   "version": "2.24.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-mh5c-679w-hh4r",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.1.13",
+   "manifest": "package.json",
+   "name": "mongodb",
+   "osv_aliases": [],
+   "osv_id": "GHSA-mh5c-679w-hh4r",
+   "osv_modified": "2020-08-31T18:51:01Z",
+   "version": "2.2.36"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-20162",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.0.0",
+   "manifest": "package.json",
+   "name": "ms",
+   "osv_aliases": [
+    "CVE-2017-20162"
+   ],
+   "osv_id": "GHSA-w9mr-4mfr-499f",
+   "osv_modified": "2025-11-04T16:42:14Z",
+   "version": "0.7.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-21803",
+   "cvss": "7.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.11.4",
+   "manifest": "package.json",
+   "name": "nconf",
+   "osv_aliases": [
+    "CVE-2022-21803"
+   ],
+   "osv_id": "GHSA-6xwr-q98w-rvg7",
+   "osv_modified": "2024-05-19T02:24:17Z",
+   "version": "0.10.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-21803",
+   "cvss": "7.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.11.4",
+   "manifest": "package.json",
+   "name": "nconf",
+   "osv_aliases": [
+    "CVE-2022-21803"
+   ],
+   "osv_id": "GHSA-6xwr-q98w-rvg7",
+   "osv_modified": "2024-05-19T02:24:17Z",
+   "version": "0.6.9"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-16777",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.13.4",
+   "manifest": "package.json",
+   "name": "npm",
+   "osv_aliases": [
+    "CVE-2019-16777"
+   ],
+   "osv_id": "GHSA-4328-8hgf-7wjr",
+   "osv_modified": "2026-09-10T03:48:45Z",
+   "version": "3.10.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-15095",
+   "cvss": "4.4",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.14.6",
+   "manifest": "package.json",
+   "name": "npm",
+   "osv_aliases": [
+    "CVE-2020-15095"
+   ],
+   "osv_id": "GHSA-93f3-23rq-pjfp",
+   "osv_modified": "2026-09-10T03:48:48Z",
+   "version": "3.10.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-16775",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.13.3",
+   "manifest": "package.json",
+   "name": "npm",
+   "osv_aliases": [
+    "CVE-2019-16775"
+   ],
+   "osv_id": "GHSA-m6cx-g6qm-p2cx",
+   "osv_modified": "2026-09-10T03:49:24Z",
+   "version": "3.10.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-7408",
+   "cvss": "7.8",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.7.1",
+   "manifest": "package.json",
+   "name": "npm",
+   "osv_aliases": [
+    "CVE-2018-7408"
+   ],
+   "osv_id": "GHSA-ph34-pc88-72gc",
+   "osv_modified": "2026-09-10T03:49:35Z",
+   "version": "3.10.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-16776",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.13.3",
+   "manifest": "package.json",
+   "name": "npm",
+   "osv_aliases": [
+    "CVE-2019-16776"
+   ],
+   "osv_id": "GHSA-x8qc-rrcw-4r46",
+   "osv_modified": "2026-09-10T03:49:24Z",
+   "version": "3.10.10"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7754",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.0.1",
+   "manifest": "package.json",
+   "name": "npm-user-validate",
+   "osv_aliases": [
+    "CVE-2020-7754",
+    "GHSA-xgh6-85xh-479p"
+   ],
+   "osv_id": "GHSA-pw54-mh39-w3hc",
+   "osv_modified": "2026-07-08T06:49:44Z",
+   "version": "0.1.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-7339",
+   "cvss": "3.4",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.1.0",
+   "manifest": "package.json",
+   "name": "on-headers",
+   "osv_aliases": [
+    "CVE-2025-7339"
+   ],
+   "osv_id": "GHSA-76c9-3jph-rj3q",
+   "osv_modified": "2026-09-10T03:50:25Z",
+   "version": "1.0.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23343",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.0.7",
+   "manifest": "package.json",
+   "name": "path-parse",
+   "osv_aliases": [
+    "CVE-2021-23343"
+   ],
+   "osv_id": "GHSA-hj48-42vr-x3v9",
+   "osv_modified": "2025-01-14T08:57:22Z",
+   "version": "1.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-45296",
+   "cvss": "7.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.1.13",
+   "manifest": "package.json",
+   "name": "path-to-regexp",
+   "osv_aliases": [
+    "CVE-2024-45296",
+    "CVE-2026-4867",
+    "GHSA-9wv6-86v2-598j"
+   ],
+   "osv_id": "GHSA-37ch-88jc-xwx2",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "0.1.7"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-52798",
+   "cvss": "7.7",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.1.12",
+   "manifest": "package.json",
+   "name": "path-to-regexp",
+   "osv_aliases": [
+    "CVE-2024-52798"
+   ],
+   "osv_id": "GHSA-rhx6-c78j-4q9w",
+   "osv_modified": "2026-09-10T03:50:56Z",
+   "version": "0.1.7"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-90711",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.0.8",
+   "manifest": "package.json",
+   "name": "proxy-addr",
+   "osv_aliases": [
+    "CVE-2026-90711"
+   ],
+   "osv_id": "GHSA-jqcg-44mw-7w3h",
+   "osv_modified": "2026-10-05T23:45:07Z",
+   "version": "2.0.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-15284",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.14.1",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2025-15284"
+   ],
+   "osv_id": "GHSA-6rw7-vpxm-498p",
+   "osv_modified": "2026-09-10T03:50:31Z",
+   "version": "0.6.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2014-10064",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.0.0",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2014-10064"
+   ],
+   "osv_id": "GHSA-f9cm-p3w6-xvr3",
+   "osv_modified": "2023-11-08T03:57:33Z",
+   "version": "0.6.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-1000048",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.0.4",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2017-1000048"
+   ],
+   "osv_id": "GHSA-gqgv-6jq5-jjj9",
+   "osv_modified": "2023-11-08T03:58:42Z",
+   "version": "0.6.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-24999",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.2.4",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2022-24999"
+   ],
+   "osv_id": "GHSA-hrpp-h998-j3pp",
+   "osv_modified": "2025-04-29T15:41:43Z",
+   "version": "0.6.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2014-7191",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.0.0",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2014-7191"
+   ],
+   "osv_id": "GHSA-jjv7-qpx3-h62q",
+   "osv_modified": "2023-11-08T03:57:44Z",
+   "version": "0.6.6"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-82417",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.16.0",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2026-82417"
+   ],
+   "osv_id": "GHSA-4mjr-xmp4-gh2g",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "5.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-15284",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.14.1",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2025-15284"
+   ],
+   "osv_id": "GHSA-6rw7-vpxm-498p",
+   "osv_modified": "2026-09-10T03:50:31Z",
+   "version": "5.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-1000048",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.0.4",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2017-1000048"
+   ],
+   "osv_id": "GHSA-gqgv-6jq5-jjj9",
+   "osv_modified": "2023-11-08T03:58:42Z",
+   "version": "5.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-24999",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.2.4",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2022-24999"
+   ],
+   "osv_id": "GHSA-hrpp-h998-j3pp",
+   "osv_modified": "2025-04-29T15:41:43Z",
+   "version": "5.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-82417",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.16.0",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2026-82417"
+   ],
+   "osv_id": "GHSA-4mjr-xmp4-gh2g",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "6.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-15284",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.14.1",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2025-15284"
+   ],
+   "osv_id": "GHSA-6rw7-vpxm-498p",
+   "osv_modified": "2026-09-10T03:50:31Z",
+   "version": "6.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-1000048",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.2.3",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2017-1000048"
+   ],
+   "osv_id": "GHSA-gqgv-6jq5-jjj9",
+   "osv_modified": "2023-11-08T03:58:42Z",
+   "version": "6.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-24999",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.2.4",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2022-24999"
+   ],
+   "osv_id": "GHSA-hrpp-h998-j3pp",
+   "osv_modified": "2025-04-29T15:41:43Z",
+   "version": "6.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-82417",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.16.0",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2026-82417"
+   ],
+   "osv_id": "GHSA-4mjr-xmp4-gh2g",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "6.3.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-15284",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.14.1",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2025-15284"
+   ],
+   "osv_id": "GHSA-6rw7-vpxm-498p",
+   "osv_modified": "2026-09-10T03:50:31Z",
+   "version": "6.3.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-24999",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.3.3",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2022-24999"
+   ],
+   "osv_id": "GHSA-hrpp-h998-j3pp",
+   "osv_modified": "2025-04-29T15:41:43Z",
+   "version": "6.3.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-82417",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "6.16.0",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2026-82417"
+   ],
+   "osv_id": "GHSA-4mjr-xmp4-gh2g",
+   "osv_modified": "2026-09-10T03:51:14Z",
+   "version": "6.5.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-15284",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "6.14.1",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2025-15284"
+   ],
+   "osv_id": "GHSA-6rw7-vpxm-498p",
+   "osv_modified": "2026-09-10T03:50:31Z",
+   "version": "6.5.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-24999",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "6.5.3",
+   "manifest": "package.json",
+   "name": "qs",
+   "osv_aliases": [
+    "CVE-2022-24999"
+   ],
+   "osv_id": "GHSA-hrpp-h998-j3pp",
+   "osv_modified": "2025-04-29T15:41:43Z",
+   "version": "6.5.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16028",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.0",
+   "manifest": "package.json",
+   "name": "randomatic",
+   "osv_aliases": [
+    "CVE-2017-16028"
+   ],
+   "osv_id": "GHSA-6g33-f262-xjp4",
+   "osv_modified": "2023-11-08T03:59:00Z",
+   "version": "1.1.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16026",
+   "cvss": "5.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.68.0",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2017-16026"
+   ],
+   "osv_id": "GHSA-7xfp-9c55-5vqj",
+   "osv_modified": "2023-11-08T03:59:00Z",
+   "version": "2.36.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-28155",
+   "cvss": "6.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2023-28155"
+   ],
+   "osv_id": "GHSA-p8p7-x288-28g6",
+   "osv_modified": "2026-09-10T03:49:52Z",
+   "version": "2.36.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-16026",
+   "cvss": "5.9",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.68.0",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2017-16026"
+   ],
+   "osv_id": "GHSA-7xfp-9c55-5vqj",
+   "osv_modified": "2023-11-08T03:59:00Z",
+   "version": "2.67.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-28155",
+   "cvss": "6.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2023-28155"
+   ],
+   "osv_id": "GHSA-p8p7-x288-28g6",
+   "osv_modified": "2026-09-10T03:49:52Z",
+   "version": "2.67.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-28155",
+   "cvss": "6.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2023-28155"
+   ],
+   "osv_id": "GHSA-p8p7-x288-28g6",
+   "osv_modified": "2026-09-10T03:49:52Z",
+   "version": "2.75.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-28155",
+   "cvss": "6.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2023-28155"
+   ],
+   "osv_id": "GHSA-p8p7-x288-28g6",
+   "osv_modified": "2026-09-10T03:49:52Z",
+   "version": "2.79.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-28155",
+   "cvss": "6.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "request",
+   "osv_aliases": [
+    "CVE-2023-28155"
+   ],
+   "osv_id": "GHSA-p8p7-x288-28g6",
+   "osv_modified": "2026-09-10T03:49:52Z",
+   "version": "2.88.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-25883",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.7.2",
+   "manifest": "package.json",
+   "name": "semver",
+   "osv_aliases": [
+    "CVE-2022-25883"
+   ],
+   "osv_id": "GHSA-c2qf-rxjj-qqgw",
+   "osv_modified": "2026-09-10T03:50:02Z",
+   "version": "5.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-25883",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "5.7.2",
+   "manifest": "package.json",
+   "name": "semver",
+   "osv_aliases": [
+    "CVE-2022-25883"
+   ],
+   "osv_id": "GHSA-c2qf-rxjj-qqgw",
+   "osv_modified": "2026-09-10T03:50:02Z",
+   "version": "5.6.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-25883",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.7.2",
+   "manifest": "package.json",
+   "name": "semver",
+   "osv_aliases": [
+    "CVE-2022-25883"
+   ],
+   "osv_id": "GHSA-c2qf-rxjj-qqgw",
+   "osv_modified": "2026-09-10T03:50:02Z",
+   "version": "5.7.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-43799",
+   "cvss": "5.0",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "0.19.0",
+   "manifest": "package.json",
+   "name": "send",
+   "osv_aliases": [
+    "CVE-2024-43799"
+   ],
+   "osv_id": "GHSA-m6fv-jmcg-4jfg",
+   "osv_modified": "2026-09-10T03:50:18Z",
+   "version": "0.16.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-43800",
+   "cvss": "5.0",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.16.0",
+   "manifest": "package.json",
+   "name": "serve-static",
+   "osv_aliases": [
+    "CVE-2024-43800"
+   ],
+   "osv_id": "GHSA-cm22-4g7w-348p",
+   "osv_modified": "2026-09-10T03:50:18Z",
+   "version": "1.13.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10747",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.0.1",
+   "manifest": "package.json",
+   "name": "set-value",
+   "osv_aliases": [
+    "CVE-2019-10747",
+    "SNYK-JS-SETVALUE-450213"
+   ],
+   "osv_id": "GHSA-4g88-fppr-53pp",
+   "osv_modified": "2026-09-10T03:48:25Z",
+   "version": "0.4.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23440",
+   "cvss": "7.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.0.1",
+   "manifest": "package.json",
+   "name": "set-value",
+   "osv_aliases": [
+    "CVE-2021-23440"
+   ],
+   "osv_id": "GHSA-4jqc-8m5r-9rpr",
+   "osv_modified": "2025-01-14T09:11:57Z",
+   "version": "0.4.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10747",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.0.1",
+   "manifest": "package.json",
+   "name": "set-value",
+   "osv_aliases": [
+    "CVE-2019-10747",
+    "SNYK-JS-SETVALUE-450213"
+   ],
+   "osv_id": "GHSA-4g88-fppr-53pp",
+   "osv_modified": "2026-09-10T03:48:25Z",
+   "version": "2.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23440",
+   "cvss": "7.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.0.1",
+   "manifest": "package.json",
+   "name": "set-value",
+   "osv_aliases": [
+    "CVE-2021-23440"
+   ],
+   "osv_id": "GHSA-4jqc-8m5r-9rpr",
+   "osv_modified": "2025-01-14T09:11:57Z",
+   "version": "2.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2022-0144",
+   "cvss": "7.1",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.8.5",
+   "manifest": "package.json",
+   "name": "shelljs",
+   "osv_aliases": [
+    "CVE-2022-0144"
+   ],
+   "osv_id": "GHSA-4rq4-32rv-6wp6",
+   "osv_modified": "2023-11-08T04:07:28Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-64g7-mvw6-v9qj",
+   "cvss": "",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.8.5",
+   "manifest": "package.json",
+   "name": "shelljs",
+   "osv_aliases": [],
+   "osv_id": "GHSA-64g7-mvw6-v9qj",
+   "osv_modified": "2022-01-14T20:50:57Z",
+   "version": "0.3.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-3737",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.13.2",
+   "manifest": "package.json",
+   "name": "sshpk",
+   "osv_aliases": [
+    "CVE-2018-3737"
+   ],
+   "osv_id": "GHSA-2m39-62fm-q8r3",
+   "osv_modified": "2023-11-08T04:00:18Z",
+   "version": "1.10.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-21270",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.0.6",
+   "manifest": "package.json",
+   "name": "stringstream",
+   "osv_aliases": [
+    "CVE-2018-21270"
+   ],
+   "osv_id": "GHSA-mf6x-7mm4-x2g7",
+   "osv_modified": "2023-11-08T04:00:14Z",
+   "version": "0.0.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-25345",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "",
+   "manifest": "package.json",
+   "name": "swig",
+   "osv_aliases": [
+    "CVE-2023-25345"
+   ],
+   "osv_id": "GHSA-2rq5-699j-x7p6",
+   "osv_modified": "2023-11-08T04:11:51Z",
+   "version": "1.4.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59873",
+   "cvss": "9.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.19",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59873"
+   ],
+   "osv_id": "GHSA-23hp-3jrh-7fpw",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-24842",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.7",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-24842"
+   ],
+   "osv_id": "GHSA-34x7-hfp2-rc4v",
+   "osv_modified": "2026-09-10T03:50:32Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-32804",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.2.2",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-32804"
+   ],
+   "osv_id": "GHSA-3jfq-g458-7qm9",
+   "osv_modified": "2026-07-08T06:28:51Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-37713",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-37713"
+   ],
+   "osv_id": "GHSA-5955-9wpr-37jh",
+   "osv_modified": "2026-07-08T06:28:41Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-26960",
+   "cvss": "7.1",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.8",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-26960"
+   ],
+   "osv_id": "GHSA-83g3-92jg-28cx",
+   "osv_modified": "2026-09-10T03:50:34Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-23745",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.3",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-23745"
+   ],
+   "osv_id": "GHSA-8qq5-rm4j-mr97",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59874",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59874"
+   ],
+   "osv_id": "GHSA-8x88-c5mf-7j5w",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-31802",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.11",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-31802"
+   ],
+   "osv_id": "GHSA-9ppj-qmqm-q256",
+   "osv_modified": "2026-09-10T03:50:38Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-28863",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.2.1",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2024-28863"
+   ],
+   "osv_id": "GHSA-f5x3-32g6-xq36",
+   "osv_modified": "2026-09-10T03:50:10Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59875",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.17",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59875"
+   ],
+   "osv_id": "GHSA-gvwx-54wh-qm9j",
+   "osv_modified": "2026-09-10T03:50:52Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2018-20834",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.2.2",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2018-20834"
+   ],
+   "osv_id": "GHSA-j44m-qm6p-hp7m",
+   "osv_modified": "2023-11-29T22:25:48Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-29786",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.10",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-29786"
+   ],
+   "osv_id": "GHSA-qffp-2rhf-9h96",
+   "osv_modified": "2026-09-10T03:50:40Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-73566",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.21",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-73566"
+   ],
+   "osv_id": "GHSA-r292-9mhp-454m",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-23950",
+   "cvss": "8.8",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.4",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-23950"
+   ],
+   "osv_id": "GHSA-r6q2-hw4h-h46w",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-53655",
+   "cvss": "6.9",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.16",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-53655"
+   ],
+   "osv_id": "GHSA-vmf3-w455-68vh",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59871",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59871"
+   ],
+   "osv_id": "GHSA-w8wr-v893-vjvp",
+   "osv_modified": "2026-09-10T03:51:12Z",
+   "version": "2.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59873",
+   "cvss": "9.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.19",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59873"
+   ],
+   "osv_id": "GHSA-23hp-3jrh-7fpw",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-24842",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.7",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-24842"
+   ],
+   "osv_id": "GHSA-34x7-hfp2-rc4v",
+   "osv_modified": "2026-09-10T03:50:32Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-32804",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.14",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-32804"
+   ],
+   "osv_id": "GHSA-3jfq-g458-7qm9",
+   "osv_modified": "2026-07-08T06:28:51Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-37713",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-37713"
+   ],
+   "osv_id": "GHSA-5955-9wpr-37jh",
+   "osv_modified": "2026-07-08T06:28:41Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-26960",
+   "cvss": "7.1",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.8",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-26960"
+   ],
+   "osv_id": "GHSA-83g3-92jg-28cx",
+   "osv_modified": "2026-09-10T03:50:34Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-23745",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.3",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-23745"
+   ],
+   "osv_id": "GHSA-8qq5-rm4j-mr97",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59874",
+   "cvss": "8.7",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59874"
+   ],
+   "osv_id": "GHSA-8x88-c5mf-7j5w",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-31802",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.11",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-31802"
+   ],
+   "osv_id": "GHSA-9ppj-qmqm-q256",
+   "osv_modified": "2026-09-10T03:50:38Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-37701",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.16",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-37701"
+   ],
+   "osv_id": "GHSA-9r2w-394v-53qc",
+   "osv_modified": "2026-07-08T06:29:15Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2024-28863",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "6.2.1",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2024-28863"
+   ],
+   "osv_id": "GHSA-f5x3-32g6-xq36",
+   "osv_modified": "2026-09-10T03:50:10Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59875",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.17",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59875"
+   ],
+   "osv_id": "GHSA-gvwx-54wh-qm9j",
+   "osv_modified": "2026-09-10T03:50:52Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-29786",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.10",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-29786"
+   ],
+   "osv_id": "GHSA-qffp-2rhf-9h96",
+   "osv_modified": "2026-09-10T03:50:40Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-37712",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-37712"
+   ],
+   "osv_id": "GHSA-qq89-hq3f-393p",
+   "osv_modified": "2026-07-08T06:28:24Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-73566",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.21",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-73566"
+   ],
+   "osv_id": "GHSA-r292-9mhp-454m",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-32803",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.4.15",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2021-32803"
+   ],
+   "osv_id": "GHSA-r628-mhmh-qjhw",
+   "osv_modified": "2026-07-08T06:27:29Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-23950",
+   "cvss": "8.8",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.4",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-23950"
+   ],
+   "osv_id": "GHSA-r6q2-hw4h-h46w",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-53655",
+   "cvss": "6.9",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.16",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-53655"
+   ],
+   "osv_id": "GHSA-vmf3-w455-68vh",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-59871",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "optional"
+   ],
+   "ecosystem": "npm",
+   "fixed": "7.5.18",
+   "manifest": "package.json",
+   "name": "tar",
+   "osv_aliases": [
+    "CVE-2026-59871"
+   ],
+   "osv_id": "GHSA-w8wr-v893-vjvp",
+   "osv_modified": "2026-09-10T03:51:12Z",
+   "version": "4.4.8"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-54798",
+   "cvss": "2.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.2.4",
+   "manifest": "package.json",
+   "name": "tmp",
+   "osv_aliases": [
+    "CVE-2025-54798"
+   ],
+   "osv_id": "GHSA-52f5-9888-hmc6",
+   "osv_modified": "2026-09-10T03:50:26Z",
+   "version": "0.0.24"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-44705",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.2.6",
+   "manifest": "package.json",
+   "name": "tmp",
+   "osv_aliases": [
+    "CVE-2026-44705"
+   ],
+   "osv_id": "GHSA-ph9p-34f9-6g65",
+   "osv_modified": "2026-09-10T03:51:06Z",
+   "version": "0.0.24"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2025-54798",
+   "cvss": "2.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.2.4",
+   "manifest": "package.json",
+   "name": "tmp",
+   "osv_aliases": [
+    "CVE-2025-54798"
+   ],
+   "osv_id": "GHSA-52f5-9888-hmc6",
+   "osv_modified": "2026-09-10T03:50:26Z",
+   "version": "0.1.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-44705",
+   "cvss": "7.7",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.2.6",
+   "manifest": "package.json",
+   "name": "tmp",
+   "osv_aliases": [
+    "CVE-2026-44705"
+   ],
+   "osv_id": "GHSA-ph9p-34f9-6g65",
+   "osv_modified": "2026-09-10T03:51:06Z",
+   "version": "0.1.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-26136",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.1.3",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2023-26136"
+   ],
+   "osv_id": "GHSA-72xf-g2v4-qvf3",
+   "osv_modified": "2026-09-10T03:49:54Z",
+   "version": "2.2.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-15010",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.3.3",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2017-15010"
+   ],
+   "osv_id": "GHSA-g7q5-pjjr-gqvp",
+   "osv_modified": "2023-11-08T03:58:56Z",
+   "version": "2.2.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2016-1000232",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.3.0",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2016-1000232"
+   ],
+   "osv_id": "GHSA-qhv9-728r-6jqg",
+   "osv_modified": "2023-11-08T03:58:07Z",
+   "version": "2.2.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-26136",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.1.3",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2023-26136"
+   ],
+   "osv_id": "GHSA-72xf-g2v4-qvf3",
+   "osv_modified": "2026-09-10T03:49:54Z",
+   "version": "2.3.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2017-15010",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.3.3",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2017-15010"
+   ],
+   "osv_id": "GHSA-g7q5-pjjr-gqvp",
+   "osv_modified": "2023-11-08T03:58:56Z",
+   "version": "2.3.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-26136",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.1.3",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2023-26136"
+   ],
+   "osv_id": "GHSA-72xf-g2v4-qvf3",
+   "osv_modified": "2026-09-10T03:49:54Z",
+   "version": "2.3.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-26136",
+   "cvss": "6.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "4.1.3",
+   "manifest": "package.json",
+   "name": "tough-cookie",
+   "osv_aliases": [
+    "CVE-2023-26136"
+   ],
+   "osv_id": "GHSA-72xf-g2v4-qvf3",
+   "osv_modified": "2026-09-10T03:49:54Z",
+   "version": "2.4.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-33623",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "3.0.1",
+   "manifest": "package.json",
+   "name": "trim-newlines",
+   "osv_aliases": [
+    "CVE-2021-33623"
+   ],
+   "osv_id": "GHSA-7p7h-4mm5-852v",
+   "osv_modified": "2026-09-10T03:49:05Z",
+   "version": "1.0.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "GHSA-xc7v-wxcw-j472",
+   "cvss": "",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.6.0",
+   "manifest": "package.json",
+   "name": "tunnel-agent",
+   "osv_aliases": [],
+   "osv_id": "GHSA-xc7v-wxcw-j472",
+   "osv_modified": "2020-08-31T18:29:19Z",
+   "version": "0.4.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2015-8858",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "2.6.0",
+   "manifest": "package.json",
+   "name": "uglify-js",
+   "osv_aliases": [
+    "CVE-2015-8858"
+   ],
+   "osv_id": "GHSA-c9f4-xj24-8jqx",
+   "osv_modified": "2023-11-08T03:58:03Z",
+   "version": "2.4.24"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2019-10795",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "2.0.3",
+   "manifest": "package.json",
+   "name": "undefsafe",
+   "osv_aliases": [
+    "CVE-2019-10795",
+    "SNYK-JS-UNDEFSAFE-548940"
+   ],
+   "osv_id": "GHSA-332q-7ff2-57h2",
+   "osv_modified": "2026-09-10T03:49:16Z",
+   "version": "2.0.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23358",
+   "cvss": "9.8",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.12.1",
+   "manifest": "package.json",
+   "name": "underscore",
+   "osv_aliases": [
+    "CVE-2021-23358"
+   ],
+   "osv_id": "GHSA-cf4h-3jhx-xvhq",
+   "osv_modified": "2025-11-04T16:33:59Z",
+   "version": "1.8.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27601",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "1.13.8",
+   "manifest": "package.json",
+   "name": "underscore",
+   "osv_aliases": [
+    "CVE-2026-27601"
+   ],
+   "osv_id": "GHSA-qpx9-hpmf-5gmw",
+   "osv_modified": "2026-09-10T03:51:00Z",
+   "version": "1.8.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2021-23358",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.12.1",
+   "manifest": "package.json",
+   "name": "underscore",
+   "osv_aliases": [
+    "CVE-2021-23358"
+   ],
+   "osv_id": "GHSA-cf4h-3jhx-xvhq",
+   "osv_modified": "2025-11-04T16:33:59Z",
+   "version": "1.9.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-27601",
+   "cvss": "8.2",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "1.13.8",
+   "manifest": "package.json",
+   "name": "underscore",
+   "osv_aliases": [
+    "CVE-2026-27601"
+   ],
+   "osv_id": "GHSA-qpx9-hpmf-5gmw",
+   "osv_modified": "2026-09-10T03:51:00Z",
+   "version": "1.9.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-41907",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "11.1.1",
+   "manifest": "package.json",
+   "name": "uuid",
+   "osv_aliases": [
+    "CVE-2026-41907",
+    "CVE-2026-41988"
+   ],
+   "osv_id": "GHSA-w5hq-g745-h8pq",
+   "osv_modified": "2026-09-10T03:51:03Z",
+   "version": "3.3.2"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-54490",
+   "cvss": "6.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.7.5",
+   "manifest": "package.json",
+   "name": "websocket-driver",
+   "osv_aliases": [
+    "CVE-2026-54490"
+   ],
+   "osv_id": "GHSA-mp7j-qc5w-4988",
+   "osv_modified": "2026-09-10T03:50:52Z",
+   "version": "0.7.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-54466",
+   "cvss": "9.2",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.7.5",
+   "manifest": "package.json",
+   "name": "websocket-driver",
+   "osv_aliases": [
+    "CVE-2026-54466"
+   ],
+   "osv_id": "GHSA-xv26-6w52-cph6",
+   "osv_modified": "2026-09-10T03:51:12Z",
+   "version": "0.7.0"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7662",
+   "cvss": "8.2",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.1.4",
+   "manifest": "package.json",
+   "name": "websocket-extensions",
+   "osv_aliases": [
+    "CVE-2020-7662",
+    "SNYK-JS-WEBSOCKETEXTENSIONS-570623"
+   ],
+   "osv_id": "GHSA-g78m-2chm-r7qv",
+   "osv_modified": "2026-07-08T06:50:02Z",
+   "version": "0.1.3"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2026-48779",
+   "cvss": "7.5",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.2.5",
+   "manifest": "package.json",
+   "name": "ws",
+   "osv_aliases": [
+    "CVE-2026-48779"
+   ],
+   "osv_id": "GHSA-96hv-2xvq-fx4p",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "1.1.5"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2023-0842",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "0.5.0",
+   "manifest": "package.json",
+   "name": "xml2js",
+   "osv_aliases": [
+    "CVE-2023-0842"
+   ],
+   "osv_id": "GHSA-776f-qx25-q3cc",
+   "osv_modified": "2025-02-13T22:08:55Z",
+   "version": "0.4.4"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7774",
+   "cvss": "7.3",
+   "dependency_groups": [],
+   "ecosystem": "npm",
+   "fixed": "3.2.2",
+   "manifest": "package.json",
+   "name": "y18n",
+   "osv_aliases": [
+    "CVE-2020-7774"
+   ],
+   "osv_id": "GHSA-c4w7-xm78-47vh",
+   "osv_modified": "2024-12-05T15:28:53Z",
+   "version": "3.2.1"
+  },
+  {
+   "codebase": "nodegoat",
+   "cve": "CVE-2020-7608",
+   "cvss": "5.3",
+   "dependency_groups": [
+    "bundled",
+    "dev"
+   ],
+   "ecosystem": "npm",
+   "fixed": "5.0.1",
+   "manifest": "package.json",
+   "name": "yargs-parser",
+   "osv_aliases": [
+    "CVE-2020-7608",
+    "SNYK-JS-YARGSPARSER-560381"
+   ],
+   "osv_id": "GHSA-p9pc-299p-vxgp",
+   "osv_modified": "2026-07-08T06:49:37Z",
+   "version": "2.4.1"
+  }
+ ],
+ "excluded_manifests": [],
+ "osv_date": "2026-11-21",
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

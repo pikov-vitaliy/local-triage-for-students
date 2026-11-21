@@ -46,3 +46,16 @@
   | typing-inspection | 0.4.4 | MIT |
   | tzdata (только Windows) | 2026.6 | Apache-2.0 |
   | uvicorn | 0.54.0 | BSD-3-Clause |
+
+## Каталог учебных примеров
+
+В пакет входят описание каталога (`examples/catalog/catalog.json`), выгрузки `examples/catalog/*/export.xlsx` и
+`examples/catalog/NOTICE.md`. Выгрузки содержат номера находок, идентификаторы правил, пути, номера строк, имена и
+версии компонентов, без строк кода примеров. Код примеров в пакет не входит: стенд скачивает его с GitHub по
+закреплённому коммиту, примеры распространяют их авторы на условиях своих лицензий (MIT, Apache-2.0,
+GPL-2.0-or-later, GPL-3.0-or-later, GPL-3.0-only – по примерам в `examples/catalog/NOTICE.md`).
+
+Выгрузки собраны анализаторами, которые в пакет не входят: Semgrep CE (LGPL-2.1) с собственными учебными правилами
+репозитория, Bandit (Apache-2.0), gosec (Apache-2.0), OSV-Scanner (Apache-2.0). Сведения об уязвимостях – из базы OSV
+(https://osv.dev), о лицензиях компонентов – из deps.dev (https://deps.dev) на дату сборки каталога; источники записей
+OSV по примерам перечислены в `examples/catalog/NOTICE.md`.

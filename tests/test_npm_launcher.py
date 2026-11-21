@@ -260,3 +260,16 @@ def test_guard_refuses_release_without_private_rules(tmp_path: Path):
     base = [sys.executable, "-X", "utf8", str(script), str(tgz), "--manifest", str(manifest(tmp_path, ["package.json"]))]
     assert subprocess.run(base, env=env, capture_output=True, timeout=60).returncode == 3
     assert subprocess.run(base + ["--without-private-rules"], env=env, capture_output=True, timeout=60).returncode == 0
+
+
+@pytest.mark.parametrize("args", [["--new-database=false"], ["--home="], ["--code-dir=", "--version"], ["--no-open=1"]])
+def test_cli_flags_without_values_and_empty_folders_are_refused(args):
+    """Флаг без значения с «=значение» и пустая папка – отказ до любых действий (ревью круга 10: --new-database=false
+    включал замену базы)."""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("нет Node")
+    out = subprocess.run([node, str(ROOT / "npm" / "cli.js"), *args], capture_output=True, timeout=60)
+    assert out.returncode == 1, out
+    text = (out.stdout + out.stderr).decode("utf-8", "replace")
+    assert "без значения" in text or "пустое значение" in text

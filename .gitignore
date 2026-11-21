@@ -15,6 +15,12 @@ data-dev/
 # Кроме демо: выдуманная выгрузка нужна, чтобы всё воспроизвести без настоящих данных
 !examples/demo/demo-hub-report.xlsx
 !examples/demo/demo-hub-report-v2.xlsx
+# выгрузки каталога учебных примеров (ADR-0156) – в репозитории, книги без строк кода
+!examples/catalog/*/export.xlsx
+examples/catalog/*/export.xlsx.new
+examples/catalog/*.new
+examples/catalog/**/*.bak
+examples/catalog/*.bak
 *.db
 *.db-wal
 *.db-shm
@@ -51,3 +57,6 @@ desktop.ini
 node_modules/
 *.tgz
 /npm-build/
+
+# исходники учебных примеров, скачанные стендом в корень клонов внутри папки приложения (ADR-0156)
+/examples/demo/repos/examples/

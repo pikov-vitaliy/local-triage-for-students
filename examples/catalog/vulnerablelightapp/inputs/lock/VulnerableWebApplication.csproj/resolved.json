@@ -1,0 +1,172 @@
+[
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL",
+  "version": "8.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL-Parser",
+  "version": "9.5.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Analyzers",
+  "version": "8.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.DataLoader",
+  "version": "8.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.MemoryCache",
+  "version": "8.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.MicrosoftDI",
+  "version": "8.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Server.All",
+  "version": "8.3.3"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Server.Transports.AspNetCore",
+  "version": "8.3.3"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Server.Ui.Altair",
+  "version": "8.3.3"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Server.Ui.GraphiQL",
+  "version": "8.3.3"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Server.Ui.Playground",
+  "version": "8.3.3"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.Server.Ui.Voyager",
+  "version": "8.3.3"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "GraphQL.SystemTextJson",
+  "version": "8.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.AspNetCore.OpenApi",
+  "version": "10.0.1"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.CodeAnalysis.Analyzers",
+  "version": "3.11.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.CodeAnalysis.CSharp",
+  "version": "5.0.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.CodeAnalysis.CSharp.Scripting",
+  "version": "5.0.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.CodeAnalysis.Common",
+  "version": "5.0.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.CodeAnalysis.Scripting.Common",
+  "version": "5.0.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.Extensions.ApiDescription.Server",
+  "version": "10.0.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.IdentityModel.Abstractions",
+  "version": "8.15.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.IdentityModel.JsonWebTokens",
+  "version": "8.15.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.IdentityModel.Logging",
+  "version": "8.15.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.IdentityModel.Tokens",
+  "version": "8.15.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Microsoft.OpenApi",
+  "version": "2.3.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "NLog",
+  "version": "6.0.6"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "NLog.Extensions.Logging",
+  "version": "6.1.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "NLog.Web.AspNetCore",
+  "version": "6.1.0"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Newtonsoft.Json",
+  "version": "13.0.4"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Swashbuckle.AspNetCore",
+  "version": "10.0.1"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Swashbuckle.AspNetCore.Swagger",
+  "version": "10.0.1"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Swashbuckle.AspNetCore.SwaggerGen",
+  "version": "10.0.1"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "Swashbuckle.AspNetCore.SwaggerUI",
+  "version": "10.0.1"
+ },
+ {
+  "ecosystem": "NuGet",
+  "name": "System.IdentityModel.Tokens.Jwt",
+  "version": "8.15.0"
+ }
+]

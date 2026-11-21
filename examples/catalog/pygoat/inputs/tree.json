@@ -1,0 +1,10 @@
+{
+ "archive_bytes": 704626,
+ "commit": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+ "files": 463,
+ "max_dirpath": 70,
+ "max_relpath": 87,
+ "tar_bytes": 2181120,
+ "tree_sha256": "7f27ca50f6d31ff2ecb9c456610fab4e309c6af44d5affaabe494bd7c4721a6b",
+ "unpacked_bytes": 1743460
+}

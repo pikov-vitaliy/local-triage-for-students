@@ -1,0 +1,83 @@
+# Учебные правила стенда «Локальный триаж» для Ruby on Rails (лицензия репозитория – MIT).
+rules:
+  - id: lt.rb.sql-interpolation
+    languages: [ruby]
+    severity: ERROR
+    message: Условие запроса собирается интерполяцией строки – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: $M.where("...#{$X}...")
+      - pattern: $M.find_by_sql("...#{$X}...")
+      - pattern: $M.order("...#{$X}...")
+      - pattern: $M.joins("...#{$X}...")
+      - pattern: $M.select("...#{$X}...")
+  - id: lt.rb.command-exec
+    languages: [ruby]
+    severity: ERROR
+    message: Команда операционной системы из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: system("...#{$X}...")
+      - pattern: '`...#{$X}...`'
+      - pattern: IO.popen(...)
+      - pattern: Open3.capture2(...)
+  - id: lt.rb.mass-assignment
+    languages: [ruby]
+    severity: WARNING
+    message: Все параметры запроса разрешены целиком – возможна подмена полей модели
+    metadata: {cwe: ["CWE-915"], category: Массовое присваивание}
+    pattern-either:
+      - pattern: params.permit!
+      - pattern: $M.new(params[$K])
+      - pattern: $M.update(params[$K])
+      - pattern: $M.update_attributes(params[$K])
+  - id: lt.rb.xss-html-safe
+    languages: [ruby]
+    severity: WARNING
+    message: Строка помечена безопасной без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: $X.html_safe
+      - pattern: raw($X)
+  - id: lt.rb.redirect
+    languages: [ruby]
+    severity: WARNING
+    message: Адрес перенаправления из параметров запроса – возможен открытый редирект
+    metadata: {cwe: ["CWE-601"], category: Открытое перенаправление}
+    pattern-either:
+      - pattern: redirect_to params[$K]
+      - pattern: redirect_to(params[$K], ...)
+  - id: lt.rb.deserialize
+    languages: [ruby]
+    severity: ERROR
+    message: Marshal.load или YAML.load данных – небезопасная десериализация
+    metadata: {cwe: ["CWE-502"], category: Небезопасная десериализация}
+    pattern-either:
+      - pattern: Marshal.load($X)
+      - pattern: YAML.load($X)
+  - id: lt.rb.weak-hash
+    languages: [ruby]
+    severity: WARNING
+    message: MD5 или SHA-1 для пароля – слабое хеширование
+    metadata: {cwe: ["CWE-328"], category: Слабая криптография}
+    pattern-either:
+      - pattern: Digest::MD5.hexdigest($X)
+      - pattern: Digest::SHA1.hexdigest($X)
+  - id: lt.rb.idor-find
+    languages: [ruby]
+    severity: WARNING
+    message: Объект ищется по номеру из запроса без проверки владельца – возможен доступ к чужим данным
+    metadata: {cwe: ["CWE-639"], category: Небезопасная прямая ссылка}
+    pattern-either:
+      - pattern: $M.find(params[:id])
+      - pattern: $M.find_by_id(params[:id])
+  - id: lt.rb.hardcoded-secret
+    languages: [ruby]
+    severity: WARNING
+    message: Секрет записан в коде строкой
+    metadata: {cwe: ["CWE-798"], category: Секрет в коде}
+    patterns:
+      - pattern: $K = "..."
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i).*(secret|password|api_?key|token).*

@@ -1,0 +1,148 @@
+{
+ "allowed": [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "0BSD",
+  "BlueOak-1.0.0",
+  "CC0-1.0",
+  "Unlicense",
+  "Python-2.0",
+  "PSF-2.0",
+  "Zlib",
+  "CC-BY-4.0",
+  "BSD-3-Clause-Clear",
+  "X11",
+  "MIT-0",
+  "HPND",
+  "Artistic-2.0",
+  "Ruby",
+  "BSL-1.0",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "W3C"
+ ],
+ "build_date": "2026-11-20",
+ "commit": "4e98f1cbbf896fdd06edcc9930515ebe0ade7c69",
+ "entries": [
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "cglib:cglib-nodep",
+   "version": "3.3.0",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "com.auth0:java-jwt",
+   "version": "4.6.2",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "com.auth0:jwks-rsa",
+   "version": "0.24.1",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "version": "1.4.5",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "CDDL-1.1",
+    "GPL-2.0-with-classpath-exception"
+   ],
+   "manifest": "pom.xml",
+   "name": "javax.xml.bind:jaxb-api",
+   "version": "2.3.1",
+   "violations": [
+    "CDDL-1.1",
+    "GPL-2.0-with-classpath-exception"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "org.bouncycastle:bcprov-jdk18on",
+   "version": "1.85",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "org.jsoup:jsoup",
+   "version": "1.23.2",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "webgoat",
+   "dependency_groups": [
+    "provided"
+   ],
+   "ecosystem": "Maven",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "pom.xml",
+   "name": "org.projectlombok:lombok",
+   "version": "1.18.48",
+   "violations": [
+    "non-standard"
+   ]
+  }
+ ],
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

@@ -1,0 +1,47 @@
+[
+ {
+  "ecosystem": "PyPI",
+  "name": "black",
+  "version": "26.10.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "click",
+  "version": "8.5.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "mypy-extensions",
+  "version": "1.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "packaging",
+  "version": "26.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pathspec",
+  "version": "1.1.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "platformdirs",
+  "version": "4.14.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pytokens",
+  "version": "0.4.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "tomli",
+  "version": "2.5.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "typing-extensions",
+  "version": "4.16.0"
+ }
+]

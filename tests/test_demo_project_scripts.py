@@ -200,7 +200,8 @@ def test_osv_script_marks_truncation_and_fails_on_network_errors(tmp_path: Path,
                                       "--out", str(tmp_path / "out.csv")])
     assert osv.main() == 2, "неполный CSV – ненулевой код выхода"
     assert "CSV НЕПОЛОН" in capsys.readouterr().out
-    assert (tmp_path / "out.csv").read_text(encoding="utf-8").splitlines() == ["ecosystem,component,version,cve,cvss,fixed,note"]
+    assert (tmp_path / "out.csv").read_text(encoding="utf-8").splitlines() == [
+        "ecosystem,component,version,cve,cvss,fixed,note,osv_id,osv_aliases,osv_modified"]  # колонки происхождения OSV (ADR-0156)
 
 
 def test_known_answers_builder_reads_markers_and_checks_manual_rows(tmp_path: Path, capsys):

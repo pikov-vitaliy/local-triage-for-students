@@ -1,0 +1,132 @@
+# Учебные правила стенда «Локальный триаж» для JavaScript и TypeScript (лицензия репозитория – MIT).
+# Правила нарочно простые: среди срабатываний есть и настоящие уязвимости, и ложные – их и учится различать студент.
+rules:
+  - id: lt.js.sql-string-concat
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Запрос к базе собирается склейкой строк или шаблонной строкой – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: $DB.query("..." + $X, ...)
+      - pattern: $DB.query(`...${$X}...`, ...)
+      - pattern: $DB.query($Q + $X, ...)
+      - pattern: $SEQ.query(`...${$X}...`, ...)
+      - pattern: $SEQ.query("..." + $X + "...", ...)
+  - id: lt.js.nosql-where
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Выражение $where в запросе MongoDB выполняется как код – возможна NoSQL-инъекция
+    metadata: {cwe: ["CWE-943"], category: NoSQL-инъекция}
+    pattern-either:
+      - pattern: '$C.find({$where: $X})'
+      - pattern: '$C.find({..., $where: $X, ...})'
+      - pattern: '$C.update({..., $where: $X, ...}, ...)'
+  - id: lt.js.eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Вызов eval, Function или setTimeout со строкой выполняет данные как код
+    metadata: {cwe: ["CWE-95"], category: Внедрение кода}
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: new Function(...)
+      - pattern: setTimeout($S, ...)
+      - pattern: vm.runInNewContext($X, ...)
+      - pattern: vm.runInContext($X, ...)
+  - id: lt.js.command-exec
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Команда операционной системы строится из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: $CP.exec($CMD + $X, ...)
+      - pattern: $CP.exec(`...${$X}...`, ...)
+      - pattern: $CP.execSync($CMD + $X, ...)
+      - pattern: exec($CMD + $X, ...)
+  - id: lt.js.path-from-request
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Путь к файлу строится из параметра запроса – возможен обход каталога
+    metadata: {cwe: ["CWE-22"], category: Обход пути}
+    pattern-either:
+      - pattern: $FS.readFile($REQ.params.$P, ...)
+      - pattern: $FS.readFileSync($REQ.params.$P, ...)
+      - pattern: $RES.sendFile($PATH.resolve(..., $REQ.params.$P, ...), ...)
+      - pattern: $RES.sendFile(..., $REQ.params.$P, ...)
+      - pattern: $PATH.join(..., $REQ.params.$P, ...)
+      - pattern: $PATH.join(..., $REQ.query.$P, ...)
+      - pattern: $PATH.resolve(..., $REQ.params.$P, ...)
+  - id: lt.js.redirect-from-request
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Адрес перенаправления берётся из запроса – возможен открытый редирект
+    metadata: {cwe: ["CWE-601"], category: Открытое перенаправление}
+    pattern-either:
+      - pattern: $RES.redirect($REQ.query.$P)
+      - pattern: $RES.redirect($REQ.body.$P)
+      - pattern: $RES.redirect($X)
+  - id: lt.js.innerhtml
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Разметка вставляется без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: $EL.innerHTML = $X
+      - pattern: document.write($X)
+      - pattern: $S.bypassSecurityTrustHtml($X)
+      - pattern: $S.bypassSecurityTrustScript($X)
+      - pattern: $S.bypassSecurityTrustResourceUrl($X)
+      - pattern: $S.bypassSecurityTrustUrl($X)
+  - id: lt.js.hardcoded-secret
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Секрет записан в коде строкой
+    metadata: {cwe: ["CWE-798"], category: Секрет в коде}
+    pattern-either:
+      - pattern: $JWT.sign($P, "...", ...)
+      - pattern: '{..., secret: "...", ...}'
+      - pattern: '{..., password: "...", ...}'
+      - pattern: const $K = "..."
+    metavariable-regex:
+      metavariable: $K
+      regex: (?i).*(secret|password|passwd|api_?key|token).*
+  - id: lt.js.jwt-insecure
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Токен JWT принимается без проверки подписи или с алгоритмом none
+    metadata: {cwe: ["CWE-347"], category: Проверка подписи}
+    pattern-either:
+      - pattern: $JWT.decode($T, ...)
+      - pattern: '$JWT.verify($T, $K, {..., algorithms: [..., "none", ...], ...}, ...)'
+  - id: lt.js.weak-hash
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Устаревшая хеш-функция (MD5 или SHA-1) – не годится для паролей и подписи
+    metadata: {cwe: ["CWE-328"], category: Слабая криптография}
+    pattern-either:
+      - pattern: $C.createHash("md5")
+      - pattern: $C.createHash("sha1")
+  - id: lt.js.insecure-random
+    languages: [javascript, typescript]
+    severity: INFO
+    message: Math.random не годится для токенов и паролей – нужен криптостойкий генератор
+    metadata: {cwe: ["CWE-338"], category: Слабая случайность}
+    pattern: Math.random()
+  - id: lt.js.deserialize
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Небезопасная десериализация данных
+    metadata: {cwe: ["CWE-502"], category: Небезопасная десериализация}
+    pattern-either:
+      - pattern: $S.unserialize(...)
+      - pattern: $Y.load($X, ...)
+  - id: lt.js.ssrf
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Запрос к адресу из данных пользователя – возможна подделка запроса со стороны сервера
+    metadata: {cwe: ["CWE-918"], category: SSRF}
+    pattern-either:
+      - pattern: $H.get($REQ.body.$P, ...)
+      - pattern: $H.get($REQ.query.$P, ...)
+      - pattern: request($REQ.body.$P, ...)
+      - pattern: fetch($REQ.body.$P, ...)
+      - pattern: fetch($REQ.query.$P, ...)

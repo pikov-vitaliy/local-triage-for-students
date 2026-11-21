@@ -104,7 +104,7 @@ function setPhase(next, text = '') {
 function status() {
   return { stand: 'local-triage', id: state ? state.data.id : '', version, mode: opts.local ? 'local-only' : 'external',
     code_dir: codeDir, code_dir_real: codeReal ? canonical(codeReal) : '', home, phase, message, stopping, app_port: appPort,
-    url: appUrl, pid: process.pid };
+    url: appUrl, app_token: token, pid: process.pid };
 }
 
 function holdLock(port) {
@@ -963,6 +963,7 @@ function watchApp(proc) {
       watchApp(child);
       setPhase('ready');
       say(`Стенд снова работает: ${appUrl}`);
+      watchExamples(); // перезапущенное приложение снова скачивает недостающие примеры
     } catch (error) {
       if (stopping || error instanceof Cancelled) return; // остановку доводит shutdown
       setPhase('failed', error.message);
@@ -1043,6 +1044,22 @@ async function shutdown(code = 0, fromMain = false) {
       else if (st.code !== 3) dataState = 'error';
     } catch { dataState = 'error'; }
   }
+  if (!(pgStarted && pgPort) && dataState === 'starting' && py) {
+    // остановка пришла, пока PostgreSQL восстанавливался: ограниченное ожидание конца восстановления, затем штатная
+    // остановка подтверждённого сервера (ревью круга 10)
+    const deadline = Date.now() + 120000;
+    let who = 'starting';
+    while (who === 'starting' && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 2000));
+      try { who = await serverOn(dataDir, pgPort || state.data.pg_port || 0); } catch { who = 'error'; }
+    }
+    if (who === 'running') {
+      const stopped = await tryStop(dataDir, pgPort || state.data.pg_port);
+      say(stopped ? 'PostgreSQL остановлен после восстановления.' : 'PostgreSQL остановить не удалось: подробности выше.');
+      if (!stopped) stopIssues += 1;
+      else dataState = 'down';
+    }
+  }
   if (!(pgStarted && pgPort) && fs.existsSync(dataDir)) {
     // сервер не запускался этим держателем: что с ним, говорит последняя проверка каталога; её не было (отказ раньше,
     // например без файла пароля) – одна проверка сейчас, сигнал не посылается
@@ -1120,14 +1137,56 @@ async function main() {
   appPort = started.port;
   appUrl = `http://127.0.0.1:${appPort}/`;
   watchApp(child);
+  // Д10: привязка – тот физический путь, с которым работает Python; ссылку перенацелили во время запуска – отказ
+  if (canonical(codeDir) !== canonical(codeReal)) {
+    throw new StandError(`Папка кода ${codeDir} во время запуска стала указывать на ${canonical(codeDir)}, а приложение ` +
+      `работает с ${canonical(codeReal)}. Верните ссылку и запустите стенд снова.`);
+  }
   stand.save(state, { phase: 'ready', app_port: appPort, last_good_version: version, code_dir: codeDir,
-    code_dir_real: canonical(codeDir) });
+    code_dir_real: canonical(codeReal) });
   // версия рядом с самим кластером: имя копии обновления знает её и при утраченном stand.json
   try { fs.writeFileSync(path.join(dataDir, 'local-triage.version'), `${version}\n`); } catch { /* не критично */ }
-  try { fs.writeFileSync(path.join(dataDir, binding.FILE), binding.fileText(codeDir)); } catch { /* не критично */ }
+  try { fs.writeFileSync(path.join(dataDir, binding.FILE), binding.fileText(codeDir, codeReal)); } catch { /* не критично */ }
   setPhase('ready');
   say(`Стенд работает: ${appUrl}`);
   try { process.stdout.write(`@@ready ${appUrl}\n`); } catch { /* окно закрыто */ }
+  watchExamples();
+}
+
+/** Ход фонового скачивания учебных примеров – в окне запуска (ADR-0156): по строке на смену состояния примера,
+ *  пока не останется скачиваемых или в очереди; не дольше 30 минут. Сбой опроса окно не трогает. */
+let examplesTimer = null;
+let examplesGeneration = 0;
+
+function watchExamples() {
+  if (examplesTimer) clearTimeout(examplesTimer); // один опрос на стенд: прежний (до перезапуска приложения) отменяется
+  const generation = ++examplesGeneration; // опрос, дождавшийся ответа после перезапуска, дальше не планируется
+  const seen = {};
+  const until = Date.now() + 30 * 60 * 1000;
+  const words = { downloaded: 'скачан', failed: 'не скачан', fetching: 'скачивается', queued: 'в очереди' };
+  const tick = async () => {
+    if (stopping || Date.now() > until || !appPort) return;
+    let busy = true;
+    try {
+      const r = await getJson(appPort, '/examples/status', 3000);
+      if (r.state === 'ok' && r.data && typeof r.data === 'object') {
+        busy = false;
+        for (const [id, item] of Object.entries(r.data)) {
+          const phase = item && item.phase;
+          if (phase === 'fetching' || phase === 'queued') busy = true;
+          if (!words[phase] || seen[id] === phase) continue;
+          if (phase === 'queued') { seen[id] = phase; continue; } // очередь запоминается, строка не нужна
+          if (seen[id] === undefined && phase === 'downloaded' && !item.fresh) { seen[id] = phase; continue; } // был до запуска
+          seen[id] = phase;
+          say(`Пример ${id}: ${words[phase]}${phase === 'failed' && item.message ? ` – ${item.message}` : ''}`);
+        }
+      }
+    } catch { /* приложение ещё не ответило – следующий опрос */ }
+    if (generation !== examplesGeneration) return;
+    if (busy) { examplesTimer = setTimeout(tick, 5000); examplesTimer.unref(); } else examplesTimer = null;
+  };
+  examplesTimer = setTimeout(tick, 3000);
+  examplesTimer.unref();
 }
 
 const mainRun = main().then(() => null, (error) => error);

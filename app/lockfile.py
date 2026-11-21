@@ -388,8 +388,13 @@ class InstanceLock:
         """Замок держит живой экземпляр – ошибка для показа; держателя нет или он не обновлял отметку дольше
         stale – None."""
         current = _read(self.path)
+        try:
+            beat = float(current.get("beat") or 0) if current is not None else None
+        except (TypeError, ValueError):
+            beat = None  # нечисловая отметка – как повреждённый файл (ревью круга 10)
+            current = None
         if current is not None:
-            age = time.time() - float(current.get("beat") or 0)
+            age = time.time() - beat
         else:  # файл испорчен: судим по времени его изменения
             try:
                 age = time.time() - self.path.stat().st_mtime

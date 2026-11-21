@@ -36,6 +36,8 @@ from app.providers import (CHAT_NUMBERS, EFFORT_LABELS, KEY_DISABLED, KIND_LABEL
                            save_profile)
 from app.routes.common import db_of, redirect, register_messages, render, settings_of, web_of
 
+from app.providers import PRESETS, preset_form  # noqa: E402
+
 router = APIRouter()
 log = logging.getLogger(__name__)
 
@@ -101,7 +103,21 @@ def profile_or_404(request: Request, pid: int) -> dict:
 
 @router.get("/settings/providers/new", response_class=HTMLResponse)
 def provider_new(request: Request):
-    return form_page(request, None, form_of(None))
+    """Новый профиль; ?preset=deepseek или ?preset=ollama-local – предзаполненная заготовка (ADR-0157)."""
+    name = request.query_params.get("preset", "")
+    values = preset_form(name)
+    if values is None:
+        return form_page(request, None, form_of(None))
+    notice = ("Заготовка DeepSeek: вставьте свой ключ API, нажмите «Проверить», затем «Сохранить». Без ключа профиль "
+              "ничего не отправляет. Данные обрабатываются провайдером в КНР; поставьте лимит расхода ключа в кабинете "
+              "провайдера." if name == "deepseek" else
+              "Заготовка Ollama на этом компьютере: нажмите «Проверить» – если модели нет, выполните "
+              "ollama pull gpt-oss:20b и проверьте снова." if name in PRESETS else "")
+    if name == "ollama-local" and settings_of(request).stand != "npm":
+        # Docker-установка: Ollama этого компьютера – по адресу из настроек (обычно host.docker.internal), а не
+        # 127.0.0.1 контейнера приложения
+        values = {**values, "base_url": settings_of(request).ollama_url}
+    return form_page(request, None, {**values, "preset": name, "examples_profile": "1"}, notice=notice)
 
 
 @router.get("/settings/providers/{pid}", response_class=HTMLResponse)
@@ -203,6 +219,9 @@ async def provider_post(request: Request, pid: int | None):
         profile = profile_or_404(request, pid) if pid is not None else None
         fixed = pid == DEFAULT_PROVIDER_ID
         parsed = read_form(form, profile, fixed=fixed)
+        if pid is None and str(form.get("preset") or "") in PRESETS:
+            parsed.values["preset"] = str(form.get("preset"))
+            parsed.values["examples_profile"] = "1" if form.get("examples_profile") == "1" else "0"
         pending, base = pending_of(request), str(parsed.values.get("base_url") or "")
         handle = str(form.get("key_handle") or "")[:64]
         # владелец метки: профиль или черновик нового профиля (случайная метка в скрытом поле, чтобы метка одного
@@ -292,6 +311,7 @@ async def provider_post(request: Request, pid: int | None):
             try:
                 seconds = probe_generation(client, model)
             except (ProbeBusy, LlmError) as e:
+                record_check(db, profile, "probe", False)
                 # общий классификатор (ревью круг 15, находка 2): известная причина (обрыв по длине, фильтр, отказ)
                 # – не «результат неизвестен»
                 unknown = str(profile.get("trust")) == "external" and outcome_unknown(e)
@@ -299,6 +319,7 @@ async def provider_post(request: Request, pid: int | None):
                                  error=f"Пробный ответ не получен: {e}" + (
                                      " Результат неизвестен: запрос мог быть принят и оплачен – повторять ли, решите "
                                      "сами." if unknown else ""))
+            record_check(db, profile, "probe", True)
             return form_page(request, profile, parsed.values, check=entered,
                              notice=f"Модель {model} ответила за {seconds:.1f} с.".replace(".", ",", 1))
         if action == "search_check":
@@ -306,9 +327,53 @@ async def provider_post(request: Request, pid: int | None):
         saved = persist()
         if not isinstance(saved, tuple):
             return saved
-        return redirect("/settings/providers?ok=" + ("provider_key_dropped" if saved[1] else "provider_saved"))
+        ok = "provider_key_dropped" if saved[1] else "provider_saved"
+        if pid is None and str(form.get("preset") or "") in PRESETS:
+            # заготовка из «Начала работы»: по отметке – сразу профиль для примеров (план стенда, раздел 6); затем
+            # страница созданного профиля – там «Сохранить и пробный ответ» и «Проверить поиск» (раздел 5)
+            if form.get("examples_profile") == "1" and saved[0].get("enabled"):
+                db.set_settings({"examples_provider_id": int(saved[0]["id"])})
+            return redirect(f"/settings/providers/{saved[0]['id']}?ok={ok}")
+        return redirect("/settings/providers?ok=" + ok)
 
     return await run_in_threadpool(apply)
+
+
+CHECKS_KEY = "provider_checks"  # итоги «пробного ответа» и «проверки поиска» для панели «Начало работы»
+
+
+def record_check(db, profile: dict | None, kind: str, ok: bool) -> None:
+    """Итог проверки профиля (probe – пробный ответ, search – поиск) вместе с версией профиля: после правки профиля
+    итог считается устаревшим (план стенда, раздел 5)."""
+    if not profile:
+        return
+    from app.db import now_iso
+
+    current = db.get_settings().get(CHECKS_KEY)
+    entry = (current or {}).get(str(profile["id"])) if isinstance(current, dict) else None
+    entry = dict(entry) if isinstance(entry, dict) else {}
+    entry[kind] = {"ok": bool(ok), "at": now_iso(), "version": int(profile.get("version") or 0),
+                   "key": key_print(db, profile["id"])}
+    db.update_json_entry(CHECKS_KEY, str(profile["id"]), entry)
+
+
+def key_print(db, provider_id: int) -> str:
+    """Отпечаток сохранённого ключа (SHA-256, 16 знаков) – не сам ключ: замена ключа на любой другой меняет его."""
+    import hashlib
+
+    entry = load_key(db, provider_id)
+    return hashlib.sha256(str(entry["key"]).encode("utf-8")).hexdigest()[:16] if entry else ""
+
+
+def check_state(db, profile: dict, kind: str) -> str:
+    """passed, failed или none (не проверялся или профиль менялся после проверки)."""
+    current = db.get_settings().get(CHECKS_KEY)
+    entry = ((current or {}).get(str(profile["id"])) or {}).get(kind) if isinstance(current, dict) else None
+    if not isinstance(entry, dict) or int(entry.get("version") or 0) != int(profile.get("version") or 0):
+        return "none"
+    if entry.get("key", "") != key_print(db, profile["id"]):
+        return "none"  # ключ заменён или удалён после проверки
+    return "passed" if entry.get("ok") else "failed"
 
 
 def search_check(request: Request, profile: dict | None, values: dict, entered: dict) -> HTMLResponse:
@@ -330,7 +395,9 @@ def search_check(request: Request, profile: dict | None, values: dict, entered: 
         with model_traffic.context(purpose="search_check"):
             data = client.search(str(search.get("search_path") or ""), "OpenSSL security advisory", 1)
     except LlmError as e:
+        record_check(db_of(request), profile, "search", False)
         return form_page(request, profile, values, check=entered, error=f"Поиск не ответил: {e}")
     found = next((len(v) for v in data.values() if isinstance(v, list)), 0) if isinstance(data, dict) else 0
+    record_check(db_of(request), profile, "search", True)
     return form_page(request, profile, values, check=entered,
                      notice=f"Поиск ответил: результатов – {found}.")

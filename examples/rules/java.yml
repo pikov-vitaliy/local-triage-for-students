@@ -1,0 +1,110 @@
+# Учебные правила стенда «Локальный триаж» для Java (лицензия репозитория – MIT).
+rules:
+  - id: lt.java.sql-concat
+    languages: [java]
+    severity: ERROR
+    message: SQL-запрос собирается склейкой строк – возможна SQL-инъекция
+    metadata: {cwe: ["CWE-89"], category: SQL-инъекция}
+    pattern-either:
+      - pattern: $S.executeQuery("..." + $X + ...)
+      - pattern: $S.executeQuery("..." + $X)
+      - pattern: $S.execute("..." + $X + ...)
+      - pattern: $S.executeUpdate("..." + $X + ...)
+      - pattern: $C.prepareStatement("..." + $X + ...)
+      - pattern: $C.prepareStatement("..." + $X)
+      - pattern: $T.query("..." + $X + ..., ...)
+      - pattern: $T.queryForObject("..." + $X + ..., ...)
+  - id: lt.java.command-exec
+    languages: [java]
+    severity: ERROR
+    message: Команда операционной системы из данных – возможно внедрение команд
+    metadata: {cwe: ["CWE-78"], category: Внедрение команд}
+    pattern-either:
+      - pattern: Runtime.getRuntime().exec($X)
+      - pattern: new ProcessBuilder(...)
+  - id: lt.java.deserialization
+    languages: [java]
+    severity: ERROR
+    message: Десериализация объекта из потока данных – возможна небезопасная десериализация
+    metadata: {cwe: ["CWE-502"], category: Небезопасная десериализация}
+    pattern-either:
+      - pattern: new ObjectInputStream(...).readObject()
+      - pattern: (ObjectInputStream $O).readObject()
+      - pattern: new XStream(...).fromXML(...)
+  - id: lt.java.xxe
+    languages: [java]
+    severity: ERROR
+    message: Разбор XML без запрета внешних сущностей – возможна атака XXE
+    metadata: {cwe: ["CWE-611"], category: XXE}
+    pattern-either:
+      - pattern: DocumentBuilderFactory.newInstance()
+      - pattern: XMLInputFactory.newInstance()
+      - pattern: SAXParserFactory.newInstance()
+      - pattern: JAXBContext.newInstance(...).createUnmarshaller()
+  - id: lt.java.path-traversal
+    languages: [java]
+    severity: WARNING
+    message: Путь к файлу строится из данных – возможен обход каталога
+    metadata: {cwe: ["CWE-22"], category: Обход пути}
+    pattern-either:
+      - pattern: new File($DIR, $NAME)
+      - pattern: new File($DIR + $NAME)
+      - pattern: Paths.get($DIR, $NAME)
+      - pattern: new FileInputStream($DIR + $NAME)
+  - id: lt.java.weak-crypto
+    languages: [java]
+    severity: WARNING
+    message: Устаревший алгоритм шифрования или хеширования
+    metadata: {cwe: ["CWE-327"], category: Слабая криптография}
+    pattern-either:
+      - pattern: MessageDigest.getInstance("MD5")
+      - pattern: MessageDigest.getInstance("SHA-1")
+      - pattern: MessageDigest.getInstance("SHA1")
+      - pattern: Cipher.getInstance("DES")
+      - pattern: Cipher.getInstance("DES/ECB/PKCS5Padding")
+      - pattern: Cipher.getInstance("AES/ECB/PKCS5Padding")
+  - id: lt.java.insecure-random
+    languages: [java]
+    severity: INFO
+    message: java.util.Random не годится для токенов и паролей – нужен SecureRandom
+    metadata: {cwe: ["CWE-338"], category: Слабая случайность}
+    pattern-either:
+      - pattern: new Random()
+      - pattern: new Random($S)
+      - pattern: Math.random()
+  - id: lt.java.hardcoded-secret
+    languages: [java]
+    severity: WARNING
+    message: Секрет записан в коде строкой
+    metadata: {cwe: ["CWE-798"], category: Секрет в коде}
+    patterns:
+      - pattern: $T $K = "...";
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i).*(password|passwd|secret|api_?key|jwt_?key|token).*
+  - id: lt.java.jwt-none
+    languages: [java]
+    severity: ERROR
+    message: Токен JWT разбирается без проверки подписи
+    metadata: {cwe: ["CWE-347"], category: Проверка подписи}
+    pattern-either:
+      - pattern: Jwts.parser().parse($T)
+      - pattern: $P.parseClaimsJwt($T)
+  - id: lt.java.xss-response
+    languages: [java]
+    severity: WARNING
+    message: Данные пишутся в ответ без экранирования – возможен XSS
+    metadata: {cwe: ["CWE-79"], category: Межсайтовый скриптинг}
+    pattern-either:
+      - pattern: $RESP.getWriter().print($X)
+      - pattern: $RESP.getWriter().write($X)
+      - pattern: $RESP.getWriter().println($X)
+  - id: lt.java.ssrf
+    languages: [java]
+    severity: WARNING
+    message: Соединение по адресу из данных – возможна подделка запроса со стороны сервера
+    metadata: {cwe: ["CWE-918"], category: SSRF}
+    pattern-either:
+      - pattern: new URL($X).openConnection()
+      - pattern: new URL($X).openStream()
+      - pattern: $REST.getForObject($X, ...)

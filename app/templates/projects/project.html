@@ -79,11 +79,13 @@
       <span class="field-hint" id="project-model-status" aria-live="polite"></span>
       <span class="field-hint">Её предлагает запуск триажа в этом проекте. Модель по умолчанию для всех проектов, адрес Ollama и статусы Hub – в <a href="/settings">настройках</a>.</span>
     </label>
+{% if not catalog_example %}
     <label class="field">
       <span class="field-label">Приложение в Hub (appId)</span>
       <input type="text" name="hub_app_id" id="project-hub-app-id" value="{{ project.hub_app_id or '' }}" maxlength="2000" autocomplete="off" aria-describedby="project-hub-app-hint">
       <span class="field-hint" id="project-hub-app-hint">Номер приложения из адреса его страницы в Hub (…/#/appprofile/<span class="mono">номер</span>/…) – или вставьте эту ссылку целиком, номер приложение возьмёт само. Нужен для синхронизации с Hub (шаг «Состояние Hub»: при первом чтении номер сверяется с выгрузкой) и чтобы статусы и дефекты уходили в Hub через исполнителя; пусто – не уходят. Адрес Hub – в <a href="/settings#hub">«Настройках»</a>.</span>
     </label>
+{% endif %}
     <div class="field">
       <input type="hidden" name="mask_form" value="1">
       <label class="check"><input type="checkbox" name="mask_secrets" value="1" id="project-mask-secrets"{% if project.mask_secrets is not defined or project.mask_secrets %} checked{% endif %} aria-describedby="project-mask-hint"> Маскировать секреты в коде при показе</label>
@@ -244,6 +246,7 @@
     <div class="actions">
       <button type="submit" class="btn{% if next_step == 'map' %} btn-primary{% endif %}" name="action" value="save" id="save-mapping">Сохранить соответствие</button>
       <button type="submit" class="btn" name="action" value="auto" title="Только для пустых и подобранных автоматически строк; ручной выбор не меняется">Подобрать заново по именам</button>
+      {% if example_restorable %}<a class="btn" href="/projects/{{ project.id }}/example-mapping" id="restore-example-mapping">Восстановить соответствия примера</a>{% endif %}
       {% if reset.mappings %}
       {% set reset_prompt = "Сбросить ручные соответствия (" ~ reset.mappings
                             ~ ") и подобрать папки по именам? " ~ reset.warning %}

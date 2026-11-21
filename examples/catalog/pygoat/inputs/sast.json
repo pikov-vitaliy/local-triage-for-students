@@ -1,0 +1,978 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+ "dropped": {
+  "вендорские и собранные файлы": 0,
+  "повтор той же строки": 52,
+  "сверх предела": 22,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.py.pickle-yaml: Десериализация pickle или yaml.load без безопасного загрузчика выполняет код из данных",
+   "codebase": "pygoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "dockerized_labs/a9_uckv_lab/app.py",
+   "line": 62,
+   "rule": "lt.py.pickle-yaml",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.command-injection: Команда запускается через оболочку со строкой из данных – возможно внедрение команд",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "dockerized_labs/command_injection_lab/app.py",
+   "line": 29,
+   "rule": "lt.py.command-injection",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B602 subprocess_popen_with_shell_equals_true",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "dockerized_labs/command_injection_lab/app.py",
+   "line": 30,
+   "rule": "B602",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.eval-exec: eval или exec выполняет строку как код",
+   "codebase": "pygoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "dockerized_labs/command_injection_lab/app.py",
+   "line": 49,
+   "rule": "lt.py.eval-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.pickle-yaml: Десериализация pickle или yaml.load без безопасного загрузчика выполняет код из данных",
+   "codebase": "pygoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "dockerized_labs/insec_des_lab/main.py",
+   "line": 40,
+   "rule": "lt.py.pickle-yaml",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.pickle-yaml: Десериализация pickle или yaml.load без безопасного загрузчика выполняет код из данных",
+   "codebase": "pygoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "dockerized_labs/software_integrity_lab/app.py",
+   "line": 44,
+   "rule": "lt.py.pickle-yaml",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "pygoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 294,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "pygoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 469,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.ssrf: Запрос по адресу из данных пользователя – возможна подделка запроса со стороны сервера",
+   "codebase": "pygoat",
+   "cwe": [
+    "918"
+   ],
+   "file": "challenge/views.py",
+   "line": 38,
+   "rule": "lt.py.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "pygoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "dockerized_labs/auth_failure_lab/app.py",
+   "line": 44,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.weak-hash: Устаревшая хеш-функция MD5 или SHA-1 – не годится для паролей и подписи",
+   "codebase": "pygoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "dockerized_labs/broken_auth_lab/app.py",
+   "line": 103,
+   "rule": "lt.py.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.weak-hash: Устаревшая хеш-функция MD5 или SHA-1 – не годится для паролей и подписи",
+   "codebase": "pygoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "dockerized_labs/crypto_failure_lab/app.py",
+   "line": 25,
+   "rule": "lt.py.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.weak-hash: Устаревшая хеш-функция MD5 или SHA-1 – не годится для паролей и подписи",
+   "codebase": "pygoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "dockerized_labs/crypto_failure_lab/app.py",
+   "line": 38,
+   "rule": "lt.py.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "pygoat",
+   "cwe": [
+    "605"
+   ],
+   "file": "dockerized_labs/crypto_failure_lab/app.py",
+   "line": 115,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "pygoat",
+   "cwe": [
+    "605"
+   ],
+   "file": "dockerized_labs/insec_des_lab/main.py",
+   "line": 61,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "pygoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "dockerized_labs/sde/app.py",
+   "line": 11,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "pygoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "dockerized_labs/sde/app.py",
+   "line": 13,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "pygoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "dockerized_labs/sec_misconfig/app.py",
+   "line": 77,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "pygoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "dockerized_labs/sensitive_data_exposure/sensitive_data_lab/settings.py",
+   "line": 8,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B608 hardcoded_sql_expressions",
+   "codebase": "pygoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "dockerized_labs/sql_injection_lab/app.py",
+   "line": 51,
+   "rule": "B608",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.ssrf: Запрос по адресу из данных пользователя – возможна подделка запроса со стороны сервера",
+   "codebase": "pygoat",
+   "cwe": [
+    "918"
+   ],
+   "file": "dockerized_labs/ssrf_lab/app.py",
+   "line": 37,
+   "rule": "lt.py.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "pygoat",
+   "cwe": [
+    "605"
+   ],
+   "file": "dockerized_labs/ssrf_lab/app.py",
+   "line": 65,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "pygoat",
+   "cwe": [
+    "605"
+   ],
+   "file": "dockerized_labs/xss_lab/app.py",
+   "line": 94,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "B317 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "20"
+   ],
+   "file": "dockerized_labs/xxe_lab/app.py",
+   "line": 57,
+   "rule": "B317",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "B319 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "20"
+   ],
+   "file": "dockerized_labs/xxe_lab/app.py",
+   "line": 61,
+   "rule": "B319",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "pygoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 70,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "pygoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 251,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "pygoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 291,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "pygoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 354,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "pygoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 385,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "pygoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "introduction/static/js/lab_manager.js",
+   "line": 507,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "pygoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "pygoat/settings.py",
+   "line": 23,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "pygoat",
+   "cwe": [
+    "605"
+   ],
+   "file": "pygoat/settings.py",
+   "line": 30,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "challenge/labs/bopla_lab/app.py",
+   "line": 152,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "challenge/labs/business_logic_lab/app.py",
+   "line": 5,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "challenge/labs/business_logic_lab/app.py",
+   "line": 200,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "challenge/labs/security_headers_lab/app.py",
+   "line": 15,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "challenge/labs/security_headers_lab/app.py",
+   "line": 233,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "challenge/tests.py",
+   "line": 17,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "challenge/tests.py",
+   "line": 107,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "challenge/tests.py",
+   "line": 108,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "challenge/tests.py",
+   "line": 207,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/a9_uckv_lab/app.py",
+   "line": 124,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/auth_failure_lab/app.py",
+   "line": 12,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "pygoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "dockerized_labs/auth_failure_lab/app.py",
+   "line": 99,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B110 try_except_pass",
+   "codebase": "pygoat",
+   "cwe": [
+    "703"
+   ],
+   "file": "dockerized_labs/auth_failure_lab/app.py",
+   "line": 198,
+   "rule": "B110",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B110 try_except_pass",
+   "codebase": "pygoat",
+   "cwe": [
+    "703"
+   ],
+   "file": "dockerized_labs/auth_failure_lab/app.py",
+   "line": 201,
+   "rule": "B110",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/auth_failure_lab/app.py",
+   "line": 238,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/broken_access_lab/main.py",
+   "line": 70,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/broken_auth_lab/app.py",
+   "line": 16,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B110 try_except_pass",
+   "codebase": "pygoat",
+   "cwe": [
+    "703"
+   ],
+   "file": "dockerized_labs/broken_auth_lab/app.py",
+   "line": 138,
+   "rule": "B110",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/broken_auth_lab/app.py",
+   "line": 147,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B404 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "dockerized_labs/command_injection_lab/app.py",
+   "line": 2,
+   "rule": "B404",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/command_injection_lab/app.py",
+   "line": 6,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/command_injection_lab/app.py",
+   "line": 60,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/crypto_failure_lab/app.py",
+   "line": 7,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/crypto_failure_lab/app.py",
+   "line": 88,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/dependency_attack_lab/app.py",
+   "line": 7,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/dependency_attack_lab/app.py",
+   "line": 198,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B403 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "dockerized_labs/insec_des_lab/main.py",
+   "line": 2,
+   "rule": "B403",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/insecure_design_lab/app.py",
+   "line": 8,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B311 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "330"
+   ],
+   "file": "dockerized_labs/insecure_design_lab/app.py",
+   "line": 34,
+   "rule": "B311",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "pygoat",
+   "cwe": [
+    "489"
+   ],
+   "file": "dockerized_labs/insecure_design_lab/app.py",
+   "line": 153,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/insufficient_logging_lab/app.py",
+   "line": 7,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B105 hardcoded_password_string",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "dockerized_labs/open_source_library_attack_lab/app.py",
+   "line": 5,
+   "rule": "B105",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B311 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "330"
+   ],
+   "file": "dockerized_labs/sensitive_data_exposure/dataexposure/views.py",
+   "line": 50,
+   "rule": "B311",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B403 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "dockerized_labs/software_integrity_lab/app.py",
+   "line": 3,
+   "rule": "B403",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B409 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "20"
+   ],
+   "file": "dockerized_labs/xxe_lab/app.py",
+   "line": 3,
+   "rule": "B409",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B406 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "20"
+   ],
+   "file": "dockerized_labs/xxe_lab/app.py",
+   "line": 4,
+   "rule": "B406",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B406 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "20"
+   ],
+   "file": "dockerized_labs/xxe_lab/app.py",
+   "line": 5,
+   "rule": "B406",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "introduction/tests.py",
+   "line": 15,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "introduction/tests.py",
+   "line": 16,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "introduction/tests.py",
+   "line": 74,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B311 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "330"
+   ],
+   "file": "introduction/views.py",
+   "line": 241,
+   "rule": "B311",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "scoring/tests.py",
+   "line": 77,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B106 hardcoded_password_funcarg",
+   "codebase": "pygoat",
+   "cwe": [
+    "259"
+   ],
+   "file": "scoring/tests.py",
+   "line": 160,
+   "rule": "B106",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B404 blacklist",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "uninstaller.py",
+   "line": 5,
+   "rule": "B404",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B603 subprocess_without_shell_equals_true",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "uninstaller.py",
+   "line": 46,
+   "rule": "B603",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B603 subprocess_without_shell_equals_true",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "uninstaller.py",
+   "line": 51,
+   "rule": "B603",
+   "severity": "Low",
+   "tool": "bandit"
+  },
+  {
+   "category": "B603 subprocess_without_shell_equals_true",
+   "codebase": "pygoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "uninstaller.py",
+   "line": 73,
+   "rule": "B603",
+   "severity": "Low",
+   "tool": "bandit"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

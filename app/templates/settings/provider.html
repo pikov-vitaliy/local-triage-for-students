@@ -21,6 +21,8 @@
 {% if external_on and collector.expected and not collector.addresses and profile and profile.trust == "external" %}{{ collector_warning(collector, "external") }}{% endif %}
 
 <form method="post" action="{{ action }}" class="settings-form provider-form" data-busy="Сохраняю…" autocomplete="off">
+{% if values.preset %}<input type="hidden" name="preset" value="{{ values.preset }}">{% endif %}
+{% if values.preset %}<p class="field" id="preset-examples"><label class="check"><input type="checkbox" name="examples_profile" value="1"{% if values.examples_profile != "0" %} checked{% endif %}> Сделать этот профиль профилем для примеров (назначается проектам из каталога учебных примеров)</label></p>{% endif %}
   <button type="submit" name="action" value="save" class="visually-hidden" tabindex="-1" aria-hidden="true">Сохранить</button>
   {% if check.key_handle %}<input type="hidden" name="key_handle" value="{{ check.key_handle }}">{% endif %}
   {% if check.key_draft %}<input type="hidden" name="key_draft" value="{{ check.key_draft }}">{% endif %}

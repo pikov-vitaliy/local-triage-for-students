@@ -50,13 +50,10 @@ function nativeDir(packageDir, platform = process.platform, arch = process.arch)
     if (path.dirname(dir) === dir) break;
   }
   // npm cache clean дерево npx не трогает; удалить можно только дерево npx, а не проект пользователя (ревью круга 8)
-  // дерево кэша npx: <кэш>/_npx/<хеш>/node_modules/local-triage – только оно, не проект с похожим именем
-  const tree = path.resolve(packageDir, '..', '..');
-  const npx = path.basename(path.dirname(tree)) === '_npx' && /^[0-9a-f]{8,}$/i.test(path.basename(tree)) &&
-    path.basename(path.dirname(path.resolve(packageDir))) === 'node_modules';
-  throw new StandError(`Не найден пакет ${name}: установка npm неполная (платформенный пакет не скачался). ` + (npx
-    ? `Удалите папку установки стенда в кэше npx ${tree} (в npm 11 – командой npm cache npx rm --force) и запустите стенд снова.`
-    : 'Переустановите зависимости проекта без пропуска необязательных: npm install (без --omit=optional).'));
+  // путь для удаления не подсказывается: вычисленная папка может оказаться проектом студента (ревью кругов 8–10)
+  throw new StandError(`Не найден пакет ${name}: установка npm неполная (платформенный пакет не скачался). Запуск через ` +
+    'npx: очистите кэш npx командой npm cache npx rm --force (npm 11) и запустите стенд снова. Из клона или проекта: ' +
+    'npm install без --omit=optional.');
 }
 
 function exe(binDir, name, platform = process.platform) {

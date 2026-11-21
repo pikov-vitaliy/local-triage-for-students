@@ -1,0 +1,978 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "c9f99228d9d56afb5f5ca7925376292f7fa44b13",
+ "dropped": {
+  "вендорские и собранные файлы": 11,
+  "повтор той же строки": 1,
+  "сверх предела": 16,
+  "тесты": 59
+ },
+ "entries": [
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/coding-challenge-page/coding-challenge-page.component.ts",
+   "line": 78,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/faucet/faucet.component.ts",
+   "line": 289,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/forgot-password/forgot-password.component.ts",
+   "line": 87,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/score-board/components/challenge-card/challenge-card.component.ts",
+   "line": 55,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/score-board/score-board.component.ts",
+   "line": 191,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/score-board/score-board.component.ts",
+   "line": 208,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/app/two-factor-auth-enter/two-factor-auth-enter.component.ts",
+   "line": 66,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/confetti/index.ts",
+   "line": 5,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "frontend/src/hacking-instructor/helpers/helpers.ts",
+   "line": 30,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/2fa.ts",
+   "line": 20,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/2fa.ts",
+   "line": 115,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/authenticatedUsers.ts",
+   "line": 20,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "routes/b2bOrder.ts",
+   "line": 23,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "routes/captcha.ts",
+   "line": 22,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/chat.ts",
+   "line": 45,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.nosql-where: Выражение $where в запросе MongoDB выполняется как код – возможна NoSQL-инъекция",
+   "codebase": "juice-shop",
+   "cwe": [
+    "943"
+   ],
+   "file": "routes/chat.ts",
+   "line": 150,
+   "rule": "lt.js.nosql-where",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/chat.ts",
+   "line": 224,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "routes/fileUpload.ts",
+   "line": 114,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "routes/likeProductReviews.ts",
+   "line": 14,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.sql-string-concat: Запрос к базе собирается склейкой строк или шаблонной строкой – возможна SQL-инъекция",
+   "codebase": "juice-shop",
+   "cwe": [
+    "89"
+   ],
+   "file": "routes/login.ts",
+   "line": 34,
+   "rule": "lt.js.sql-string-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/passkey.ts",
+   "line": 50,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/restoreProgress.ts",
+   "line": 23,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/restoreProgress.ts",
+   "line": 47,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/restoreProgress.ts",
+   "line": 68,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.sql-string-concat: Запрос к базе собирается склейкой строк или шаблонной строкой – возможна SQL-инъекция",
+   "codebase": "juice-shop",
+   "cwe": [
+    "89"
+   ],
+   "file": "routes/search.ts",
+   "line": 23,
+   "rule": "lt.js.sql-string-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.nosql-where: Выражение $where в запросе MongoDB выполняется как код – возможна NoSQL-инъекция",
+   "codebase": "juice-shop",
+   "cwe": [
+    "943"
+   ],
+   "file": "routes/showProductReviews.ts",
+   "line": 36,
+   "rule": "lt.js.nosql-where",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.nosql-where: Выражение $where в запросе MongoDB выполняется как код – возможна NoSQL-инъекция",
+   "codebase": "juice-shop",
+   "cwe": [
+    "943"
+   ],
+   "file": "routes/trackOrder.ts",
+   "line": 18,
+   "rule": "lt.js.nosql-where",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "juice-shop",
+   "cwe": [
+    "95"
+   ],
+   "file": "routes/userProfile.ts",
+   "line": 65,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.jwt-insecure: Токен JWT принимается без проверки подписи или с алгоритмом none",
+   "codebase": "juice-shop",
+   "cwe": [
+    "347"
+   ],
+   "file": "routes/verify.ts",
+   "line": 119,
+   "rule": "lt.js.jwt-insecure",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.deserialize: Небезопасная десериализация данных",
+   "codebase": "juice-shop",
+   "cwe": [
+    "502"
+   ],
+   "file": "routes/vulnCodeFixes.ts",
+   "line": 83,
+   "rule": "lt.js.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.deserialize: Небезопасная десериализация данных",
+   "codebase": "juice-shop",
+   "cwe": [
+    "502"
+   ],
+   "file": "routes/vulnCodeSnippet.ts",
+   "line": 90,
+   "rule": "lt.js.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.deserialize: Небезопасная десериализация данных",
+   "codebase": "juice-shop",
+   "cwe": [
+    "502"
+   ],
+   "file": "rsn/rsnUtil.ts",
+   "line": 135,
+   "rule": "lt.js.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.deserialize: Небезопасная десериализация данных",
+   "codebase": "juice-shop",
+   "cwe": [
+    "502"
+   ],
+   "file": "server.ts",
+   "line": 141,
+   "rule": "lt.js.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "data/datacreator.ts",
+   "line": 318,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/Services/basket.service.ts",
+   "line": 42,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/Services/conversation-storage.service.ts",
+   "line": 9,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/Services/conversation-storage.service.ts",
+   "line": 16,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/about/about.component.ts",
+   "line": 120,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/address-create/address-create.component.ts",
+   "line": 92,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/administration/administration.component.ts",
+   "line": 74,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/administration/administration.component.ts",
+   "line": 92,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/data-export/data-export.component.ts",
+   "line": 58,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/faucet/faucet.component.ts",
+   "line": 33,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/faucet/faucet.component.ts",
+   "line": 34,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/faucet/faucet.component.ts",
+   "line": 35,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/faucet/faucet.component.ts",
+   "line": 193,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/forgot-password/forgot-password.component.ts",
+   "line": 41,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/last-login-ip/last-login-ip.component.ts",
+   "line": 40,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/login/login.component.ts",
+   "line": 34,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/login/login.component.ts",
+   "line": 55,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/product/product.component.ts",
+   "line": 21,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/register/register.component.ts",
+   "line": 52,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/score-board/components/filter-settings/filter-settings.component.ts",
+   "line": 20,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/score-board/components/filter-settings/filter-settings.component.ts",
+   "line": 50,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/score-board/helpers/challenge-filtering.ts",
+   "line": 4,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/score-board/score-board.component.ts",
+   "line": 103,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/search-result/search-result.component.ts",
+   "line": 113,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/search-result/search-result.component.ts",
+   "line": 146,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/app/track-result/track-result.component.ts",
+   "line": 49,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/wallet-web3/wallet-web3.component.ts",
+   "line": 22,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "juice-shop",
+   "cwe": [
+    "798"
+   ],
+   "file": "frontend/src/app/wallet-web3/wallet-web3.component.ts",
+   "line": 158,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/hacking-instructor/index.ts",
+   "line": 126,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "juice-shop",
+   "cwe": [
+    "79"
+   ],
+   "file": "frontend/src/hacking-instructor/index.ts",
+   "line": 142,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "juice-shop",
+   "cwe": [
+    "601"
+   ],
+   "file": "routes/profileImageFileUpload.ts",
+   "line": 56,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "juice-shop",
+   "cwe": [
+    "601"
+   ],
+   "file": "routes/profileImageUrlUpload.ts",
+   "line": 49,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "juice-shop",
+   "cwe": [
+    "601"
+   ],
+   "file": "routes/redirect.ts",
+   "line": 18,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "juice-shop",
+   "cwe": [
+    "601"
+   ],
+   "file": "routes/updateUserProfile.ts",
+   "line": 44,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.weak-hash: Устаревшая хеш-функция (MD5 или SHA-1) – не годится для паролей и подписи",
+   "codebase": "juice-shop",
+   "cwe": [
+    "328"
+   ],
+   "file": "scripts/package.mjs",
+   "line": 122,
+   "rule": "lt.js.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "data/datacreator.ts",
+   "line": 320,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "data/datacreator.ts",
+   "line": 338,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "data/datacreator.ts",
+   "line": 396,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "data/datacreator.ts",
+   "line": 771,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "frontend/src/app/Services/conversation-storage.service.ts",
+   "line": 17,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts",
+   "line": 67,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts",
+   "line": 120,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "routes/captcha.ts",
+   "line": 14,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "routes/captcha.ts",
+   "line": 15,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "routes/captcha.ts",
+   "line": 16,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "routes/captcha.ts",
+   "line": 18,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "juice-shop",
+   "cwe": [
+    "338"
+   ],
+   "file": "routes/captcha.ts",
+   "line": 19,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

@@ -1,0 +1,1827 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "f5951f13089d85c979de09e7da3c8c0fb982f94a",
+ "entries": [
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126068",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionmailbox",
+   "osv_aliases": [
+    "CVE-2026-126068"
+   ],
+   "osv_id": "GHSA-5957-c7qm-m469",
+   "osv_modified": "2026-11-10T21:45:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126076",
+   "cvss": "4.2",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "osv_aliases": [
+    "CVE-2026-126076"
+   ],
+   "osv_id": "GHSA-2586-8ghr-69fj",
+   "osv_modified": "2026-11-10T21:30:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126067",
+   "cvss": "3.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "osv_aliases": [
+    "CVE-2026-126067"
+   ],
+   "osv_id": "GHSA-gmj8-hvj3-49mw",
+   "osv_modified": "2026-11-10T21:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126073",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "osv_aliases": [
+    "CVE-2026-126073"
+   ],
+   "osv_id": "GHSA-r9jg-fmfx-2gv6",
+   "osv_modified": "2026-11-10T21:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126072",
+   "cvss": "5.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "osv_aliases": [
+    "CVE-2026-126072"
+   ],
+   "osv_id": "GHSA-rwvh-fw6r-pwvp",
+   "osv_modified": "2026-11-13T00:00:05Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126081",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "osv_aliases": [
+    "CVE-2026-126081"
+   ],
+   "osv_id": "GHSA-wm3x-v3qw-4jh3",
+   "osv_modified": "2026-11-12T23:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126077",
+   "cvss": "6.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "osv_aliases": [
+    "CVE-2026-126077"
+   ],
+   "osv_id": "GHSA-x6mj-8jx9-qhqv",
+   "osv_modified": "2026-11-13T00:00:05Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126079",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionview",
+   "osv_aliases": [
+    "CVE-2026-126079"
+   ],
+   "osv_id": "GHSA-2p2f-4rq4-gjwc",
+   "osv_modified": "2026-11-12T23:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126069",
+   "cvss": "4.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionview",
+   "osv_aliases": [
+    "CVE-2026-126069"
+   ],
+   "osv_id": "GHSA-68p9-83h6-5wpj",
+   "osv_modified": "2026-11-12T22:15:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126070",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionview",
+   "osv_aliases": [
+    "CVE-2026-126070"
+   ],
+   "osv_id": "GHSA-rq8q-p985-fjq7",
+   "osv_modified": "2026-11-12T23:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33168",
+   "cvss": "2.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "actionview",
+   "osv_aliases": [
+    "CVE-2026-33168"
+   ],
+   "osv_id": "GHSA-v55j-83pf-r9cq",
+   "osv_modified": "2026-09-10T03:50:41Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126078",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "actionview",
+   "osv_aliases": [
+    "CVE-2026-126078"
+   ],
+   "osv_id": "GHSA-v6rj-xm57-3p59",
+   "osv_modified": "2026-11-12T23:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126188",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-126188"
+   ],
+   "osv_id": "GHSA-3f4q-8x5m-76v8",
+   "osv_modified": "2026-11-12T22:00:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126084",
+   "cvss": "4.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-126084"
+   ],
+   "osv_id": "GHSA-3w93-6hmw-whh4",
+   "osv_modified": "2026-11-12T23:45:03Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126071",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-126071"
+   ],
+   "osv_id": "GHSA-4v2w-w6g6-f8f8",
+   "osv_modified": "2026-11-10T21:45:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33202",
+   "cvss": "6.6",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-33202"
+   ],
+   "osv_id": "GHSA-73f9-jhhh-hr5m",
+   "osv_modified": "2026-09-10T03:50:37Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33195",
+   "cvss": "8.0",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-33195"
+   ],
+   "osv_id": "GHSA-9xrj-h377-fr87",
+   "osv_modified": "2026-09-10T03:51:00Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-122006",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-122006"
+   ],
+   "osv_id": "GHSA-f3w6-w445-fwh9",
+   "osv_modified": "2026-11-17T07:11:11Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126085",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-126085"
+   ],
+   "osv_id": "GHSA-hfr4-8rjc-97m2",
+   "osv_modified": "2026-11-10T21:45:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126074",
+   "cvss": "4.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-126074"
+   ],
+   "osv_id": "GHSA-p2pm-g2h6-7j5j",
+   "osv_modified": "2026-11-10T21:45:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33658",
+   "cvss": "6.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-33658"
+   ],
+   "osv_id": "GHSA-p9fm-f462-ggrg",
+   "osv_modified": "2026-09-10T03:50:40Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33173",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-33173"
+   ],
+   "osv_id": "GHSA-qcfx-2mfw-w4cg",
+   "osv_modified": "2026-09-10T03:50:40Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33174",
+   "cvss": "6.6",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-33174"
+   ],
+   "osv_id": "GHSA-r46p-8f7g-vvvg",
+   "osv_modified": "2026-09-10T03:50:40Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126186",
+   "cvss": "8.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-126186"
+   ],
+   "osv_id": "GHSA-v924-7rp8-4mxh",
+   "osv_modified": "2026-11-10T21:45:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-66066",
+   "cvss": "9.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.1",
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "osv_aliases": [
+    "CVE-2026-66066"
+   ],
+   "osv_id": "GHSA-xr9x-r78c-5hrm",
+   "osv_modified": "2026-09-10T03:51:12Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33176",
+   "cvss": "6.6",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activesupport",
+   "osv_aliases": [
+    "CVE-2026-33176"
+   ],
+   "osv_id": "GHSA-2j26-frm8-cmj9",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126080",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.5.2",
+   "manifest": "Gemfile",
+   "name": "activesupport",
+   "osv_aliases": [
+    "CVE-2026-126080"
+   ],
+   "osv_id": "GHSA-8474-xrp6-wh69",
+   "osv_modified": "2026-11-10T21:45:04Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33170",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activesupport",
+   "osv_aliases": [
+    "CVE-2026-33170"
+   ],
+   "osv_id": "GHSA-89vf-4333-qx8v",
+   "osv_modified": "2026-09-10T03:50:38Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33169",
+   "cvss": "6.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "8.0.4.1",
+   "manifest": "Gemfile",
+   "name": "activesupport",
+   "osv_aliases": [
+    "CVE-2026-33169"
+   ],
+   "osv_id": "GHSA-cg4j-q9v8-6v38",
+   "osv_modified": "2026-09-10T03:50:38Z",
+   "version": "8.0.4"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126349",
+   "cvss": "3.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-126349"
+   ],
+   "osv_id": "GHSA-539f-xcgw-2gjg",
+   "osv_modified": "2026-11-12T23:00:05Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126354",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-126354"
+   ],
+   "osv_id": "GHSA-8gmh-2hhj-2hv9",
+   "osv_modified": "2026-11-12T22:45:04Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126348",
+   "cvss": "4.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-126348"
+   ],
+   "osv_id": "GHSA-9crm-g4mf-wc5j",
+   "osv_modified": "2026-11-12T23:00:05Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126352",
+   "cvss": "5.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-126352"
+   ],
+   "osv_id": "GHSA-9f42-57jx-vpp3",
+   "osv_modified": "2026-11-12T22:45:04Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-35611",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.0",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-35611"
+   ],
+   "osv_id": "GHSA-h27x-rffw-24p4",
+   "osv_modified": "2026-09-10T03:51:01Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126350",
+   "cvss": "5.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-126350"
+   ],
+   "osv_id": "GHSA-j82w-28jv-3pmj",
+   "osv_modified": "2026-11-12T22:45:04Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126351",
+   "cvss": "5.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "osv_aliases": [
+    "CVE-2026-126351"
+   ],
+   "osv_id": "GHSA-qq38-m9mg-xjj5",
+   "osv_modified": "2026-11-12T22:45:03Z",
+   "version": "2.8.8"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33306",
+   "cvss": "4.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.22",
+   "manifest": "Gemfile",
+   "name": "bcrypt",
+   "osv_aliases": [
+    "CVE-2026-33306"
+   ],
+   "osv_id": "GHSA-f27w-vcwj-c954",
+   "osv_modified": "2026-03-25T21:48:59Z",
+   "version": "3.1.21"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54906",
+   "cvss": "2.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.3.7",
+   "manifest": "Gemfile",
+   "name": "concurrent-ruby",
+   "osv_aliases": [
+    "CVE-2026-54906"
+   ],
+   "osv_id": "GHSA-6wx8-w4f5-wwcr",
+   "osv_modified": "2026-09-10T03:50:48Z",
+   "version": "1.3.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54904",
+   "cvss": "8.2",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.3.7",
+   "manifest": "Gemfile",
+   "name": "concurrent-ruby",
+   "osv_aliases": [
+    "CVE-2026-54904"
+   ],
+   "osv_id": "GHSA-h8w8-99g7-qmvj",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "1.3.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54905",
+   "cvss": "5.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.3.7",
+   "manifest": "Gemfile",
+   "name": "concurrent-ruby",
+   "osv_aliases": [
+    "CVE-2026-54905"
+   ],
+   "osv_id": "GHSA-wv3x-4vxv-whpp",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "1.3.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-61846",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.0.7",
+   "manifest": "Gemfile",
+   "name": "crass",
+   "osv_aliases": [
+    "CVE-2026-61846"
+   ],
+   "osv_id": "GHSA-6jxj-px6v-747w",
+   "osv_modified": "2026-10-29T16:45:05Z",
+   "version": "1.0.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-61845",
+   "cvss": "8.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.0.7",
+   "manifest": "Gemfile",
+   "name": "crass",
+   "osv_aliases": [
+    "CVE-2026-61845"
+   ],
+   "osv_id": "GHSA-6wmf-3r64-vcwv",
+   "osv_modified": "2026-10-20T14:45:03Z",
+   "version": "1.0.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-61848",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.0.7",
+   "manifest": "Gemfile",
+   "name": "crass",
+   "osv_aliases": [
+    "CVE-2026-61848"
+   ],
+   "osv_id": "GHSA-8vfg-2r28-hvhj",
+   "osv_modified": "2026-10-29T16:45:04Z",
+   "version": "1.0.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-116695",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.0.8",
+   "manifest": "Gemfile",
+   "name": "crass",
+   "osv_aliases": [
+    "CVE-2026-116695"
+   ],
+   "osv_id": "GHSA-pq4g-8rxf-4g29",
+   "osv_modified": "2026-10-28T23:00:04Z",
+   "version": "1.0.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-61847",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.0.7",
+   "manifest": "Gemfile",
+   "name": "crass",
+   "osv_aliases": [
+    "CVE-2026-61847"
+   ],
+   "osv_id": "GHSA-wwpr-jff3-395c",
+   "osv_modified": "2026-10-29T16:45:06Z",
+   "version": "1.0.6"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-41316",
+   "cvss": "8.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "6.0.1.1",
+   "manifest": "Gemfile",
+   "name": "erb",
+   "osv_aliases": [
+    "CVE-2026-41316"
+   ],
+   "osv_id": "GHSA-q339-8rmv-2mhv",
+   "osv_modified": "2026-11-17T22:00:04Z",
+   "version": "6.0.1"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-33210",
+   "cvss": "8.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.19.2",
+   "manifest": "Gemfile",
+   "name": "json",
+   "osv_aliases": [
+    "CVE-2026-33210"
+   ],
+   "osv_id": "GHSA-3m6g-2423-7cp3",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "2.18.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54696",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.19.9",
+   "manifest": "Gemfile",
+   "name": "json",
+   "osv_aliases": [
+    "CVE-2026-54696"
+   ],
+   "osv_id": "GHSA-x2f5-4prf-w687",
+   "osv_modified": "2026-09-10T03:51:12Z",
+   "version": "2.18.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "GHSA-2j22-pr5w-6gq8",
+   "cvss": "2.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.1",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [],
+   "osv_id": "GHSA-2j22-pr5w-6gq8",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126208",
+   "cvss": "4.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.3",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-126208"
+   ],
+   "osv_id": "GHSA-345x-3rq2-jfrm",
+   "osv_modified": "2026-11-12T21:45:03Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "GHSA-46fp-8f5p-pf2m",
+   "cvss": "2.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.1",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [],
+   "osv_id": "GHSA-46fp-8f5p-pf2m",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-73492",
+   "cvss": "2.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.2",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-73492"
+   ],
+   "osv_id": "GHSA-5qhf-9phg-95m2",
+   "osv_modified": "2026-09-10T03:51:10Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-73491",
+   "cvss": "2.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.2",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-73491"
+   ],
+   "osv_id": "GHSA-8whx-365g-h9vv",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-73490",
+   "cvss": "4.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.2",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-73490"
+   ],
+   "osv_id": "GHSA-9wjq-cp2p-hrgf",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126203",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.3",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-126203"
+   ],
+   "osv_id": "GHSA-h6v6-rg66-fqj4",
+   "osv_modified": "2026-11-12T21:00:03Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126207",
+   "cvss": "4.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.3",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-126207"
+   ],
+   "osv_id": "GHSA-m3x9-938q-5767",
+   "osv_modified": "2026-11-12T21:15:10Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126205",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.3",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-126205"
+   ],
+   "osv_id": "GHSA-mf2j-8f84-cc9q",
+   "osv_modified": "2026-11-12T21:15:10Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126209",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.25.3",
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "osv_aliases": [
+    "CVE-2026-126209"
+   ],
+   "osv_id": "GHSA-p9wj-w8xq-vjx6",
+   "osv_modified": "2026-11-12T21:30:03Z",
+   "version": "2.25.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-63435",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.1",
+   "manifest": "Gemfile",
+   "name": "mail",
+   "osv_aliases": [
+    "CVE-2026-63435"
+   ],
+   "osv_id": "GHSA-mvxr-6m87-mv2q",
+   "osv_modified": "2026-09-10T03:50:54Z",
+   "version": "2.9.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-47242",
+   "cvss": "5.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4.1",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-47242"
+   ],
+   "osv_id": "GHSA-46q3-7gv7-qmgg",
+   "osv_modified": "2026-09-10T03:51:07Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-42258",
+   "cvss": "5.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-42258"
+   ],
+   "osv_id": "GHSA-75xq-5h9v-w6px",
+   "osv_modified": "2026-09-10T03:50:46Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-42256",
+   "cvss": "6.0",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-42256"
+   ],
+   "osv_id": "GHSA-87pf-fpwv-p7m7",
+   "osv_modified": "2026-09-10T03:51:04Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-47240",
+   "cvss": "5.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4.1",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-47240"
+   ],
+   "osv_id": "GHSA-8p34-64r3-mwg8",
+   "osv_modified": "2026-09-10T03:51:08Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-47241",
+   "cvss": "2.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4.1",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-47241"
+   ],
+   "osv_id": "GHSA-c4fp-cxrr-mj66",
+   "osv_modified": "2026-09-10T03:51:08Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-42257",
+   "cvss": "5.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-42257"
+   ],
+   "osv_id": "GHSA-hm49-wcqc-g2xg",
+   "osv_modified": "2026-09-10T03:51:05Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-42245",
+   "cvss": "2.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-42245"
+   ],
+   "osv_id": "GHSA-q2mw-fvj9-vvcw",
+   "osv_modified": "2026-09-10T03:51:06Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-42246",
+   "cvss": "7.6",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.6.4",
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "osv_aliases": [
+    "CVE-2026-42246"
+   ],
+   "osv_id": "GHSA-vcgp-9326-pqcp",
+   "osv_modified": "2026-09-10T03:50:47Z",
+   "version": "0.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126064",
+   "cvss": "2.0",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.5",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-126064"
+   ],
+   "osv_id": "GHSA-3w22-6jfg-527w",
+   "osv_modified": "2026-11-10T21:00:04Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126063",
+   "cvss": "2.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.5",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-126063"
+   ],
+   "osv_id": "GHSA-4p39-36wj-23h4",
+   "osv_modified": "2026-11-10T21:00:04Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57235",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57235"
+   ],
+   "osv_id": "GHSA-5prr-v3j2-97mh",
+   "osv_modified": "2026-09-10T03:51:07Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57236",
+   "cvss": "1.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57236"
+   ],
+   "osv_id": "GHSA-5v8h-3h3q-446p",
+   "osv_modified": "2026-09-10T03:50:48Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57234",
+   "cvss": "2.6",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57234"
+   ],
+   "osv_id": "GHSA-8678-w3jw-xfc2",
+   "osv_modified": "2026-09-10T03:51:08Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57434",
+   "cvss": "1.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57434"
+   ],
+   "osv_id": "GHSA-9cv2-cfxc-v4v2",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-79770",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.3",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-79770"
+   ],
+   "osv_id": "GHSA-c4rq-3m3g-8wgx",
+   "osv_modified": "2026-09-10T03:50:46Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57437",
+   "cvss": "1.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57437"
+   ],
+   "osv_id": "GHSA-p67v-3w7g-wjg7",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57435",
+   "cvss": "1.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57435"
+   ],
+   "osv_id": "GHSA-phwj-rprq-35pp",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-79771",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.3",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-79771"
+   ],
+   "osv_id": "GHSA-v2fc-qm4h-8hqv",
+   "osv_modified": "2026-09-10T03:50:47Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-126062",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.5",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-126062"
+   ],
+   "osv_id": "GHSA-v995-44v6-5fqm",
+   "osv_modified": "2026-11-10T21:00:04Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57438",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57438"
+   ],
+   "osv_id": "GHSA-wfpw-mmfh-qq69",
+   "osv_modified": "2026-09-10T03:51:09Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-57436",
+   "cvss": "1.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.4",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-57436"
+   ],
+   "osv_id": "GHSA-wjv4-x9w8-wm3h",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-79772",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.19.1",
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "osv_aliases": [
+    "CVE-2026-79772"
+   ],
+   "osv_id": "GHSA-wx95-c6cv-8532",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "1.19.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-47737",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "7.2.1",
+   "manifest": "Gemfile",
+   "name": "puma",
+   "osv_aliases": [
+    "CVE-2026-47737"
+   ],
+   "osv_id": "GHSA-2vqw-3mp8-cgmx",
+   "osv_modified": "2026-11-02T22:15:04Z",
+   "version": "6.6.1"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-47736",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "7.2.1",
+   "manifest": "Gemfile",
+   "name": "puma",
+   "osv_aliases": [
+    "CVE-2026-47736"
+   ],
+   "osv_id": "GHSA-qpgp-93vx-g8v8",
+   "osv_modified": "2026-11-02T22:15:04Z",
+   "version": "6.6.1"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-125109",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.23",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-125109"
+   ],
+   "osv_id": "GHSA-2j8w-xcrc-x985",
+   "osv_modified": "2026-11-10T19:30:04Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-125111",
+   "cvss": "8.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.23",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-125111"
+   ],
+   "osv_id": "GHSA-5v64-555j-wjxm",
+   "osv_modified": "2026-11-10T19:45:09Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34763",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34763"
+   ],
+   "osv_id": "GHSA-7mqq-6cf9-v2qp",
+   "osv_modified": "2026-09-10T03:50:43Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34829",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34829"
+   ],
+   "osv_id": "GHSA-8vqr-qjwx-82mw",
+   "osv_modified": "2026-09-10T03:51:01Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34835",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34835"
+   ],
+   "osv_id": "GHSA-g2pf-xv49-m2h5",
+   "osv_modified": "2026-09-10T03:50:44Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34785",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34785"
+   ],
+   "osv_id": "GHSA-h2jq-g4cq-5ppq",
+   "osv_modified": "2026-09-10T03:51:01Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-22860",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.20",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-22860"
+   ],
+   "osv_id": "GHSA-mxw3-3hh2-x2mh",
+   "osv_modified": "2026-09-10T03:50:35Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-125108",
+   "cvss": "3.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.23",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-125108"
+   ],
+   "osv_id": "GHSA-p8x9-v4hv-2w4g",
+   "osv_modified": "2026-11-10T19:45:09Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34831",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34831"
+   ],
+   "osv_id": "GHSA-q2ww-5357-x388",
+   "osv_modified": "2026-09-10T03:51:02Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34786",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34786"
+   ],
+   "osv_id": "GHSA-q4qf-9j86-f5mh",
+   "osv_modified": "2026-09-10T03:51:02Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-32762",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-32762"
+   ],
+   "osv_id": "GHSA-qfgr-crr9-7r49",
+   "osv_modified": "2026-09-10T03:51:02Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34830",
+   "cvss": "5.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34830"
+   ],
+   "osv_id": "GHSA-qv7j-4883-hwh7",
+   "osv_modified": "2026-09-10T03:51:02Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34230",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34230"
+   ],
+   "osv_id": "GHSA-v569-hp3g-36wr",
+   "osv_modified": "2026-09-10T03:51:03Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34827",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34827"
+   ],
+   "osv_id": "GHSA-v6x5-cg8r-vv6x",
+   "osv_modified": "2026-09-10T03:50:44Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-26961",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-26961"
+   ],
+   "osv_id": "GHSA-vgpv-f759-9wx3",
+   "osv_modified": "2026-09-10T03:51:03Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-25500",
+   "cvss": "5.4",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.20",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-25500"
+   ],
+   "osv_id": "GHSA-whrj-4476-wvmp",
+   "osv_modified": "2026-09-10T03:50:36Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-125110",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.23",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-125110"
+   ],
+   "osv_id": "GHSA-wvg4-6p58-3gh3",
+   "osv_modified": "2026-11-10T19:00:04Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-34826",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.1.21",
+   "manifest": "Gemfile",
+   "name": "rack",
+   "osv_aliases": [
+    "CVE-2026-34826"
+   ],
+   "osv_id": "GHSA-x8cg-fq8g-mxfx",
+   "osv_modified": "2026-09-10T03:51:03Z",
+   "version": "3.1.19"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-39324",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.1.2",
+   "manifest": "Gemfile",
+   "name": "rack-session",
+   "osv_aliases": [
+    "CVE-2026-39324"
+   ],
+   "osv_id": "GHSA-33qg-7wpp-89cq",
+   "osv_modified": "2026-09-10T03:50:42Z",
+   "version": "2.1.1"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-73648",
+   "cvss": "5.1",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.7.1",
+   "manifest": "Gemfile",
+   "name": "rails-html-sanitizer",
+   "osv_aliases": [
+    "CVE-2026-73648"
+   ],
+   "osv_id": "GHSA-cj75-f6xr-r4g7",
+   "osv_modified": "2026-09-10T03:51:11Z",
+   "version": "1.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-128068",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.7.2",
+   "manifest": "Gemfile",
+   "name": "rails-html-sanitizer",
+   "osv_aliases": [
+    "CVE-2026-128068"
+   ],
+   "osv_id": "GHSA-cpgf-5mjf-73p7",
+   "osv_modified": "2026-11-13T18:00:04Z",
+   "version": "1.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-128069",
+   "cvss": "4.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "1.7.2",
+   "manifest": "Gemfile",
+   "name": "rails-html-sanitizer",
+   "osv_aliases": [
+    "CVE-2026-128069"
+   ],
+   "osv_id": "GHSA-h7wh-q2qr-458c",
+   "osv_modified": "2026-11-13T18:15:07Z",
+   "version": "1.6.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-85396",
+   "cvss": "8.7",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "3.4.0",
+   "manifest": "Gemfile",
+   "name": "rubyzip",
+   "osv_aliases": [
+    "CVE-2026-85396"
+   ],
+   "osv_id": "GHSA-47m2-wp7j-p9vc",
+   "osv_modified": "2026-09-25T19:45:09Z",
+   "version": "3.2.2"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54619",
+   "cvss": "2.0",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.5",
+   "manifest": "Gemfile",
+   "name": "sqlite3",
+   "osv_aliases": [
+    "CVE-2026-54619"
+   ],
+   "osv_id": "GHSA-28hh-pr2h-2w89",
+   "osv_modified": "2026-07-28T16:35:58Z",
+   "version": "2.9.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-128084",
+   "cvss": "4.8",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.10.2",
+   "manifest": "Gemfile",
+   "name": "sqlite3",
+   "osv_aliases": [
+    "CVE-2026-128084"
+   ],
+   "osv_id": "GHSA-4fqr-96q8-xrfx",
+   "osv_modified": "2026-11-13T19:15:05Z",
+   "version": "2.9.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54620",
+   "cvss": "2.0",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.5",
+   "manifest": "Gemfile",
+   "name": "sqlite3",
+   "osv_aliases": [
+    "CVE-2026-54620"
+   ],
+   "osv_id": "GHSA-j7fr-3v8c-3qc3",
+   "osv_modified": "2026-07-28T16:35:58Z",
+   "version": "2.9.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "GHSA-mwm8-39rw-8826",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "2.9.6",
+   "manifest": "Gemfile",
+   "name": "sqlite3",
+   "osv_aliases": [],
+   "osv_id": "GHSA-mwm8-39rw-8826",
+   "osv_modified": "2026-10-02T23:30:05Z",
+   "version": "2.9.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-61666",
+   "cvss": "8.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.8.2",
+   "manifest": "Gemfile",
+   "name": "websocket-driver",
+   "osv_aliases": [
+    "CVE-2026-61666"
+   ],
+   "osv_id": "GHSA-2x63-gw47-w4mm",
+   "osv_modified": "2026-11-02T21:15:04Z",
+   "version": "0.8.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54464",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.8.1",
+   "manifest": "Gemfile",
+   "name": "websocket-driver",
+   "osv_aliases": [
+    "CVE-2026-54464"
+   ],
+   "osv_id": "GHSA-33ph-fccm-39pj",
+   "osv_modified": "2026-09-10T03:50:51Z",
+   "version": "0.8.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54465",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.8.1",
+   "manifest": "Gemfile",
+   "name": "websocket-driver",
+   "osv_aliases": [
+    "CVE-2026-54465"
+   ],
+   "osv_id": "GHSA-8j3g-f24p-4mpw",
+   "osv_modified": "2026-09-10T03:50:51Z",
+   "version": "0.8.0"
+  },
+  {
+   "codebase": "railsgoat",
+   "cve": "CVE-2026-54463",
+   "cvss": "6.9",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "fixed": "0.8.1",
+   "manifest": "Gemfile",
+   "name": "websocket-driver",
+   "osv_aliases": [
+    "CVE-2026-54463"
+   ],
+   "osv_id": "GHSA-ghhp-3qvg-889p",
+   "osv_modified": "2026-09-10T03:50:52Z",
+   "version": "0.8.0"
+  }
+ ],
+ "excluded_manifests": [],
+ "osv_date": "2026-11-21",
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

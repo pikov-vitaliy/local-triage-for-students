@@ -1,0 +1,598 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "4e98f1cbbf896fdd06edcc9930515ebe0ade7c69",
+ "entries": [
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21341",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21341",
+    "CVE-2021-21341"
+   ],
+   "osv_id": "GHSA-2p3x-qw9c-25hh",
+   "osv_modified": "2026-07-08T06:29:26Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39153",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39153"
+   ],
+   "osv_id": "GHSA-2q8x-2p7f-574v",
+   "osv_modified": "2026-07-08T06:28:20Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39149",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39149"
+   ],
+   "osv_id": "GHSA-3ccq-5vw3-2p6x",
+   "osv_modified": "2026-07-08T06:28:07Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21350",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21350",
+    "CVE-2021-21350"
+   ],
+   "osv_id": "GHSA-43gc-mjxg-gvrq",
+   "osv_modified": "2026-07-08T06:27:47Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2020-26258",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.15",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2020-26258"
+   ],
+   "osv_id": "GHSA-4cch-wxpw-8p28",
+   "osv_modified": "2026-09-10T03:49:00Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21346",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21346",
+    "CVE-2021-21346"
+   ],
+   "osv_id": "GHSA-4hrm-m67v-5cxr",
+   "osv_modified": "2026-07-08T06:29:26Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21348",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21348",
+    "CVE-2021-21348"
+   ],
+   "osv_id": "GHSA-56p8-3fh9-4cvq",
+   "osv_modified": "2026-07-08T06:27:23Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21344",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21344",
+    "CVE-2021-21344"
+   ],
+   "osv_id": "GHSA-59jw-jqf4-3wq3",
+   "osv_modified": "2026-07-08T06:29:54Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39139",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39139"
+   ],
+   "osv_id": "GHSA-64xx-cq4q-mf44",
+   "osv_modified": "2026-07-08T06:28:09Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39154",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39154"
+   ],
+   "osv_id": "GHSA-6w62-hx7r-mw68",
+   "osv_modified": "2026-07-08T06:27:58Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39140",
+   "cvss": "6.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39140"
+   ],
+   "osv_id": "GHSA-6wf9-jmg9-vxcc",
+   "osv_modified": "2026-07-08T06:27:43Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21343",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21343",
+    "CVE-2021-21343"
+   ],
+   "osv_id": "GHSA-74cv-f58x-f9wf",
+   "osv_modified": "2026-07-08T06:29:35Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-29505",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.17",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-29505"
+   ],
+   "osv_id": "GHSA-7chv-rrw6-w6fc",
+   "osv_modified": "2026-07-08T06:28:29Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2017-7957",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.10",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2017-7957"
+   ],
+   "osv_id": "GHSA-7hwc-46rm-65jh",
+   "osv_modified": "2025-05-23T19:46:57Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39145",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39145"
+   ],
+   "osv_id": "GHSA-8jrj-525p-826v",
+   "osv_modified": "2026-07-08T06:28:44Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39150",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39150"
+   ],
+   "osv_id": "GHSA-cxfm-5m4g-x7xp",
+   "osv_modified": "2026-07-08T06:29:14Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2013-7285",
+   "cvss": "9.8",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.7",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2013-7285"
+   ],
+   "osv_id": "GHSA-f554-x222-wgf7",
+   "osv_modified": "2024-03-05T00:01:16Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21349",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21349",
+    "CVE-2021-21349"
+   ],
+   "osv_id": "GHSA-f6hm-88x3-mfjv",
+   "osv_modified": "2026-07-08T06:29:36Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2022-40151",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.20",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2022-40151"
+   ],
+   "osv_id": "GHSA-f8cc-g7j8-xxpm",
+   "osv_modified": "2023-11-08T04:10:22Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39141",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39141"
+   ],
+   "osv_id": "GHSA-g5w6-mrj7-75h2",
+   "osv_modified": "2026-07-08T06:29:23Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39147",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39147"
+   ],
+   "osv_id": "GHSA-h7v4-7xg3-hxcc",
+   "osv_modified": "2026-07-08T06:28:49Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2024-47072",
+   "cvss": "7.7",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.21",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2024-47072"
+   ],
+   "osv_id": "GHSA-hfq9-hggm-c56q",
+   "osv_modified": "2026-08-07T08:12:24Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39151",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39151"
+   ],
+   "osv_id": "GHSA-hph2-m3g5-xxv4",
+   "osv_modified": "2026-07-08T06:28:21Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21351",
+   "cvss": "5.4",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21351",
+    "CVE-2021-21351"
+   ],
+   "osv_id": "GHSA-hrcp-8f3q-4w2c",
+   "osv_modified": "2026-07-08T06:27:44Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21342",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21342",
+    "CVE-2021-21342"
+   ],
+   "osv_id": "GHSA-hvv8-336g-rx3m",
+   "osv_modified": "2026-07-08T06:28:42Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21345",
+   "cvss": "5.8",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21345",
+    "CVE-2021-21345"
+   ],
+   "osv_id": "GHSA-hwpc-8xqv-jvj4",
+   "osv_modified": "2026-07-08T06:28:39Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2022-41966",
+   "cvss": "8.2",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.20",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2022-41966"
+   ],
+   "osv_id": "GHSA-j563-grx4-pjpv",
+   "osv_modified": "2024-02-16T08:18:32Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39144",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39144"
+   ],
+   "osv_id": "GHSA-j9h8-phrw-h4fh",
+   "osv_modified": "2026-07-08T06:27:23Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2020-26259",
+   "cvss": "6.8",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.15",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2020-26259"
+   ],
+   "osv_id": "GHSA-jfvx-7wrx-43fh",
+   "osv_modified": "2026-07-08T05:59:37Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2020-26217",
+   "cvss": "8.0",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.14-java7",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2020-26217",
+    "CVE-2020-26217"
+   ],
+   "osv_id": "GHSA-mw36-7c6c-q4q2",
+   "osv_modified": "2026-07-08T05:59:56Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39146",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39146"
+   ],
+   "osv_id": "GHSA-p8pq-r894-fm8f",
+   "osv_modified": "2026-07-08T06:28:59Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-21347",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.16",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-activemq-2021-21347",
+    "CVE-2021-21347"
+   ],
+   "osv_id": "GHSA-qpfq-ph7r-qv6f",
+   "osv_modified": "2026-07-08T06:29:05Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39148",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39148"
+   ],
+   "osv_id": "GHSA-qrx8-8545-4wg2",
+   "osv_modified": "2026-07-08T06:29:56Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2016-3674",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.9",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2016-3674"
+   ],
+   "osv_id": "GHSA-rgh3-987h-wpmw",
+   "osv_modified": "2025-05-23T19:46:42Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-43859",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.19",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "BIT-jenkins-2021-43859",
+    "CVE-2021-43859"
+   ],
+   "osv_id": "GHSA-rmr5-cpv2-vgjf",
+   "osv_modified": "2026-07-08T06:29:15Z",
+   "version": "1.4.5"
+  },
+  {
+   "codebase": "webgoat",
+   "cve": "CVE-2021-39152",
+   "cvss": "8.5",
+   "dependency_groups": [],
+   "ecosystem": "Maven",
+   "fixed": "1.4.18",
+   "manifest": "pom.xml",
+   "name": "com.thoughtworks.xstream:xstream",
+   "osv_aliases": [
+    "CVE-2021-39152"
+   ],
+   "osv_id": "GHSA-xw4p-crpj-vjx2",
+   "osv_modified": "2026-09-10T03:49:15Z",
+   "version": "1.4.5"
+  }
+ ],
+ "excluded_manifests": [],
+ "osv_date": "2026-11-21",
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

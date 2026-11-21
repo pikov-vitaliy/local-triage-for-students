@@ -1,0 +1,32 @@
+[
+ {
+  "ecosystem": "Packagist",
+  "name": "psr/log",
+  "version": "3.0.2"
+ },
+ {
+  "ecosystem": "Packagist",
+  "name": "symfony/deprecation-contracts",
+  "version": "v3.8.1"
+ },
+ {
+  "ecosystem": "Packagist",
+  "name": "symfony/finder",
+  "version": "v7.2.2"
+ },
+ {
+  "ecosystem": "Packagist",
+  "name": "symfony/polyfill-ctype",
+  "version": "v1.37.0"
+ },
+ {
+  "ecosystem": "Packagist",
+  "name": "symfony/yaml",
+  "version": "v8.1.11"
+ },
+ {
+  "ecosystem": "Packagist",
+  "name": "zircote/swagger-php",
+  "version": "4.11.1"
+ }
+]

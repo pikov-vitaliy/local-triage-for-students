@@ -1,0 +1,22 @@
+[
+ {
+  "ecosystem": "Go",
+  "name": "github.com/bradfitz/iter",
+  "version": "0.0.0-20191230175014-e8f45d346db8"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/dustin/go-humanize",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/jaswdr/faker",
+  "version": "1.16.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "stdlib",
+  "version": "1.19.99"
+ }
+]

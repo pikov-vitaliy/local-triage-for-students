@@ -127,13 +127,17 @@ def _git_text(git_dir: str, path: str, limit: int = 4096) -> str | None:
     return raw.decode("ascii", errors="replace")
 
 
-def clone_revision(repo_dir: Path | None) -> str:
+def clone_revision(repo_dir: Path | None, example_root: Path | None = None) -> str:
     """Ревизия клона git – хеш коммита, на котором стоит рабочая копия (HEAD): HEAD с хешем или ссылка на ветку
     (файл ссылки либо packed-refs). Не клон, .git – файл (worktree) или ссылка, ревизию не прочитать – "": такие
     папки по ревизии не отслеживаются. Читаются только файлы внутри .git самого клона."""
     if repo_dir is None:
         return ""
     git = os.path.join(str(repo_dir), ".git")
+    if not os.path.lexists(git):
+        # папка учебного примера без .git: коммит из маркера – только у проекта из каталога и только внутри его папки
+        # примеров (example_root – граница поиска; ADR-0156)
+        return example_revision(repo_dir, example_root) if example_root is not None else ""
     if _is_link_or_junction(git) or not os.path.isdir(git):
         return ""
     head = (_git_text(git, os.path.join(git, "HEAD")) or "").strip()
@@ -152,6 +156,44 @@ def clone_revision(repo_dir: Path | None) -> str:
         commit, _, name = line.partition(" ")
         if name.strip() == ref and _COMMIT.fullmatch(commit):
             return commit
+    return ""
+
+
+EXAMPLE_MARKER = ".local-triage-example.json"
+
+
+def example_revision(repo_dir: Path, example_root: Path, levels: int = 3) -> str:
+    """Коммит учебного примера из маркера: маркер ищется в папке кодовой базы и выше (не дальше levels уровней), но
+    только в корне дерева примера – папке, лежащей прямо в папке «examples» (у монорепозитория crAPI так ревизию
+    получают все подпапки). Посторонний маркер выше папки примера не берётся. Маркер – обычный файл не больше 1 МиБ;
+    нет или испорчен – ""."""
+    import json
+
+    folder = Path(repo_dir)
+    try:
+        root = Path(os.path.realpath(example_root))
+        if os.path.commonpath([str(root), os.path.realpath(folder)]) != str(root):
+            return ""
+    except (OSError, ValueError):
+        return ""
+    for _ in range(levels + 1):
+        if Path(os.path.realpath(folder.parent)) == root:
+            marker = folder / EXAMPLE_MARKER
+            try:
+                if marker.is_file() and not marker.is_symlink() and marker.stat().st_size <= 1024 * 1024:
+                    data = json.loads(marker.read_text(encoding="utf-8"))
+                    commit = str(data.get("commit") or "")
+                    # маркер – только в корне дерева этого примера: имя папки «<id>-<commit7>[-N]» из самого маркера
+                    base = f"{data.get('id')}-{commit[:7]}"
+                    named = folder.name == base or (folder.name.startswith(base + "-")
+                                                    and folder.name[len(base) + 1:].isdigit())
+                    return commit if _COMMIT.fullmatch(commit) and named else ""
+            except (OSError, ValueError, AttributeError):
+                return ""
+            return ""
+        if folder.parent == folder:
+            break
+        folder = folder.parent
     return ""
 
 

@@ -49,7 +49,8 @@
   <input type="hidden" name="token" value="{{ token }}">
   <label class="field">
     <span class="field-label">Обоснование</span>
-    <textarea name="reason" rows="3" minlength="{{ reason_min }}" maxlength="{{ reason_max }}" required placeholder="Почему код этого проекта можно отдавать внешнему провайдеру: открытый код, демонстрационный проект, разрешение владельца системы…">{{ project.external_reason }}</textarea>
+    {% if pending_profile %}<p class="callout callout-info" id="pending-profile">После отметки проекту будет назначен профиль для примеров «{{ pending_profile.name }}» ({{ pending_profile.base_url }}, модель {{ pending_profile.default_model or "по умолчанию" }}) – для разбора кода и, если в профиле включено назначение «исследование», для исследования компонентов. Сама отметка код модели не отправляет.</p>{% endif %}
+    <textarea name="reason" rows="3" minlength="{{ reason_min }}" maxlength="{{ reason_max }}" required placeholder="Почему код этого проекта можно отдавать внешнему провайдеру: открытый код, демонстрационный проект, разрешение владельца системы…">{{ reason_default }}</textarea>
     <span class="field-hint">От {{ reason_min }} до {{ reason_max }} знаков; сохраняется вместе с датой отметки и видно в параметрах проекта.</span>
   </label>
   <label class="check"><input type="checkbox" name="confirm" value="1" required id="external-confirm"{% if not external_on %} disabled{% endif %}> Я посмотрел, что уходит, и подтверждаю: код этого проекта не секретный, его можно отправлять внешнему провайдеру; обращения оплачиваются у провайдера</label>

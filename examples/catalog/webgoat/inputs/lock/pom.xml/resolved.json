@@ -1,0 +1,122 @@
+[
+ {
+  "ecosystem": "Maven",
+  "name": "cglib:cglib-nodep",
+  "version": "3.3.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.auth0:java-jwt",
+  "version": "4.6.2"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.auth0:jwks-rsa",
+  "version": "0.24.1"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.github.terma:javaniotcpproxy",
+  "version": "1.6"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.google.guava:guava",
+  "version": "33.7.2-jre"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.microsoft.playwright:playwright",
+  "version": "1.64.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.nulab-inc:zxcvbn",
+  "version": "1.9.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "com.thoughtworks.xstream:xstream",
+  "version": "1.4.5"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "commons-io:commons-io",
+  "version": "2.22.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "io.jsonwebtoken:jjwt",
+  "version": "0.9.1"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "io.rest-assured:rest-assured",
+  "version": "6.2.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "javax.xml.bind:jaxb-api",
+  "version": "2.3.1"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.apache.commons:commons-exec",
+  "version": "1.6.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.apache.commons:commons-text",
+  "version": "1.15.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.asciidoctor:asciidoctorj",
+  "version": "3.0.1"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.bitbucket.b_c:jose4j",
+  "version": "0.9.6"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.bouncycastle:bcprov-jdk18on",
+  "version": "1.85"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.jsoup:jsoup",
+  "version": "1.23.2"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.projectlombok:lombok",
+  "version": "1.18.48"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.webjars:bootstrap",
+  "version": "5.3.5"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.webjars:jquery",
+  "version": "4.0.0"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.webjars:webjars-locator-lite",
+  "version": "1.1.5"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "org.wiremock:wiremock-standalone",
+  "version": "3.13.2"
+ },
+ {
+  "ecosystem": "Maven",
+  "name": "xml-resolver:xml-resolver",
+  "version": "1.2"
+ }
+]

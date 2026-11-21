@@ -25,6 +25,10 @@ Dockerfile
 # Кроме демо-выгрузки: кнопка «Создать демо-проект» найдёт её в образе, даже если папки приложения нет в корне
 # папок с репозиториями
 !examples/demo/demo-hub-report.xlsx
+# Каталог учебных примеров (ADR-0156): описание, источники и выгрузки; входы сборки каталога в образ не входят
+!examples/catalog/catalog.json
+!examples/catalog/NOTICE.md
+!examples/catalog/*/export.xlsx
 
 # Пакет npm учебного стенда в образ не входит
 npm

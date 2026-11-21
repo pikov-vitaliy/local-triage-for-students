@@ -187,9 +187,9 @@ def hyperlink_targets(formula: str, cells: dict[str, str] | None = None) -> list
     """Цели HYPERLINK (ревью кругов 7–9): вызовы ищутся вне строк; первый аргумент – литералы, ссылки на ячейки этого
     листа с постоянным текстом и их склейка «&» дают значение; другое выражение статически не проверить – «?…»."""
     out = []
-    upper = formula.upper()
     for i, _ch in _outside_quotes(formula):
-        if not upper.startswith("HYPERLINK", i) or (i and (formula[i - 1].isalnum() or formula[i - 1] in "_.")):
+        # имя функции – по исходной строке без учёта регистра: upper() меняет длину (ß → SS) и сдвигает позиции
+        if formula[i:i + len("HYPERLINK")].casefold() != "hyperlink" or (i and (formula[i - 1].isalnum() or formula[i - 1] in "_.")):
             continue
         j = i + len("HYPERLINK")
         while j < len(formula) and formula[j].isspace():
@@ -197,6 +197,8 @@ def hyperlink_targets(formula: str, cells: dict[str, str] | None = None) -> list
         if j >= len(formula) or formula[j] != "(":
             continue
         arg = _first_argument(formula, j).strip()
+        while arg.startswith("(") and arg.endswith(")") and _first_argument("x" + arg, 1).strip() == arg[1:-1].strip():
+            arg = arg[1:-1].strip()  # согласованная внешняя пара скобок вокруг всего аргумента
         value = []
         for part in _split_concat(arg):
             part = part.strip()

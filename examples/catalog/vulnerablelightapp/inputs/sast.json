@@ -1,0 +1,126 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "8998b55caab6a4a5bb2d725ad054c797c7d101f4",
+ "dropped": {
+  "вендорские и собранные файлы": 0,
+  "повтор той же строки": 1,
+  "сверх предела": 0,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.cs.deserialization: Небезопасная десериализация – тип объекта задают данные",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "502"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 52,
+   "rule": "lt.cs.deserialization",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.xxe: Разбор XML с разрешёнными внешними сущностями – возможна атака XXE",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "611"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 93,
+   "rule": "lt.cs.xxe",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.xxe: Разбор XML с разрешёнными внешними сущностями – возможна атака XXE",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "611"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 94,
+   "rule": "lt.cs.xxe",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.xxe: Разбор XML с разрешёнными внешними сущностями – возможна атака XXE",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "611"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 100,
+   "rule": "lt.cs.xxe",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.xxe: Разбор XML с разрешёнными внешними сущностями – возможна атака XXE",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "611"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 101,
+   "rule": "lt.cs.xxe",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.path-traversal: Путь к файлу из данных – возможен обход каталога",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "22"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 36,
+   "rule": "lt.cs.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.ssrf: Запрос по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "918"
+   ],
+   "file": "Controller/Controller.cs",
+   "line": 123,
+   "rule": "lt.cs.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.path-traversal: Путь к файлу из данных – возможен обход каталога",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "22"
+   ],
+   "file": "TestCpu/TestCpu.cs",
+   "line": 21,
+   "rule": "lt.cs.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.cs.path-traversal: Путь к файлу из данных – возможен обход каталога",
+   "codebase": "VulnerableLightApp",
+   "cwe": [
+    "22"
+   ],
+   "file": "Update/VLAUpdate.cs",
+   "line": 104,
+   "rule": "lt.cs.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

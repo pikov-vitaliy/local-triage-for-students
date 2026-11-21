@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon %}
+{% block page %}examples{% endblock %}
+{% block title %}Учебные примеры · Локальный триаж{% endblock %}
+{% block content %}
+<div class="page-head"><div><p class="eyebrow">Каталог</p><h1>Учебные примеры</h1>
+<p class="page-sub">Открытые уязвимые приложения на разных языках с готовой выгрузкой формата Hub: находки SAST, уязвимости компонентов (SCA) и лицензии компонентов. Исходники скачиваются с GitHub по закреплённому коммиту и сверяются по хешу. Папка примера после скачивания ваша: правьте код в редакторе, стенд её не трогает.</p></div>
+<div class="actions"><a class="btn" href="/examples">{{ icon("refresh") }}Обновить</a></div></div>
+{% if error %}<p class="flash flash-error" role="alert">{{ error }}</p>{% endif %}
+<section class="panel" id="start" aria-labelledby="start-title">
+  <h2 id="start-title">Начало работы</h2>
+  <ol class="start-steps">
+    <li><strong>Модель.</strong> На компьютере с видеокартой от 16 ГБ – Ollama: <a href="/settings/providers/new?preset=ollama-local">заготовка «Ollama на этом компьютере»</a> (модель gpt-oss:20b). Иначе – DeepSeek: <a href="/settings/providers/new?preset=deepseek">заготовка DeepSeek</a>, нужен свой ключ API с лимитом расхода.</li>
+    <li><strong>Профиль для примеров.</strong> {{ start.mode }}
+      {% if start.checks %}<span class="dot-list small" id="profile-checks">{% for c in start.checks %}<span>{{ c }}</span>{% endfor %}{% if start.chosen %} · <a href="/settings/providers/{{ start.chosen.id }}">проверить профиль</a>{% endif %}</span>{% endif %}
+      <form method="post" action="/examples/profile" class="inline-form">
+        <label class="field"><span class="field-label">Профиль для примеров</span>
+          <select name="provider_id"><option value="">Не выбран – профиль по умолчанию</option>{% for p in start.profiles %}<option value="{{ p.id }}"{% if start.chosen and start.chosen.id == p.id %} selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></label>
+        <button type="submit" class="btn btn-small">Сохранить</button>
+      </form></li>
+    <li><strong>Пример.</strong> Скачайте исходники примера и нажмите «Создать проект»: выгрузка загрузится, кодовые базы свяжутся с папкой примера.</li>
+    <li><strong>Разбор.</strong> Запустите триаж SAST на странице проекта или разбирайте находки сами: смотрите код в карточке или в VS Code, отмечайте «Ложное срабатывание» или «Подтверждаю дефект»; уязвимости компонентов – на вкладке SCA, лицензии – в общем списке находок.</li>
+  </ol>
+</section>
+<p class="field-hint">Папка примеров: <code>{{ root }}</code>.{% if not stand %} В Docker-установке корень клонов подключён только для чтения: исходники готовятся командой на компьютере (она показана на карточке), затем обновите страницу.{% endif %}</p>
+<ul class="example-grid" role="list">
+{% for c in cards %}{% set e = c.entry %}{% set st = c.state.phase %}
+<li class="panel example-card" id="ex-{{ e.id }}">
+  <div class="example-head"><span class="example-num">{{ e.number }}</span><h2>{{ e.title }}</h2></div>
+  <p>{{ e.description }}</p>
+  <dl class="example-facts">
+    <dt>Языки</dt><dd>{{ e.languages|join(", ") }}</dd>
+    <dt>Уровень</dt><dd>{{ e.level }}</dd>
+    {% if e.source %}<dt>Лицензия</dt><dd>{{ e.source.license }}</dd>
+    <dt>Исходники</dt><dd><a href="{{ e.source.repo_url }}/tree/{{ e.source.commit }}" rel="noopener noreferrer" target="_blank">{{ e.source.repo_url|replace("https://github.com/", "") }}</a> · коммит <code>{{ e.source.commit[:7] }}</code></dd>{% endif %}
+    {% if e.export %}<dt>Находки</dt><dd>SAST {{ e.export.sast }} · SCA {{ e.export.sca }} · лицензии {{ e.export.compliance }}</dd>{% endif %}
+    {% if e.codebases|length > 1 %}<dt>Кодовые базы</dt><dd>{{ e.codebases|map(attribute="name")|join(", ") }}</dd>{% endif %}
+  </dl>
+  <p class="example-state" data-state="{{ st }}">
+    {% if c.folder_missing and c.link %}<strong>Исходной копии примера нет на диске:</strong> <code>{{ c.folder }}</code>. Проект работает с папками, выбранными в его соответствиях: <a href="/projects/{{ c.link.project_id }}#step2">проверить соответствия</a>.{% elif c.folder_missing %}<strong>Папки примера нет на диске:</strong> <code>{{ c.folder }}</code>. Скачайте пример заново.{% elif st == "builtin" %}Поставляется с приложением{% elif st == "downloaded" %}{{ icon("check") }}Скачан: <code>{{ c.folder }}</code>{% if c.state.folders|length > 1 %} (копий: {{ c.state.folders|length }}){% endif %}{% elif st == "fetching" %}Скачивается…{% elif st == "queued" %}В очереди на скачивание{% elif st == "failed" %}Не удалось скачать: {{ c.state.message }}{% else %}Не скачан{% endif %}
+  </p>
+  <div class="cluster">
+  {% if c.link and c.link.state == "ready" %}
+    <a class="btn" href="/projects/{{ c.link.project_id }}">{{ icon("folder") }}Открыть проект</a>
+    {% if st != "builtin" and c.link.profile_pending %}<a class="btn btn-small" href="/projects/{{ c.link.project_id }}/external?example=1">Продолжить: разрешение для профиля примеров</a>{% endif %}
+    {% if st != "builtin" and not c.link.profile_done and not c.link.profile_pending %}<form method="post" action="/examples/{{ e.id }}/project"><button type="submit" class="btn btn-small" data-busy="Назначаю…">Назначить профиль для примеров</button></form>{% endif %}
+  {% endif %}
+  {% if st == "builtin" %}
+    {% if c.link and c.link.state != "ready" %}<form method="post" action="/examples/{{ e.id }}/project"><button type="submit" class="btn btn-primary" data-busy="Продолжаю…">{{ icon("play") }}Продолжить создание проекта</button></form>{% endif %}
+    {% if not c.link %}<form method="post" action="/examples/{{ e.id }}/project"><button type="submit" class="btn btn-primary" data-busy="Создаю демо-проект…">{{ icon("play") }}Создать проект</button></form>{% endif %}
+  {% elif st == "downloaded" %}
+    {% if c.link and c.link.state != "ready" %}<form method="post" action="/examples/{{ e.id }}/project"><button type="submit" class="btn btn-primary" data-busy="Продолжаю…">{{ icon("play") }}Продолжить создание проекта</button></form>
+    {% elif not c.link %}<form method="post" action="/examples/{{ e.id }}/project"><button type="submit" class="btn btn-primary" data-busy="Создаю проект…">{{ icon("play") }}Создать проект</button></form>{% endif %}
+    {% if stand %}<form method="post" action="/examples/{{ e.id }}/fetch"><input type="hidden" name="again" value="1"><button type="submit" class="btn btn-small" data-busy="Скачиваю…" title="Чистая копия рядом с прежней, прежняя папка остаётся">Скачать заново</button></form>{% endif %}
+  {% elif st in ("fetching", "queued") %}
+    <a class="btn btn-small" href="/examples#ex-{{ e.id }}">Обновить состояние</a>
+  {% elif stand %}
+    <form method="post" action="/examples/{{ e.id }}/fetch"><button type="submit" class="btn" data-busy="Скачиваю…">{{ icon("download") }}{% if st == "failed" %}Повторить{% else %}Скачать{% endif %}</button></form>
+  {% else %}
+    <p class="field-hint">Подготовка на компьютере: <code>{{ c.command }}</code></p>
+  {% endif %}
+  </div>
+</li>
+{% endfor %}
+</ul>
+<p class="field-hint">Источники примеров, лицензии анализаторов и данных OSV – в файле <code>examples/catalog/NOTICE.md</code> установки.</p>
+{% endblock %}

@@ -44,7 +44,8 @@ MITRE = "https://cwe.mitre.org/data/definitions/{}.html"
 SEVERITY_BANDIT = {"HIGH": "High", "MEDIUM": "Medium", "LOW": "Low"}
 SEVERITY_SEMGREP = {"ERROR": "High", "WARNING": "Medium", "INFO": "Low", "CRITICAL": "High", "HIGH": "High",
                     "MEDIUM": "Medium", "LOW": "Low"}
-ECOSYSTEM_TYPE = {"pypi": "pip", "npm": "npm", "maven": "maven", "nuget": "nuget", "go": "go", "cargo": "cargo"}
+ECOSYSTEM_TYPE = {"pypi": "pip", "npm": "npm", "maven": "maven", "nuget": "nuget", "go": "go", "cargo": "cargo",
+                  "packagist": "composer", "rubygems": "gem"}
 # Язык находки – по файлу (иначе у Dockerfile и шаблонов HTML стоял бы язык всей выгрузки «Python»);
 # неизвестное расширение – значение --language
 LANGUAGE_BY_SUFFIX = {".py": "Python", ".html": "HTML", ".htm": "HTML", ".js": "JavaScript", ".jsx": "JavaScript",

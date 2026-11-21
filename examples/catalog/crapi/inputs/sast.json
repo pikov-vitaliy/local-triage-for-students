@@ -1,0 +1,978 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "b5fc307f3e5f875809b095b771108ef342a33724",
+ "dropped": {
+  "вендорские и собранные файлы": 0,
+  "повтор той же строки": 19,
+  "сверх предела": 59,
+  "тесты": 19
+ },
+ "entries": [
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "chatbot",
+   "cwe": [
+    "295"
+   ],
+   "file": "src/mcpserver/auth/middleware.py",
+   "line": 74,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "chatbot",
+   "cwe": [
+    "295"
+   ],
+   "file": "src/mcpserver/auth/middleware.py",
+   "line": 107,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "chatbot",
+   "cwe": [
+    "295"
+   ],
+   "file": "src/mcpserver/server.py",
+   "line": 48,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "chatbot",
+   "cwe": [
+    "295"
+   ],
+   "file": "src/mcpserver/server.py",
+   "line": 91,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "chatbot",
+   "cwe": [
+    "295"
+   ],
+   "file": "src/mcpserver/server.py",
+   "line": 113,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "chatbot",
+   "cwe": [
+    "295"
+   ],
+   "file": "src/mcpserver/server.py",
+   "line": 153,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.go.tls-skip-verify: Проверка сертификата TLS отключена",
+   "codebase": "community",
+   "cwe": [
+    "295"
+   ],
+   "file": "api/auth/token.go",
+   "line": 56,
+   "rule": "lt.go.tls-skip-verify",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G108 Профилировщик открыт на /debug/pprof",
+   "codebase": "community",
+   "cwe": [
+    "200"
+   ],
+   "file": "api/router/routes.go",
+   "line": 20,
+   "rule": "G108",
+   "severity": "High",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.go.tls-skip-verify: Проверка сертификата TLS отключена",
+   "codebase": "community",
+   "cwe": [
+    "295"
+   ],
+   "file": "api/server.go",
+   "line": 47,
+   "rule": "lt.go.tls-skip-verify",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "workshop",
+   "cwe": [
+    "295"
+   ],
+   "file": "crapi/merchant/views.py",
+   "line": 91,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "workshop",
+   "cwe": [
+    "295"
+   ],
+   "file": "crapi/shop/views.py",
+   "line": 148,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "B501 request_with_no_cert_validation",
+   "codebase": "workshop",
+   "cwe": [
+    "295"
+   ],
+   "file": "utils/jwt.py",
+   "line": 54,
+   "rule": "B501",
+   "severity": "High",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.jwt-no-verify: Токен JWT разбирается без проверки подписи",
+   "codebase": "workshop",
+   "cwe": [
+    "347"
+   ],
+   "file": "utils/jwt.py",
+   "line": 61,
+   "rule": "lt.py.jwt-no-verify",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "chatbot",
+   "cwe": [
+    "605"
+   ],
+   "file": "src/mcpserver/__main__.py",
+   "line": 15,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "B104 hardcoded_bind_all_interfaces",
+   "codebase": "chatbot",
+   "cwe": [
+    "605"
+   ],
+   "file": "src/mcpserver/server.py",
+   "line": 194,
+   "rule": "B104",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.go.ssrf: Запрос по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "community",
+   "cwe": [
+    "918"
+   ],
+   "file": "api/auth/token.go",
+   "line": 69,
+   "rule": "lt.go.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "community",
+   "cwe": [
+    "79"
+   ],
+   "file": "api/responses/json.go",
+   "line": 29,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.ssrf: Запрос по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "community",
+   "cwe": [
+    "918"
+   ],
+   "file": "api/server.go",
+   "line": 54,
+   "rule": "lt.go.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "gateway-service",
+   "cwe": [
+    "79"
+   ],
+   "file": "main.go",
+   "line": 63,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "gateway-service",
+   "cwe": [
+    "79"
+   ],
+   "file": "main.go",
+   "line": 82,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.go.xss-template: Строка помечена безопасной разметкой без экранирования – возможен XSS",
+   "codebase": "gateway-service",
+   "cwe": [
+    "79"
+   ],
+   "file": "main.go",
+   "line": 129,
+   "rule": "lt.go.xss-template",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G114 http.ListenAndServe без таймаутов",
+   "codebase": "gateway-service",
+   "cwe": [
+    "676"
+   ],
+   "file": "main.go",
+   "line": 176,
+   "rule": "G114",
+   "severity": "Medium",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.java.xss-response: Данные пишутся в ответ без экранирования – возможен XSS",
+   "codebase": "identity",
+   "cwe": [
+    "79"
+   ],
+   "file": "src/main/java/com/crapi/config/JwtAuthEntryPoint.java",
+   "line": 48,
+   "rule": "lt.java.xss-response",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 22,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 24,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 55,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 66,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 74,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 75,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 76,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 77,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "identity",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/com/crapi/constant/UserMessage.java",
+   "line": 79,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.ssrf: Соединение по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "identity",
+   "cwe": [
+    "918"
+   ],
+   "file": "src/main/java/com/crapi/service/Impl/VehicleOwnershipServiceImpl.java",
+   "line": 99,
+   "rule": "lt.java.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/components/bot/Bot.tsx",
+   "line": 441,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 17,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 19,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 20,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 21,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 22,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 24,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 36,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 37,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 38,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 39,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 40,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 41,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 42,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 43,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 44,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 45,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 46,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "web",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/constants/messages.ts",
+   "line": 48,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.ssrf: Запрос по адресу из данных пользователя – возможна подделка запроса со стороны сервера",
+   "codebase": "workshop",
+   "cwe": [
+    "918"
+   ],
+   "file": "core/management/commands/seed_database.py",
+   "line": 220,
+   "rule": "lt.py.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.ssrf: Запрос по адресу из данных пользователя – возможна подделка запроса со стороны сервера",
+   "codebase": "workshop",
+   "cwe": [
+    "918"
+   ],
+   "file": "crapi/merchant/views.py",
+   "line": 87,
+   "rule": "lt.py.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B608 hardcoded_sql_expressions",
+   "codebase": "workshop",
+   "cwe": [
+    "89"
+   ],
+   "file": "crapi/shop/tests.py",
+   "line": 166,
+   "rule": "B608",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "B608 hardcoded_sql_expressions",
+   "codebase": "workshop",
+   "cwe": [
+    "89"
+   ],
+   "file": "crapi/shop/views.py",
+   "line": 389,
+   "rule": "B608",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "workshop",
+   "cwe": [
+    "798"
+   ],
+   "file": "crapi_site/settings.py",
+   "line": 68,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B113 request_without_timeout",
+   "codebase": "workshop",
+   "cwe": [
+    "400"
+   ],
+   "file": "utils/jwt.py",
+   "line": 53,
+   "rule": "B113",
+   "severity": "Medium",
+   "tool": "bandit"
+  },
+  {
+   "category": "lt.py.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "workshop",
+   "cwe": [
+    "798"
+   ],
+   "file": "utils/messages.py",
+   "line": 22,
+   "rule": "lt.py.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "chatbot",
+   "cwe": [
+    "489"
+   ],
+   "file": "src/chatbot/app.py",
+   "line": 39,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "chatbot",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/chatbot/chat_api.py",
+   "line": 212,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "G104 Ошибка не проверяется",
+   "codebase": "gateway-service",
+   "cwe": [
+    "703"
+   ],
+   "file": "main.go",
+   "line": 107,
+   "rule": "G104",
+   "severity": "Low",
+   "tool": "gosec"
+  },
+  {
+   "category": "G104 Ошибка не проверяется",
+   "codebase": "gateway-service",
+   "cwe": [
+    "703"
+   ],
+   "file": "main.go",
+   "line": 150,
+   "rule": "G104",
+   "severity": "Low",
+   "tool": "gosec"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/config/InitialDataConfig.java",
+   "line": 113,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/service/Impl/VehicleServiceImpl.java",
+   "line": 92,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/service/Impl/VehicleServiceImpl.java",
+   "line": 178,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/service/Impl/VehicleServiceImpl.java",
+   "line": 261,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/utils/EmailTokenGenerator.java",
+   "line": 36,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/utils/EmailTokenGenerator.java",
+   "line": 42,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/utils/GenerateVIN.java",
+   "line": 28,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/utils/GenerateVIN.java",
+   "line": 32,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "identity",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/com/crapi/utils/OTPGenerator.java",
+   "line": 39,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "workshop",
+   "cwe": [
+    "338"
+   ],
+   "file": "core/management/commands/seed_database.py",
+   "line": 152,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "workshop",
+   "cwe": [
+    "338"
+   ],
+   "file": "core/management/commands/seed_database.py",
+   "line": 153,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "workshop",
+   "cwe": [
+    "338"
+   ],
+   "file": "core/management/commands/seed_database.py",
+   "line": 154,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "workshop",
+   "cwe": [
+    "338"
+   ],
+   "file": "crapi/apps.py",
+   "line": 146,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "workshop",
+   "cwe": [
+    "338"
+   ],
+   "file": "crapi/apps.py",
+   "line": 147,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.insecure-random: Модуль random не годится для токенов и паролей – нужен secrets",
+   "codebase": "workshop",
+   "cwe": [
+    "338"
+   ],
+   "file": "crapi/apps.py",
+   "line": 148,
+   "rule": "lt.py.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.py.debug-true: Отладочный режим включён – в работе приложение раскрывает внутренние сведения",
+   "codebase": "workshop",
+   "cwe": [
+    "489"
+   ],
+   "file": "crapi_site/settings.py",
+   "line": 62,
+   "rule": "lt.py.debug-true",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "B107 hardcoded_password_default",
+   "codebase": "workshop",
+   "cwe": [
+    "259"
+   ],
+   "file": "utils/helper.py",
+   "line": 4,
+   "rule": "B107",
+   "severity": "Low",
+   "tool": "bandit"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

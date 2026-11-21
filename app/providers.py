@@ -309,6 +309,24 @@ def _chat_values(profile: Mapping[str, Any] | None) -> dict[str, Any]:
             **{name: str(gen.get(key) or "") for name, (key, *_rest) in CHAT_NUMBERS.items()}}
 
 
+# Заготовки нового профиля для учебного стенда (план стенда, раздел 5; ADR-0157): форма предзаполнена, ключ студент
+# вводит сам, «Проверить» сверяет имя модели со списком /models. Без ключа профиль ничего не отправляет.
+PRESETS: dict[str, dict[str, Any]] = {
+    "deepseek": {"name": "DeepSeek", "kind": "chat_completions", "trust": "external",
+                 "base_url": "https://api.deepseek.com", "default_model": "deepseek-flash", "requires_key": True,
+                 "response_mode": "json_object", "search_on": True, "search_path": "/v1/tools/search",
+                 "fetch_path": "/v1/tools/fetch"},
+    "ollama-local": {"name": "Ollama на этом компьютере", "kind": "ollama", "trust": "local",
+                     "base_url": "http://127.0.0.1:11434", "default_model": "gpt-oss:20b", "requires_key": False},
+}
+
+
+def preset_form(name: str) -> dict[str, Any] | None:
+    """Значения формы нового профиля по заготовке; неизвестное имя – None."""
+    preset = PRESETS.get(str(name or ""))
+    return None if preset is None else {**form_of(None), **preset}
+
+
 def form_of(profile: Mapping[str, Any] | None, default_id: int | None = None) -> dict[str, Any]:
     """Значения полей формы из профиля (новый профиль – Ollama, сервер в сети, включён)."""
     if profile is None:

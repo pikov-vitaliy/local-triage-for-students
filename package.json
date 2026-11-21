@@ -1,6 +1,6 @@
 {
   "name": "local-triage",
-  "version": "0.10.0-dev.32",
+  "version": "0.10.0-dev.33",
   "description": "Учебный стенд «Локальный триаж»: разбор срабатываний SAST и SCA в браузере, со своими Python и PostgreSQL, без Docker",
   "license": "MIT",
   "author": "Vitaly Pikov <pikov@yandex.ru>",

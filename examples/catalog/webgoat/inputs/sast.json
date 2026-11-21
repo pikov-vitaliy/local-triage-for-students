@@ -1,0 +1,978 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "4e98f1cbbf896fdd06edcc9930515ebe0ade7c69",
+ "dropped": {
+  "вендорские и собранные файлы": 113,
+  "повтор той же строки": 0,
+  "сверх предела": 1,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.java.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "webgoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "src/main/java/org/dummy/insecure/framework/VulnerableTaskHolder.java",
+   "line": 67,
+   "rule": "lt.java.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.sql-concat: SQL-запрос собирается склейкой строк – возможна SQL-инъекция",
+   "codebase": "webgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/container/lessons/LessonConnectionInvocationHandler.java",
+   "line": 31,
+   "rule": "lt.java.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.sql-concat: SQL-запрос собирается склейкой строк – возможна SQL-инъекция",
+   "codebase": "webgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/container/users/UserService.java",
+   "line": 78,
+   "rule": "lt.java.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.xxe: Разбор XML без запрета внешних сущностей – возможна атака XXE",
+   "codebase": "webgoat",
+   "cwe": [
+    "611"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/challenges/challenge2/ChainedXmlService.java",
+   "line": 56,
+   "rule": "lt.java.xxe",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.sql-concat: SQL-запрос собирается склейкой строк – возможна SQL-инъекция",
+   "codebase": "webgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/challenges/challenge5/Assignment5.java",
+   "line": 44,
+   "rule": "lt.java.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "webgoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/commandinjection/CommandExecutionService.java",
+   "line": 34,
+   "rule": "lt.java.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "webgoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/commandinjection/CommandExecutionService.java",
+   "line": 43,
+   "rule": "lt.java.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.deserialization: Десериализация объекта из потока данных – возможна небезопасная десериализация",
+   "codebase": "webgoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/deserialization/InsecureDeserializationTask.java",
+   "line": 45,
+   "rule": "lt.java.deserialization",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.deserialization: Десериализация объекта из потока данных – возможна небезопасная десериализация",
+   "codebase": "webgoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/deserialization/SerializationHelper.java",
+   "line": 23,
+   "rule": "lt.java.deserialization",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.sql-concat: SQL-запрос собирается склейкой строк – возможна SQL-инъекция",
+   "codebase": "webgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/jwt/claimmisuse/JWTHeaderKIDEndpoint.java",
+   "line": 73,
+   "rule": "lt.java.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.sql-concat: SQL-запрос собирается склейкой строк – возможна SQL-инъекция",
+   "codebase": "webgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/sqlinjection/introduction/SqlInjectionLesson5.java",
+   "line": 82,
+   "rule": "lt.java.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.sql-concat: SQL-запрос собирается склейкой строк – возможна SQL-инъекция",
+   "codebase": "webgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/sqlinjection/mitigation/Servers.java",
+   "line": 50,
+   "rule": "lt.java.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.xxe: Разбор XML без запрета внешних сущностей – возможна атака XXE",
+   "codebase": "webgoat",
+   "cwe": [
+    "611"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/xxe/CommentsCache.java",
+   "line": 71,
+   "rule": "lt.java.xxe",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.deserialize: Небезопасная десериализация данных",
+   "codebase": "webgoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "src/main/resources/lessons/jwt/js/jwt-weak-keys.js",
+   "line": 3,
+   "rule": "lt.js.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/lessons/openredirect/js/openredirect-task4.js",
+   "line": 24,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/lessons/sqlinjection/js/assignment10b.js",
+   "line": 7,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/lessons/xss/js/assignment3.js",
+   "line": 8,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/lessons/xss/js/assignment4.js",
+   "line": 8,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/webgoat/static/js/quiz.js",
+   "line": 43,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/webgoat/static/js/search.js",
+   "line": 6,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "webgoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "src/main/resources/webwolf/static/js/jwt.js",
+   "line": 25,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": ".mvn/wrapper/MavenWrapperDownloader.java",
+   "line": 55,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": ".mvn/wrapper/MavenWrapperDownloader.java",
+   "line": 78,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/integration/CSRFIntegrationTest.java",
+   "line": 100,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/integration/CSRFIntegrationTest.java",
+   "line": 101,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/integration/LabelAndHintIntegrationTest.java",
+   "line": 168,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/integration/PathTraversalIntegrationTest.java",
+   "line": 128,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/playwright/webgoat/RegistrationUITest.java",
+   "line": 27,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/playwright/webgoat/RegistrationUITest.java",
+   "line": 43,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/it/java/org/owasp/webgoat/playwright/webwolf/JwtUITest.java",
+   "line": 29,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/container/users/DefaultUserInitializer.java",
+   "line": 27,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/challenges/SolutionConstants.java",
+   "line": 10,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/challenges/challenge7/Assignment7.java",
+   "line": 36,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/clientsidefiltering/Salaries.java",
+   "line": 42,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/clientsidefiltering/Salaries.java",
+   "line": 49,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/clientsidefiltering/Salaries.java",
+   "line": 59,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/commandinjection/CommandInjectionCatService.java",
+   "line": 78,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/commandinjection/CommandInjectionTask3Service.java",
+   "line": 96,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/commandinjection/CommandInjectionTask4Service.java",
+   "line": 117,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.weak-crypto: Устаревший алгоритм шифрования или хеширования",
+   "codebase": "webgoat",
+   "cwe": [
+    "327"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/cryptography/HashingAssignment.java",
+   "line": 39,
+   "rule": "lt.java.weak-crypto",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/jwt/JWTRefreshEndpoint.java",
+   "line": 45,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/jwt/JWTRefreshEndpoint.java",
+   "line": 46,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/lessontemplate/SampleAttack.java",
+   "line": 27,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/missingac/MissingFunctionAC.java",
+   "line": 14,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/missingac/MissingFunctionAC.java",
+   "line": 15,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/passwordreset/ResetLinkAssignment.java",
+   "line": 44,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/passwordstorage/PasswordStorageService.java",
+   "line": 23,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileUploadBase.java",
+   "line": 51,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileUploadBase.java",
+   "line": 70,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileUploadBase.java",
+   "line": 103,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileUploadRetrieval.java",
+   "line": 54,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileUploadRetrieval.java",
+   "line": 64,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileUploadRetrieval.java",
+   "line": 101,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/pathtraversal/ProfileZipSlip.java",
+   "line": 79,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/securitymisconfiguration/ActuatorExposureTask.java",
+   "line": 28,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/securitymisconfiguration/DefaultCredentialsTask.java",
+   "line": 29,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/securitymisconfiguration/VerboseErrorTask.java",
+   "line": 29,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/sqlinjection/advanced/SqlInjectionLesson6b.java",
+   "line": 42,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.ssrf: Соединение по адресу из данных – возможна подделка запроса со стороны сервера",
+   "codebase": "webgoat",
+   "cwe": [
+    "918"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/ssrf/SSRFTask2.java",
+   "line": 36,
+   "rule": "lt.java.ssrf",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/xxe/BlindSendFileAssignment.java",
+   "line": 56,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/xxe/BlindSendFileAssignment.java",
+   "line": 61,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/xxe/Ping.java",
+   "line": 32,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/xxe/User.java",
+   "line": 13,
+   "rule": "lt.java.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/webwolf/FileServer.java",
+   "line": 86,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.path-traversal: Путь к файлу строится из данных – возможен обход каталога",
+   "codebase": "webgoat",
+   "cwe": [
+    "22"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/webwolf/FileServer.java",
+   "line": 95,
+   "rule": "lt.java.path-traversal",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "webgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "src/main/resources/lessons/clientsidefiltering/js/clientSideFiltering.js",
+   "line": 6,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "webgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "src/main/resources/lessons/clientsidefiltering/js/clientSideFiltering.js",
+   "line": 38,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "webgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "src/main/resources/lessons/jwt/js/jwt-refresh.js",
+   "line": 10,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "webgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "src/main/resources/webgoat/static/js/quiz.js",
+   "line": 34,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/challenges/challenge1/ImageServlet.java",
+   "line": 21,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/challenges/challenge7/PasswordResetLink.java",
+   "line": 15,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/cryptography/EncodingAssignment.java",
+   "line": 37,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/cryptography/HashingAssignment.java",
+   "line": 37,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/cryptography/HashingAssignment.java",
+   "line": 55,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/csrf/CSRFGetFlag.java",
+   "line": 39,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/csrf/CSRFGetFlag.java",
+   "line": 45,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/csrf/CSRFGetFlag.java",
+   "line": 56,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/hijacksession/cas/HijackSessionAuthenticationProvider.java",
+   "line": 25,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/httpbasics/HttpBasicsExternal.java",
+   "line": 35,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.java.insecure-random: java.util.Random не годится для токенов и паролей – нужен SecureRandom",
+   "codebase": "webgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "src/main/java/org/owasp/webgoat/lessons/jwt/JWTSecretKeyEndpoint.java",
+   "line": 38,
+   "rule": "lt.java.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

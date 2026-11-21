@@ -1,0 +1,222 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "f5951f13089d85c979de09e7da3c8c0fb982f94a",
+ "dropped": {
+  "вендорские и собранные файлы": 15,
+  "повтор той же строки": 1,
+  "сверх предела": 0,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.js.deserialize: Небезопасная десериализация данных",
+   "codebase": "railsgoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "app/assets/javascripts/jsapi.js",
+   "line": 18,
+   "rule": "lt.js.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.deserialize: Marshal.load или YAML.load данных – небезопасная десериализация",
+   "codebase": "railsgoat",
+   "cwe": [
+    "502"
+   ],
+   "file": "app/controllers/password_resets_controller.rb",
+   "line": 6,
+   "rule": "lt.rb.deserialize",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.sql-interpolation: Условие запроса собирается интерполяцией строки – возможна SQL-инъекция",
+   "codebase": "railsgoat",
+   "cwe": [
+    "89"
+   ],
+   "file": "app/controllers/users_controller.rb",
+   "line": 29,
+   "rule": "lt.rb.sql-interpolation",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "railsgoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "app/models/benefits.rb",
+   "line": 15,
+   "rule": "lt.rb.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "railsgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "app/assets/images/fonts/lte-ie7.js",
+   "line": 6,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "railsgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "app/assets/javascripts/html5.js",
+   "line": 5,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "railsgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "app/assets/javascripts/html5.js",
+   "line": 6,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.idor-find: Объект ищется по номеру из запроса без проверки владельца – возможен доступ к чужим данным",
+   "codebase": "railsgoat",
+   "cwe": [
+    "639"
+   ],
+   "file": "app/controllers/api/v1/mobile_controller.rb",
+   "line": 11,
+   "rule": "lt.rb.idor-find",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.xss-html-safe: Строка помечена безопасной без экранирования – возможен XSS",
+   "codebase": "railsgoat",
+   "cwe": [
+    "79"
+   ],
+   "file": "app/controllers/password_resets_controller.rb",
+   "line": 36,
+   "rule": "lt.rb.xss-html-safe",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "railsgoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "app/controllers/password_resets_controller.rb",
+   "line": 48,
+   "rule": "lt.rb.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "railsgoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "app/controllers/password_resets_controller.rb",
+   "line": 57,
+   "rule": "lt.rb.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.idor-find: Объект ищется по номеру из запроса без проверки владельца – возможен доступ к чужим данным",
+   "codebase": "railsgoat",
+   "cwe": [
+    "639"
+   ],
+   "file": "app/controllers/pay_controller.rb",
+   "line": 29,
+   "rule": "lt.rb.idor-find",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "railsgoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "app/models/user.rb",
+   "line": 45,
+   "rule": "lt.rb.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "railsgoat",
+   "cwe": [
+    "328"
+   ],
+   "file": "app/models/user.rb",
+   "line": 55,
+   "rule": "lt.rb.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "railsgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "config/initializers/constants.rb",
+   "line": 2,
+   "rule": "lt.rb.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.rb.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "railsgoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "config/initializers/secret_token.rb",
+   "line": 8,
+   "rule": "lt.rb.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "railsgoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "app/assets/javascripts/jsapi.js",
+   "line": 23,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

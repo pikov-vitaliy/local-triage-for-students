@@ -32,6 +32,9 @@ const RULES = [
   /^app\/static\/fonts\/OFL\.txt$/,
   /^app\/static\/capec-license\.txt$/,
   /^examples\/demo\/repos\/(?:billing-core|catalog-api)\//,
+  // каталог учебных примеров (ADR-0156): описание, источники и выгрузки без кода; входы сборки каталога – только в git
+  /^examples\/catalog\/(?:catalog\.json|NOTICE\.md)$/,
+  /^examples\/catalog\/[a-z0-9-]+\/export\.xlsx$/,
 ];
 
 function git(...args) {

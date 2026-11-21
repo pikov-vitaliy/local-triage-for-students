@@ -728,3 +728,14 @@ def test_abandoned_marker_removed_when_lock_has_broken_utf8(tmp_path: Path):
     lock = InstanceLock(tmp_path)
     lock.acquire()
     lock.release()
+
+
+def test_non_numeric_beat_is_judged_by_mtime(tmp_path: Path):
+    """Корректный JSON с нечисловой отметкой beat – как повреждённый файл: старый снимается, без ValueError (ревью круга 10)."""
+    old = time.time() - 600
+    lock_file = tmp_path / LOCK_NAME
+    lock_file.write_text(json.dumps({"token": "чужой", "beat": "вчера"}), encoding="utf-8")
+    os.utime(lock_file, (old, old))
+    lock = InstanceLock(tmp_path)
+    lock.acquire()
+    lock.release()

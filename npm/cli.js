@@ -55,21 +55,30 @@ function parseArgs(argv) {
       if (i >= argv.length) throw new paths.StandError(`Ключу ${arg} нужно значение.`);
       return argv[i];
     };
+    const flag = () => {
+      if (inline !== null) throw new paths.StandError(`Ключ ${arg} пишется без значения (без «=${inline}»).`);
+      return true;
+    };
+    const path_ = () => {
+      const v = String(value()).trim();
+      if (!v) throw new paths.StandError(`Ключу ${arg} нужна папка – пустое значение не принимается.`);
+      return v;
+    };
     if (arg === '--port') {
       const raw = String(value()).trim();
       opts.portGiven = true;
       opts.port = /^\d+$/.test(raw) ? Number(raw) : NaN;
     }
-    else if (arg === '--home') opts.home = value();
-    else if (arg === '--code-dir') opts.codeDir = value();
-    else if (arg === '--no-open') opts.open = false;
-    else if (arg === '--local-only') opts.local = true;
-    else if (arg === '--new-database') opts.newDatabase = true;
-    else if (arg === '--reinstall') opts.reinstall = true;
-    else if (arg === '--where') opts.where = true;
-    else if (arg === '--doctor') opts.doctor = true;
-    else if (arg === '--version' || arg === '-v') opts.version = true;
-    else if (arg === '--help' || arg === '-h') opts.help = true;
+    else if (arg === '--home') opts.home = path_();
+    else if (arg === '--code-dir') opts.codeDir = path_();
+    else if (arg === '--no-open') opts.open = !flag();
+    else if (arg === '--local-only') opts.local = flag();
+    else if (arg === '--new-database') opts.newDatabase = flag();
+    else if (arg === '--reinstall') opts.reinstall = flag();
+    else if (arg === '--where') opts.where = flag();
+    else if (arg === '--doctor') opts.doctor = flag();
+    else if (arg === '--version' || arg === '-v') opts.version = flag();
+    else if (arg === '--help' || arg === '-h') opts.help = flag();
     else throw new paths.StandError(`Неизвестный ключ ${argv[i]}. Список ключей: npx local-triage --help`);
   }
   if (opts.portGiven && (!Number.isInteger(opts.port) || opts.port < 1024 || opts.port > 65535)) {
@@ -138,7 +147,9 @@ async function waitOther(port, expect) {
     // готовность держателя – и ответ самого приложения: база могла пропасть после первой готовности (ревью круга 6)
     const appOk = phase === 'ready' && url && !now.status.stopping &&
       (await getJson(now.status.app_port, '/healthz', 3000).then((r) => r.state === 'ok' && r.data &&
-        ['ok', 'hub_write_paused'].includes(r.data.status)));
+        ['ok', 'hub_write_paused'].includes(r.data.status) &&
+        // на порту – приложение именно этого стенда: токен запуска совпадает (ревью круга 10)
+        Boolean(now.status.app_token) && r.data.stand && r.data.stand.token === now.status.app_token));
     if (appOk) {
       if (expect.port && now.status.app_port !== expect.port) {
         throw new paths.StandError(`Стенд в другом окне работает на порту ${now.status.app_port}, а --port ${expect.port} ` +

@@ -1,0 +1,354 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+ "dropped": {
+  "вендорские и собранные файлы": 0,
+  "повтор той же строки": 0,
+  "сверх предела": 0,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.js.command-exec: Команда операционной системы строится из данных – возможно внедрение команд",
+   "codebase": "nodegoat",
+   "cwe": [
+    "78"
+   ],
+   "file": "Gruntfile.js",
+   "line": 165,
+   "rule": "lt.js.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "nodegoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "app/routes/contributions.js",
+   "line": 32,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "nodegoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "app/routes/contributions.js",
+   "line": 33,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "nodegoat",
+   "cwe": [
+    "95"
+   ],
+   "file": "app/routes/contributions.js",
+   "line": 34,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/index.js",
+   "line": 72,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/session.js",
+   "line": 28,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/session.js",
+   "line": 32,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/session.js",
+   "line": 41,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 45,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 59,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 60,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 61,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 82,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 91,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/session.js",
+   "line": 117,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/session.js",
+   "line": 122,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "app/routes/session.js",
+   "line": 126,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.redirect-from-request: Адрес перенаправления берётся из запроса – возможен открытый редирект",
+   "codebase": "nodegoat",
+   "cwe": [
+    "601"
+   ],
+   "file": "app/routes/session.js",
+   "line": 261,
+   "rule": "lt.js.redirect-from-request",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "artifacts/db-reset.js",
+   "line": 13,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "artifacts/db-reset.js",
+   "line": 21,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "nodegoat",
+   "cwe": [
+    "798"
+   ],
+   "file": "artifacts/db-reset.js",
+   "line": 29,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "app/data/user-dao.js",
+   "line": 51,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "app/data/user-dao.js",
+   "line": 52,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "app/data/user-dao.js",
+   "line": 53,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "app/routes/session.js",
+   "line": 16,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "app/routes/session.js",
+   "line": 17,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "artifacts/db-reset.js",
+   "line": 113,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.insecure-random: Math.random не годится для токенов и паролей – нужен криптостойкий генератор",
+   "codebase": "nodegoat",
+   "cwe": [
+    "338"
+   ],
+   "file": "artifacts/db-reset.js",
+   "line": 114,
+   "rule": "lt.js.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}

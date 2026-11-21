@@ -1,0 +1,186 @@
+{
+ "allowed": [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "0BSD",
+  "BlueOak-1.0.0",
+  "CC0-1.0",
+  "Unlicense",
+  "Python-2.0",
+  "PSF-2.0",
+  "Zlib",
+  "CC-BY-4.0",
+  "BSD-3-Clause-Clear",
+  "X11",
+  "MIT-0",
+  "HPND",
+  "Artistic-2.0",
+  "Ruby",
+  "BSL-1.0",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "W3C"
+ ],
+ "build_date": "2026-11-20",
+ "commit": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21",
+ "entries": [
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "MPL-2.0"
+   ],
+   "manifest": "requirements.txt",
+   "name": "certifi",
+   "version": "2022.12.7",
+   "violations": [
+    "MPL-2.0"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "defusedxml",
+   "version": "0.7.1",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "dj-database-url",
+   "version": "0.5.0",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "idna",
+   "version": "3.4",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "nodeenv",
+   "version": "1.12.0",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "MPL-2.0"
+   ],
+   "manifest": "requirements.txt",
+   "name": "pathspec",
+   "version": "1.1.1",
+   "violations": [
+    "MPL-2.0"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "MIT-CMU"
+   ],
+   "manifest": "requirements.txt",
+   "name": "pillow",
+   "version": "12.1.0",
+   "violations": [
+    "MIT-CMU"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "pycparser",
+   "version": "2.21",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "python3-openid",
+   "version": "3.2.0",
+   "violations": [
+    "non-standard"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "requirements.txt",
+   "name": "pywin32",
+   "version": "312",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "pygoat",
+   "dependency_groups": [],
+   "ecosystem": "PyPI",
+   "licenses": [
+    "non-standard"
+   ],
+   "manifest": "requirements.txt",
+   "name": "sqlparse",
+   "version": "0.3.1",
+   "violations": [
+    "non-standard"
+   ]
+  }
+ ],
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

@@ -342,7 +342,10 @@ def observed_revisions(settings: Settings, project: dict, codebase_map: dict[str
             continue
         repo_dir, _ = repo_dir_for(settings, project, codebase_map, Finding(hub_id="", kind="SAST", codebase=codebase))
         if repo_dir is not None:
-            result[codebase] = clone_revision(repo_dir)
+            # ревизия из маркера примера – только у проекта из каталога (папка проекта «examples»), внутри неё
+            examples_root = (Path(settings.repos_root) / "examples"
+                             if str(project.get("repos_dir") or "") == "examples" else None)
+            result[codebase] = clone_revision(repo_dir, examples_root)
     return result
 
 

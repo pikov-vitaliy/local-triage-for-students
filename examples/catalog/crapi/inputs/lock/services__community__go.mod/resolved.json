@@ -1,0 +1,337 @@
+[
+ {
+  "ecosystem": "Go",
+  "name": "github.com/BurntSushi/toml",
+  "version": "0.3.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/PuerkitoBio/goquery",
+  "version": "1.5.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/andybalholm/cascadia",
+  "version": "1.1.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/badoux/checkmail",
+  "version": "0.0.0-20200623144435-f9f80cb795fa"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/davecgh/go-spew",
+  "version": "1.1.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/denisenkom/go-mssqldb",
+  "version": "0.0.0-20191124224453-732737034ffd"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/dgrijalva/jwt-go",
+  "version": "3.2.0+incompatible"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/erikstmartin/go-testdb",
+  "version": "0.0.0-20160219214506-8d10e4a1bae5"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/go-sql-driver/mysql",
+  "version": "1.5.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/go-stack/stack",
+  "version": "1.8.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/attrs",
+  "version": "0.0.0-20190224210810-a9411de4debd"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/depgen",
+  "version": "0.1.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/envy",
+  "version": "1.7.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/flect",
+  "version": "0.1.3"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/genny",
+  "version": "0.1.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/gitgen",
+  "version": "0.0.0-20190315122116-cc086187d211"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/gogen",
+  "version": "0.1.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/logger",
+  "version": "0.0.0-20190315122211-86e12af44bc2"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/mapi",
+  "version": "1.0.2"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/packd",
+  "version": "0.1.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/packr/v2",
+  "version": "2.2.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gobuffalo/syncx",
+  "version": "0.0.0-20190224160051-33c29581e754"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/golang-sql/civil",
+  "version": "0.0.0-20190719163853-cb61b32ac6fe"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/golang/snappy",
+  "version": "0.0.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/google/go-cmp",
+  "version": "0.2.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/google/uuid",
+  "version": "1.1.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/gorilla/mux",
+  "version": "1.7.4"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/inconshreveable/mousetrap",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/jinzhu/gorm",
+  "version": "1.9.14"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/jinzhu/inflection",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/jinzhu/now",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/joho/godotenv",
+  "version": "1.3.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/karrick/godirwalk",
+  "version": "1.10.3"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/klauspost/compress",
+  "version": "1.9.5"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/konsorten/go-windows-terminal-sequences",
+  "version": "1.0.2"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/kr/pretty",
+  "version": "0.1.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/kr/pty",
+  "version": "1.1.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/kr/text",
+  "version": "0.1.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/lib/pq",
+  "version": "1.7.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/lithammer/shortuuid",
+  "version": "3.0.0+incompatible"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/markbates/oncer",
+  "version": "0.0.0-20181203154359-bf2de49a0be2"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/markbates/safe",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/mattn/go-sqlite3",
+  "version": "1.14.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/montanaflynn/stats",
+  "version": "0.0.0-20171201202039-1bf9dbcd8cbe"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/pelletier/go-toml",
+  "version": "1.4.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/pkg/errors",
+  "version": "0.8.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/pmezard/go-difflib",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/rogpeppe/go-internal",
+  "version": "1.3.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/sirupsen/logrus",
+  "version": "1.4.2"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/spf13/cobra",
+  "version": "0.0.3"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/spf13/pflag",
+  "version": "1.0.3"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/stretchr/objx",
+  "version": "0.1.1"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/stretchr/testify",
+  "version": "1.3.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/tidwall/pretty",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/xdg/scram",
+  "version": "0.0.0-20180814205039-7eeb5667e42c"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "github.com/xdg/stringprep",
+  "version": "0.0.0-20180714160509-73f8eece6fdc"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "go.mongodb.org/mongo-driver",
+  "version": "1.3.5"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "golang.org/x/crypto",
+  "version": "0.0.0-20200709230013-948cd5f35899"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "golang.org/x/net",
+  "version": "0.0.0-20200324143707-d3edc9973b7e"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "golang.org/x/sync",
+  "version": "0.0.0-20190423024810-112230192c58"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "golang.org/x/sys",
+  "version": "0.0.0-20200323222414-85ca7c5b95cd"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "golang.org/x/text",
+  "version": "0.3.3"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "golang.org/x/tools",
+  "version": "0.0.0-20190531172133-b3315ee88b7d"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "gopkg.in/check.v1",
+  "version": "1.0.0-20180628173108-788fd7840127"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "gopkg.in/errgo.v2",
+  "version": "2.1.0"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "gopkg.in/yaml.v2",
+  "version": "2.2.2"
+ },
+ {
+  "ecosystem": "Go",
+  "name": "stdlib",
+  "version": "1.21.99"
+ }
+]

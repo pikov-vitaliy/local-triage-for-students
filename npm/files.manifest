@@ -24,6 +24,8 @@ app/defect_local_text.py
 app/defect_references.py
 app/defect_where.py
 app/ecosystem.py
+app/example_tree.py
+app/examples.py
 app/executors.py
 app/feeds.py
 app/guard.py
@@ -77,6 +79,7 @@ app/routes/decision_selected.py
 app/routes/defect_add.py
 app/routes/defect_card_routes.py
 app/routes/defect_selected.py
+app/routes/examples.py
 app/routes/feeds.py
 app/routes/findings.py
 app/routes/hub.py
@@ -136,6 +139,8 @@ app/templates/cwe/bdu.html
 app/templates/cwe/detail.html
 app/templates/cwe/index.html
 app/templates/error.html
+app/templates/examples/index.html
+app/templates/examples/mapping.html
 app/templates/feeds/index.html
 app/templates/findings/card.html
 app/templates/findings/decision_selected.html
@@ -144,6 +149,7 @@ app/templates/findings/defect_selected.html
 app/templates/findings/list.html
 app/templates/findings/send_selected.html
 app/templates/findings/trace.html
+app/templates/help.html
 app/templates/journal/detail.html
 app/templates/journal/index.html
 app/templates/macros.html
@@ -189,6 +195,18 @@ app/timing.py
 app/triage.py
 app/view.py
 app/worklists.py
+examples/catalog/NOTICE.md
+examples/catalog/catalog.json
+examples/catalog/crapi/export.xlsx
+examples/catalog/dvga/export.xlsx
+examples/catalog/dvwa/export.xlsx
+examples/catalog/go-test-bench/export.xlsx
+examples/catalog/juice-shop/export.xlsx
+examples/catalog/nodegoat/export.xlsx
+examples/catalog/pygoat/export.xlsx
+examples/catalog/railsgoat/export.xlsx
+examples/catalog/vulnerablelightapp/export.xlsx
+examples/catalog/webgoat/export.xlsx
 examples/demo/demo-hub-report-v2.xlsx
 examples/demo/demo-hub-report.xlsx
 examples/demo/repos/billing-core/pom.xml

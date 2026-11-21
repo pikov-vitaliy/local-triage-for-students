@@ -1,12 +1,12 @@
 {
   "name": "local-triage",
-  "version": "0.10.0-dev.32",
+  "version": "0.10.0-dev.33",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "local-triage",
-      "version": "0.10.0-dev.32",
+      "version": "0.10.0-dev.33",
       "license": "MIT",
       "bin": {
         "local-triage": "npm/cli.js"

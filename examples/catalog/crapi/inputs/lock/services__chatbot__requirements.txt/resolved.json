@@ -1,0 +1,1212 @@
+[
+ {
+  "ecosystem": "PyPI",
+  "name": "aiofiles",
+  "version": "25.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "aiohappyeyeballs",
+  "version": "2.7.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "aiohttp",
+  "version": "3.14.5"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "aiohttp-retry",
+  "version": "2.9.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "aiosignal",
+  "version": "1.4.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "annotated-doc",
+  "version": "0.0.7"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "annotated-types",
+  "version": "0.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "anthropic",
+  "version": "0.125.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "anyio",
+  "version": "4.16.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "async-timeout",
+  "version": "4.0.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "attrs",
+  "version": "26.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "authlib",
+  "version": "1.9.10"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "backoff",
+  "version": "2.2.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "backports-tarfile",
+  "version": "1.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "bcrypt",
+  "version": "5.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "beartype",
+  "version": "0.23.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "beautifulsoup4",
+  "version": "4.15.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "blinker",
+  "version": "1.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "boto3",
+  "version": "1.44.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "botocore",
+  "version": "1.44.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "bottleneck",
+  "version": "1.6.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "build",
+  "version": "1.6.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "cachetools",
+  "version": "8.0.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "certifi",
+  "version": "2026.10.23"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "cffi",
+  "version": "2.1.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "charset-normalizer",
+  "version": "3.5.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "chromadb",
+  "version": "1.3.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "click",
+  "version": "8.5.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "cloudpickle",
+  "version": "3.1.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "cohere",
+  "version": "5.21.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "colorama",
+  "version": "0.4.6"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "cryptography",
+  "version": "50.0.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "cyclopts",
+  "version": "5.5.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "dataclasses-json",
+  "version": "0.6.7"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "defusedxml",
+  "version": "0.7.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "diskcache",
+  "version": "5.6.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "distro",
+  "version": "1.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "dnspython",
+  "version": "2.9.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "docstring-parser",
+  "version": "0.18.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "durationpy",
+  "version": "0.11"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "email-validator",
+  "version": "2.4.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "emoji",
+  "version": "2.16.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "exceptiongroup",
+  "version": "1.3.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "faiss-cpu",
+  "version": "1.12.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "fastavro",
+  "version": "1.13.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "fastmcp",
+  "version": "2.13.0.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "filelock",
+  "version": "4.2.12"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "filetype",
+  "version": "1.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "flask",
+  "version": "3.1.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "flatbuffers",
+  "version": "25.12.19"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "frozenlist",
+  "version": "1.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "fsspec",
+  "version": "2026.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-api-core",
+  "version": "2.44.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-auth",
+  "version": "2.62.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-cloud-aiplatform",
+  "version": "1.165.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-cloud-bigquery",
+  "version": "3.47.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-cloud-core",
+  "version": "2.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-cloud-resource-manager",
+  "version": "1.19.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-cloud-storage",
+  "version": "3.17.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-crc32c",
+  "version": "1.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-genai",
+  "version": "2.34.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "google-resumable-media",
+  "version": "2.11.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "googleapis-common-protos",
+  "version": "1.76.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "groq",
+  "version": "0.37.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "grpc-google-iam-v1",
+  "version": "0.14.6"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "grpcio",
+  "version": "1.85.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "grpcio-status",
+  "version": "1.85.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "h11",
+  "version": "0.16.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "h2",
+  "version": "4.4.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "hf-xet",
+  "version": "1.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "hpack",
+  "version": "4.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "html5lib",
+  "version": "1.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "httpcore",
+  "version": "1.0.9"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "httpcore2",
+  "version": "2.16.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "httptools",
+  "version": "0.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "httpx",
+  "version": "0.28.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "httpx-sse",
+  "version": "0.4.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "httpx2",
+  "version": "2.16.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "huggingface-hub",
+  "version": "2.4.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "hypercorn",
+  "version": "0.18.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "hyperframe",
+  "version": "6.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "idna",
+  "version": "3.20"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "importlib-metadata",
+  "version": "10.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "importlib-resources",
+  "version": "7.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "itsdangerous",
+  "version": "2.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jaraco-classes",
+  "version": "3.4.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jaraco-context",
+  "version": "6.1.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jaraco-functools",
+  "version": "4.6.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jeepney",
+  "version": "0.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jinja2",
+  "version": "3.1.6"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jiter",
+  "version": "0.19.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jmespath",
+  "version": "1.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "joblib",
+  "version": "1.6.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "joserfc",
+  "version": "1.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jsonpatch",
+  "version": "1.48"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jsonpointer",
+  "version": "3.12"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jsonschema",
+  "version": "4.26.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jsonschema-path",
+  "version": "0.5.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "jsonschema-specifications",
+  "version": "2025.9.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "keyring",
+  "version": "25.7.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "kubernetes",
+  "version": "37.0.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain",
+  "version": "1.0.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-anthropic",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-aws",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-chroma",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-classic",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-cohere",
+  "version": "0.5.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-community",
+  "version": "0.4.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-core",
+  "version": "1.0.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-google-vertexai",
+  "version": "3.0.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-groq",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-mcp-adapters",
+  "version": "0.1.11"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-mistralai",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-mongodb",
+  "version": "0.7.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-openai",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langchain-text-splitters",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langdetect",
+  "version": "1.0.9"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langgraph",
+  "version": "1.0.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langgraph-checkpoint",
+  "version": "3.0.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langgraph-prebuilt",
+  "version": "1.0.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langgraph-sdk",
+  "version": "0.2.15"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "langsmith",
+  "version": "0.15.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "lark",
+  "version": "1.3.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "lazy-importer",
+  "version": "0.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "lxml",
+  "version": "6.1.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "markdown-it-py",
+  "version": "3.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "markupsafe",
+  "version": "3.0.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "marshmallow",
+  "version": "3.26.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "mcp",
+  "version": "1.30.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "mdurl",
+  "version": "0.1.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "mmh3",
+  "version": "5.3.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "more-itertools",
+  "version": "11.2.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "motor",
+  "version": "3.7.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "multidict",
+  "version": "7.2.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "mypy-extensions",
+  "version": "1.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "nltk",
+  "version": "3.10.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "numexpr",
+  "version": "2.14.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "numpy",
+  "version": "2.2.6"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "oauthlib",
+  "version": "4.0.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "olefile",
+  "version": "0.47"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "onnxruntime",
+  "version": "1.32.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "openai",
+  "version": "2.6.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "openapi-pydantic",
+  "version": "0.6.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-api",
+  "version": "1.45.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-exporter-otlp-common",
+  "version": "0.66b2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-exporter-otlp-proto-common",
+  "version": "1.45.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-exporter-otlp-proto-grpc",
+  "version": "1.45.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-proto",
+  "version": "1.45.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-sdk",
+  "version": "1.45.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "opentelemetry-semantic-conventions",
+  "version": "0.66b2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "orjson",
+  "version": "3.13.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "ormsgpack",
+  "version": "1.13.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "overrides",
+  "version": "7.7.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "packaging",
+  "version": "25.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pathable",
+  "version": "0.6.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pathvalidate",
+  "version": "3.3.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "platformdirs",
+  "version": "4.14.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "posthog",
+  "version": "5.4.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "priority",
+  "version": "2.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "propcache",
+  "version": "0.5.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "proto-plus",
+  "version": "1.29.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "protobuf",
+  "version": "6.33.6"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "psutil",
+  "version": "7.2.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "psycopg2-binary",
+  "version": "2.9.11"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "py-key-value-aio",
+  "version": "0.2.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "py-key-value-shared",
+  "version": "0.2.8"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyarrow",
+  "version": "21.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyasn1",
+  "version": "0.6.5"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyasn1-modules",
+  "version": "0.4.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pybase64",
+  "version": "1.5.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pycparser",
+  "version": "3.12"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pydantic",
+  "version": "2.14.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pydantic-core",
+  "version": "2.50.5"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pydantic-settings",
+  "version": "2.15.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pygments",
+  "version": "2.21.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyjwt",
+  "version": "2.15.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pymongo",
+  "version": "4.15.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pypdf",
+  "version": "7.1.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pypdfium2",
+  "version": "5.15.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyperclip",
+  "version": "1.11.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pypika",
+  "version": "0.51.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyproject-hooks",
+  "version": "1.3.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "python-dateutil",
+  "version": "2.9.0.post0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "python-dotenv",
+  "version": "1.2.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "python-iso639",
+  "version": "2026.11.7"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "python-magic",
+  "version": "0.4.27"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "python-multipart",
+  "version": "0.0.34"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "python-oxmsg",
+  "version": "0.0.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pywin32",
+  "version": "312"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pywin32-ctypes",
+  "version": "0.2.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "pyyaml",
+  "version": "6.0.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "quart",
+  "version": "0.20.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "quart-cors",
+  "version": "0.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "rapidfuzz",
+  "version": "3.14.6"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "referencing",
+  "version": "0.37.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "regex",
+  "version": "2026.11.19"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "requests",
+  "version": "2.34.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "requests-oauthlib",
+  "version": "2.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "requests-toolbelt",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "rich",
+  "version": "15.0.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "rich-rst",
+  "version": "2.2.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "rpds-py",
+  "version": "2026.9.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "s3transfer",
+  "version": "0.19.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "secretstorage",
+  "version": "3.5.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "shellingham",
+  "version": "1.5.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "six",
+  "version": "1.17.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "sniffio",
+  "version": "1.3.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "soupsieve",
+  "version": "2.10"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "sqlalchemy",
+  "version": "2.1.9"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "sse-starlette",
+  "version": "3.7.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "starlette",
+  "version": "1.10.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "taskgroup",
+  "version": "0.2.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "tenacity",
+  "version": "9.1.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "tiktoken",
+  "version": "0.14.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "tokenizers",
+  "version": "0.23.3"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "tomli",
+  "version": "2.5.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "tqdm",
+  "version": "4.70.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "truststore",
+  "version": "0.10.5"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "typer",
+  "version": "0.29.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "types-pyyaml",
+  "version": "6.0.12.20261113"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "types-requests",
+  "version": "2.33.0.20261030"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "typing-extensions",
+  "version": "4.16.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "typing-inspect",
+  "version": "0.9.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "typing-inspection",
+  "version": "0.4.5"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "unstructured",
+  "version": "0.18.15"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "unstructured-client",
+  "version": "0.47.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "urllib3",
+  "version": "2.8.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "uuid-utils",
+  "version": "0.19.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "uvicorn",
+  "version": "0.38.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "uvloop",
+  "version": "0.23.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "validators",
+  "version": "0.36.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "watchfiles",
+  "version": "1.3.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "webencodings",
+  "version": "0.6.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "websocket-client",
+  "version": "1.9.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "websockets",
+  "version": "17.4"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "werkzeug",
+  "version": "3.1.9"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "wrapt",
+  "version": "2.5.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "wsproto",
+  "version": "1.3.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "xxhash",
+  "version": "4.1.0"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "yarl",
+  "version": "1.25.1"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "zipp",
+  "version": "4.1.2"
+ },
+ {
+  "ecosystem": "PyPI",
+  "name": "zstandard",
+  "version": "0.25.0"
+ }
+]

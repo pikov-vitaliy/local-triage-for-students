@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlsplit
 
@@ -99,6 +100,24 @@ DEFECT_NEEDS_REASON = ("Дефект не выдан: нет обоснован�
 # отказ сервера не знает, что показала карточка, поэтому о кнопке не говорит; подсказка у поля – по факту (need_fix_text)
 SAST_NEED_FIX = "Напишите рекомендацию: что исправить и как, по пункту в строке. Без рекомендации дефект не выдаётся."
 
+
+
+def editor_target(settings, repo_dir, ctx, from_db: bool) -> dict | None:
+    """{"path": путь файла на компьютере, "url": vscode://file/<путь>:<строка>} – когда срез взят из файла клона;
+    в Docker-установке путь – от REPOS_ROOT_HOST. Файла нет, срез из базы или клона нет – None."""
+    from urllib.parse import quote
+
+    if ctx is None or from_db or ctx.status != "ok" or not ctx.file or repo_dir is None:
+        return None
+    try:
+        rel = Path(repo_dir).resolve().relative_to(Path(settings.repos_root).resolve()).as_posix()
+    except (ValueError, OSError):
+        return None
+    base = (settings.repos_root_host or str(Path(settings.repos_root).resolve())).replace("\\", "/").rstrip("/")
+    path = "/".join(x for x in (base, "" if rel == "." else rel, ctx.file.strip("/")) if x)
+    line = ctx.target_line or ctx.start_line or 1
+    shown = path.replace("/", "\\") if len(path) > 1 and path[1] == ":" else path
+    return {"path": shown, "url": f"vscode://file/{quote(path, safe='/:')}:{int(line)}"}
 
 def steering_of(f: Finding, stored: dict, ctx: CodeContext) -> tuple[list[int], list[str]]:
     """Строки и поля, похожие на указания для модели: сохранённые вместе со срезом при прогоне (с невидимыми знаками –
@@ -1591,6 +1610,9 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
         "current_code": mask_display.current_slice(model_ctx, current_ctx) if code_changed else None,
         "mask_shown": mask_display.masked(project),
         "plain_ctx": mask_display.plain_context(project, repo_dir, f, why),
+        # путь к файлу на этом компьютере и ссылка «Открыть в VS Code» – только у файла, найденного в клоне (ADR-0156)
+        "editor": editor_target(settings, repo_dir, current_ctx if current_ctx is not None else ctx,
+                                snapshot is not None and snapshot[0].status == "ok"),
         # при снятом флажке метки в текстах модели – значениями из текущего файла клона и выгрузки (бэклог 111)
         "label_values": (label_values := mask_display.label_values(
             project, repo_dir, f, mask_key, why, also=[lambda: masked_extra(f, mask_key)])),

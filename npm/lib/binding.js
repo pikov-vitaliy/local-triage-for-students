@@ -57,8 +57,9 @@ function matches(binding, codeDir) {
   return binding.real ? binding.real === now : canonical(binding.path) === now;
 }
 
-function fileText(codeDir) {
-  return `${codeDir}\n${canonical(codeDir)}\n`;
+/** Текст привязки: путь, как его задал оператор, и физический путь – тот, что получил Python (real, если передан). */
+function fileText(codeDir, real = '') {
+  return `${codeDir}\n${real ? canonical(real) : canonical(codeDir)}\n`;
 }
 
 module.exports = { FILE, readBinding, clusterPlaces, fromCluster, fromStand, current, matches, fileText };

@@ -648,7 +648,7 @@ if ($Build -or -not $image) {
                 $env:BUILD_COMMIT = "$head".Trim()
                 # правки вне коммита – в том, что входит в образ, включая новые файлы; сбой проверки – «не проверено»
                 $changes = & git -C $PSScriptRoot status --porcelain --untracked-files=all -- app Dockerfile `
-                    .dockerignore requirements.lock examples/demo/demo-hub-report.xlsx 2>$null
+                    .dockerignore requirements.lock examples/demo/demo-hub-report.xlsx examples/catalog 2>$null
                 if ($LASTEXITCODE -eq 0) { $env:BUILD_DIRTY = if ("$changes".Trim()) { '1' } else { '0' } }
             }
         }

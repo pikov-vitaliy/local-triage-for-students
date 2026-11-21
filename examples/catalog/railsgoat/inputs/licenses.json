@@ -1,0 +1,2370 @@
+{
+ "allowed": [
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "0BSD",
+  "BlueOak-1.0.0",
+  "CC0-1.0",
+  "Unlicense",
+  "Python-2.0",
+  "PSF-2.0",
+  "Zlib",
+  "CC-BY-4.0",
+  "BSD-3-Clause-Clear",
+  "X11",
+  "MIT-0",
+  "HPND",
+  "Artistic-2.0",
+  "Ruby",
+  "BSL-1.0",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "W3C"
+ ],
+ "build_date": "2026-11-20",
+ "commit": "f5951f13089d85c979de09e7da3c8c0fb982f94a",
+ "entries": [
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "actioncable",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "actionmailbox",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "actionmailer",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "actionpack",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "actiontext",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "actionview",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "activejob",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "activemodel",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "activerecord",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "activestorage",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "activesupport",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "addressable",
+   "version": "2.8.8",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "aruba",
+   "version": "2.3.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "ast",
+   "version": "2.4.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "base64",
+   "version": "0.3.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "bcrypt",
+   "version": "3.1.21",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "benchmark",
+   "version": "0.5.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "better_errors",
+   "version": "2.10.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "bigdecimal",
+   "version": "4.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "binding_of_caller",
+   "version": "1.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "builder",
+   "version": "3.3.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "bundler-audit",
+   "version": "0.9.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "capybara",
+   "version": "3.40.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "childprocess",
+   "version": "5.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "coderay",
+   "version": "1.1.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "concurrent-ruby",
+   "version": "1.3.6",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "connection_pool",
+   "version": "3.0.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "contracts",
+   "version": "0.17.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "crass",
+   "version": "1.0.6",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber",
+   "version": "10.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-ci-environment",
+   "version": "11.0.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-core",
+   "version": "16.1.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-cucumber-expressions",
+   "version": "18.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-gherkin",
+   "version": "38.0.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-html-formatter",
+   "version": "22.3.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-messages",
+   "version": "32.0.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "cucumber-tag-expressions",
+   "version": "8.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "database_cleaner",
+   "version": "2.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "database_cleaner-active_record",
+   "version": "2.2.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "database_cleaner-core",
+   "version": "2.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "date",
+   "version": "3.5.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "debug_inspector",
+   "version": "1.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "diff-lcs",
+   "version": "1.6.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "docile",
+   "version": "1.4.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "drb",
+   "version": "2.2.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "em-websocket",
+   "version": "0.5.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "erb",
+   "version": "6.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "erubi",
+   "version": "1.13.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "eventmachine",
+   "version": "1.2.7",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "ffi",
+   "version": "1.17.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "foreman",
+   "version": "0.90.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "formatador",
+   "version": "1.2.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "globalid",
+   "version": "1.3.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "guard",
+   "version": "2.20.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "guard-compat",
+   "version": "1.2.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "guard-livereload",
+   "version": "2.5.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "guard-rspec",
+   "version": "4.7.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "guard-shell",
+   "version": "0.7.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "http_parser.rb",
+   "version": "0.8.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "i18n",
+   "version": "1.14.8",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "importmap-rails",
+   "version": "2.2.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "io-console",
+   "version": "0.8.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "irb",
+   "version": "1.16.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "jquery-fileupload-rails",
+   "version": "1.0.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "jquery-rails",
+   "version": "4.6.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "json",
+   "version": "2.18.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "language_server-protocol",
+   "version": "3.17.0.5",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "launchy",
+   "version": "3.1.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "lint_roller",
+   "version": "1.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "listen",
+   "version": "3.10.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "logger",
+   "version": "1.7.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "loofah",
+   "version": "2.25.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "lumberjack",
+   "version": "1.4.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "mail",
+   "version": "2.9.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "marcel",
+   "version": "1.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "matrix",
+   "version": "0.4.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "memoist3",
+   "version": "1.0.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "method_source",
+   "version": "1.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "mini_mime",
+   "version": "1.1.5",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "mini_portile2",
+   "version": "2.8.9",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "minitest",
+   "version": "6.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "multi_json",
+   "version": "1.19.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "multi_test",
+   "version": "1.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "mysql2",
+   "version": "0.5.7",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "nenv",
+   "version": "0.3.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "net-imap",
+   "version": "0.6.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "net-pop",
+   "version": "0.1.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "net-protocol",
+   "version": "0.2.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "net-smtp",
+   "version": "0.5.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "nio4r",
+   "version": "2.7.5",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "nokogiri",
+   "version": "1.19.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "notiffany",
+   "version": "0.1.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "parallel",
+   "version": "1.27.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "parser",
+   "version": "3.3.10.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "pg",
+   "version": "1.6.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "power_assert",
+   "version": "3.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "pp",
+   "version": "0.6.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "prettyprint",
+   "version": "0.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "prism",
+   "version": "1.8.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "pry",
+   "version": "0.16.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "pry-rails",
+   "version": "0.3.11",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "psych",
+   "version": "5.3.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "public_suffix",
+   "version": "7.0.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "puma",
+   "version": "6.6.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "racc",
+   "version": "1.8.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rack",
+   "version": "3.1.19",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rack-livereload",
+   "version": "0.6.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rack-session",
+   "version": "2.1.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rack-test",
+   "version": "2.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rackup",
+   "version": "2.3.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rails",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rails-dom-testing",
+   "version": "2.3.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rails-html-sanitizer",
+   "version": "1.6.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "railties",
+   "version": "8.0.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rainbow",
+   "version": "3.1.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rake",
+   "version": "13.3.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rb-fsevent",
+   "version": "0.11.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rb-inotify",
+   "version": "0.11.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rdoc",
+   "version": "7.1.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "regexp_parser",
+   "version": "2.11.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "reline",
+   "version": "0.6.3",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "responders",
+   "version": "3.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rexml",
+   "version": "3.4.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rouge",
+   "version": "4.7.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rspec",
+   "version": "3.13.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rspec-core",
+   "version": "3.13.6",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rspec-expectations",
+   "version": "3.13.5",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rspec-mocks",
+   "version": "3.13.7",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rspec-rails",
+   "version": "8.0.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rspec-support",
+   "version": "3.13.6",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rubocop",
+   "version": "1.82.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rubocop-ast",
+   "version": "1.49.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "ruby-prof",
+   "version": "1.7.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "ruby-progressbar",
+   "version": "1.13.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "rubyzip",
+   "version": "3.2.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "sassc",
+   "version": "2.4.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "sassc-rails",
+   "version": "2.1.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "securerandom",
+   "version": "0.4.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "selenium-webdriver",
+   "version": "4.40.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "shellany",
+   "version": "0.0.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "simplecov",
+   "version": "0.22.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "simplecov-html",
+   "version": "0.13.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "simplecov_json_formatter",
+   "version": "0.1.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "sprockets",
+   "version": "4.2.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "sprockets-rails",
+   "version": "3.5.2",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "sqlite3",
+   "version": "2.9.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "stimulus-rails",
+   "version": "1.3.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "stringio",
+   "version": "3.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "sys-uname",
+   "version": "1.4.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "test-unit",
+   "version": "3.7.7",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "thor",
+   "version": "1.5.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "tilt",
+   "version": "2.7.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "timeout",
+   "version": "0.6.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "tsort",
+   "version": "0.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "turbo-rails",
+   "version": "2.0.21",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "turbolinks",
+   "version": "5.2.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "turbolinks-source",
+   "version": "5.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "tzinfo",
+   "version": "2.0.6",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "unicode-display_width",
+   "version": "3.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "unicode-emoji",
+   "version": "4.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "uri",
+   "version": "1.1.1",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "useragent",
+   "version": "0.16.11",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "websocket",
+   "version": "1.2.11",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "websocket-driver",
+   "version": "0.8.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "websocket-extensions",
+   "version": "0.1.5",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "xpath",
+   "version": "3.2.0",
+   "violations": [
+    "UNKNOWN"
+   ]
+  },
+  {
+   "codebase": "railsgoat",
+   "dependency_groups": [],
+   "ecosystem": "RubyGems",
+   "licenses": [
+    "UNKNOWN"
+   ],
+   "manifest": "Gemfile",
+   "name": "zeitwerk",
+   "version": "2.7.4",
+   "violations": [
+    "UNKNOWN"
+   ]
+  }
+ ],
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

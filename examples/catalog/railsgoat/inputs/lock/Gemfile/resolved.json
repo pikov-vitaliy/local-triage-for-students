@@ -1,0 +1,837 @@
+[
+ {
+  "ecosystem": "RubyGems",
+  "name": "actioncable",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "actionmailbox",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "actionmailer",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "actionpack",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "actiontext",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "actionview",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "activejob",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "activemodel",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "activerecord",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "activestorage",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "activesupport",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "addressable",
+  "version": "2.8.8"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "aruba",
+  "version": "2.3.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "ast",
+  "version": "2.4.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "base64",
+  "version": "0.3.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "bcrypt",
+  "version": "3.1.21"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "benchmark",
+  "version": "0.5.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "better_errors",
+  "version": "2.10.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "bigdecimal",
+  "version": "4.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "binding_of_caller",
+  "version": "1.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "builder",
+  "version": "3.3.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "bundler-audit",
+  "version": "0.9.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "capybara",
+  "version": "3.40.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "childprocess",
+  "version": "5.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "coderay",
+  "version": "1.1.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "concurrent-ruby",
+  "version": "1.3.6"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "connection_pool",
+  "version": "3.0.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "contracts",
+  "version": "0.17.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "crass",
+  "version": "1.0.6"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber",
+  "version": "10.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-ci-environment",
+  "version": "11.0.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-core",
+  "version": "16.1.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-cucumber-expressions",
+  "version": "18.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-gherkin",
+  "version": "38.0.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-html-formatter",
+  "version": "22.3.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-messages",
+  "version": "32.0.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "cucumber-tag-expressions",
+  "version": "8.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "database_cleaner",
+  "version": "2.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "database_cleaner-active_record",
+  "version": "2.2.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "database_cleaner-core",
+  "version": "2.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "date",
+  "version": "3.5.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "debug_inspector",
+  "version": "1.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "diff-lcs",
+  "version": "1.6.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "docile",
+  "version": "1.4.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "drb",
+  "version": "2.2.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "em-websocket",
+  "version": "0.5.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "erb",
+  "version": "6.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "erubi",
+  "version": "1.13.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "eventmachine",
+  "version": "1.2.7"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "ffi",
+  "version": "1.17.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "foreman",
+  "version": "0.90.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "formatador",
+  "version": "1.2.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "globalid",
+  "version": "1.3.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "guard",
+  "version": "2.20.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "guard-compat",
+  "version": "1.2.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "guard-livereload",
+  "version": "2.5.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "guard-rspec",
+  "version": "4.7.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "guard-shell",
+  "version": "0.7.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "http_parser.rb",
+  "version": "0.8.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "i18n",
+  "version": "1.14.8"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "importmap-rails",
+  "version": "2.2.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "io-console",
+  "version": "0.8.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "irb",
+  "version": "1.16.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "jquery-fileupload-rails",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "jquery-rails",
+  "version": "4.6.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "json",
+  "version": "2.18.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "language_server-protocol",
+  "version": "3.17.0.5"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "launchy",
+  "version": "3.1.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "lint_roller",
+  "version": "1.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "listen",
+  "version": "3.10.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "logger",
+  "version": "1.7.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "loofah",
+  "version": "2.25.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "lumberjack",
+  "version": "1.4.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "mail",
+  "version": "2.9.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "marcel",
+  "version": "1.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "matrix",
+  "version": "0.4.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "memoist3",
+  "version": "1.0.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "method_source",
+  "version": "1.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "mini_mime",
+  "version": "1.1.5"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "mini_portile2",
+  "version": "2.8.9"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "minitest",
+  "version": "6.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "multi_json",
+  "version": "1.19.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "multi_test",
+  "version": "1.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "mysql2",
+  "version": "0.5.7"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "nenv",
+  "version": "0.3.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "net-imap",
+  "version": "0.6.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "net-pop",
+  "version": "0.1.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "net-protocol",
+  "version": "0.2.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "net-smtp",
+  "version": "0.5.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "nio4r",
+  "version": "2.7.5"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "nokogiri",
+  "version": "1.19.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "notiffany",
+  "version": "0.1.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "parallel",
+  "version": "1.27.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "parser",
+  "version": "3.3.10.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "pg",
+  "version": "1.6.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "power_assert",
+  "version": "3.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "pp",
+  "version": "0.6.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "prettyprint",
+  "version": "0.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "prism",
+  "version": "1.8.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "pry",
+  "version": "0.16.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "pry-rails",
+  "version": "0.3.11"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "psych",
+  "version": "5.3.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "public_suffix",
+  "version": "7.0.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "puma",
+  "version": "6.6.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "racc",
+  "version": "1.8.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rack",
+  "version": "3.1.19"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rack-livereload",
+  "version": "0.6.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rack-session",
+  "version": "2.1.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rack-test",
+  "version": "2.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rackup",
+  "version": "2.3.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rails",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rails-dom-testing",
+  "version": "2.3.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rails-html-sanitizer",
+  "version": "1.6.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "railties",
+  "version": "8.0.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rainbow",
+  "version": "3.1.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rake",
+  "version": "13.3.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rb-fsevent",
+  "version": "0.11.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rb-inotify",
+  "version": "0.11.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rdoc",
+  "version": "7.1.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "regexp_parser",
+  "version": "2.11.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "reline",
+  "version": "0.6.3"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "responders",
+  "version": "3.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rexml",
+  "version": "3.4.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rouge",
+  "version": "4.7.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rspec",
+  "version": "3.13.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rspec-core",
+  "version": "3.13.6"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rspec-expectations",
+  "version": "3.13.5"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rspec-mocks",
+  "version": "3.13.7"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rspec-rails",
+  "version": "8.0.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rspec-support",
+  "version": "3.13.6"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rubocop",
+  "version": "1.82.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rubocop-ast",
+  "version": "1.49.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "ruby-prof",
+  "version": "1.7.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "ruby-progressbar",
+  "version": "1.13.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "rubyzip",
+  "version": "3.2.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "sassc",
+  "version": "2.4.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "sassc-rails",
+  "version": "2.1.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "securerandom",
+  "version": "0.4.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "selenium-webdriver",
+  "version": "4.40.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "shellany",
+  "version": "0.0.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "simplecov",
+  "version": "0.22.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "simplecov-html",
+  "version": "0.13.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "simplecov_json_formatter",
+  "version": "0.1.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "sprockets",
+  "version": "4.2.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "sprockets-rails",
+  "version": "3.5.2"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "sqlite3",
+  "version": "2.9.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "stimulus-rails",
+  "version": "1.3.4"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "stringio",
+  "version": "3.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "sys-uname",
+  "version": "1.4.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "test-unit",
+  "version": "3.7.7"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "thor",
+  "version": "1.5.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "tilt",
+  "version": "2.7.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "timeout",
+  "version": "0.6.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "tsort",
+  "version": "0.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "turbo-rails",
+  "version": "2.0.21"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "turbolinks",
+  "version": "5.2.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "turbolinks-source",
+  "version": "5.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "tzinfo",
+  "version": "2.0.6"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "unicode-display_width",
+  "version": "3.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "unicode-emoji",
+  "version": "4.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "uri",
+  "version": "1.1.1"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "useragent",
+  "version": "0.16.11"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "websocket",
+  "version": "1.2.11"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "websocket-driver",
+  "version": "0.8.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "websocket-extensions",
+  "version": "0.1.5"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "xpath",
+  "version": "3.2.0"
+ },
+ {
+  "ecosystem": "RubyGems",
+  "name": "zeitwerk",
+  "version": "2.7.4"
+ }
+]

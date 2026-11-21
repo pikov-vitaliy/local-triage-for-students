@@ -15,3 +15,5 @@ certifi==2026.10.23
 playwright==1.64.0
 greenlet==3.5.6
 pyee==13.0.1
+# Сборщик каталога учебных примеров (scripts/examples): правила Semgrep в YAML
+PyYAML==6.0.3

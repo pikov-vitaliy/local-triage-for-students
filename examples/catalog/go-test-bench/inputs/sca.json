@@ -1,0 +1,3337 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "92445700823205281369911a72b7127f18c8c9ed",
+ "entries": [
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2020-28483",
+   "cvss": "7.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.7.7",
+   "manifest": "go.mod",
+   "name": "github.com/gin-gonic/gin",
+   "osv_aliases": [
+    "CVE-2020-28483",
+    "GO-2021-0052",
+    "SNYK-GOLANG-GITHUBCOMGINGONICGIN-1041736"
+   ],
+   "osv_id": "GHSA-h395-qcrw-5vmq",
+   "osv_modified": "2026-09-10T03:49:05Z",
+   "version": "1.7.4"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-29401",
+   "cvss": "4.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.9.1",
+   "manifest": "go.mod",
+   "name": "github.com/gin-gonic/gin",
+   "osv_aliases": [
+    "CVE-2023-29401",
+    "GO-2023-1737"
+   ],
+   "osv_id": "GHSA-2c4m-59x9-fr2g",
+   "osv_modified": "2023-11-08T04:12:18Z",
+   "version": "1.7.4"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-26125",
+   "cvss": "5.6",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.9.0",
+   "manifest": "go.mod",
+   "name": "github.com/gin-gonic/gin",
+   "osv_aliases": [
+    "CVE-2023-26125"
+   ],
+   "osv_id": "GHSA-3vp4-m3rf-835h",
+   "osv_modified": "2023-11-08T04:11:58Z",
+   "version": "1.7.4"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-69725",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "",
+   "manifest": "go.mod",
+   "name": "github.com/go-chi/chi",
+   "osv_aliases": [
+    "CVE-2025-69725",
+    "CVE-2026-122132",
+    "GHSA-mqqf-5wvp-8fh8"
+   ],
+   "osv_id": "GO-2026-4316",
+   "osv_modified": "2026-11-05T10:55:55Z",
+   "version": "1.5.4"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-116591",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.2",
+   "manifest": "go.mod",
+   "name": "github.com/klauspost/compress",
+   "osv_aliases": [
+    "CVE-2026-116591",
+    "GHSA-fpmh-frq8-7rj8"
+   ],
+   "osv_id": "GO-2026-6865",
+   "osv_modified": "2026-11-05T23:15:14Z",
+   "version": "1.13.6"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-63209",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.7",
+   "manifest": "go.mod",
+   "name": "github.com/klauspost/compress",
+   "osv_aliases": [
+    "CVE-2026-63209",
+    "GO-2026-5841"
+   ],
+   "osv_id": "GHSA-259r-337f-4rfw",
+   "osv_modified": "2026-10-20T14:45:03Z",
+   "version": "1.13.6"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-65637",
+   "cvss": "8.7",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.8.3",
+   "manifest": "go.mod",
+   "name": "github.com/sirupsen/logrus",
+   "osv_aliases": [
+    "CVE-2025-65637",
+    "GO-2025-4188"
+   ],
+   "osv_id": "GHSA-4f99-4q7p-p3gh",
+   "osv_modified": "2026-09-10T03:50:31Z",
+   "version": "1.4.2"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-2303",
+   "cvss": "6.9",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.7",
+   "manifest": "go.mod",
+   "name": "go.mongodb.org/mongo-driver",
+   "osv_aliases": [
+    "CVE-2026-2303",
+    "GO-2026-5327"
+   ],
+   "osv_id": "GHSA-cp6g-7hqx-qxhp",
+   "osv_modified": "2026-09-10T03:50:59Z",
+   "version": "1.8.3"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-27191",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.0.0-20220314234659-1baeb1ce4c0b",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2022-27191",
+    "GO-2021-0356"
+   ],
+   "osv_id": "GHSA-8c26-wmh5-6g9v",
+   "osv_modified": "2026-09-10T03:49:17Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2021-43565",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.0.0-20211202192323-5770296d904e",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2021-43565",
+    "GO-2022-0968"
+   ],
+   "osv_id": "GHSA-gwc9-m7rh-j2ww",
+   "osv_modified": "2026-09-10T03:49:45Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-48795",
+   "cvss": "5.9",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.0.0-20231218163308-9d2ee975ef9f",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2023-48795",
+    "GO-2023-2402",
+    "PYSEC-2026-1758"
+   ],
+   "osv_id": "GHSA-45x7-px36-x8w8",
+   "osv_modified": "2026-09-10T03:49:59Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30636",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.0.0-20220525230936-793ad666bf5e",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2022-30636"
+   ],
+   "osv_id": "GO-2024-2961",
+   "osv_modified": "2026-06-16T12:29:17Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-45337",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.31.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2024-45337",
+    "GO-2024-3321"
+   ],
+   "osv_id": "GHSA-v778-237x-gjrc",
+   "osv_modified": "2026-09-10T03:50:56Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22869",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.35.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2025-22869",
+    "GO-2025-3487"
+   ],
+   "osv_id": "GHSA-hcg3-q754-cr77",
+   "osv_modified": "2026-09-10T03:50:23Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-47913",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.43.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2025-47913",
+    "GHSA-56w8-48fp-6mgv"
+   ],
+   "osv_id": "GO-2025-4116",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58181",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.45.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2025-58181",
+    "GO-2025-4134"
+   ],
+   "osv_id": "GHSA-j5w8-q4qc-rx2x",
+   "osv_modified": "2026-09-10T03:50:30Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-47914",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.45.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2025-47914",
+    "GO-2025-4135"
+   ],
+   "osv_id": "GHSA-f6x5-jh6r-wrfv",
+   "osv_modified": "2026-09-10T03:50:30Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39833",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39833",
+    "GO-2026-5005"
+   ],
+   "osv_id": "GHSA-jppx-rxg9-jmrx",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39832",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39832",
+    "GO-2026-5006"
+   ],
+   "osv_id": "GHSA-f5wc-c3c7-36mc",
+   "osv_modified": "2026-09-10T03:50:49Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-46597",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-46597",
+    "GO-2026-5013"
+   ],
+   "osv_id": "GHSA-q4h4-gmj2-qvw2",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39828",
+   "cvss": "6.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39828",
+    "GO-2026-5014"
+   ],
+   "osv_id": "GHSA-45gg-vh54-h5m9",
+   "osv_modified": "2026-09-10T03:51:07Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39835",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39835",
+    "GO-2026-5015"
+   ],
+   "osv_id": "GHSA-78mq-xcr3-xm33",
+   "osv_modified": "2026-09-11T15:45:36Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39827",
+   "cvss": "6.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39827",
+    "GO-2026-5016"
+   ],
+   "osv_id": "GHSA-qpw4-5x99-6vjp",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39830",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39830",
+    "GO-2026-5017"
+   ],
+   "osv_id": "GHSA-vgwf-h737-ff37",
+   "osv_modified": "2026-09-15T12:45:34Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39829",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39829",
+    "GO-2026-5018"
+   ],
+   "osv_id": "GHSA-w879-237q-wc7r",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39831",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39831",
+    "GO-2026-5019"
+   ],
+   "osv_id": "GHSA-89gr-r52h-f8rx",
+   "osv_modified": "2026-09-10T03:50:48Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39834",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-39834",
+    "GO-2026-5020"
+   ],
+   "osv_id": "GHSA-rm3j-f69w-wqmq",
+   "osv_modified": "2026-09-10T03:50:50Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42508",
+   "cvss": "9.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-42508",
+    "GO-2026-5021"
+   ],
+   "osv_id": "GHSA-5cgq-3rg8-m6cv",
+   "osv_modified": "2026-09-10T03:50:48Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-46595",
+   "cvss": "10.0",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-46595",
+    "GO-2026-5023"
+   ],
+   "osv_id": "GHSA-x527-x647-q7gg",
+   "osv_modified": "2026-09-10T03:50:51Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-46598",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.52.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-46598",
+    "GO-2026-5033"
+   ],
+   "osv_id": "GHSA-9m57-25v3-79x9",
+   "osv_modified": "2026-09-10T03:50:55Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "GO-2026-5932",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.58.1-0.20261009181718-2f1f834330b2",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [],
+   "osv_id": "GO-2026-5932",
+   "osv_modified": "2026-11-02T22:15:06Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56854",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-56854"
+   ],
+   "osv_id": "GO-2026-6303",
+   "osv_modified": "2026-08-29T10:10:52Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78662",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.56.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-78662"
+   ],
+   "osv_id": "GO-2026-6354",
+   "osv_modified": "2026-09-03T10:10:55Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56855",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.56.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/crypto",
+   "osv_aliases": [
+    "CVE-2026-56855"
+   ],
+   "osv_id": "GO-2026-6355",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20201216223049-8b5274cf687f"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-27664",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.0.0-20220906165146-f3363e06e74c",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2022-27664",
+    "CVE-2022-27664",
+    "GO-2022-0969"
+   ],
+   "osv_id": "GHSA-69cg-p879-7622",
+   "osv_modified": "2026-09-10T03:50:07Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41717",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.4.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2022-41717",
+    "CVE-2022-41717",
+    "GO-2022-1144"
+   ],
+   "osv_id": "GHSA-xrjj-mj9h-534m",
+   "osv_modified": "2026-09-10T03:49:50Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41723",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.7.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2022-41723",
+    "CVE-2022-41723",
+    "GO-2023-1571"
+   ],
+   "osv_id": "GHSA-vvpx-j8f3-3w6h",
+   "osv_modified": "2026-09-10T03:49:52Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-3978",
+   "cvss": "6.1",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.13.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2023-3978",
+    "GO-2023-1988"
+   ],
+   "osv_id": "GHSA-2wrh-6pvc-2jm9",
+   "osv_modified": "2026-09-10T03:50:08Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-39325",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.17.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2023-39325",
+    "CVE-2023-39325",
+    "GO-2023-2102"
+   ],
+   "osv_id": "GHSA-4374-p667-p6c8",
+   "osv_modified": "2026-09-10T03:49:24Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45288",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.23.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2023-45288",
+    "CVE-2023-45288",
+    "GO-2024-2687"
+   ],
+   "osv_id": "GHSA-4v7x-pqxf-cx7m",
+   "osv_modified": "2026-09-10T03:50:11Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-45338",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.33.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2024-45338",
+    "GHSA-w32m-9786-jp63"
+   ],
+   "osv_id": "GO-2024-3333",
+   "osv_modified": "2026-03-24T23:55:17Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22870",
+   "cvss": "4.4",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.36.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2025-22870",
+    "GO-2025-3503"
+   ],
+   "osv_id": "GHSA-qxp5-gwg8-xv66",
+   "osv_modified": "2026-09-10T03:50:23Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22872",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.38.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2025-22872",
+    "GO-2025-3595"
+   ],
+   "osv_id": "GHSA-vvgc-356p-c3xw",
+   "osv_modified": "2026-09-10T03:50:24Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-47911",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.45.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2025-47911",
+    "GHSA-w4gw-w5jq-g9jh"
+   ],
+   "osv_id": "GO-2026-4440",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58190",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.45.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2025-58190"
+   ],
+   "osv_id": "GO-2026-4441",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-33814",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.53.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-33814",
+    "CVE-2026-33814"
+   ],
+   "osv_id": "GO-2026-4918",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42506",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-42506"
+   ],
+   "osv_id": "GO-2026-5025",
+   "osv_modified": "2026-05-30T05:14:17Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39821",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-39821"
+   ],
+   "osv_id": "GO-2026-5026",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42502",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-42502"
+   ],
+   "osv_id": "GO-2026-5027",
+   "osv_modified": "2026-11-14T13:12:15Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-25680",
+   "cvss": "6.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-25680",
+    "GO-2026-5028"
+   ],
+   "osv_id": "GHSA-5cv4-jp36-h3mw",
+   "osv_modified": "2026-09-10T03:50:45Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-25681",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-25681"
+   ],
+   "osv_id": "GO-2026-5029",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-27136",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.55.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-27136"
+   ],
+   "osv_id": "GO-2026-5030",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-46600",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.56.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-46600",
+    "CVE-2026-46600"
+   ],
+   "osv_id": "GO-2026-5942",
+   "osv_modified": "2026-08-17T12:25:32Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78659",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.60.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-78659",
+    "CVE-2026-78659"
+   ],
+   "osv_id": "GO-2026-6603",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78660",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.60.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-78660",
+    "CVE-2026-78660"
+   ],
+   "osv_id": "GO-2026-6610",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78669",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.60.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-78669",
+    "CVE-2026-78669"
+   ],
+   "osv_id": "GO-2026-6611",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78663",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.60.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-78663",
+    "CVE-2026-78663"
+   ],
+   "osv_id": "GO-2026-6612",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-97032",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.60.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-golang-2026-97032",
+    "CVE-2026-97032"
+   ],
+   "osv_id": "GO-2026-6617",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78661",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.62.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-78661"
+   ],
+   "osv_id": "GO-2026-6860",
+   "osv_modified": "2026-10-27T21:30:04Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-97045",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.62.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "CVE-2026-97045"
+   ],
+   "osv_id": "GO-2026-6866",
+   "osv_modified": "2026-10-27T21:45:08Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-44487",
+   "cvss": "6.9",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.17.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/net",
+   "osv_aliases": [
+    "BIT-apisix-2023-44487",
+    "BIT-aspnet-core-2023-44487",
+    "BIT-contour-2023-44487",
+    "BIT-dotnet-2023-44487",
+    "BIT-dotnet-sdk-2023-44487",
+    "BIT-envoy-2023-44487",
+    "BIT-golang-2023-44487",
+    "BIT-jenkins-2023-44487",
+    "BIT-kong-2023-44487",
+    "BIT-nginx-2023-44487",
+    "BIT-nginx-gateway-2023-44487",
+    "BIT-node-2023-44487",
+    "BIT-node-min-2023-44487",
+    "BIT-solr-2023-44487",
+    "BIT-tomcat-2023-44487",
+    "BIT-varnish-2023-44487",
+    "CVE-2023-44487"
+   ],
+   "osv_id": "GHSA-qppj-fm5r-hxr3",
+   "osv_modified": "2026-09-10T03:50:04Z",
+   "version": "0.0.0-20220127200216-cd36cc0744dd"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-29526",
+   "cvss": "5.3",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.0.0-20220412211240-33da011f77ad",
+   "manifest": "go.mod",
+   "name": "golang.org/x/sys",
+   "osv_aliases": [
+    "BIT-golang-2022-29526",
+    "CVE-2022-29526",
+    "GO-2022-0493"
+   ],
+   "osv_id": "GHSA-p782-xgp4-8hr8",
+   "osv_modified": "2026-09-10T03:49:55Z",
+   "version": "0.0.0-20211216021012-1d35b9e2eb4e"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39824",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.44.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/sys",
+   "osv_aliases": [
+    "CVE-2026-39824"
+   ],
+   "osv_id": "GO-2026-5024",
+   "osv_modified": "2026-06-09T18:59:22Z",
+   "version": "0.0.0-20211216021012-1d35b9e2eb4e"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-32149",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.3.8",
+   "manifest": "go.mod",
+   "name": "golang.org/x/text",
+   "osv_aliases": [
+    "CVE-2022-32149",
+    "GO-2022-1059"
+   ],
+   "osv_id": "GHSA-69ch-w2m2-3vjp",
+   "osv_modified": "2026-09-10T03:49:46Z",
+   "version": "0.3.7"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56852",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.39.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/text",
+   "osv_aliases": [
+    "CVE-2026-56852"
+   ],
+   "osv_id": "GO-2026-5970",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "0.3.7"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56851",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "0.41.0",
+   "manifest": "go.mod",
+   "name": "golang.org/x/text",
+   "osv_aliases": [
+    "CVE-2026-56851"
+   ],
+   "osv_id": "GO-2026-6629",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "0.3.7"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-28948",
+   "cvss": "7.5",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "3.0.1",
+   "manifest": "go.mod",
+   "name": "gopkg.in/yaml.v3",
+   "osv_aliases": [
+    "CVE-2022-28948",
+    "GO-2022-0603"
+   ],
+   "osv_id": "GHSA-hp87-p4gw-j4gq",
+   "osv_modified": "2026-09-10T03:49:23Z",
+   "version": "3.0.0-20210107192922-496545a6307b"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-24675",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-24675",
+    "CVE-2022-24675"
+   ],
+   "osv_id": "GO-2022-0433",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-28327",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-28327",
+    "CVE-2022-28327"
+   ],
+   "osv_id": "GO-2022-0435",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30634",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30634",
+    "CVE-2022-30634"
+   ],
+   "osv_id": "GO-2022-0477",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-29526",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-29526",
+    "CVE-2022-29526",
+    "GHSA-p782-xgp4-8hr8"
+   ],
+   "osv_id": "GO-2022-0493",
+   "osv_modified": "2026-02-04T03:42:54Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-1962",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-1962",
+    "CVE-2022-1962"
+   ],
+   "osv_id": "GO-2022-0515",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-32148",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-32148",
+    "CVE-2022-32148"
+   ],
+   "osv_id": "GO-2022-0520",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-28131",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-28131",
+    "CVE-2022-28131"
+   ],
+   "osv_id": "GO-2022-0521",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30632",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30632",
+    "CVE-2022-30632"
+   ],
+   "osv_id": "GO-2022-0522",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30633",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30633",
+    "CVE-2022-30633"
+   ],
+   "osv_id": "GO-2022-0523",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30631",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30631",
+    "CVE-2022-30631"
+   ],
+   "osv_id": "GO-2022-0524",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-1705",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-1705",
+    "CVE-2022-1705"
+   ],
+   "osv_id": "GO-2022-0525",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30635",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30635",
+    "CVE-2022-30635"
+   ],
+   "osv_id": "GO-2022-0526",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30630",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30630",
+    "CVE-2022-30630"
+   ],
+   "osv_id": "GO-2022-0527",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30629",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30629",
+    "CVE-2022-30629"
+   ],
+   "osv_id": "GO-2022-0531",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-30580",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-30580",
+    "CVE-2022-30580"
+   ],
+   "osv_id": "GO-2022-0532",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-29804",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-29804",
+    "CVE-2022-29804"
+   ],
+   "osv_id": "GO-2022-0533",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-32189",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.17.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-32189",
+    "CVE-2022-32189"
+   ],
+   "osv_id": "GO-2022-0537",
+   "osv_modified": "2024-05-20T16:03:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-27664",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.6",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-27664",
+    "CVE-2022-27664",
+    "GHSA-69cg-p879-7622"
+   ],
+   "osv_id": "GO-2022-0969",
+   "osv_modified": "2026-02-04T02:41:02Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-2879",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-2879",
+    "CVE-2022-2879"
+   ],
+   "osv_id": "GO-2022-1037",
+   "osv_modified": "2026-07-15T14:29:32Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-2880",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-2880",
+    "CVE-2022-2880"
+   ],
+   "osv_id": "GO-2022-1038",
+   "osv_modified": "2026-07-15T16:30:47Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41715",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41715",
+    "CVE-2022-41715"
+   ],
+   "osv_id": "GO-2022-1039",
+   "osv_modified": "2026-07-15T14:29:33Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41716",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41716",
+    "CVE-2022-41716"
+   ],
+   "osv_id": "GO-2022-1095",
+   "osv_modified": "2026-02-04T04:25:45Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41720",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41720",
+    "CVE-2022-41720"
+   ],
+   "osv_id": "GO-2022-1143",
+   "osv_modified": "2026-02-04T04:08:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41717",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.18.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41717",
+    "CVE-2022-41717",
+    "GHSA-xrjj-mj9h-534m"
+   ],
+   "osv_id": "GO-2022-1144",
+   "osv_modified": "2026-02-04T04:29:40Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41722",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.6",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41722",
+    "CVE-2022-41722"
+   ],
+   "osv_id": "GO-2023-1568",
+   "osv_modified": "2026-02-04T02:54:08Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41725",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.6",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41725",
+    "CVE-2022-41725"
+   ],
+   "osv_id": "GO-2023-1569",
+   "osv_modified": "2026-02-04T03:22:48Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41724",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.6",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41724",
+    "CVE-2022-41724"
+   ],
+   "osv_id": "GO-2023-1570",
+   "osv_modified": "2026-02-04T02:57:33Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2022-41723",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.6",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2022-41723",
+    "CVE-2022-41723",
+    "GHSA-vvpx-j8f3-3w6h"
+   ],
+   "osv_id": "GO-2023-1571",
+   "osv_modified": "2026-02-04T03:36:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24532",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24532",
+    "CVE-2023-24532"
+   ],
+   "osv_id": "GO-2023-1621",
+   "osv_modified": "2026-02-04T02:47:06Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24537",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24537",
+    "CVE-2023-24537"
+   ],
+   "osv_id": "GO-2023-1702",
+   "osv_modified": "2026-02-04T03:43:08Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24538",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24538",
+    "CVE-2023-24538"
+   ],
+   "osv_id": "GO-2023-1703",
+   "osv_modified": "2026-02-04T04:24:15Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24534",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24534",
+    "CVE-2023-24534"
+   ],
+   "osv_id": "GO-2023-1704",
+   "osv_modified": "2026-02-04T04:39:41Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24536",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24536",
+    "CVE-2023-24536"
+   ],
+   "osv_id": "GO-2023-1705",
+   "osv_modified": "2026-02-04T03:44:01Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24539",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24539",
+    "CVE-2023-24539"
+   ],
+   "osv_id": "GO-2023-1751",
+   "osv_modified": "2026-02-04T04:31:56Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-24540",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-24540",
+    "CVE-2023-24540"
+   ],
+   "osv_id": "GO-2023-1752",
+   "osv_modified": "2026-02-04T03:50:58Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-29400",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-29400",
+    "CVE-2023-29400"
+   ],
+   "osv_id": "GO-2023-1753",
+   "osv_modified": "2026-02-04T02:22:30Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-29403",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-29403",
+    "CVE-2023-29403"
+   ],
+   "osv_id": "GO-2023-1840",
+   "osv_modified": "2026-02-04T03:48:08Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-29406",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-29406",
+    "CVE-2023-29406"
+   ],
+   "osv_id": "GO-2023-1878",
+   "osv_modified": "2026-02-04T04:31:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-29409",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.19.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-29409",
+    "CVE-2023-29409"
+   ],
+   "osv_id": "GO-2023-1987",
+   "osv_modified": "2026-02-04T03:58:58Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-39318",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-39318",
+    "CVE-2023-39318"
+   ],
+   "osv_id": "GO-2023-2041",
+   "osv_modified": "2026-02-04T04:25:22Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-39319",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-39319",
+    "CVE-2023-39319"
+   ],
+   "osv_id": "GO-2023-2043",
+   "osv_modified": "2026-02-04T04:11:02Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-39325",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-39325",
+    "CVE-2023-39325",
+    "GHSA-4374-p667-p6c8"
+   ],
+   "osv_id": "GO-2023-2102",
+   "osv_modified": "2026-11-13T19:12:55Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45283",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-45283",
+    "CVE-2023-45283"
+   ],
+   "osv_id": "GO-2023-2185",
+   "osv_modified": "2026-02-04T02:59:25Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45284",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-45284",
+    "CVE-2023-45284"
+   ],
+   "osv_id": "GO-2023-2186",
+   "osv_modified": "2026-02-04T03:56:59Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45287",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.0",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-45287",
+    "CVE-2023-45287"
+   ],
+   "osv_id": "GO-2023-2375",
+   "osv_modified": "2026-02-04T03:57:11Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-39326",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.20.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-39326",
+    "CVE-2023-39326"
+   ],
+   "osv_id": "GO-2023-2382",
+   "osv_modified": "2026-02-04T03:33:11Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-24783",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-24783",
+    "CVE-2024-24783"
+   ],
+   "osv_id": "GO-2024-2598",
+   "osv_modified": "2026-02-04T03:12:08Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45290",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-45290",
+    "CVE-2023-45290"
+   ],
+   "osv_id": "GO-2024-2599",
+   "osv_modified": "2026-02-04T02:21:09Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45289",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-45289",
+    "CVE-2023-45289"
+   ],
+   "osv_id": "GO-2024-2600",
+   "osv_modified": "2026-02-04T02:34:41Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-24784",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-24784",
+    "CVE-2024-24784"
+   ],
+   "osv_id": "GO-2024-2609",
+   "osv_modified": "2026-02-04T04:37:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-24785",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-24785",
+    "CVE-2024-24785"
+   ],
+   "osv_id": "GO-2024-2610",
+   "osv_modified": "2026-02-04T03:09:18Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2023-45288",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2023-45288",
+    "CVE-2023-45288",
+    "GHSA-4v7x-pqxf-cx7m"
+   ],
+   "osv_id": "GO-2024-2687",
+   "osv_modified": "2026-02-04T04:09:31Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-24790",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-24790",
+    "CVE-2024-24790"
+   ],
+   "osv_id": "GO-2024-2887",
+   "osv_modified": "2026-03-23T05:07:22Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-24789",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-24789",
+    "CVE-2024-24789"
+   ],
+   "osv_id": "GO-2024-2888",
+   "osv_modified": "2026-03-23T05:00:55Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-24791",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.21.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-24791",
+    "CVE-2024-24791"
+   ],
+   "osv_id": "GO-2024-2963",
+   "osv_modified": "2026-02-04T03:37:39Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-34155",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.22.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-34155",
+    "CVE-2024-34155"
+   ],
+   "osv_id": "GO-2024-3105",
+   "osv_modified": "2026-02-24T16:29:04Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-34156",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.22.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-34156",
+    "CVE-2024-34156"
+   ],
+   "osv_id": "GO-2024-3106",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-34158",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.22.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-34158",
+    "CVE-2024-34158"
+   ],
+   "osv_id": "GO-2024-3107",
+   "osv_modified": "2026-08-05T10:56:57Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-45341",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.22.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-45341",
+    "CVE-2024-45341"
+   ],
+   "osv_id": "GO-2025-3373",
+   "osv_modified": "2026-02-17T16:13:53Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2024-45336",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.22.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2024-45336",
+    "CVE-2024-45336"
+   ],
+   "osv_id": "GO-2025-3420",
+   "osv_modified": "2026-02-17T16:13:53Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22866",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.22.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-22866",
+    "CVE-2025-22866"
+   ],
+   "osv_id": "GO-2025-3447",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22870",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.7",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "CVE-2025-22870",
+    "GHSA-qxp5-gwg8-xv66"
+   ],
+   "osv_id": "GO-2025-3503",
+   "osv_modified": "2026-04-16T22:45:11Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22871",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-22871",
+    "CVE-2025-22871",
+    "GHSA-g9pc-8g42-g6vq"
+   ],
+   "osv_id": "GO-2025-3563",
+   "osv_modified": "2026-02-17T16:13:52Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-0913",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-0913",
+    "CVE-2025-0913"
+   ],
+   "osv_id": "GO-2025-3750",
+   "osv_modified": "2026-02-04T03:28:12Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-4673",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-4673",
+    "CVE-2025-4673"
+   ],
+   "osv_id": "GO-2025-3751",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-47907",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-47907",
+    "CVE-2025-47907"
+   ],
+   "osv_id": "GO-2025-3849",
+   "osv_modified": "2026-05-30T10:29:20Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-47906",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-47906",
+    "CVE-2025-47906"
+   ],
+   "osv_id": "GO-2025-3956",
+   "osv_modified": "2026-10-14T10:57:00Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61725",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61725",
+    "CVE-2025-61725"
+   ],
+   "osv_id": "GO-2025-4006",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58187",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-58187",
+    "CVE-2025-58187"
+   ],
+   "osv_id": "GO-2025-4007",
+   "osv_modified": "2026-05-15T10:59:24Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58189",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-58189",
+    "CVE-2025-58189"
+   ],
+   "osv_id": "GO-2025-4008",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61723",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61723",
+    "CVE-2025-61723"
+   ],
+   "osv_id": "GO-2025-4009",
+   "osv_modified": "2026-05-15T10:59:24Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-47912",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-47912",
+    "CVE-2025-47912"
+   ],
+   "osv_id": "GO-2025-4010",
+   "osv_modified": "2026-05-15T10:59:24Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58185",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-58185",
+    "CVE-2025-58185"
+   ],
+   "osv_id": "GO-2025-4011",
+   "osv_modified": "2026-05-15T10:59:22Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58186",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-58186",
+    "CVE-2025-58186"
+   ],
+   "osv_id": "GO-2025-4012",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58188",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-58188",
+    "CVE-2025-58188"
+   ],
+   "osv_id": "GO-2025-4013",
+   "osv_modified": "2026-08-08T10:26:52Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-58183",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-58183",
+    "CVE-2025-58183"
+   ],
+   "osv_id": "GO-2025-4014",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61724",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61724",
+    "CVE-2025-61724"
+   ],
+   "osv_id": "GO-2025-4015",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61729",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61729",
+    "CVE-2025-61729"
+   ],
+   "osv_id": "GO-2025-4155",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61727",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61727",
+    "CVE-2025-61727"
+   ],
+   "osv_id": "GO-2025-4175",
+   "osv_modified": "2026-05-15T10:59:24Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-68121",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-68121",
+    "CVE-2025-68121"
+   ],
+   "osv_id": "GO-2026-4337",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61730",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61730",
+    "CVE-2025-61730"
+   ],
+   "osv_id": "GO-2026-4340",
+   "osv_modified": "2026-08-07T10:42:58Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61726",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61726",
+    "CVE-2025-61726"
+   ],
+   "osv_id": "GO-2026-4341",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-61728",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.24.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-61728",
+    "CVE-2025-61728"
+   ],
+   "osv_id": "GO-2026-4342",
+   "osv_modified": "2026-08-08T10:26:51Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2025-22873",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.23.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2025-22873",
+    "CVE-2025-22873"
+   ],
+   "osv_id": "GO-2026-4403",
+   "osv_modified": "2026-05-15T10:59:22Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-25679",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-25679",
+    "CVE-2026-25679"
+   ],
+   "osv_id": "GO-2026-4601",
+   "osv_modified": "2026-11-14T13:12:12Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-27139",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-27139",
+    "CVE-2026-27139"
+   ],
+   "osv_id": "GO-2026-4602",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-27142",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.8",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-27142",
+    "CVE-2026-27142"
+   ],
+   "osv_id": "GO-2026-4603",
+   "osv_modified": "2026-05-15T10:59:23Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-32282",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-32282",
+    "CVE-2026-32282"
+   ],
+   "osv_id": "GO-2026-4864",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-32289",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-32289",
+    "CVE-2026-32289"
+   ],
+   "osv_id": "GO-2026-4865",
+   "osv_modified": "2026-10-07T10:41:46Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-32288",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-32288",
+    "CVE-2026-32288"
+   ],
+   "osv_id": "GO-2026-4869",
+   "osv_modified": "2026-10-07T10:41:45Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-32283",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-32283",
+    "CVE-2026-32283"
+   ],
+   "osv_id": "GO-2026-4870",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-33814",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-33814",
+    "CVE-2026-33814"
+   ],
+   "osv_id": "GO-2026-4918",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-32281",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-32281",
+    "CVE-2026-32281"
+   ],
+   "osv_id": "GO-2026-4946",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-32280",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-32280",
+    "CVE-2026-32280"
+   ],
+   "osv_id": "GO-2026-4947",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39822",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-39822",
+    "CVE-2026-39822"
+   ],
+   "osv_id": "GO-2026-4970",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39836",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-39836",
+    "CVE-2026-39836"
+   ],
+   "osv_id": "GO-2026-4971",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39825",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-39825",
+    "CVE-2026-39825"
+   ],
+   "osv_id": "GO-2026-4976",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42499",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-42499",
+    "CVE-2026-42499"
+   ],
+   "osv_id": "GO-2026-4977",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39826",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-39826",
+    "CVE-2026-39826"
+   ],
+   "osv_id": "GO-2026-4980",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-33811",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-33811",
+    "CVE-2026-33811"
+   ],
+   "osv_id": "GO-2026-4981",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39823",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-39823",
+    "CVE-2026-39823"
+   ],
+   "osv_id": "GO-2026-4982",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39820",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-39820",
+    "CVE-2026-39820"
+   ],
+   "osv_id": "GO-2026-4986",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-39821",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "CVE-2026-39821"
+   ],
+   "osv_id": "GO-2026-5026",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-27145",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-27145",
+    "CVE-2026-27145"
+   ],
+   "osv_id": "GO-2026-5037",
+   "osv_modified": "2026-11-14T13:12:12Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42504",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-42504",
+    "CVE-2026-42504"
+   ],
+   "osv_id": "GO-2026-5038",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42507",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-42507",
+    "CVE-2026-42507"
+   ],
+   "osv_id": "GO-2026-5039",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-42505",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.12",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-42505",
+    "CVE-2026-42505"
+   ],
+   "osv_id": "GO-2026-5856",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-33818",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-33818",
+    "CVE-2026-33818"
+   ],
+   "osv_id": "GO-2026-5972",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56859",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56859",
+    "CVE-2026-56859"
+   ],
+   "osv_id": "GO-2026-6088",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56853",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56853",
+    "CVE-2026-56853"
+   ],
+   "osv_id": "GO-2026-6089",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56862",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56862",
+    "CVE-2026-56862"
+   ],
+   "osv_id": "GO-2026-6090",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56858",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56858",
+    "CVE-2026-56858"
+   ],
+   "osv_id": "GO-2026-6091",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56860",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.25.13",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56860",
+    "CVE-2026-56860"
+   ],
+   "osv_id": "GO-2026-6218",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-94448",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-94448",
+    "CVE-2026-94448"
+   ],
+   "osv_id": "GO-2026-6599",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-97030",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-97030",
+    "CVE-2026-97030"
+   ],
+   "osv_id": "GO-2026-6600",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78659",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-78659",
+    "CVE-2026-78659"
+   ],
+   "osv_id": "GO-2026-6603",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56857",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56857",
+    "CVE-2026-56857"
+   ],
+   "osv_id": "GO-2026-6604",
+   "osv_modified": "2026-10-16T09:55:42Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-56866",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-56866",
+    "CVE-2026-56866"
+   ],
+   "osv_id": "GO-2026-6605",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-97031",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-97031",
+    "CVE-2026-97031"
+   ],
+   "osv_id": "GO-2026-6607",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-94440",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-94440",
+    "CVE-2026-94440"
+   ],
+   "osv_id": "GO-2026-6608",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78667",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-78667",
+    "CVE-2026-78667"
+   ],
+   "osv_id": "GO-2026-6609",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78660",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-78660",
+    "CVE-2026-78660"
+   ],
+   "osv_id": "GO-2026-6610",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78669",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-78669",
+    "CVE-2026-78669"
+   ],
+   "osv_id": "GO-2026-6611",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-78663",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-78663",
+    "CVE-2026-78663"
+   ],
+   "osv_id": "GO-2026-6612",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-94439",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-94439",
+    "CVE-2026-94439"
+   ],
+   "osv_id": "GO-2026-6613",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-97032",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.9",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-97032",
+    "CVE-2026-97032"
+   ],
+   "osv_id": "GO-2026-6617",
+   "osv_modified": "2026-11-14T13:12:14Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-111943",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.10",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "BIT-golang-2026-111943",
+    "CVE-2026-111943",
+    "RUSTSEC-2026-0381",
+    "RUSTSEC-2026-0382",
+    "RUSTSEC-2026-0383"
+   ],
+   "osv_id": "GO-2026-6809",
+   "osv_modified": "2026-11-14T13:12:13Z",
+   "version": "1.16.99"
+  },
+  {
+   "codebase": "go-test-bench",
+   "cve": "CVE-2026-97054",
+   "cvss": "",
+   "dependency_groups": [],
+   "ecosystem": "Go",
+   "fixed": "1.26.11",
+   "manifest": "go.mod",
+   "name": "stdlib",
+   "osv_aliases": [
+    "CVE-2026-97054"
+   ],
+   "osv_id": "GO-2026-6859",
+   "osv_modified": "2026-11-11T03:15:14Z",
+   "version": "1.16.99"
+  }
+ ],
+ "excluded_manifests": [],
+ "osv_date": "2026-11-21",
+ "tool": "ghcr.io/google/osv-scanner:v2.2.4"
+}

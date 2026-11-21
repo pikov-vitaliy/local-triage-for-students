@@ -315,6 +315,9 @@ def codebase_rows(db: Database, project: dict, base: Path | None) -> dict:
     ни сохранённой папки, ни найденной. reset – что пропадёт при сбросе ручных соответствий."""
     pid = project["id"]
     candidates = list_codebase_dirs(base) if base else []
+    from app.routes.examples import link_folders
+    # проект из примера: папки сервисов из связи тоже выбираются (у crAPI – третий уровень от папки проекта)
+    candidates = candidates + sorted(f for f in link_folders(db, pid, base) if f not in candidates)
     cmap = db.get_codebase_map(pid, with_detached=True)
     snapshots = db.snapshot_counts(pid)
     rows, nameless = [], None
@@ -597,7 +600,8 @@ def import_mismatch(db: Database, project_id: int, result: ImportResult) -> str:
             "получат пометку «нет в новой выгрузке».")
 
 
-def store_import(settings: Settings, db: Database, project_id: int, filename: str, result: ImportResult) -> int:
+def store_import(settings: Settings, db: Database, project_id: int, filename: str, result: ImportResult,
+                 after=None) -> int:
     """Сохраняет разобранную выгрузку в проект: порядок разбора, находки (решения и отметки по совпадающим ID
     сохраняются, новые добавляются, пропавшие помечаются «нет в новой выгрузке»), подбор папок кодовым базам
     и сверка ревизий клонов. Возвращает, у скольких находок снята отметка «Проверено» из-за смены папки."""
@@ -610,7 +614,7 @@ def store_import(settings: Settings, db: Database, project_id: int, filename: st
     rows = order_findings(result.findings, settings.sca_urgent_cvss)
     from app.sca_research_net import composition_change
     with composition_change():  # состав проекта меняется не между проверкой и отправкой исследования
-        db.save_import(project_id, filename, result.format, result.sheets, result.summary, warnings, rows)
+        db.save_import(project_id, filename, result.format, result.sheets, result.summary, warnings, rows, after=after)
     project = db.get_project(project_id)
     reopened = auto_map(settings, db, project, overwrite_manual=False) if project is not None else 0
     refresh_sources(settings, db, project_id)
@@ -849,7 +853,12 @@ def project_context(request: Request, project: dict) -> dict:
     code_change_text = code_change_note(code_notice, db.reviewed_among(pid, (code_notice or {}).get("hub_ids") or []))
     repos_dir = project.get("repos_dir") or ""
     model_name = project.get("model") or ""
+    from app.routes.examples import DEMO_KEY, example_of_project
+    example_key = example_of_project(db, pid)
+    catalog_example = bool(example_key)
+    example_restorable = bool(example_key) and example_key != DEMO_KEY
     return {
+        "catalog_example": catalog_example, "example_restorable": example_restorable,
         "project": project, "imp": imp, "counts": counts, "summary_rows": summary_rows, "mismatch": mismatch,
         "first_import": db.import_count(pid) <= 1,
         "repos_root": repos_display(settings), "repos_base": str(base) if base else "",
@@ -950,34 +959,46 @@ async def create_demo(request: Request):
         if not _IMPORT_SLOT.acquire(blocking=False):
             return list_response(request, error=IMPORT_BUSY, status_code=409)
         try:
-            settings = settings_of(request)
-            db = db_of(request)
-            demo = find_demo(settings)
-            if demo["report"] is None:
-                where = ("Установка стенда повреждена: запустите его заново с ключом --reinstall." if settings.stand == "npm"
-                         else "Запустите приложение через start.ps1 из папки приложения – он подключает весь диск с ней.")
-                return list_response(request, error=(
-                    "Демо-выгрузка examples/demo/demo-hub-report.xlsx приложению не видна: её нет ни рядом "
-                    "с приложением, ни внутри корня папок с репозиториями. " + where), status_code=404)
-            try:
-                result = parse_workbook(demo["report"], settings.max_upload_bytes)
-            except ImportFailure as e:
-                return list_response(request, error=str(e), status_code=400)
-            except Exception as e:
-                eid = log_failure(log, "демо-выгрузка не прочитана", e)
-                return list_response(request, error=f"Не удалось прочитать демо-выгрузку (ошибка {eid}).",
-                                     status_code=500)
-            application = str(result.summary.get("application") or "").strip() or "Demo Library"
-            project_id = db.create_project(unique_name(db, f"Демо: {application}"[:MAX_NAME]))
-            if demo["repos_dir"] is not None:
-                db.set_repos_dir(project_id, demo["repos_dir"])
-            store_import(settings, db, project_id, DEMO_REPORT, result)
-            ok = "project_demo" if demo["repos_dir"] is not None else "project_demo_nocode"
+            made = make_demo(request)
+            if not isinstance(made, tuple):
+                return made
+            project_id, ok = made
             return redirect(f"/projects/{project_id}?ok={ok}")
         finally:
             _IMPORT_SLOT.release()
 
     return await run_in_threadpool(apply)
+
+
+def make_demo(request: Request, after=None, import_after=None, project_id: int | None = None):
+    """Демо-проект (вызывающий держит _IMPORT_SLOT): (номер проекта, ключ сообщения) или ответ с ошибкой. after(c, id)
+    – запись в транзакции создания проекта, import_after(c, import_id) – в транзакции импорта (связь записи № 0
+    каталога примеров, ADR-0156); project_id – продолжить уже созданный проект после обрыва."""
+    settings = settings_of(request)
+    db = db_of(request)
+    demo = find_demo(settings)
+    if demo["report"] is None:
+        where = ("Установка стенда повреждена: запустите его заново с ключом --reinstall." if settings.stand == "npm"
+                 else "Запустите приложение через start.ps1 из папки приложения – он подключает весь диск с ней.")
+        return list_response(request, error=(
+            "Демо-выгрузка examples/demo/demo-hub-report.xlsx приложению не видна: её нет ни рядом "
+            "с приложением, ни внутри корня папок с репозиториями. " + where), status_code=404)
+    try:
+        result = parse_workbook(demo["report"], settings.max_upload_bytes)
+    except ImportFailure as e:
+        return list_response(request, error=str(e), status_code=400)
+    except Exception as e:
+        eid = log_failure(log, "демо-выгрузка не прочитана", e)
+        return list_response(request, error=f"Не удалось прочитать демо-выгрузку (ошибка {eid}).",
+                             status_code=500)
+    application = str(result.summary.get("application") or "").strip() or "Demo Library"
+    if project_id is None:
+        project_id = db.create_project(unique_name(db, f"Демо: {application}"[:MAX_NAME]), after=after)
+    if demo["repos_dir"] is not None:
+        db.set_repos_dir(project_id, demo["repos_dir"])
+    store_import(settings, db, project_id, DEMO_REPORT, result, after=import_after)
+    ok = "project_demo" if demo["repos_dir"] is not None else "project_demo_nocode"
+    return project_id, ok
 
 
 # ============================================================================ адреса: проект
@@ -990,6 +1011,16 @@ def project_page(request: Request, project_id: int):
 HUB_APP_ID_REFUSED = ("Приложение в Hub: укажите номер приложения – целое число из адреса его страницы в Hub "
                       "(…/#/appprofile/<номер>/…) или вставьте эту ссылку целиком – или оставьте поле пустым.")
 _HUB_APP_LINK = re.compile(r"https?://[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::[0-9]{1,5})?(?:/\S*?)?/appprofile/([0-9]{1,12})(?:[/?#]\S*)?")
+
+
+CATALOG_HUB_REFUSED = "Проект из каталога учебных примеров с Hub не связывается: его выгрузка – выгрузка примера."
+
+
+def catalog_hub_refused(db: Database, project_id: int) -> bool:
+    """Проект из каталога с Hub не связывается: новая находка из Hub добавила бы в промпт путь и правило вне выгрузки
+    примера (план стенда, раздел 6; ADR-0157)."""
+    from app.routes.examples import is_catalog_project
+    return is_catalog_project(db, project_id)
 
 
 def hub_app_number(raw: str) -> int | None:
@@ -1039,6 +1070,8 @@ async def save_params(request: Request, project_id: int):
             number = hub_app_number(raw_hub_app)
             if raw_hub_app and number is None:
                 return project_response(request, project_id, HUB_APP_ID_REFUSED, 400)
+            if number is not None and catalog_hub_refused(db, project_id):
+                return project_response(request, project_id, CATALOG_HUB_REFUSED, 400)
             hub_app_id = number
         db.update_project(project_id, name=name, model=model, provider_id=provider_id, mask_secrets=mask_secrets)
         if hub_app_id is not False:
@@ -1068,6 +1101,8 @@ def hub_assignment_preview(request: Request, project_id: int, app: str = ""):
     number = hub_app_number(app) if app else None
     if app and number is None:
         return project_response(request, project_id, HUB_APP_ID_REFUSED, 400)
+    if number is not None and catalog_hub_refused(db, project_id):
+        return project_response(request, project_id, CATALOG_HUB_REFUSED, 400)
     try:
         result = db.change_hub_assignment(project_id, number, dry=True)
     except ValueError as e:
@@ -1095,6 +1130,8 @@ async def hub_assignment_apply(request: Request, project_id: int):
         number = hub_app_number(raw) if raw else None
         if raw and number is None:
             return project_response(request, project_id, HUB_APP_ID_REFUSED, 400)
+        if number is not None and catalog_hub_refused(db_of(request), project_id):
+            return project_response(request, project_id, CATALOG_HUB_REFUSED, 400)
         try:
             if db_of(request).change_hub_assignment(project_id, number, expect=token).get("unchanged"):
                 return redirect(f"/projects/{project_id}?ok=project_saved")  # уже такое – сброса нет
@@ -1197,10 +1234,20 @@ def external_preview_context(request: Request, project: dict) -> dict:
     externals = [p for p in db.list_providers()
                  if p["enabled"] and str(p["trust"]) == "external" and str(p.get("kind")) in REMOTE_KINDS]
     nonce = secrets.token_hex(8)
-    fingerprint = external_fingerprint(project, messages, externals, db.external_mark_revision(pid))
+    from app.routes.examples import pending_profile, root_of
+    pending = pending_profile(db, pid, root_of(settings))  # один расчёт: показ, подпись предпросмотра и назначение
+    promised = pending
+    signed = externals + ([{"id": -int(promised["id"]), "version": promised.get("version") or 0}] if promised else [])
+    fingerprint = external_fingerprint(project, messages, signed, db.external_mark_revision(pid))
     token = (net.preview_token(request.app.state.research_secret, fingerprint, nonce)
              if messages and external_enabled() else "")
+    from app.routes.examples import example_reason, is_catalog_project
+    # проект из каталога: обоснование – только по целой связи с примером; прежнее (после чужого импорта) не подставляется
+    from app.routes.examples import root_of
+    reason_default = (example_reason(db, pid, root_of(settings)) if is_catalog_project(db, pid)
+                      else project.get("external_reason"))
     return {"project": project, "messages": messages, "hub_id": hub_id, "note": note, "externals": externals,
+            "reason_default": reason_default, "pending_profile": pending,
             "counts": db.count_findings(pid), "review_stats": db.review_stats(pid), "external_on": external_enabled(),
             "reason_min": EXTERNAL_REASON_MIN, "reason_max": EXTERNAL_REASON_MAX, "nonce": nonce, "token": token,
             "error": EXTERNAL_PROBLEMS.get(request.query_params.get("err", ""), "")}
@@ -1250,7 +1297,10 @@ async def external_mark(request: Request, project_id: int):
 
     from app.executors import project_gate
 
+    outcome = "none"
+
     def apply():
+        nonlocal outcome
         project_or_404(request, project_id)
         if not external_enabled():
             return redirect(f"/projects/{project_id}/external?err=external_off")
@@ -1267,16 +1317,29 @@ async def external_mark(request: Request, project_id: int):
                 project = project_or_404(request, project_id)
                 shown = external_preview_context(request, project)
                 revision = db_of(request).external_mark_revision(project_id)
+                promised = shown.get("pending_profile")
+                signed = shown["externals"] + ([{"id": -int(promised["id"]), "version": promised.get("version") or 0}]
+                                               if promised else [])
                 expected = (net.preview_token(request.app.state.research_secret,
-                                              external_fingerprint(project, shown["messages"], shown["externals"], revision),
+                                              external_fingerprint(project, shown["messages"], signed, revision),
                                               nonce)
                             if nonce and shown["messages"] else "")
                 if not token or not expected or not hmac.compare_digest(expected, token):
                     return redirect(f"/projects/{project_id}/external?err=external_preview")
                 db_of(request).set_external_mark(project_id, reason)
+                # проект из каталога с целой связью: внешний профиль для примеров – теперь, после отметки (ADR-0157)
+                from app.routes.examples import finish_pending_profile, remember_mark_root, root_of
+                remember_mark_root(db_of(request), project_id, settings_of(request))
+                promised = shown.get("pending_profile")
+                outcome = finish_pending_profile(db_of(request), project_id, root_of(settings_of(request)),
+                                                 int(promised["id"]) if promised else None)
         except TimeoutError:
             return project_response(request, project_id, EXTERNAL_PROBLEMS["external_busy"], 409)
         log.info("проект %d: отметка «код не секретный» поставлена", project_id)
+        if outcome == "assigned":
+            return redirect(f"/projects/{project_id}?ok=external_marked_example#params")
+        if outcome not in ("none", "needs_mark"):
+            return redirect(f"/projects/{project_id}?ok=project_example_noprofile_{outcome}#params")
         return redirect(f"/projects/{project_id}?ok=external_marked#params")
 
     return await run_in_threadpool(apply)
@@ -1572,7 +1635,8 @@ async def set_codebases(request: Request, project_id: int):
             return redirect(with_reopened(f"/projects/{project_id}?ok={ok}#step2", reopened))
         base, base_error = repos_base(settings, project)
         listed = list_codebase_dirs(base) if base else []
-        candidates = set(listed)
+        from app.routes.examples import link_folders
+        candidates = set(listed) | link_folders(db, project_id, base)  # у примера – и папки связи (crAPI: 3-й уровень)
         current = db.get_codebase_map(project_id)
         known = {row["codebase"] for row in db.codebase_counts(project_id)}
         changes = []

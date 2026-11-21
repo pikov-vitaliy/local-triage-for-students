@@ -1,0 +1,978 @@
+{
+ "build_date": "2026-11-20",
+ "commit": "502ac150ce37c20ca6e04cab7c5ca959f315f2d0",
+ "dropped": {
+  "вендорские и собранные файлы": 1,
+  "повтор той же строки": 1,
+  "сверх предела": 116,
+  "тесты": 0
+ },
+ "entries": [
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "about.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 23,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 29,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 37,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 43,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 60,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 68,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 85,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 103,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 111,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/DBMS/MySQL.php",
+   "line": 119,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "dvwa/includes/dvwaPage.inc.php",
+   "line": 13,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/dvwaPage.inc.php",
+   "line": 570,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "dvwa/includes/dvwaPage.inc.php",
+   "line": 611,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "index.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "instructions.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "instructions.php",
+   "line": 5,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "login.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "login.php",
+   "line": 40,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.sql-concat: SQL-запрос собирается из строк с данными – возможна SQL-инъекция",
+   "codebase": "dvwa",
+   "cwe": [
+    "89"
+   ],
+   "file": "login.php",
+   "line": 47,
+   "rule": "lt.php.sql-concat",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "logout.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "phpinfo.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "security.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "setup.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "setup.php",
+   "line": 23,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "setup.php",
+   "line": 58,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "setup.php",
+   "line": 61,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "setup.php",
+   "line": 73,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "vulnerabilities/api/gen_openapi.php",
+   "line": 2,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "vulnerabilities/api/index.php",
+   "line": 4,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/api/index.php",
+   "line": 33,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-include: Подключение файла по имени из данных – возможно включение чужого файла",
+   "codebase": "dvwa",
+   "cwe": [
+    "98"
+   ],
+   "file": "vulnerabilities/api/index.php",
+   "line": 46,
+   "rule": "lt.php.file-include",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/api/src/HealthController.php",
+   "line": 88,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/high.php",
+   "line": 26,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/high.php",
+   "line": 30,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/impossible.php",
+   "line": 22,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/impossible.php",
+   "line": 26,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/low.php",
+   "line": 10,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/low.php",
+   "line": 14,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/medium.php",
+   "line": 19,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.command-exec: Команда операционной системы из данных – возможно внедрение команд",
+   "codebase": "dvwa",
+   "cwe": [
+    "78"
+   ],
+   "file": "vulnerabilities/exec/source/medium.php",
+   "line": 23,
+   "rule": "lt.php.command-exec",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/javascript/source/high.js",
+   "line": 1,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/javascript/source/high_unobfuscated.js",
+   "line": 83,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/javascript/source/high_unobfuscated.js",
+   "line": 84,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/javascript/source/high_unobfuscated.js",
+   "line": 536,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.eval: Вызов eval, Function или setTimeout со строкой выполняет данные как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/javascript/source/medium.js",
+   "line": 1,
+   "rule": "lt.js.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.eval: eval или assert выполняют строку как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/view_help.php",
+   "line": 20,
+   "rule": "lt.php.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.eval: eval или assert выполняют строку как код",
+   "codebase": "dvwa",
+   "cwe": [
+    "95"
+   ],
+   "file": "vulnerabilities/view_help.php",
+   "line": 22,
+   "rule": "lt.php.eval",
+   "severity": "High",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.hardcoded-secret: Секрет записан в коде строкой",
+   "codebase": "dvwa",
+   "cwe": [
+    "798"
+   ],
+   "file": "dvwa/js/dvwaPage.js",
+   "line": 43,
+   "rule": "lt.js.hardcoded-secret",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "login.php",
+   "line": 27,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.xss-echo: Данные запроса выводятся без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "login.php",
+   "line": 68,
+   "rule": "lt.php.xss-echo",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/authbypass/authbypass.js",
+   "line": 43,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/authbypass/authbypass.js",
+   "line": 45,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/authbypass/authbypass.js",
+   "line": 47,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/authbypass/authbypass.js",
+   "line": 49,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/brute/source/high.php",
+   "line": 16,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/brute/source/impossible.php",
+   "line": 16,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/brute/source/low.php",
+   "line": 9,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/brute/source/medium.php",
+   "line": 11,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/captcha/source/high.php",
+   "line": 27,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/captcha/source/impossible.php",
+   "line": 14,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/captcha/source/impossible.php",
+   "line": 19,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/captcha/source/impossible.php",
+   "line": 24,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/captcha/source/low.php",
+   "line": 57,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/captcha/source/medium.php",
+   "line": 65,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/csp/source/high.js",
+   "line": 9,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.js.innerhtml: Разметка вставляется без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/csp/source/impossible.js",
+   "line": 9,
+   "rule": "lt.js.innerhtml",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.xss-echo: Данные запроса выводятся без экранирования – возможен XSS",
+   "codebase": "dvwa",
+   "cwe": [
+    "79"
+   ],
+   "file": "vulnerabilities/csp/source/jsonp_impossible.php",
+   "line": 6,
+   "rule": "lt.php.xss-echo",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/csrf/source/high.php",
+   "line": 39,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.weak-hash: MD5 или SHA-1 для пароля – слабое хеширование",
+   "codebase": "dvwa",
+   "cwe": [
+    "328"
+   ],
+   "file": "vulnerabilities/csrf/source/impossible.php",
+   "line": 15,
+   "rule": "lt.php.weak-hash",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-upload: Загруженный файл сохраняется под именем от пользователя без проверки типа",
+   "codebase": "dvwa",
+   "cwe": [
+    "434"
+   ],
+   "file": "vulnerabilities/upload/source/high.php",
+   "line": 20,
+   "rule": "lt.php.file-upload",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-upload: Загруженный файл сохраняется под именем от пользователя без проверки типа",
+   "codebase": "dvwa",
+   "cwe": [
+    "434"
+   ],
+   "file": "vulnerabilities/upload/source/low.php",
+   "line": 9,
+   "rule": "lt.php.file-upload",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.file-upload: Загруженный файл сохраняется под именем от пользователя без проверки типа",
+   "codebase": "dvwa",
+   "cwe": [
+    "434"
+   ],
+   "file": "vulnerabilities/upload/source/medium.php",
+   "line": 18,
+   "rule": "lt.php.file-upload",
+   "severity": "Medium",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "dvwa/includes/dvwaPage.inc.php",
+   "line": 650,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "vulnerabilities/api/src/Order.php",
+   "line": 34,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "vulnerabilities/api/src/User.php",
+   "line": 30,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "vulnerabilities/brute/source/high.php",
+   "line": 33,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "vulnerabilities/brute/source/impossible.php",
+   "line": 82,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "vulnerabilities/sqli_blind/source/high.php",
+   "line": 51,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  },
+  {
+   "category": "lt.php.insecure-random: rand и mt_rand не годятся для токенов – нужен random_bytes",
+   "codebase": "dvwa",
+   "cwe": [
+    "338"
+   ],
+   "file": "vulnerabilities/sqli_blind/source/high.php",
+   "line": 52,
+   "rule": "lt.php.insecure-random",
+   "severity": "Low",
+   "tool": "semgrep"
+  }
+ ],
+ "tools": {
+  "bandit": "Bandit 1.8.6",
+  "gosec": "gosec 2.22.10",
+  "osv-scanner": "OSV-Scanner 2.2.4",
+  "semgrep": "Semgrep CE 1.181.1, учебные правила examples/rules"
+ }
+}
