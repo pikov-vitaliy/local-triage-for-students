@@ -965,7 +965,7 @@ class Database:
 
     # ------------------------------------------------------------------ проекты
 
-    def create_project(self, name: str, model: str = "", mask_secrets: bool = True,
+    def create_project(self, name: str, model: str = "", mask_secrets: bool = False,
                        after: Callable[[Any, int], None] | None = None) -> int:
         """after(c, project_id) – запись в той же транзакции (связь проекта из каталога примеров, ADR-0156)."""
         ts = now_iso()
@@ -973,8 +973,9 @@ class Database:
             cur = c.execute("INSERT INTO projects(name, repos_dir, created_at, updated_at, model, last_activity)"
                             " VALUES (?, '', ?, ?, ?, ?)" " RETURNING id", (name.strip(), ts, ts, model.strip(), ts))
             project_id = int(cur.fetchone()[0])
-            if not mask_secrets:  # по умолчанию колонку заполняет база (DEFAULT 1, схема 35)
-                c.execute("UPDATE projects SET mask_secrets = 0 WHERE id = ?", (project_id,))
+            # маскирование при показе – решение оператора; по умолчанию выключено (слово владельца 21.11.2026):
+            # колонка в базе со значением DEFAULT 1 (схема 35), поэтому значение пишется явно
+            c.execute("UPDATE projects SET mask_secrets = ? WHERE id = ?", (1 if mask_secrets else 0, project_id))
             if after is not None:
                 after(c, project_id)
             return project_id

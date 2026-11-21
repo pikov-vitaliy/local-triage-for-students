@@ -366,6 +366,7 @@ def test_card_hides_credential_in_differing_export_line(web):
     row = {**SAST_ROWS[2], "Source code": 'String k = "hunter2hunter2"; : 14',  # короткий литерал без «ключа»
            "Artifact": 'String k = """\nhunter2hunter2\n""";'}  # копия кода с многострочным литералом
     pid = create_project(web.client)
+    web.app.state.db.update_project(pid, mask_secrets=True)  # маску включает оператор (по умолчанию её нет)
     assert upload(web.client, pid, make_hub_xlsx(web.tmp / "secret.xlsx", sast=[row])).status_code == 303
     r = web.client.post(f"/projects/{pid}/repos", data={"repos_dir": "team"}, headers=ORIGIN, follow_redirects=False)
     assert r.status_code == 303

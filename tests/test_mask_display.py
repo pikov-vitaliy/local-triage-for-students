@@ -30,13 +30,13 @@ def params(web, pid, *, mask: bool):
     assert r.status_code in (302, 303), r.text
 
 
-def test_new_projects_and_old_ones_show_masks_by_default(web):
+def test_new_projects_are_shown_without_masks_by_default(web):
     db = web.app.state.db
     pid = prepared(web)
-    assert db.get_project(pid)["mask_secrets"] == 1, "прежние и новые проекты – с масками, пока оператор не снимет"
+    assert db.get_project(pid)["mask_secrets"] == 0, "новые проекты – без масок, пока оператор не включит (21.11.2026)"
     r = web.client.post("/projects", data={"name": "Без поля"}, headers=ORIGIN, follow_redirects=False)
     default = int(r.headers["location"].split("/projects/")[1].split("?")[0])
-    assert db.get_project(default)["mask_secrets"] == 1, "без поля формы – по умолчанию с масками"
+    assert db.get_project(default)["mask_secrets"] == 0, "без поля формы – по умолчанию без масок"
     r = web.client.post("/projects", data={"name": "Без масок", "mask_form": "1"}, headers=ORIGIN, follow_redirects=False)
     plain = int(r.headers["location"].split("/projects/")[1].split("?")[0])
     assert db.get_project(plain)["mask_secrets"] == 0
@@ -50,6 +50,7 @@ def test_new_projects_and_old_ones_show_masks_by_default(web):
 def test_toggle_shows_plain_file_but_model_case_and_review_stay_masked(web):
     db = web.app.state.db
     pid = prepared(web)
+    params(web, pid, mask=True)  # маску включает оператор (по умолчанию её нет)
     plant_secret(web, pid)
     assert wait_run(web, start_run(web, pid))["state"] == "done"
     before = db.get_case(pid, "510001")
@@ -110,6 +111,7 @@ def test_extra_fields_sast_and_sca_follow_the_flag_and_params_without_field_keep
     поля флажка (старая форма) значение не меняет."""
     db = web.app.state.db
     pid = prepared(web)
+    params(web, pid, mask=True)  # маску включает оператор (по умолчанию её нет)
     _, sast_id = put_extra(db, pid, "SAST")
     _, sca_id = put_extra(db, pid, "SCA")
     sast_url, sca_url = f"/projects/{pid}/findings/{sast_id}", f"/projects/{pid}/sca/findings/{sca_id}"
@@ -150,6 +152,7 @@ def test_model_text_labels_are_revealed_only_without_the_flag(web):
     остаётся меткой с подписью. Вердикт в базе, срез разбора и поля форм не меняются; при флажке – только метки."""
     db = web.app.state.db
     pid = prepared(web)
+    params(web, pid, mask=True)  # маску включает оператор (по умолчанию её нет)
     plant_secret(web, pid)
     assert wait_run(web, start_run(web, pid))["state"] == "done"
     case = db.get_case(pid, "510001")

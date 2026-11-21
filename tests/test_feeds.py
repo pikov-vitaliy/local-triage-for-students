@@ -334,7 +334,7 @@ def test_feeds_page_upload_and_status(web, tmp_path: Path):
     r = upload_feed(web, "bdu", "vulxml.zip", bdu_zip(tmp_path / "v.zip").read_bytes())
     assert r.status_code == 303 and r.headers["location"] == "/feeds?ok=feed_started"
     job = wait_job(web)
-    assert job["state"] == "done" and "загружено записей – 2" in job["message"]
+    assert job["state"] == "done" and "загружен, записей – 2" in job["message"]
     page = web.client.get("/feeds").text
     assert 'id="feed-bdu-records">2<' in page and "vulxml.zip" in page and 'id="feed-job"' in page
     assert upload_feed(web, "cwe", "cwec_latest.xml.zip", cwe_zip(tmp_path / "c.zip").read_bytes()).status_code == 303
@@ -452,7 +452,7 @@ def test_finished_feed_hides_stale_notification(web, state, message):
     job.state, job.message = state, "Итог загрузки" if state != "idle" else ""
     page = web.client.get(f"/feeds?ok={message}")
     assert page.status_code == 200
-    assert "Файл принят: справочник загружается" not in page.text
+    assert "Файл получен. Идёт разбор" not in page.text
     assert "Загрузка останавливается:" not in page.text
     if state != "idle":
         assert "Итог загрузки" in page.text

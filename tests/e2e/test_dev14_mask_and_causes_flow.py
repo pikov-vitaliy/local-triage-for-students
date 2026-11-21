@@ -37,12 +37,7 @@ def test_mask_flag_toggles_plain_code_in_card(browser, app_server, theme):
     context, page, watch = open_page(browser, app_server.url, width=1600, height=900, theme=theme)
     try:
         pid = create_demo(page)
-        expect(page.locator("#project-meta-mask")).to_contain_text("показ кода с масками")
-        open_card(page, pid, "100109")
-        expect(page.locator("#code-plain")).to_have_count(0)
-        assert DEMO_SECRET not in page.content(), "по умолчанию код показан с масками"
-
-        save_mask(page, pid, False)
+        # по умолчанию масок нет (слово владельца 21.11.2026): код в карточке как в клоне
         expect(page.locator("#project-meta-mask")).to_contain_text("показ кода без масок")
         expect(page.locator("#project-mask-secrets")).not_to_be_checked()
         open_card(page, pid, "100109")

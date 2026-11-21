@@ -818,7 +818,19 @@
       if (!input) return;
       var show = function () {
         if (!out) return;
-        out.textContent = Array.prototype.map.call(input.files || [], function (file) { return file.name; }).join(", ");
+        var files = Array.prototype.slice.call(input.files || []);
+        var names = files.map(function (file) { return file.name; }).join(", ");
+        zone.classList.toggle("has-file", files.length > 0);
+        if (!files.length) { out.textContent = ""; return; }
+        var form = closest(zone, "form");
+        var button = form && $("button[type=submit]", form);
+        var bad = (input.getAttribute("accept") || "").indexOf(".zip") >= 0 && files.some(function (file) {
+          return !/\.zip$/i.test(file.name);
+        });
+        if (bad) { out.textContent = "Выбран файл " + names + " – это не архив .zip. Выберите архив .zip."; return; }
+        var mb = files.reduce(function (sum, file) { return sum + file.size; }, 0) / 1048576;
+        out.textContent = "Выбран файл " + names + " (" + mb.toFixed(1).replace(".", ",") + " МБ). Теперь нажмите «"
+          + (button ? button.textContent.trim() : "Загрузить") + "».";
       };
       input.addEventListener("change", show);
       ["dragenter", "dragover"].forEach(function (type) {
@@ -829,6 +841,19 @@
       });
       show();
     });
+  }
+
+  // #feed-elapsed: сколько идёт загрузка справочника – «12 с», «1 мин 05 с»; отсчёт от значения сервера
+  function initElapsed() {
+    var el = byId("feed-elapsed");
+    if (!el) return;
+    var start = Date.now() - (Number(el.getAttribute("data-elapsed")) || 0) * 1000;
+    function draw() {
+      var s = Math.max(0, Math.floor((Date.now() - start) / 1000));
+      el.textContent = s < 60 ? s + " с" : Math.floor(s / 60) + " мин " + String(s % 60).padStart(2, "0") + " с";
+    }
+    draw();
+    window.setInterval(draw, 1000);
   }
 
   // [data-dismiss] закрывает ближайшее сообщение
@@ -3486,6 +3511,7 @@
   initDismiss();
   initDialogs();
   initDropzones();
+  initElapsed();
   initChecklists();
   initRemember();
   initCodeFold();

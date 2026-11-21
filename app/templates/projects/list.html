@@ -75,7 +75,7 @@
       <input type="text" name="name" maxlength="200" required placeholder="Например, Demo Library – октябрь" autocomplete="off">
     </label>
     <input type="hidden" name="mask_form" value="1">
-    <label class="check" title="Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются."><input type="checkbox" name="mask_secrets" value="1" id="new-project-mask" checked> Маскировать секреты при показе</label>
+    <label class="check" title="Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются."><input type="checkbox" name="mask_secrets" value="1" id="new-project-mask"> Маскировать секреты при показе</label>
     <button type="submit" class="btn{% if not projects %} btn-primary{% endif %}">Создать</button>
   </form>
   <p class="field-hint">Выгрузку, папку с репозиториями и модель проекта укажете на его странице.</p>

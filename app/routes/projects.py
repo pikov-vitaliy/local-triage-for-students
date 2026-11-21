@@ -946,7 +946,7 @@ async def create_project(request: Request):
     if not name:
         return await run_in_threadpool(list_response, request, False, "Укажите название проекта.", 400)
     # флажок «маскировать при показе» (dev14, ADR-0141): снят – в карточках код без масок, модели – всегда с масками
-    mask = form.get("mask_secrets") == "1" if form.get("mask_form") == "1" else True  # поля нет – по умолчанию
+    mask = form.get("mask_secrets") == "1" if form.get("mask_form") == "1" else False  # поля нет – без масок
     project_id = await run_in_threadpool(lambda: db_of(request).create_project(name, mask_secrets=mask))
     return redirect(f"/projects/{project_id}?ok=created")
 

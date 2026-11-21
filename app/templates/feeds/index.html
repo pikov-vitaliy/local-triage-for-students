@@ -13,7 +13,13 @@
 
 {% if job.state == "running" %}
 <div class="callout callout-info" id="feed-job" role="status" data-poll="/feeds/job" data-poll-interval="2000">
-  <p><span class="spinner" aria-hidden="true"></span> <strong>Загружается {{ job.label }}</strong> – файл <span class="mono">{{ job.filename }}</span>. Выгрузка БДУ разбирается около минуты; страница обновится сама. Карточки пока видят прежний справочник.</p>
+  <p><span class="spinner" aria-hidden="true"></span> <strong>Загружается {{ job.label }}</strong> – файл <span class="mono">{{ job.filename }}</span>. Идёт <span id="feed-elapsed" data-elapsed="{{ job.elapsed }}">{{ job.elapsed }} с</span>.</p>
+  <ol class="feed-steps">
+    <li class="is-done">Файл получен.</li>
+    <li class="is-now">Разбор архива и запись в базу – обычно до минуты, ничего нажимать не нужно.</li>
+    <li>Готово – страница обновится сама и покажет итог зелёной или красной строкой.</li>
+  </ol>
+  <p class="hint">Справочники загружаются по одному, поэтому кнопки в карточках пока недоступны. Карточки находок до конца загрузки видят прежний справочник.</p>
   <form method="post" action="/feeds/cancel" class="inline-form"><button type="submit" class="btn btn-small" id="feed-cancel">Остановить загрузку</button></form>
 </div>
 {% elif job.message %}
@@ -26,6 +32,7 @@
 <section class="panel" id="feed-{{ kind }}" aria-labelledby="feed-{{ kind }}-title">
   <h2 id="feed-{{ kind }}-title">{{ icon("book") }} {{ label }}</h2>
   {% if s %}
+  <p class="feed-state" id="feed-{{ kind }}-state"><strong>Загружен и работает.</strong> Сведения из него уже видны в карточках находок.</p>
   <dl class="facts">
     <div><dt>Записей</dt><dd id="feed-{{ kind }}-records">{{ s.records }}</dd></div>
     {% if s.source_date %}<div><dt>{{ "Дата каталога" if kind in ("cwe","capec") else "Последнее обновление записи" }}</dt><dd>{{ s.source_date }}</dd></div>{% endif %}
@@ -35,15 +42,15 @@
     <div><dt>Объём XML</dt><dd>{{ s.xml_bytes|size }}</dd></div>
   </dl>
   {% else %}
-  <p class="empty" id="feed-{{ kind }}-empty">Ещё не загружен.</p>
+  <p class="empty" id="feed-{{ kind }}-empty">Ещё не загружен. Скачайте архив – откуда, написано ниже, – перетащите его в рамку и нажмите «Загрузить».</p>
   {% endif %}
   {% if kind == "capec" and capec_profile %}<p class="hint">Шаблонов {{ capec_profile.counts.pattern }}, категорий {{ capec_profile.counts.category }}, представлений {{ capec_profile.counts.view }}. <a href="{{ work_link('/capec') }}">Открыть каталог CAPEC</a></p>{% endif %}
   {% if kind == "bdu" %}
   <p class="hint">Выгрузка базы данных угроз безопасности информации ФСТЭК России – архив <span class="mono">vulxml.zip</span> с сайта БДУ (раздел выгрузки уязвимостей). Даёт описание, уровень опасности, способ устранения и источники по-русски для находок SCA – по CVE, которые знает приложение (из выгрузки Hub, ответа агента или соответствия AST → CVE), а также русские названия классов CWE.</p>
   {% elif kind == 'cwe' %}
-  <p class="hint">Каталог классов уязвимостей MITRE – архив <span class="mono">cwec_latest.xml.zip</span> с сайта CWE. Даёт название и описание класса CWE в карточке SAST и в тексте дефекта.</p>
+  <p class="hint">Каталог классов уязвимостей MITRE – архив <a href="https://cwe.mitre.org/data/xml/cwec_latest.xml.zip" target="_blank" rel="noopener noreferrer">cwec_latest.xml.zip</a> с сайта CWE: скачайте его по ссылке и загрузите сюда. Даёт название и описание класса CWE в карточке SAST и в тексте дефекта.</p>
   {% endif %}
-  {% if kind == 'capec' %}<p class="hint">Полный каталог MITRE: <a href="https://capec.mitre.org/data/archive/capec_latest.zip" target="_blank" rel="noopener noreferrer">capec_latest.zip</a>. Шаблоны атак, категории, представления и связи с CWE.</p><p><a class="btn" href="{{ work_link('/capec') }}">Открыть каталог CAPEC</a></p>{% endif %}
+  {% if kind == 'capec' %}<p class="hint">Полный каталог MITRE: <a href="https://capec.mitre.org/data/archive/capec_latest.zip" target="_blank" rel="noopener noreferrer">capec_latest.zip</a> – скачайте по ссылке и загрузите сюда. Шаблоны атак, категории, представления и связи с CWE.</p><p><a class="btn" href="{{ work_link('/capec') }}">Открыть каталог CAPEC</a></p>{% endif %}
   <form method="post" action="/feeds/{{ kind }}" enctype="multipart/form-data" class="stack-form upload-form">
     <label class="dropzone">
       <input type="file" name="file" accept=".zip" required id="feed-{{ kind }}-file">

@@ -105,10 +105,12 @@ def test_feeds_upload_and_sca_defect_with_bdu(ui, tmp_path: Path):
     page.locator("#feed-bdu form button[type=submit]").click()
     page.wait_for_url(re.compile(r"/feeds"))
     expect(page.locator("#feed-bdu-records")).to_have_text("2", timeout=30000)  # страница обновится сама
-    expect(page.locator("main")).not_to_contain_text("Файл принят: справочник загружается")
+    expect(page.locator("main")).not_to_contain_text("Файл получен. Идёт разбор")
     page.set_input_files("#feed-cwe-file", str(cwe_zip(tmp_path / "cwec_latest.xml.zip")))
     page.locator("#feed-cwe form button[type=submit]").click()
     expect(page.locator("#feed-cwe-records")).to_have_text("3", timeout=30000)
+    expect(page.locator("#feed-job")).to_contain_text("Готово: Каталог CWE загружен")
+    expect(page.locator("#feed-cwe-state")).to_contain_text("Загружен и работает")
 
     # Ошибка фоновой загрузки тоже убирает прежнее сообщение о ходе работы; старый справочник остаётся.
     bad = tmp_path / "bad.zip"
@@ -116,7 +118,7 @@ def test_feeds_upload_and_sca_defect_with_bdu(ui, tmp_path: Path):
     page.set_input_files("#feed-bdu-file", str(bad))
     page.locator("#feed-bdu form button[type=submit]").click()
     expect(page.locator("#feed-job")).to_contain_text("не архив ZIP", timeout=30000)
-    expect(page.locator("main")).not_to_contain_text("Файл принят: справочник загружается")
+    expect(page.locator("main")).not_to_contain_text("Файл получен. Идёт разбор")
     expect(page.locator("#feed-bdu-records")).to_have_text("2")
 
     pid = create_demo(page)

@@ -11,6 +11,7 @@ import logging
 import os
 import tempfile
 import threading
+import time
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
@@ -27,7 +28,7 @@ log = logging.getLogger("local_triage.web")
 router = APIRouter()
 
 register_messages({
-    "feed_started": "Файл принят: справочник загружается – страница обновится, когда загрузка закончится.",
+    "feed_started": "Файл получен. Идёт разбор – ход виден ниже, страница обновится сама.",
     "feed_cancel": "Загрузка останавливается: прежний справочник не изменится.",
 })
 
@@ -41,11 +42,13 @@ class FeedJob:
         self.kind = ""
         self.filename = ""
         self.message = ""
+        self.started = 0.0
 
     def snapshot(self) -> dict:
         with self._lock:
             return {"state": self.state, "kind": self.kind, "label": KINDS.get(self.kind, ""),
-                    "filename": self.filename, "message": self.message}
+                    "filename": self.filename, "message": self.message,
+                    "elapsed": int(time.monotonic() - self.started) if self.state == "running" else 0}
 
     def start(self, store: FeedStore, kind: str, path: Path, filename: str) -> None:
         with self._lock:
@@ -53,18 +56,19 @@ class FeedJob:
                 path.unlink(missing_ok=True)
                 raise FeedError(BUSY)
             self.state, self.kind, self.filename, self.message = "running", kind, filename, ""
+            self.started = time.monotonic()
         thread = threading.Thread(target=self._run, args=(store, kind, path, filename), name="feed-load", daemon=True)
         thread.start()
 
     def _run(self, store: FeedStore, kind: str, path: Path, filename: str) -> None:
         try:
             meta = store.load(kind, path, filename)
-            message = (f"{KINDS[kind]}: загружено записей – {meta['records']}"
+            message = (f"Готово: {KINDS[kind]} загружен, записей – {meta['records']}"
                        + (f", дата выгрузки {meta['source_date']}" if meta.get("source_date") else "")
-                       + f", {meta['seconds']} с.")
+                       + f", разбор занял {meta['seconds']} с. Сведения из него уже видны в карточках находок.")
             state = "done"
         except FeedError as e:
-            state, message = "error", f"{KINDS[kind]}: файл не принят. {e}"
+            state, message = "error", f"{KINDS[kind]} не загружен: файл не принят. {e} Прежний справочник не изменился."
         except Exception as e:  # текст исключения в журнал не пишется (ADR 0016)
             eid = log_failure(log, "справочник не загружен", e)
             state, message = "error", f"{KINDS[kind]}: внутренняя ошибка при загрузке (номер в журнале {eid})."

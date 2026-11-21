@@ -7,7 +7,7 @@
 <meta name="color-scheme" content="light dark">
 <meta name="referrer" content="same-origin">
 <title>{% block title %}Локальный триаж{% endblock %}</title>
-<link rel="icon" href="/static/favicon.svg?v=2" type="image/svg+xml">
+<link rel="icon" href="/static/favicon.svg?v=3" type="image/svg+xml">
 <link rel="stylesheet" href="/static/app.css?v={{ asset_version }}">
 <script src="/static/theme.js?v={{ asset_version }}"></script>
 <script src="/static/app.js?v={{ asset_version }}" defer></script>
@@ -19,16 +19,16 @@
 <a class="skip-link" href="#main">К содержимому</a>
 <header class="topbar">
   <div class="wrap{% block wide %}{% endblock %} topbar-inner">
-    <a class="brand" href="/" title="К проектам">{{ icon("logo") }}<span>Локальный триаж</span></a>
+    <a class="brand" href="/" title="Local Triage – к проектам">{{ icon("logo") }}<span class="brand-name"><b>Local</b> Triage</span></a>
     <nav class="crumbs" aria-label="Навигация">{% block crumbs %}{% endblock %}</nav>
     <div class="topbar-actions">
       <a class="topnav-link" href="{{ work_link('/examples') }}"{% if self.page()|trim == "examples" %} aria-current="page"{% endif %} title="Каталог учебных примеров">{{ icon("package") }}<span>Примеры</span></a>
       <a class="topnav-link" href="{{ work_link('/feeds') }}"{% if self.page()|trim == "feeds" %} aria-current="page"{% endif %} title="Справочники уязвимостей">{{ icon("book") }}<span>Справочники</span></a>
-      <a class="topnav-link" href="{{ work_link('/cwe') }}"{% if self.page()|trim == "cwe" or self.page()|trim == "bdu" %} aria-current="page"{% endif %} title="Справочник классов CWE">{{ icon("list") }}<span>CWE</span></a>
-      <a class="topnav-link" href="{{ work_link('/capec') }}"{% if self.page()|trim == "capec" %} aria-current="page"{% endif %} title="Справочник сценариев CAPEC">{{ icon("list") }}<span>CAPEC</span></a>
+      <a class="topnav-link" href="{{ work_link('/cwe') }}"{% if self.page()|trim == "cwe" or self.page()|trim == "bdu" %} aria-current="page"{% endif %} title="Справочник классов CWE"><span>CWE</span></a>
+      <a class="topnav-link" href="{{ work_link('/capec') }}"{% if self.page()|trim == "capec" %} aria-current="page"{% endif %} title="Справочник сценариев CAPEC"><span>CAPEC</span></a>
       <a class="topnav-link" href="/help" target="_blank" rel="noopener"{% if self.page()|trim == "help" %} aria-current="page"{% endif %} title="Справка – в новой вкладке">{{ icon("info") }}<span>Справка</span></a>
       <a class="topnav-link" href="{{ work_link('/settings') }}"{% if self.page()|trim == "settings" %} aria-current="page"{% endif %} title="Настройки">{{ icon("settings") }}<span>Настройки</span></a>
-      <a class="topnav-link" href="{{ work_link('/journal') }}"{% if self.page()|trim == "journal" %} aria-current="page"{% endif %} title="Статистика работы локальных моделей">{{ icon("list") }}<span>Журнал</span></a>
+      <a class="topnav-link" href="{{ work_link('/journal') }}"{% if self.page()|trim == "journal" %} aria-current="page"{% endif %} title="Статистика работы локальных моделей"><span>Журнал</span></a>
       <button type="button" class="icon-btn keys-open" id="keys-open" data-dialog-open="keys-dialog" aria-haspopup="dialog" aria-label="Клавиши" title="Клавиши (?)">{{ icon("keyboard") }}</button>
       <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Переключить тему">{{ icon("moon", cls="icon-moon") }}{{ icon("sun", cls="icon-sun") }}</button>
     </div>

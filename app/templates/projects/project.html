@@ -20,7 +20,7 @@
       <span>модель <span class="mono">{{ project_model }}</span>{% if model_from_settings %} – из настроек{% endif %}{% if model_missing %} – <span class="text-warn">нет на сервере профиля</span>{% endif %}</span>
       {% if run_profile %}<span>профиль <a href="#step3" id="project-meta-profile">{{ run_profile.name }}</a></span>{% endif %}
       <span>папка <span class="mono break">{{ folder_display }}</span></span>
-      <span id="project-meta-mask">показ кода {{ "с масками" if project.mask_secrets is not defined or project.mask_secrets else "без масок" }}</span>
+      <span id="project-meta-mask">показ кода {{ "с масками" if project.mask_secrets else "без масок" }}</span>
       <span><a href="#params">параметры проекта</a></span>
     </p>
   </div>
@@ -88,7 +88,7 @@
 {% endif %}
     <div class="field">
       <input type="hidden" name="mask_form" value="1">
-      <label class="check"><input type="checkbox" name="mask_secrets" value="1" id="project-mask-secrets"{% if project.mask_secrets is not defined or project.mask_secrets %} checked{% endif %} aria-describedby="project-mask-hint"> Маскировать секреты в коде при показе</label>
+      <label class="check"><input type="checkbox" name="mask_secrets" value="1" id="project-mask-secrets"{% if project.mask_secrets %} checked{% endif %} aria-describedby="project-mask-hint"> Маскировать секреты в коде при показе</label>
       <span class="field-hint" id="project-mask-hint">Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются.</span>
     </div>
     <div class="actions">

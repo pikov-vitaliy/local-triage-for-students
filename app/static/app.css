@@ -431,7 +431,7 @@ kbd {
 @media (max-width: 600px) { .task-context { position: static; } }
 .topbar-inner {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--s-1) var(--s-5);
   min-height: 56px;
@@ -450,11 +450,14 @@ kbd {
   white-space: nowrap;
 }
 .brand:hover { color: var(--text); }
+.brand { flex: 0 0 auto; }
+.brand-name { font-weight: 500; color: var(--muted); }
+.brand-name b { font-weight: 800; color: var(--text); }
 .brand .icon { width: 26px; height: 26px; vertical-align: middle; }
 .brand:hover .logo-bg { fill: var(--accent-hover); }
 .logo-bg { fill: var(--accent); stroke: none; }
-.logo-fg { fill: none; stroke: var(--accent-ink); stroke-width: 2.6; }
-.crumbs { flex: 1 1 240px; min-width: 0; color: var(--muted); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.logo-fg { fill: none; stroke: var(--accent-ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.crumbs { flex: 1 1 0; min-width: 0; color: var(--muted); font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .crumbs a { color: var(--muted); text-decoration: none; }
 .crumbs a:hover { color: var(--accent); text-decoration: underline; }
 .crumbs > span[aria-hidden="true"] { color: var(--faint); }
@@ -462,7 +465,10 @@ kbd {
 /* имя проекта – плашкой: в каком проекте оператор, видно с любой страницы */
 .crumbs .crumb-project, .crumbs a.crumb-project { display: inline-block; max-width: 28ch; padding: 1px 10px; border: 1px solid var(--accent-border); border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-soft-ink); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
 .crumbs a.crumb-project:hover { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); text-decoration: none; }
-.topbar-actions { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+.topbar-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 2px; margin-left: auto; }
+/* шапка – одна строка: на средних экранах меню теряет значки, подписи остаются; крошки сокращаются многоточием */
+@media (max-width: 1360px) { .topnav-link .icon { display: none; } .topnav-link { padding-left: 8px; padding-right: 8px; } }
+@media (max-width: 1120px) { .crumbs { display: none; } }
 .topnav-link {
   display: inline-flex;
   align-items: center;
@@ -941,6 +947,14 @@ input[type="radio"] { flex: 0 0 auto; width: 18px; height: 18px; margin: 0; acce
 .dropzone-text { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--text-2); font-weight: 600; }
 .dropzone-file { color: var(--text); font-family: var(--mono); font-size: var(--fs-sm); overflow-wrap: anywhere; }
 .dropzone-file:empty { display: none; }
+.dropzone.has-file { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+.dropzone.has-file .dropzone-file { font-family: inherit; font-weight: 600; }
+.feed-steps { margin: var(--s-2) 0; padding-left: 1.4em; }
+.feed-steps li { color: var(--text-2); margin: 2px 0; }
+.feed-steps li.is-done { color: var(--text); }
+.feed-steps li.is-done::marker { content: "\2713  "; }
+.feed-steps li.is-now { color: var(--text); font-weight: 600; }
+.feed-state { margin: 0 0 var(--s-2); }
 
 /* ---------------------------------------------------------------- чипы, фильтры */
 
@@ -1971,9 +1985,15 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: var(--r-
   .step { padding: var(--s-4); border-radius: var(--r); }
   .panel-flush { padding: 0; }
   .form-grid { grid-template-columns: minmax(0, 1fr); }
-  .topbar-inner { gap: 2px var(--s-3); }
-  .crumbs { order: 3; flex: 1 1 100%; }
+  .topbar-inner { gap: 2px var(--s-3); flex-wrap: wrap; }
+  .crumbs { display: block; order: 3; flex: 1 1 100%; white-space: normal; overflow-wrap: anywhere; }
+  .topnav-link .icon { display: inline-block; }
   .topnav-link span { display: none; }
+  .topnav-link:not(:has(.icon)) span { display: inline; font-size: var(--fs-sm); }
+  .topbar-actions { flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+  .topbar-actions .keys-open { display: none; }
+  .topbar-actions .topnav-link { padding-left: 6px; padding-right: 6px; }
+  .brand-name { display: none; }
   .stats { gap: 10px var(--s-6); }
   .stat-value { font-size: var(--fs-lg); }
   .terms { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
