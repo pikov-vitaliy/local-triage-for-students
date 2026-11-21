@@ -25,6 +25,7 @@ related: [../README.md, DEMO.md, ARCHITECTURE.md, ../examples/demo/README.md]
 | ОС | Ubuntu Server 24.04 LTS, имя хоста `local-triage-demo`, учётная запись `triage` (группы `sudo`, `docker`) |
 | Приложение | контейнер `local-triage` из образа `local-triage:<версия>`, порт 8765 только на 127.0.0.1 ВМ; с компьютера – через SSH-туннель |
 | Модель | контейнер `local-triage-ollama`: Ollama только для процессора и модель `qwen2.5-coder:3b`; сеть Docker закрытая, выхода наружу нет |
+| База | контейнер `local-triage-db-1`: сервис `db` из `docker-compose.yml`, PostgreSQL, том Docker `local-triage_pgdata`; порт наружу не публикуется, приложение ходит к ней по имени сервиса (ADR-0128) |
 | Файлы приложения | `/opt/local-triage/`: `docker-compose.yml`, `docker-compose.vm.yml`, `.env` (в нём `POSTGRES_PASSWORD`: случайный, у каждой копии свой, создаётся при первой загрузке), `REVISION` (коммит) |
 | Данные приложения | `/opt/local-triage/data`: копия демо-базы `demo.dump`, ключ маскирования и то, что создаёт работающее приложение; постоянная папка на диске ВМ |
 | Модели Ollama | `/opt/local-triage/ollama` |
@@ -497,6 +498,11 @@ rm /tmp/local-triage-<версия>.tar.gz
 В том числе не проверено, загружается ли архив образа базы, сохранённый Docker Desktop, в Docker из пакета `docker.io`
 Ubuntu, и хватает ли базе предела памяти `DB_MEM_LIMIT=1g` при настоящей работе в ВМ.
 
+| Версия | Что изменено в `start.sh` и `network-access.sh` | Решение |
+|---|---|---|
+| 0.3.12 | `start.sh refresh` считает успехом только публикацию порта, подтверждённую Docker; после отказа пересоздания повторяет попытку на каждом проходе | ADR-0051 |
+| 0.3.17 | проверка запускается через `bash` (потерянный исполняемый бит не отключает её), без сценария для `127.0.0.1` работает встроенная проверка Docker; открытый режим допускает ровно одну публикацию на `0.0.0.0` (без `::`); после восстановления `triage.bind` и `triage.status` обновляются | ADR-0057 |
+| 0.3.21 | открытый режим, не подтверждённый Docker, отзывается: `TRIAGE_BIND=127.0.0.1`, пересоздание, проверка (`bind-reverted`, `local-unsafe-publication`); не удалось – контейнер остановлен (`stopped-bind-unconfirmed`); пометка `TRIAGE_NET_NOTE` снимается командами `open` и `close` | ADR-0061 |
 
 **Открыто:**
 
