@@ -7,6 +7,11 @@
 
 ## [Не выпущено]
 
+## [0.10.0.dev34] – 2026-11-21
+
+- Установка Node.js на Windows одной командой `winget install OpenJS.NodeJS.LTS` (обновление –
+  `winget upgrade OpenJS.NodeJS.LTS`) – в README пакета, руководстве студента и справке стенда.
+
 ## [0.10.0.dev33] – 2026-11-21
 
 - Страница «Примеры»: десять открытых уязвимых приложений (OWASP Juice Shop, OWASP WebGoat, PyGoat, OWASP NodeGoat,

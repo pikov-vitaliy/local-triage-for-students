@@ -15,6 +15,7 @@
   <li><a href="#help-glossary">Глоссарий</a></li>
 </ol></nav>
 <section class="panel" id="help-start"><h2>Первый запуск</h2>
+<p>Нужен Node.js 20 или новее. На Windows он ставится одной командой в PowerShell: <code>winget install OpenJS.NodeJS.LTS</code>, обновляется – <code>winget upgrade OpenJS.NodeJS.LTS</code>. После установки откройте новое окно терминала, проверка – <code>node -v</code>.</p>
 <p>Стенд запускается командой <code>npx local-triage</code>: она ставит Python, создаёт базу и открывает в браузере список проектов; справка открывается кнопкой «Справка» в шапке. Окно терминала держит приложение – не закрывайте его, пока работаете; остановка – Ctrl+C. Где лежат база и папка кода, показывает <code>npx local-triage --where</code>.</p></section>
 <section class="panel" id="help-model"><h2>Модель</h2>
 <p>Модель предлагает вердикт по находке SAST, решение принимаете вы. Ollama на своём компьютере – при видеокарте от 16 ГБ (<a href="/settings/providers/new?preset=ollama-local">заготовка</a>). Иначе – DeepSeek со своим ключом (<a href="/settings/providers/new?preset=deepseek">заготовка</a>); поставьте лимит расхода ключа у провайдера. Код уходит внешнему провайдеру только после вашей отметки «код не секретный» на странице предпросмотра.</p></section>

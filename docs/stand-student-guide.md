@@ -17,7 +17,18 @@ related: [README.md]
 
 ## 1. Установка и первый запуск
 
-Нужен Node.js 20 или новее (https://nodejs.org). Docker не нужен. В терминале:
+Нужен Node.js 20 или новее, Docker не нужен. На Windows Node.js ставится одной командой в PowerShell, на сайт
+заходить не нужно:
+
+```
+winget install OpenJS.NodeJS.LTS
+```
+
+Если Windows спросит разрешение на изменения, ответьте «Да». После установки закройте окно терминала и откройте новое,
+иначе команды `node` и `npm` не найдутся. Проверка: `node -v` – должно быть v20 или больше. Старый Node.js обновляется
+так же: `winget upgrade OpenJS.NodeJS.LTS`. Если winget отключён, скачайте установщик LTS с https://nodejs.org.
+
+Затем в терминале:
 
 ```
 npx local-triage
