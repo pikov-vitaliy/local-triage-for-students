@@ -44,8 +44,10 @@ register_messages({
                                        "для разбора кода. Проект разбирает профиль по умолчанию.",
     "project_example_noprofile_link": "Проект из примера создан, но профиль для примеров не назначен: связь проекта с "
                                       "примером изменилась.",
-    "project_example_noprofile_external_off": "Проект из примера создан с профилем по умолчанию: внешние модели "
-                                              "выключены (стенд запущен с --local-only).",
+    "project_example_noprofile_external_off": "Проект из примера создан с профилем по умолчанию: внешние модели на "
+                                              "этой установке выключены (стенд запущен с --local-only или Docker – "
+                                              "без LLM_EXTERNAL=1). Если профиль по умолчанию тоже внешний, для "
+                                              "разбора выберите локальный профиль в «Параметрах проекта».",
     "external_marked_example": "Отметка поставлена, профиль для примеров назначен проекту.",
 })
 
@@ -506,7 +508,8 @@ def apply_examples_profile(db, project_id: int, root: str | None = None) -> str:
     """Профиль для примеров – проекту из каталога. Профиль заново читается из базы и проходит обе проверки штатного
     обработчика (включён и годится для разбора кода этого проекта). Профиль исследования назначается отдельно – только
     если годится для исследования. Возврат: assigned, needs_mark (внешний профиль – сначала предпросмотр и отметка
-    студента), none (не выбран), deleted, disabled, link (связь нарушена), unfit (не годится для кода)."""
+    студента), none (не выбран), deleted, disabled, external_off (внешние модели выключены, --local-only), link (связь
+    нарушена), unfit (не годится для кода)."""
     from app.routes.components import research_profile_ok
     from app.routes.projects import code_profile_ok
 
@@ -517,6 +520,11 @@ def apply_examples_profile(db, project_id: int, root: str | None = None) -> str:
         return "deleted"
     if not profile.get("enabled"):
         return "disabled"
+    from app.routes.common import external_enabled
+    if str(profile.get("trust")) == "external" and not external_enabled():
+        # стенд с --local-only (бэклог 140): внешний профиль не назначается и у проекта с отметкой – разбор им
+        # откажет; проект остаётся с профилем по умолчанию, студент видит причину
+        return "external_off"
     if link_intact(db, project_id, root) is None:
         return "link"
     project = db.get_project(project_id)

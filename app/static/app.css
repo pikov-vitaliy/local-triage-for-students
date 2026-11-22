@@ -2458,6 +2458,8 @@ body[data-page="capec"] details.panel[open] > summary { margin-bottom:12px; }
 @media (max-width:600px) { .worklist-navigation { width:100%; } .worklist-pager { gap:12px; } .service-panels.is-compact { grid-template-columns:1fr; } }
 /* Журнал прогонов: паспорт и статистика без смешения с рабочей очередью. */
 .journal-filters{display:flex;flex-wrap:wrap;gap:1rem;align-items:end}.journal-filters label{display:grid;gap:.35rem;min-width:145px;flex:1}.journal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem}.journal-grid>div,.journal-grid>.panel{min-width:0}.journal-facts{display:grid;grid-template-columns:minmax(100px,1fr) minmax(100px,1.4fr);gap:.55rem 1rem}.journal-facts dt{color:var(--muted)}.journal-facts dd{margin:0;overflow-wrap:anywhere}.journal-models{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem}.journal-model,.journal-environment{border:1px solid var(--border);border-radius:var(--r);padding:1rem}.journal-environment+.journal-environment{margin-top:1rem}.journal-table{min-width:950px}.journal-table td{overflow-wrap:anywhere}body[data-page=journal] code{overflow-wrap:anywhere;white-space:normal}@media(max-width:760px){.journal-grid{grid-template-columns:1fr}.journal-filters label{min-width:min(100%,190px)}}
+/* состояние прогона – одним словом: перенос «в любом месте» ломал «завершён» по буквам (22.11) */
+.journal-table td .state{white-space:nowrap;overflow-wrap:normal}
 .capec-node pre{white-space:pre-wrap;overflow-wrap:anywhere}.capec-node table{display:block;overflow-x:auto}
 .journal-model h3,.journal-environment code{overflow-wrap:anywhere}
 .journal-stats{margin-bottom:var(--s-6)}

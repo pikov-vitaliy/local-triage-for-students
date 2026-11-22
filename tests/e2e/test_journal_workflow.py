@@ -16,6 +16,11 @@ def test_journal_run_snapshot_filter_export_and_small_screen(ui, tmp_path):
     page.locator('select[name=project]').select_option(str(pid))
     page.get_by_role('button', name='Применить', exact=True).click()
     expect(page.locator('.journal-table tbody tr')).to_have_count(1)
+    # состояние прогона – одной строкой и на узком экране (22.11: «завершён» рвалось по буквам)
+    for width in (1024, 1440):
+        page.set_viewport_size({'width': width, 'height': 900})
+        state = page.locator('.journal-table .state').first
+        assert state.evaluate("e => e.getClientRects().length") == 1, width
     # заголовки столбцов связаны с ячейками для вспомогательных технологий (KIMI-13)
     expect(page.locator('.journal-table th[scope="col"]')).to_have_count(6)
     expect(page.locator('th:not([scope="col"])')).to_have_count(0)

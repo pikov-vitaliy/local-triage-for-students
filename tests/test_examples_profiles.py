@@ -114,6 +114,26 @@ def test_external_examples_profile_is_assigned_with_the_default_mark(web, monkey
     assert project["external_allowed"] == 1 and project["provider_id"] == profile["id"]
 
 
+def test_local_only_stand_does_not_assign_the_external_examples_profile(web, monkeypatch, external_loopback):  # noqa: F811
+    """Бэклог 140: стенд запущен с --local-only (внешние модели выключены), а «Профиль для примеров» – внешний, выбранный
+    раньше. Новый проект из примера его не получает: профиль по умолчанию и сообщение о причине."""
+    db = web.app.state.db
+    profile = external_profile(web, "https://external-test.example:9", name="DeepSeek учебный")
+    db.set_settings({"examples_provider_id": int(profile["id"])})
+    monkeypatch.setenv("LLM_EXTERNAL", "0")
+    entry = _toy_catalog(web.tmp, monkeypatch)
+    arch = web.tmp / "toy.tar.gz"
+    arch.write_bytes(_archive(FILES))
+    ex.unpack(arch, entry, ex.examples_root(web.settings.repos_root) / ex.folder_name(entry))
+    r = web.client.post("/examples/toy/project", headers=ORIGIN, follow_redirects=False)
+    location = r.headers["location"]
+    assert r.status_code == 303 and "ok=project_example_noprofile_external_off" in location, location
+    pid = int(location.split("/")[2].split("?")[0])
+    project = db.get_project(pid)
+    assert project["provider_id"] is None and project["research_provider_id"] is None, "наследует общий профиль"
+    assert "--local-only" in web.client.get(location).text
+
+
 @pytest.mark.parametrize("change", ["folder", "codebase", "import"])
 def test_source_change_clears_the_mark_only_for_catalog_projects(web, monkeypatch, external_loopback, change):  # noqa: F811
     db = web.app.state.db
