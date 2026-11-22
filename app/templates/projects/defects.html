@@ -6,11 +6,11 @@
 {% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Дефекты</span>{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, review_stats.sca, "defects", counts.defects) }}{% endblock %}
 {% block content %}
-<h1>Дефекты в Hub</h1>
+<h1>{% if STAND == "npm" %}Дефекты{% else %}Дефекты в Hub{% endif %}</h1>
 {% include "projects/hub_step_note.html" %}
 {% if resync_note %}<p class="callout callout-warn" id="defects-resync-note">{{ resync_note }}</p>{% endif %}
 {% if dropped_total %}<p class="callout callout-warn" id="defects-dropped">{{ dropped_total }} {{ dropped_total | plural("находка выбыла", "находки выбыли", "находок выбыли") }} из дефектов и {{ dropped_total | plural("ждёт", "ждут", "ждут") }} решения: <a href="/projects/{{ project.id }}/findings?dropped=1">открыть список</a>.</p>{% endif %}
-<form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><button class="btn" id="hub-sync-start">Синхронизировать</button></form>
+{% if STAND != "npm" %}<form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><button class="btn" id="hub-sync-start">Синхронизировать</button></form>{% endif %}
 {% if sync_runs %}<details><summary>Сохранённые синхронизации ({{ sync_runs|length }})</summary><ul>{% for run in sync_runs %}<li><a href="/projects/{{ project.id }}/hub-sync/{{ run.id }}">Синхронизация {{ run.created_at|ts }} ({{ run.state }})</a></li>{% endfor %}</ul></details>{% endif %}
 <p class="hint">Заголовок открывает карточку дефекта: правка текста и остальных полей локального черновика, явная сборка текста из решений и обновление в Hub после предпросмотра. Связанные справочные значения можно менять только при наличии проверенного соответствия.</p>
 {#- «Все фильтры» как у находок -#}
@@ -42,6 +42,9 @@
 </nav>
 {% if not items and (pagination.query or active_filters) %}
 {{ empty_state("Под этот отбор ничего не попало", "Измените отбор или поисковый запрос.", pagination.reset_all, "Сбросить фильтры и поиск", "search") }}
+<p id="hub-defects-empty" hidden></p>
+{% elif not items and STAND == "npm" %}
+{{ empty_state("На учебном стенде дефекты в Hub не создаются", "Связи с Hub на стенде нет, поэтому этот список пуст. Готовый текст дефекта – в карточке находки: решение «Подтверждаю дефект», «Сохранить», затем шаг 6 «Перенос в Hub» – заголовок и текст копируются кнопками как образец для Hub.", icon_name="shield") }}
 <p id="hub-defects-empty" hidden></p>
 {% elif not items %}
 {{ empty_state("Дефектов из приложения ещё нет", "Создайте дефект из карточки находки SAST (решение «Подтверждаю дефект») или SCA (дефект набора): кнопка «Создать дефект в Hub» под разделом «Дефект для Hub». Дефекты, уже заведённые в Hub, приложение заносит само: «Синхронизировать» вверху, затем «Принять состояние Hub».", icon_name="shield") }}

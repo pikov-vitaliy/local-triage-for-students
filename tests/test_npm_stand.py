@@ -171,6 +171,24 @@ def test_stand_texts_point_to_stand(stand, monkeypatch, tmp_path: Path):
         InstanceLock(tmp_path / "busy").acquire()
 
 
+def test_stand_pages_do_not_send_the_student_to_hub(stand):
+    """Проверка стенда агентами 22.11: на стенде нет шага «Состояние Hub», «Синхронизировать», «Адрес Hub не задан»;
+    пустой список проектов ведёт в «Примеры»."""
+    from app.routes.hub_status_routes import STAND_NO_HUB, send_blocker
+
+    home = stand.client.get("/").text
+    assert 'id="open-examples"' in home and "Начните с вкладки «Примеры»" in home
+    r = stand.client.post("/projects/demo", headers=ORIGIN, follow_redirects=False)
+    assert r.status_code == 303, r.text[:300]
+    pid = int(r.headers["location"].split("/")[2].split("?")[0])
+    page = stand.client.get(f"/projects/{pid}").text
+    assert 'id="step-hub"' not in page and 'id="hub-step-note"' not in page
+    defects = stand.client.get(f"/projects/{pid}/defects").text
+    assert 'id="hub-sync-start"' not in defects and "На учебном стенде дефекты в Hub не создаются" in defects
+    assert send_blocker(stand.settings, {"hub_app_id": None}) == STAND_NO_HUB
+    assert "Адрес Hub не задан" not in STAND_NO_HUB
+
+
 # ============================================================================ сведения о сборке пакета
 
 

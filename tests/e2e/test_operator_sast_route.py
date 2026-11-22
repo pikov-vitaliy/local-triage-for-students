@@ -573,10 +573,16 @@ def test_first_screen_shows_trace_verdict_and_target_line(browser, app_server, s
           const seen = el => { const b = el.getBoundingClientRect(); return b.top >= 0 && b.top < bar.top; };
           return { rows: rows.length, targetIn: target.top >= top - 1 && target.bottom <= bottom + 1,
                    trace: seen(document.getElementById('trace')), verdict: seen(document.querySelector('.verdict-big')),
+                   editor: seen(document.getElementById('editor-link')),
                    wide: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 };
         }""")
         assert geometry["targetIn"] and geometry["rows"] >= 3, geometry
         assert geometry["trace"] and geometry["verdict"] and not geometry["wide"], geometry
+        # «Открыть в VS Code» – на первом экране и ведёт на строку срабатывания (с 0.10.0.dev36 – в строке сведений
+        # о срезе: отдельные строки с полным путём сдвигали код под нижнюю панель)
+        assert geometry["editor"], geometry
+        href = page.locator("#editor-link a").get_attribute("href")
+        assert href.startswith("vscode://file/") and href.endswith(":29"), href
         assert not watch.problems(), watch.problems()
     finally:
         context.close()

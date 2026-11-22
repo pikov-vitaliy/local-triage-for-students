@@ -4,7 +4,7 @@
 {% block page %}journal{% endblock %}
 {% block title %}Журнал моделей · Локальный триаж{% endblock %}
 {% block content %}
-<div class="page-head"><div><p class="eyebrow">Локальная модель</p><h1>Журнал прогонов</h1><p class="page-sub">Задания, оборудование, время и результаты. Сохраняются при закрытом браузере.</p></div><div class="actions"><a class="btn" href="/journal/export.json?{{ export_query }}">Скачать JSON</a><a class="btn" href="/journal/export.csv?{{ export_query }}">Скачать CSV</a></div></div>
+<div class="page-head"><div><p class="eyebrow">Модели</p><h1>Журнал прогонов</h1><p class="page-sub">Задания, оборудование, время и результаты. Сохраняются при закрытом браузере.</p></div><div class="actions"><a class="btn" href="/journal/export.json?{{ export_query }}">Скачать JSON</a><a class="btn" href="/journal/export.csv?{{ export_query }}">Скачать CSV</a></div></div>
 <section class="panel"><form method="get" class="journal-filters">
 <label>Модель<select name="model"><option value="">Все модели</option>{% for x in model_choices %}<option{% if filters.model==x.model %} selected{% endif %}>{{ x.model }}</option>{% endfor %}</select></label>
 <label>Язык в очереди<select name="language"><option value="">Все языки</option>{% for x in language_choices %}<option{% if filters.language==x.language %} selected{% endif %}>{{ x.language }}</option>{% endfor %}</select></label>

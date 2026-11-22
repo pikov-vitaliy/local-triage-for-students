@@ -298,7 +298,9 @@ def non_russian_lines(text: str, vulns: Iterable[Vuln]) -> list[str]:
             continue
         for line in lines:
             vuln_id = next((i for i in vuln.public_ids if line.upper().startswith(i.upper() + ":")), None)
-            if vuln_id is not None and cyrillic_share(line[len(vuln_id) + 1:]) < 1 / 3:
+            rest = line[len(vuln_id) + 1:] if vuln_id is not None else ""
+            # пустой остаток после «CVE-…:» – не «не на русском»: пустоту ловит explanation_problems
+            if vuln_id is not None and any(ch.isalpha() for ch in rest) and cyrillic_share(rest) < 1 / 3:
                 out.append(vuln.main)
                 break
     return out

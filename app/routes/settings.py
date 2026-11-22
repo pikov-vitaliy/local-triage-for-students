@@ -39,13 +39,20 @@ def page(request: Request, values: dict, errors: dict | None = None, check: dict
     """Страница настроек. values – значения полей; check – состояние Ollama: результат кнопки «Проверить» или,
     если её не нажимали, состояние по сохранённому адресу (из кэша списка моделей)."""
     settings = settings_of(request)
+    from app.db import DEFAULT_PROVIDER_ID
+
+    base_profile = db_of(request).get_provider(DEFAULT_PROVIDER_ID)
+    default_profile = profile_for(request)
     if check is None:
-        state = models_of(request)
+        # блок «Ollama» – профиль 1, даже когда профилем по умолчанию выбран другой (например DeepSeek)
+        state = models_of(request, profile=base_profile) if base_profile else models_of(request)
         check = {"url": settings.ollama_url, "version": state["version"], "models": state["models"],
                  "error": state["error"], "checked": False}
     models = check["models"]
     context = {
         "values": values, "errors": errors or {}, "check": check, "models": models,
+        "default_profile_name": str(default_profile.get("name") or ""),
+        "default_is_base": default_profile.get("id") == DEFAULT_PROVIDER_ID,
         "model_listed": model_found(values.get("default_model", ""), models),
         "status_fields": STATUS_FIELDS, "default_statuses": DEFAULT_STATUS_MAP,
         "env": environment(settings), "error": error,

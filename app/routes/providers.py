@@ -36,7 +36,7 @@ from app.providers import (CHAT_NUMBERS, EFFORT_LABELS, KEY_DISABLED, KIND_LABEL
                            save_profile)
 from app.routes.common import db_of, redirect, register_messages, render, settings_of, web_of
 
-from app.providers import PRESETS, preset_form  # noqa: E402
+from app.providers import ADVANCED_HINTS, DEEPSEEK_RECOMMENDED, PRESETS, preset_form  # noqa: E402
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -88,6 +88,7 @@ def form_page(request: Request, profile: dict | None, values: dict, errors: dict
         "kind_labels": KIND_LABELS, "response_labels": RESPONSE_LABELS,
         "messages_response_labels": MESSAGES_RESPONSE_LABELS, "thinking_labels": THINKING_LABELS,
         "effort_labels": EFFORT_LABELS, "chat_numbers": CHAT_NUMBERS, "external_on": external_enabled(),
+        "advanced_hints": ADVANCED_HINTS, "deepseek_recommended": DEEPSEEK_RECOMMENDED,
         "key": key_hint(db_of(request), pid) if pid else "", "local_hosts": local_hosts_hint(),
         "action": f"/settings/providers/{pid}" if pid else "/settings/providers/new",
     }

@@ -17,7 +17,7 @@
   <div>
     <h1>{{ project.name }}</h1>
     <p class="page-sub dot-list project-meta">
-      <span>модель <span class="mono">{{ project_model }}</span>{% if model_from_settings %} – из настроек{% endif %}{% if model_missing %} – <span class="text-warn">нет на сервере профиля</span>{% endif %}</span>
+      <span>модель <span class="mono">{{ project_model }}</span>{% if model_from_settings %} – {{ model_source or "из настроек" }}{% endif %}{% if model_missing %} – <span class="text-warn">нет на сервере профиля</span>{% endif %}</span>
       {% if run_profile %}<span>профиль <a href="#step3" id="project-meta-profile">{{ run_profile.name }}</a></span>{% endif %}
       <span>папка <span class="mono break">{{ folder_display }}</span></span>
       <span id="project-meta-mask">показ кода {{ "с масками" if project.mask_secrets else "без масок" }}</span>
@@ -79,7 +79,7 @@
       <span class="field-hint" id="project-model-status" aria-live="polite"></span>
       <span class="field-hint">Её предлагает запуск триажа в этом проекте. Модель по умолчанию для всех проектов, адрес Ollama и статусы Hub – в <a href="/settings">настройках</a>.</span>
     </label>
-{% if not catalog_example %}
+{% if not catalog_example and STAND != "npm" %}
     <label class="field">
       <span class="field-label">Приложение в Hub (appId)</span>
       <input type="text" name="hub_app_id" id="project-hub-app-id" value="{{ project.hub_app_id or '' }}" maxlength="2000" autocomplete="off" aria-describedby="project-hub-app-hint">
@@ -118,7 +118,7 @@
 <section class="step" id="step1" aria-labelledby="step1-title">
   <div class="step-head"><span class="step-no{% if imp %} step-done{% endif %}" aria-hidden="true">{{ "✓" if imp else "1" }}</span><h2 id="step1-title">Выгрузка из AppSec.Hub</h2></div>
   {% if imp %}
-  <p class="step-summary"><strong>{{ imp.filename }}</strong> · {{ counts.total }} {{ counts.total|plural("находка", "находки", "находок") }}: SAST {{ counts.sast }} (срочных {{ counts.sast_urgent }}), SCA {{ counts.sca }}, DAST {{ counts.dast }}{% if imp.format == "hub" %} · {% if mismatch %}<span class="warn-text">листы расходятся со сводкой</span>{% elif summary_rows|selectattr("match", "sameas", true)|list %}листы сходятся со сводкой{% else %}отчёт AppSec.Hub{% endif %}{% else %} · таблица{% endif %}</p>
+  <p class="step-summary"><strong>{{ imp.filename }}</strong> · {{ counts.total }} {{ counts.total|plural("находка", "находки", "находок") }}: SAST {{ counts.sast }} (срочных {{ counts.sast_urgent }}), SCA {{ counts.sca - (counts.sca_license or 0) }}{% if counts.sca_license %}, лицензии {{ counts.sca_license }}{% endif %}, DAST {{ counts.dast }}{% if imp.format == "hub" %} · {% if mismatch %}<span class="warn-text">листы расходятся со сводкой</span>{% elif summary_rows|selectattr("match", "sameas", true)|list %}листы сходятся со сводкой{% else %}отчёт AppSec.Hub{% endif %}{% else %} · таблица{% endif %}</p>
   <p class="muted small dot-list">
     <span>загружена <time datetime="{{ imp.created_at }}">{{ imp.created_at|ts }}</time></span>
     {% if imp.summary.application %}<span>система в отчёте: {{ imp.summary.application }}</span>{% endif %}
@@ -327,6 +327,7 @@
     до начала работы. Номер шага не меняет нумерацию прочих (ссылки #step3 и дальше) -#}
 {% set hs = hub_step %}
 {% set hs_done = hs.done %}
+{% if STAND != "npm" %}{#- учебный стенд: связи с Hub нет (ADR-0155) – шага нет -#}
 <section class="step" id="step-hub" aria-labelledby="step-hub-title">
   <div class="step-head"><span class="step-no{% if hs_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if hs_done else "Hub" }}</span><h2 id="step-hub-title">Состояние Hub</h2></div>
   <p class="step-summary" id="step-hub-state"><strong>{{ hs.label }}</strong>{% if hs.app_id %} · приложение №{{ hs.app_id }}{% endif %}{% if hs.run and hs.run.applied_at %} · принято <time datetime="{{ hs.run.applied_at }}">{{ hs.run.applied_at|ts }}</time>{% elif hs.run %} · чтение {{ hs.run.created_at|ts }}{% endif %}</p>
@@ -367,6 +368,7 @@
   <form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><button class="btn{% if not hs_done %} btn-primary{% endif %}" id="step-hub-sync">Синхронизировать с Hub</button></form>
   {% endif %}
 </section>
+{% endif %}
 
 <section class="step" id="step3" aria-labelledby="step3-title">
   {% set step3_done = stats.sast and stats.with_verdict >= stats.sast %}

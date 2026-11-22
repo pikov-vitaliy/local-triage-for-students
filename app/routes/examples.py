@@ -27,6 +27,10 @@ DEMO_KEY = "demo-library@builtin"
 _CREATE_LOCK = threading.Lock()
 register_messages({
     "example_fetched": "Исходники примера скачаны и сверены по хешу. Теперь можно создать проект.",
+    "example_refetched": "Чистая копия исходников скачана и сверена по хешу – рядом с прежней папкой.",
+    "example_refetched_project": "Чистая копия исходников скачана и сверена по хешу – рядом с прежней папкой. Проект "
+                                 "по-прежнему работает с прежней папкой, решения сохранены.",
+    "example_restored": "Исходники примера скачаны снова и сверены по хешу: проект работает с ними, решения сохранены.",
     "project_example": "Проект из примера создан: выгрузка загружена, кодовые базы связаны с папками примера. "
                        "Запустите триаж или разбирайте находки сами.",
     "example_mapping": "Соответствия кодовых баз примера восстановлены.",
@@ -218,7 +222,12 @@ async def fetch_example(request: Request, example_id: str):
             return redirect(f"/examples?error={_q(str(e))}#ex-{example_id}")
         except OSError as e:
             return redirect(f"/examples?error={_q('Папка примеров недоступна на запись: ' + e.__class__.__name__)}")
-        return redirect(f"/examples?ok=example_fetched#ex-{example_id}")
+        linked = project_link(db_of(request), link_key(entry)) is not None
+        if again:
+            done = "example_refetched_project" if linked else "example_refetched"
+        else:
+            done = "example_restored" if linked else "example_fetched"
+        return redirect(f"/examples?ok={done}#ex-{example_id}")
 
     return await run_in_threadpool(apply)
 
@@ -236,7 +245,7 @@ def _prepared_import(settings, entry: dict, tree: Path):
     return result
 
 
-EXAMPLE_MARK_REASON = "Учебный пример: открытый исходный код из публичного репозитория GitHub."
+EXAMPLE_MARK_REASON = "Учебный пример: открытый исходный код из публичного репозитория GitHub"
 
 
 def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
@@ -354,6 +363,8 @@ def _create_demo(request: Request, db) -> object:
         return made
     done = project_link(db, DEMO_KEY) or {}
     db.update_json_entry(LINK_KEY, DEMO_KEY, {**done, "state": "ready"})  # после импорта и подбора папок
+    if link is None and (db.get_project(int(made[0])) or {}).get("external_allowed"):
+        remember_mark_root(db, int(made[0]), settings_of(request))  # отметка демо (make_demo) – для этого корня
     return redirect(f"/projects/{made[0]}?ok={made[1]}")
 
 
@@ -629,7 +640,9 @@ def start_panel(request: Request) -> dict:
     chosen, state = examples_profile_state(db)
     trust = str((chosen or {}).get("trust") or "")
     if state == "none":
-        mode = "Профиль для примеров не выбран: проекты из каталога разбирает профиль по умолчанию (Ollama)."
+        from app.routes.common import profile_for
+        mode = (f"Профиль для примеров не выбран: проекты из каталога разбирает профиль по умолчанию "
+                f"«{profile_for(request).get('name') or ''}».")
     elif state == "deleted":
         mode = "Выбранный профиль для примеров удалён: выберите другой. Пока проекты получают профиль по умолчанию."
     elif not chosen.get("enabled"):
@@ -641,8 +654,8 @@ def start_panel(request: Request) -> dict:
         research = ("Исследование компонентов – через этот же профиль." if research_profile_ok(chosen) else
                     "Исследование компонентов – " + common_research(request) + ": в профиле не включено назначение "
                     "«исследование».")
-        mode = (f"Профиль «{chosen['name']}» – модель в интернете: после создания проекта откроется предпросмотр, и "
-                f"профиль назначится, когда вы сами разрешите отправку кода. {research}")
+        mode = (f"Профиль «{chosen['name']}» – модель в интернете: проекты десяти скачиваемых примеров получают "
+                f"отметку «код не секретный» при создании, и профиль назначается сразу; Demo Library – тоже с отметкой. {research}")
     elif code_profile_fits(chosen, {"external_allowed": 0}):
         where = "в локальной сети" if trust == "lan" else "на этом компьютере"
         mode = (f"Профиль «{chosen['name']}» работает {where}: назначается проекту сразу. Исследование компонентов – "

@@ -582,7 +582,7 @@ async def confirm_doubtful(request: Request, project_id: int):
         return len(chosen & allowed)
 
     n = await run_in_threadpool(apply)
-    return redirect(f"/projects/{project_id}/sca?ok=sca_doubtful&n={n}#package")
+    return redirect(f"/projects/{project_id}/sca?ok=sca_doubtful&n={n}#package-doubtful")
 
 
 def _attachment(content: bytes | str, media_type: str, filename: str) -> Response:

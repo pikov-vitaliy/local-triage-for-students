@@ -185,7 +185,8 @@ def test_settings_form_requires_same_origin(web):
 def test_api_ollama_reports_versions_and_default_model(web):
     data = web.client.get("/api/ollama").json()
     assert set(data) == {"url", "version", "models", "default_model", "default_model_found", "error", "profile"}
-    assert data["profile"] == {"name": "Ollama из «Настроек»", "trust": "local", "where": "этот компьютер"}
+    assert data["profile"] == {"name": "Ollama из «Настроек»", "trust": "local", "kind": "ollama",
+                               "where": "этот компьютер"}
     assert data["url"] == web.fake.url and data["version"] and data["error"] == ""
     assert data["models"] == ["gpt-oss:20b", "qwen2.5-coder:14b"]  # без эмбеддингов и облачных моделей
     assert data["default_model"] == "gpt-oss:20b" and data["default_model_found"] is True

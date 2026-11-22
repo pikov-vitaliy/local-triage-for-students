@@ -25,7 +25,7 @@ def test_chat_profile_form_is_short_and_search_takes_standard_paths(ui):
         advanced = page.locator("#provider-chat")
         expect(advanced).to_be_visible()
         expect(page.locator('select[name="response_mode"]')).to_be_hidden()  # свёрнуто
-        expect(page.locator(".provider-code-default")).to_be_hidden()
+        expect(page.locator(".provider-code-default")).to_be_visible()  # внешний API – умолчанием можно (решение владельца 21.11)
         expect(page.locator("#provider-code-default-note")).to_be_visible()
         page.click("#provider-check")
         expect(page.locator("#provider-status")).to_contain_text("моделей: 1")
@@ -51,7 +51,7 @@ def test_messages_kind_shows_its_own_response_format_and_hides_thinking(ui):
     expect(page.locator('select[name="response_mode"]')).to_be_hidden()
     expect(page.locator('select[name="thinking"]')).to_be_hidden()
     expect(page.locator('select[name="effort"]')).to_be_hidden()
-    expect(page.locator(".provider-code-default")).to_be_hidden()
+    expect(page.locator(".provider-code-default")).to_be_visible()  # внешний API – умолчанием можно (решение владельца 21.11)
     expect(page.locator("#provider-code-default-note")).to_be_visible()
     expect(page.locator('select[name="think"]')).to_be_hidden()  # раздел Ollama
     page.check('input[name="kind"][value="chat_completions"]')

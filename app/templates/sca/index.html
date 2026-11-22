@@ -100,7 +100,7 @@
 {% elif not views %}
 <section class="panel" id="sca-empty">
   {% if license_count %}
-  {{ empty_state("В выгрузке нет находок SCA Security", "Разбирать здесь нечего. Находки о лицензиях (" ~ license_count ~ ") – в общем списке находок.", "/projects/%d/findings?kind=SCA-license" % pid, "Находки о лицензиях", "package") }}
+  {{ empty_state("В выгрузке нет находок SCA Security", "Разбирать здесь нечего. Находки о лицензиях (" ~ license_count ~ ") – в общем списке находок, для сведения.", "/projects/%d/findings?kind=SCA-license" % pid, "Находки о лицензиях", "package") }}
   {% else %}
   {{ empty_state("В выгрузке нет находок SCA Security", "Разбирать здесь нечего: уязвимых библиотек анализатор не нашёл.", icon_name="package") }}
   {% endif %}
@@ -115,7 +115,7 @@
     {{ stat(stats.sca_entered, "Внесено в Hub", tone="ok" if stats.sca_entered and stats.sca_entered >= stats.sca_reviewed else "", sub="из " ~ stats.sca_reviewed ~ " проверенных") }}
   </div>
   {{ progress(stats.sca_reviewed, stats.sca, stats.sca_entered) }}
-  {% if license_count %}<p class="field-hint">Находки о лицензиях ({{ license_count }}) разбираются в <a href="/projects/{{ pid }}/findings?kind=SCA-license">общем списке находок</a>.</p>{% endif %}
+  {% if license_count %}<p class="field-hint">Находки о лицензиях ({{ license_count }}) показаны в <a href="/projects/{{ pid }}/findings?kind=SCA-license">общем списке находок</a> (вид «SCA, лицензии»): это сведения для проверки лицензионной чистоты, решение по ним стенд не записывает.</p>{% endif %}
 </section>
 
 <section class="panel" id="component-research" aria-labelledby="component-research-title">

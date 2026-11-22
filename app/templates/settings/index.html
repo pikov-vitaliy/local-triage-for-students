@@ -24,7 +24,7 @@
 
   <section class="panel" aria-labelledby="ollama-title">
     <h2 id="ollama-title">Модель и Ollama</h2>
-    <p class="callout callout-info small" id="providers-link">Серверы моделей – этот компьютер и серверы в сети организации, окно контекста, рассуждение, ключи – на странице <a href="/settings/providers">«Провайдеры моделей»</a>. Этот блок – профиль «Ollama из «Настроек»»: он разбирает код, где другой профиль не выбран.</p>
+    <p class="callout callout-info small" id="providers-link">Серверы моделей – этот компьютер и серверы в сети организации, окно контекста, рассуждение, ключи – на странице <a href="/settings/providers">«Провайдеры моделей»</a>. Этот блок – профиль «Ollama из «Настроек»»{% if default_is_base %}: он разбирает код, где другой профиль не выбран.{% else %}. Сейчас профиль по умолчанию – «{{ default_profile_name }}»: код, где профиль проекта не выбран, разбирает он, а не этот блок.{% endif %}</p>
     <p class="hint">Модель работает в Ollama на этом компьютере: код находок уходит только по этому адресу. Разрешены хосты localhost, 127.0.0.1, ::1, host.docker.internal и ollama; из контейнера Ollama этого компьютера видна как <span class="mono">http://host.docker.internal:11434</span>.</p>
     <div class="inline-form">
       <label class="field grow">
@@ -53,7 +53,7 @@
       {% else %}
       <input type="text" class="input-mono" name="default_model" value="{{ values.default_model }}" maxlength="200" autocomplete="off" spellcheck="false"{{ invalid("default_model") }}>
       {% endif %}
-      <span class="field-hint">Её предлагает запуск триажа в проектах, где своя модель не выбрана. Загрузить модель в Ollama: <span class="mono">ollama pull gpt-oss:20b</span>.</span>
+      <span class="field-hint">{% if default_is_base %}Её предлагает запуск триажа в проектах, где своя модель не выбрана.{% else %}Её предлагает запуск триажа в проектах с этим профилем, где своя модель не выбрана.{% endif %} Загрузить модель в Ollama: <span class="mono">ollama pull gpt-oss:20b</span>.</span>
       {{ field_error("default_model") }}
     </label>
     {% if traffic_log_on %}<p class="callout callout-info small" id="traffic-log-notice">В программе ведётся полное журналирование обмена с моделью (<span class="mono">data/model-traffic</span>): по журналу можно разобрать, что ушло в модель, и проверить соблюдение конфиденциальности. В журнале остаются фрагменты кода – если нужно стереть следы кода, удалите журнал после окончания работы с проектом.</p>{% endif %}

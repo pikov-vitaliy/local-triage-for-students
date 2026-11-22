@@ -140,7 +140,7 @@
     <button type="submit" class="btn" id="send-selected" formaction="/projects/{{ project.id }}/hub/send-selected" formmethod="get" formnovalidate title="Статус «Ложное срабатывание», общий комментарий и срок для отмеченных находок – одним запросом к Hub" disabled>Отправить выбранные в Hub</button>
     <button type="submit" class="btn" id="decide-selected" formaction="/projects/{{ project.id }}/hub/decide-selected" formmethod="get" formnovalidate title="Один вывод, текст и рекомендация сразу на отмеченные находки: сначала предпросмотр состава">Решение на отмеченные</button>
     <button type="submit" class="btn" id="defect-selected" formaction="/projects/{{ project.id }}/hub/defect-selected" formmethod="get" formnovalidate>Дефект из выбранных</button>
-    {% if active_runs %}<span class="muted small">Есть незавершённый <a href="/runs/{{ active_runs[0].id }}">прогон №{{ active_runs[0].id }}</a>.</span>{% elif not models %}<span class="muted small">Ollama недоступна или в ней нет моделей.</span>{% endif %}
+    {% if active_runs %}<span class="muted small">Есть незавершённый <a href="/runs/{{ active_runs[0].id }}">прогон №{{ active_runs[0].id }}</a>.</span>{% elif not models %}<span class="muted small">{% if list_profile_remote %}Сервер профиля «{{ list_profile_name }}» не вернул список моделей: проверьте ключ и адрес профиля в «Провайдерах моделей».{% else %}Ollama недоступна или в ней нет моделей.{% endif %}</span>{% endif %}
   </div>
 </form>
 

@@ -316,21 +316,20 @@ def test_disabled_external_profile_is_not_created_without_the_switch(tmp_path, m
         providers.save_profile(db, saved["id"], {**values, "enabled": 1})
 
 
-def test_code_default_must_stay_a_code_profile(tmp_path, monkeypatch):
-    """Ревью A5: умолчанием для кода не назначить чат-профиль; действующее умолчание не переделать в такой профиль."""
+def test_code_default_may_be_a_remote_api_profile(tmp_path, monkeypatch):
+    """Решение владельца 21.11.2026: умолчанием для кода можно назначить профиль удалённого API; код внешнему провайдеру
+    при этом уходит только проектам с отметкой «код не секретный» (executors.choose_profile)."""
     from app.db import Database
     db = Database(tmp_path / "t.db")
     db.ensure_default_profile("http://127.0.0.1:11434", "m")
     chat = {"name": "c", "kind": "chat_completions", "base_url": "http://127.0.0.1:8080/v1", "trust": "local",
             "enabled": 1}
-    with pytest.raises(providers.ProfileInvalid, match="Профиль по умолчанию"):
+    with pytest.raises(providers.ProfileInvalid):  # локальный API: разбор кода с ним не запускается (ревью dev36)
         providers.save_profile(db, None, chat, make_default=True)
-    ollama, _ = providers.save_profile(db, None, {"name": "o", "base_url": "http://127.0.0.1:11434",
-                                                           "trust": "local", "enabled": 1}, make_default=True)
-    assert int(db.get_settings()["default_provider_id"]) == ollama["id"]
-    with pytest.raises(providers.ProfileInvalid, match="Профиль по умолчанию"):
-        providers.save_profile(db, ollama["id"], {**chat, "name": "o"})
-    assert db.get_provider(ollama["id"])["kind"] == "ollama"
+    assert providers.code_default_ok({"kind": "chat_completions", "trust": "external"})
+    assert providers.code_default_ok({"kind": "messages", "trust": "external"})
+    assert not providers.code_default_ok({"kind": "chat_completions", "trust": "lan"})
+    assert not providers.code_default_ok({"kind": "ollama", "trust": "external"})
 
 
 @pytest.mark.parametrize("address", ["4000::1", "8000::1", "f000::1"])

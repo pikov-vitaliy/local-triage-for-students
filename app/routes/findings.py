@@ -102,6 +102,12 @@ SAST_NEED_FIX = "Напишите рекомендацию: что исправ�
 
 
 
+def _catalog_project(db, project_id: int) -> bool:
+    """Проект из каталога учебных примеров: у его находок о лицензиях – учебная политика (examples/catalog)."""
+    from app.routes.examples import is_catalog_project
+    return is_catalog_project(db, project_id)
+
+
 def editor_target(settings, repo_dir, ctx, from_db: bool) -> dict | None:
     """{"path": путь файла на компьютере, "url": vscode://file/<путь>:<строка>} – когда срез взят из файла клона;
     в Docker-установке путь – от REPOS_ROOT_HOST. Файла нет, срез из базы или клона нет – None."""
@@ -166,7 +172,7 @@ def need_fix_text(model_fix: str, model_points: list[str], history_points: bool 
     return ("Напишите рекомендацию словами: что исправить и как, по пункту в строке. Пунктов рекомендации модели "
             "нет.")
 DEFECT_NEEDS_TEAM = ("Дефект не выдан: не указано название команды для первой фразы дефекта. Укажите его на "
-                     "странице «Настройки» (раздел «Дефект для Hub»).")
+                     "странице «Настройки» (раздел «Текст дефекта»).")
 DEFECT_NEEDS_FIX = ("Дефект не выдан: нет рекомендации. Напишите, что исправить и как (по пункту в строке), и сохраните "
                     "решение.")
 ENTERED_NEEDS_FIX = ("Отметка «Внесено в Hub» не поставлена: у дефекта нет рекомендации. Допишите её, сохраните решение "
@@ -1541,7 +1547,8 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
     asked_execution = ask.answer_execution(db, case.get("verdict_id")) if case else None
     verdict_profile = db.get_provider(asked_execution["provider_id"]) if asked_execution else None
     project_profile = profile_for(request, project)
-    run_models = models_of(request, profile=project_profile)["models"] if sast else []
+    run_info = models_of(request, profile=project_profile) if sast else {"models": [], "error": ""}
+    run_models = run_info["models"]
     models = (models_of(request, profile=verdict_profile)["models"]
               if verdict_profile and sast else run_models)
     verdict_model = verdict_row["model"] if verdict_row else ""
@@ -1673,9 +1680,12 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
         # вопросы к модели и повторный разбор
         "questions": questions, "models": models, "ask_model": ask_model, "ask_draft": ask_draft,
         "reanalyze_model": reanalyze_model, "run_models": run_models, "analyze_model": analyze_model,
+        "run_models_error": run_info.get("error") or "",
+        "code_profile_remote": str((project_profile or {}).get("kind") or "ollama") != "ollama",
         # внешний провайдер: разбор, пересмотр и вопрос – платные запросы (ADR-0104); профиль вопроса – профиль ответа
         "code_profile_external": str((project_profile or {}).get("trust") or "") == "external",
         "code_profile_name": str((project_profile or {}).get("name") or ""),
+        "catalog_example": f.kind == "SCA-license" and _catalog_project(db, project["id"]),
         "ask_profile_external": str(((verdict_profile or project_profile) or {}).get("trust") or "") == "external",
         "ask_profile_name": str(((verdict_profile or project_profile) or {}).get("name") or ""),
         **ask_busy_flags(db, settings_of(request), pid, (case or {}).get("verdict_id") if sast else None),
@@ -1887,7 +1897,8 @@ def findings_page(request: Request, project_id: int, error: str = ""):
     if worklists.integer(q.get("page"), 1) > pages:
         clean = {k: v for k, v in {**selection, **presentation}.items() if v and k != "page"}
         return redirect(f"/projects/{project_id}/findings?{query(clean, page=pages)}")
-    models = models_of(request, profile=profile_for(request, project))
+    list_profile = profile_for(request, project)
+    models = models_of(request, profile=list_profile)
     card_query = "?" + query({**selection, **presentation, "back": w["url"](page=page)})
     active_preset = next((label for label, params in PRESETS
                           if selection == params), "")
@@ -1928,7 +1939,9 @@ def findings_page(request: Request, project_id: int, error: str = ""):
         "project": project, "rows": rows, "total": total, "page": page, "pages": pages, "filters": filters, "worklist": w,
         "answer_counts": answer_counts,
         "codebases": [c for c in db.codebase_counts(project_id)], "models": models["models"],
-        "default_model": default_model(settings_of(request), models["models"], project),
+        "default_model": default_model(settings_of(request), models["models"], project, list_profile),
+        "models_error": models.get("error") or "", "list_profile_name": str(list_profile.get("name") or ""),
+        "list_profile_remote": str(list_profile.get("kind") or "ollama") != "ollama",
         "prev_url": f"?{query(filters, page=page - 1)}" if page > 1 else "",
         "next_url": f"?{query(filters, page=page + 1)}" if page < pages else "",
         "active_runs": db.active_runs(project_id), "review_stats": stats,

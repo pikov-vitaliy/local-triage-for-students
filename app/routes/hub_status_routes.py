@@ -146,8 +146,15 @@ def today() -> date:
 # ============================================================================ условия и вид для карточки
 
 
+STAND_NO_HUB = ("На учебном стенде отправки в Hub нет: заголовок и текст копируются кнопками выше как образец для "
+                "Hub.")
+
+
 def send_blocker(settings, project: dict) -> str:
     """Почему отправка в Hub недоступна для проекта: «» – доступна."""
+    if getattr(settings, "hub_disabled", False):
+        # учебный стенд (ADR-0155): Hub выключен – не отправлять студента настраивать адрес Hub
+        return STAND_NO_HUB
     if not settings.hub_url:
         return "Адрес Hub не задан: «Настройки» → раздел «AppSec.Hub»."
     if not project.get("hub_app_id"):

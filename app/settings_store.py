@@ -187,6 +187,17 @@ def model_found(name: str, models: list[dict]) -> bool:
     return bool(wanted) and any(norm_model_name(m.get("name")) == wanted for m in models)
 
 
+def _model_in(name: str, models: list[dict], profile: Mapping[str, Any] | None) -> bool:
+    """Модель есть на сервере профиля: у удалённого API – имя как есть (executors.same_model), у Ollama – model_found."""
+    from app.executors import same_model
+
+    kind = str((profile or {}).get("kind") or "ollama")
+    if kind == "ollama":
+        return model_found(name, models)
+    key = same_model(kind)
+    return bool(name) and any(key(m.get("name")) == key(name) for m in models)
+
+
 def ollama_report(settings: Settings, state: Mapping[str, Any], profile: Mapping[str, Any] | None = None) -> dict:
     """Ответ GET /api/ollama: что видит приложение на сервере профиля по умолчанию для разбора кода (ADR-0102; без
     профиля – по адресу Ollama из настроек). state – {"models", "version", "error"} (routes.common.models_of).
@@ -199,9 +210,10 @@ def ollama_report(settings: Settings, state: Mapping[str, Any], profile: Mapping
     trust = str((profile or {}).get("trust") or "local")
     return {"url": url, "version": "" if error else str(state.get("version") or ""),
             "models": [str(m.get("name") or "") for m in models], "default_model": model,
-            "default_model_found": False if error else model_found(model, models), "error": error,
+            "default_model_found": False if error else _model_in(model, models, profile), "error": error,
             "profile": {"name": str((profile or {}).get("name") or "Ollama из «Настроек»"), "trust": trust,
-                        "where": "этот компьютер" if trust == "local" else "сеть организации"}}
+                        "kind": str((profile or {}).get("kind") or "ollama"),
+                        "where": {"local": "этот компьютер", "external": "интернет"}.get(trust, "сеть организации")}}
 
 
 # ============================================================================ что видно приложению

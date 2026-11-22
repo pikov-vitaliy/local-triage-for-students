@@ -975,7 +975,10 @@ class Database:
             project_id = int(cur.fetchone()[0])
             # маскирование при показе – решение оператора; по умолчанию выключено (слово владельца 21.11.2026):
             # колонка в базе со значением DEFAULT 1 (схема 35), поэтому значение пишется явно
-            c.execute("UPDATE projects SET mask_secrets = ? WHERE id = ?", (1 if mask_secrets else 0, project_id))
+            # (база старше схемы 35 – например, проверки шагов миграции – колонки ещё нет: писать нечего)
+            if c.execute("SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema()"
+                         " AND table_name = 'projects' AND column_name = 'mask_secrets'").fetchone():
+                c.execute("UPDATE projects SET mask_secrets = ? WHERE id = ?", (1 if mask_secrets else 0, project_id))
             if after is not None:
                 after(c, project_id)
             return project_id
@@ -1702,11 +1705,13 @@ class Database:
                    COUNT(*) FILTER (WHERE missing = 0 AND kind = 'SAST') AS sast,
                    COUNT(*) FILTER (WHERE missing = 0 AND kind = 'SAST' AND urgent = 1) AS sast_urgent,
                    COUNT(*) FILTER (WHERE missing = 0 AND kind LIKE 'SCA%') AS sca,
+                   COUNT(*) FILTER (WHERE missing = 0 AND kind = 'SCA-license') AS sca_license,
                    COUNT(*) FILTER (WHERE missing = 0 AND kind = 'SCA' AND urgent = 1) AS sca_urgent,
                    COUNT(*) FILTER (WHERE missing = 0 AND kind = 'DAST') AS dast,
                    COUNT(*) FILTER (WHERE missing = 1) AS missing
               FROM findings WHERE project_id = ?""", (project_id,))
-        counts = row or {"total": 0, "sast": 0, "sast_urgent": 0, "sca": 0, "sca_urgent": 0, "dast": 0, "missing": 0}
+        counts = row or {"total": 0, "sast": 0, "sast_urgent": 0, "sca": 0, "sca_license": 0, "sca_urgent": 0,
+                         "dast": 0, "missing": 0}
         counts["defects"] = self.hub_defect_count(project_id)  # число на вкладке «Дефекты» (ADR-0120)
         return counts
 

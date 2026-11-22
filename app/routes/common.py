@@ -303,11 +303,16 @@ def default_model(settings: Settings, models: list[dict], project: dict | None =
                   profile: dict | None = None) -> str:
     """Модель, выбранная в списке по умолчанию: модель проекта, иначе модель профиля, которым пойдёт запрос
     (ADR-0102), иначе модель из настроек – первая из них, что есть на сервере; иначе первая из списка."""
+    from app.executors import same_model
+
     names = [m["name"] for m in models]
+    key = same_model(str((profile or {}).get("kind") or "ollama"))  # Ollama – без регистра и «:latest»
     for wanted in ((project or {}).get("model") or "", (profile or {}).get("default_model") or "",
                    settings.default_model):
-        if wanted and wanted in names:
-            return wanted
+        if wanted:
+            found = next((name for name in names if key(name) == key(wanted)), None)
+            if found is not None:
+                return found
     return names[0] if names else ""
 
 

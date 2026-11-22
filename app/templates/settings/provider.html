@@ -124,11 +124,13 @@
   <details class="panel provider-chat provider-advanced" id="provider-chat"{% if errors.response_mode or errors.messages_response_mode or errors.thinking or errors.effort or errors.context_window or errors.max_output or errors.tool_steps or errors.chat_timeout_s or errors.search_path or errors.fetch_path %} open{% endif %}>
     <summary><h2 id="chat-title">Дополнительно</h2> <span class="muted small">формат ответа, рассуждение, пределы, поиск</span></summary>
     <p class="hint">Можно не трогать: пустые поля и «не передавать» – умолчания провайдера и приложения. Поиск нужен для исследования компонентов. Значения – из документации провайдера; лимиты расхода задаются в его личном кабинете.</p>
+    <p class="provider-cc cluster" id="deepseek-recommended"><button type="button" class="btn btn-small" data-fill-fields="{{ deepseek_recommended|tojson|forceescape }}" data-fill-status="deepseek-recommended-status">Подставить рекомендуемые значения DeepSeek</button><span class="muted small" id="deepseek-recommended-status" role="status" aria-live="polite">Заполнит поля ниже значениями для deepseek-flash; затем «Сохранить».</span></p>
     <label class="field provider-cc">
       <span class="field-label">Формат ответа</span>
       <select name="response_mode"{{ invalid("response_mode") }}>
         {% for mode, label in response_labels.items() %}<option value="{{ mode }}"{% if values.response_mode == mode %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
+      <span class="field-hint">{{ advanced_hints.response_mode }}</span>
       {{ field_error("response_mode") }}
     </label>
     <label class="field provider-msg">
@@ -144,6 +146,7 @@
       <select name="thinking"{{ invalid("thinking") }}>
         {% for mode, label in thinking_labels.items() %}<option value="{{ mode }}"{% if values.thinking == mode %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
+      <span class="field-hint">{{ advanced_hints.thinking }}</span>
       {{ field_error("thinking") }}
     </label>
     <label class="field provider-cc">
@@ -151,13 +154,14 @@
       <select name="effort"{{ invalid("effort") }}>
         {% for level, label in effort_labels.items() %}<option value="{{ level }}"{% if values.effort == level %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
-      <span class="field-hint">«Не передавать» – как решит сервер. Поля, которых сервер не знает, он может отвергнуть: «Пробный ответ» покажет.</span>
+      <span class="field-hint">{{ advanced_hints.effort }} «Не передавать» – как решит сервер. Поля, которых сервер не знает, он может отвергнуть: «Пробный ответ» покажет.</span>
       {{ field_error("effort") }}
     </label>
     {% for name in ("context_window", "max_output", "tool_steps", "chat_timeout_s") %}
     <label class="field">
       <span class="field-label">{{ chat_numbers[name][3] }}{% if name == "chat_timeout_s" %}, с{% elif name != "tool_steps" %}, токенов{% endif %}</span>
-      <input type="text" name="{{ name }}" value="{{ values[name] }}" inputmode="numeric" maxlength="8" placeholder="{{ {'context_window': 'не проверять', 'max_output': '8192', 'tool_steps': '12', 'chat_timeout_s': '600'}[name] }}"{{ invalid(name) }}>
+      <input type="text" name="{{ name }}" value="{{ values[name] }}" inputmode="numeric" maxlength="8" placeholder="{{ {'context_window': 'не проверять', 'max_output': '8192', 'tool_steps': '12', 'chat_timeout_s': '600'}[name] }}" title="{{ advanced_hints[name] }}"{{ invalid(name) }}>
+      <span class="field-hint">{{ advanced_hints[name] }}</span>
       {{ field_error(name) }}
     </label>
     {% endfor %}
@@ -218,7 +222,7 @@
     {{ field_error("enabled") }}
     <label class="check provider-code-default"><input type="checkbox" name="default_code" value="1"{% if values.default_code %} checked{% endif %}{{ invalid("default_code") }}> По умолчанию для разбора кода во всех проектах</label>
     {{ field_error("default_code") }}
-    {% if not fixed %}<p class="field-hint provider-chat-only" id="provider-code-default-note">Галочки «По умолчанию для разбора кода» у этого протокола нет: умолчание действует на все проекты, в том числе с секретным кодом. Профиль выбирают в нужном проекте – «Параметры проекта», поле «Профиль модели» – или при запуске разбора. Внешнему провайдеру код уходит только проекту с отметкой «код не секретный» (ставится в параметрах проекта после предпросмотра).</p>{% endif %}
+    {% if not fixed %}<p class="field-hint provider-chat-only" id="provider-code-default-note">Профиль по умолчанию действует на все проекты, где свой профиль не выбран. Внешнему провайдеру код уходит только проекту с отметкой «код не секретный» (у проектов учебных примеров и Demo Library она стоит сразу; у других проектов ставится в параметрах проекта после предпросмотра). Проекту без отметки разбор через этот профиль откажет – выберите для него другой профиль в «Параметрах проекта».</p>{% endif %}
   </section>
 
   <div class="actions">

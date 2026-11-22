@@ -40,7 +40,7 @@ from app.models import Finding, ImportResult
 from app.routes.common import (MAX_NAME, db_of, default_model, external_enabled, mask_key_of, metrics_of,
                                models_of, profile_for, project_or_404, redirect, register_messages, render,
                                runner_of, settings_of, with_reopened)
-from app.settings_store import folder_display, model_found, repos_display
+from app.settings_store import folder_display, repos_display
 from app.context import file_presence
 from app.triage import empty_dir, order_findings, save_snapshots, sync_revisions
 from app.view import code_change_note, model_option, revision_note
@@ -315,9 +315,13 @@ def codebase_rows(db: Database, project: dict, base: Path | None) -> dict:
     ни сохранённой папки, ни найденной. reset – что пропадёт при сбросе ручных соответствий."""
     pid = project["id"]
     candidates = list_codebase_dirs(base) if base else []
-    from app.routes.examples import link_folders
+    from app.routes.examples import example_of_project, link_folders, project_link
     # проект из примера: папки сервисов из связи тоже выбираются (у crAPI – третий уровень от папки проекта)
     candidates = candidates + sorted(f for f in link_folders(db, pid, base) if f not in candidates)
+    example_key = example_of_project(db, pid)
+    example_map = dict(((project_link(db, example_key) or {}) if example_key else {}).get("codebases") or {})
+    from app import examples as examples_module
+    from_examples = str(project.get("repos_dir") or "") == examples_module.EXAMPLES_FOLDER
     cmap = db.get_codebase_map(pid, with_detached=True)
     snapshots = db.snapshot_counts(pid)
     rows, nameless = [], None
@@ -343,7 +347,8 @@ def codebase_rows(db: Database, project: dict, base: Path | None) -> dict:
         elif detached:
             state, tone = ("клон удалён, срезы в базе" if not exists else "клон не читается, срезы в базе"), "ok"
         elif exists:
-            state, tone = ("указана вручную" if manual else "найдена"), "ok"
+            state, tone = ("из примера" if manual and example_map.get(row["codebase"]) == folder and from_examples
+                           else "указана вручную" if manual else "найдена"), "ok"
         elif stored:
             state, tone = "клон удалён, срезы в базе", "ok"
         elif suggestion:
@@ -733,6 +738,19 @@ def project_row(p: dict) -> dict:
 def list_response(request: Request, archived: bool = False, error: str = "", status_code: int = 200) -> HTMLResponse:
     db = db_of(request)
     projects = [project_row(p) for p in db.list_projects(archived=archived)]
+    settings = settings_of(request)
+    default_profile, profiles = None, {}
+    for p in projects:  # модель без своей – из профиля, которым пойдёт разбор (как на странице проекта)
+        if p.get("model"):
+            continue
+        pid = p.get("provider_id")
+        if pid and pid not in profiles:
+            profiles[pid] = db.get_provider(int(pid))
+        profile = profiles.get(pid) if pid else None
+        if profile is None:
+            default_profile = default_profile or profile_for(request)
+            profile = default_profile
+        p["model_shown"], p["model_source"] = fallback_model(settings, profile)
     other = db.count_projects(archived=not archived)
     context = {"projects": projects, "archived": archived, "active_count": other if archived else len(projects),
                "archive_count": len(projects) if archived else other, "error": error}
@@ -741,15 +759,40 @@ def list_response(request: Request, archived: bool = False, error: str = "", sta
 
 # ============================================================================ страница проекта
 
-def model_options(settings: Settings, models: list[dict], project: dict) -> list[dict]:
-    """Варианты модели проекта: «как в настройках» и модели сервера профиля (с объёмом и пометкой рассуждения,
-    view.model_option); модель проекта, которой нет в Ollama, остаётся в списке с пометкой."""
+def model_listed(name: str, models: list[dict], profile: dict | None) -> bool:
+    """Модель есть в списке сервера профиля: у Ollama – без учёта регистра и «:latest», у удалённых API – имя как есть
+    (executors.same_model): так же её выберет форма запуска."""
+    from app.executors import same_model
+
+    key = same_model(str((profile or {}).get("kind") or "ollama"))
+    return bool(name) and any(key(m.get("name")) == key(name) for m in models)
+
+
+def fallback_model(settings: Settings, profile: dict | None) -> tuple[str, str]:
+    """Модель проекта без своей модели и откуда она: модель профиля, которым пойдёт разбор (common.default_model), иначе
+    модель из «Настроек». Второе – «из настроек» или «из профиля «…»» (у профиля 1 – «из настроек»)."""
+    from app.db import DEFAULT_PROVIDER_ID
+
+    model = str((profile or {}).get("default_model") or "")
+    if model and (profile or {}).get("id") != DEFAULT_PROVIDER_ID:
+        return model, f"из профиля «{profile.get('name') or ''}»"
+    return model or settings.default_model, "из настроек"
+
+
+def model_options(settings: Settings, models: list[dict], project: dict, profile: dict | None = None) -> list[dict]:
+    """Варианты модели проекта: «как в профиле» (или «как в настройках») и модели сервера профиля (с объёмом и пометкой
+    рассуждения, view.model_option); модель проекта, которой нет в Ollama, остаётся в списке с пометкой."""
     current = project.get("model") or ""
-    options = [{"value": "", "label": f"Как в настройках: {settings.default_model}", "selected": not current}]
-    names = [m["name"] for m in models]
-    if current and current not in names:
+    fallback, source = fallback_model(settings, profile)
+    label = f"Как в настройках: {fallback}" if source == "из настроек" else f"Как в профиле: {fallback}"
+    options = [{"value": "", "label": label, "selected": not current}]
+    from app.executors import same_model
+
+    key = same_model(str((profile or {}).get("kind") or "ollama"))
+    if current and not model_listed(current, models, profile):
         options.append({"value": current, "label": f"{current} – нет на сервере профиля", "selected": True})
-    options += [{"value": m["name"], "label": model_option(m), "selected": m["name"] == current} for m in models]
+    options += [{"value": m["name"], "label": model_option(m), "selected": bool(current) and key(m["name"]) == key(current)}
+                for m in models]
     return options
 
 
@@ -873,10 +916,11 @@ def project_context(request: Request, project: dict) -> dict:
         "ollama_error": models["error"], "ollama_url": settings.ollama_url,
         "default_model": default_model(settings, models["models"], project, profile),
         "traffic_log_on": settings.model_traffic_log == "on",  # ADR-0083: предупреждение у выбора модели
-        "project_model": model_name or settings.default_model, "model_from_settings": not model_name,
-        "model_missing": bool(models["models"]) and not model_found(model_name or settings.default_model,
-                                                                     models["models"]),
-        "model_options": model_options(settings, models["models"], project),
+        "project_model": model_name or fallback_model(settings, profile)[0], "model_from_settings": not model_name,
+        "model_source": fallback_model(settings, profile)[1],
+        "model_missing": bool(models["models"]) and not model_listed(model_name or fallback_model(settings, profile)[0],
+                                                                      models["models"], profile),
+        "model_options": model_options(settings, models["models"], project, profile),
         "provider_options": provider_options(db, settings, project), "not_for_code_note": NOT_FOR_CODE_NOTE,
         "run_profile": profile,
         "vram_total_mb": vram_total, "runs": db.list_runs(pid, 10), "active_runs": active,
@@ -970,6 +1014,9 @@ async def create_demo(request: Request):
     return await run_in_threadpool(apply)
 
 
+DEMO_MARK_REASON = "Демо-пример: выдуманный код, написанный для приложения, без секретов и реальных данных"
+
+
 def make_demo(request: Request, after=None, import_after=None, project_id: int | None = None):
     """Демо-проект (вызывающий держит _IMPORT_SLOT): (номер проекта, ключ сообщения) или ответ с ошибкой. after(c, id)
     – запись в транзакции создания проекта, import_after(c, import_id) – в транзакции импорта (связь записи № 0
@@ -992,11 +1039,17 @@ def make_demo(request: Request, after=None, import_after=None, project_id: int |
         return list_response(request, error=f"Не удалось прочитать демо-выгрузку (ошибка {eid}).",
                              status_code=500)
     application = str(result.summary.get("application") or "").strip() or "Demo Library"
+    created_now = project_id is None
     if project_id is None:
         project_id = db.create_project(unique_name(db, f"Демо: {application}"[:MAX_NAME]), after=after)
     if demo["repos_dir"] is not None:
         db.set_repos_dir(project_id, demo["repos_dir"])
     store_import(settings, db, project_id, DEMO_REPORT, result, after=import_after)
+    if created_now:
+        # код демо выдуманный, написан для приложения (examples/demo, с первого коммита 15.10.2026): отметка «код не
+        # секретный» по умолчанию – слово владельца 22.11.2026; действует, только когда внешние провайдеры включены;
+        # снимается в параметрах проекта
+        db.set_external_mark(project_id, DEMO_MARK_REASON)
     ok = "project_demo" if demo["repos_dir"] is not None else "project_demo_nocode"
     return project_id, ok
 
@@ -1160,7 +1213,7 @@ def project_models(request: Request, project_id: int, provider_id: str = ""):
     else:
         profile = profile_for(request, {**project, "provider_id": None})
     models = models_of(request, profile=profile)
-    return {"options": model_options(settings, models["models"], project), "error": models["error"] or "",
+    return {"options": model_options(settings, models["models"], project, profile), "error": models["error"] or "",
             "profile": profile["name"]}
 
 

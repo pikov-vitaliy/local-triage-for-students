@@ -756,7 +756,17 @@ if ($check.Status -eq 200 -and $check.Json) {
     if ($ollama.profile) {
         Write-Host ("Код по умолчанию разбирает профиль «{0}» ({1}): {2}" -f $ollama.profile.name, $ollama.profile.where, $ollamaUrl)
     }
-    if ($ollama.error -and $lanProfile) {
+    $remoteProfile = $ollama.profile -and $ollama.profile.kind -and [string]$ollama.profile.kind -ne 'ollama'
+    if ($remoteProfile) {
+        # профиль по умолчанию – API чат-завершений или Messages API (например внешний провайдер): это не Ollama
+        if ($ollama.error) {
+            $remoteMessage = ("Сервер профиля «{0}» не ответил приложению: {1} Проверьте адрес и ключ на странице " +
+                "«Настройки → Провайдеры моделей».") -f $ollama.profile.name, $ollama.error
+            Write-Host $remoteMessage -ForegroundColor Yellow
+        } else {
+            Write-Host ('Сервер профиля «{0}» отвечает приложению, моделей: {1}.' -f $ollama.profile.name, @($ollama.models).Count)
+        }
+    } elseif ($ollama.error -and $lanProfile) {
         # сервер в сети организации (ADR-0102): Ollama там должна слушать сеть, межсетевой экран – пропускать порт
         # только с этого компьютера; адреса сервера подтверждаются в приложении
         Write-Host ("Сервер модели в сети не ответил приложению: $($ollama.error) На том компьютере Ollama должна " +

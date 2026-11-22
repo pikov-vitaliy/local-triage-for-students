@@ -7,7 +7,7 @@
 <div class="page-head">
   <div>
     <h1>{% if archived %}Архив проектов{% else %}Проекты{% endif %}</h1>
-    <p class="page-sub">{% if archived %}Решения и отметки архивных проектов сохранены: проект можно вернуть в любой момент.{% else %}Проект – выгрузка AppSec.Hub и папка с клонами её кодовых баз. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.{% endif %}</p>
+    <p class="page-sub">{% if archived %}Решения и отметки архивных проектов сохранены: проект можно вернуть в любой момент.{% elif STAND == "npm" %}Проект – учебное приложение из «Примеров» с находками SAST и SCA. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.{% else %}Проект – выгрузка AppSec.Hub и папка с клонами её кодовых баз. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.{% endif %}</p>
   </div>
   {% if not archived and projects %}
   <div class="page-actions"><a class="btn" href="#new-project">{{ icon("plus") }}Новый проект</a></div>
@@ -25,7 +25,7 @@
         <div>
           <div class="item-title"><a class="project-name" href="/projects/{{ p.id }}">{{ p.name }}</a></div>
           <div class="item-meta dot-list">
-            <span>модель <span class="mono">{{ p.model or settings.default_model }}</span>{% if not p.model %} – из настроек{% endif %}</span>
+            <span>модель <span class="mono">{{ p.model or p.model_shown or settings.default_model }}</span>{% if not p.model %} – {{ p.model_source or "из настроек" }}{% endif %}</span>
             {% if p.last_activity %}<span>активность <time datetime="{{ p.last_activity }}" data-relative>{{ p.last_activity|ts }}</time></span>{% endif %}
             {% if p.missing %}<span>нет в новой выгрузке: {{ p.missing }}</span>{% endif %}
             {% if archived and p.archived_at %}<span>в архиве с <time datetime="{{ p.archived_at }}">{{ p.archived_at|ts }}</time></span>{% endif %}
@@ -59,6 +59,10 @@
 </section>
 {% elif archived %}
 {{ empty_state("В архиве пусто", "Проект убирается сюда кнопкой «В архив» в списке проектов: решения и отметки сохраняются, вернуть его можно в любой момент.", icon_name="archive") }}
+{% elif STAND == "npm" %}
+{% call empty_state("Проектов пока нет", "Начните с вкладки «Примеры»: в блоке «Начало работы» подключите модель, затем на карточке учебного приложения нажмите «Создать проект». Самый простой пример – Demo Library: он уже на компьютере и не скачивается.", icon_name="inbox") %}
+  <a class="btn btn-primary" href="/examples#start" id="open-examples">{{ icon("package") }}Открыть «Примеры»</a>
+{% endcall %}
 {% else %}
 {% call empty_state("Проектов пока нет", "Создайте проект, загрузите в него выгрузку из AppSec.Hub и выберите папку с клонами – дальше модель разберёт находки SAST, а вы проверите её вердикты. Можно начать с демо на выдуманных данных.", icon_name="inbox") %}
   <form method="post" action="/projects/demo"><button type="submit" class="btn" id="create-demo" data-busy="Создаю демо-проект…">{{ icon("play") }}Создать демо-проект</button></form>

@@ -151,6 +151,23 @@ def test_continue_walks_sast_then_sca_then_project(web):
     assert web.client.get("/projects/424242/continue", follow_redirects=False).status_code == 404
 
 
+def test_project_model_comes_from_the_chosen_profile(web):
+    """Проверка стенда 22.11: у проекта без своей модели шапка, «Модель проекта», список проектов и список находок
+    показывают модель профиля, которым пойдёт разбор, а не модель из «Настроек»."""
+    pid = prepared(web)
+    db = web.app.state.db
+    prof = db.create_provider({"name": "Профиль QA", "kind": "ollama", "base_url": web.fake.url, "trust": "local",
+                               "default_model": "qwen2.5-coder:14b", "enabled": 1})
+    db.update_project(pid, provider_id=prof["id"])
+    page = web.client.get(f"/projects/{pid}").text.replace("</span>", "")
+    assert "qwen2.5-coder:14b – из профиля «Профиль QA»" in page and "Как в профиле: qwen2.5-coder:14b" in page
+    assert "из профиля «Профиль QA»" in web.client.get("/").text
+    found = web.client.get(f"/projects/{pid}/findings").text
+    assert re.search(r'<option value="qwen2.5-coder:14b"[^>]*selected', found), "по умолчанию – модель профиля"
+    counts = db.count_findings(pid)
+    assert "sca_license" in counts
+
+
 def test_project_params_name_and_model(web):
     pid = prepared(web)
     db = web.app.state.db

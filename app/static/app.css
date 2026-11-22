@@ -469,6 +469,13 @@ kbd {
 /* шапка – одна строка: на средних экранах меню теряет значки, подписи остаются; крошки сокращаются многоточием */
 @media (max-width: 1360px) { .topnav-link .icon { display: none; } .topnav-link { padding-left: 8px; padding-right: 8px; } }
 @media (max-width: 1120px) { .crumbs { display: none; } }
+/* 761–1000 px: меню целиком не помещается в строку – надпись логотипа прячется, пункты переносятся, страница не уезжает
+   вбок (проверка стенда 22.11: при 768 px «Журнал» и переключатель темы были за краем) */
+@media (max-width: 1000px) {
+  .brand-name { display: none; }
+  .topbar-inner { flex-wrap: wrap; }
+  .topbar-actions { flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+}
 .topnav-link {
   display: inline-flex;
   align-items: center;
@@ -2585,6 +2592,12 @@ body[data-page="finding"] .finding-where { flex: 1 0 100%; margin: 0; }
 .code-body { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--s-4); }
 .code-body > * { flex: 1 1 100%; min-width: 0; }
 .code-body > p.dot-list, .code-body > p.small:not(.muted) { flex: 0 1 auto; margin: 0; }
+/* «Скопировать путь» и «Открыть в VS Code» – в строке сведений о срезе, высотой строки текста: код остаётся на первом
+   экране (полный путь – в подсказке кнопок и в буфере обмена) */
+.editor-links { display: inline-flex; flex-wrap: wrap; gap: 0 var(--s-1); vertical-align: baseline; }
+.dot-list > .editor-links { margin-left: var(--s-2); }
+.dot-list > .editor-links::before { content: none; }
+.editor-links .btn { min-height: 0; padding: 0 var(--s-1); line-height: inherit; }
 .code-panel .code-head .step-head { flex: none; margin: 0; }
 .code-where { color: var(--text-2); overflow-wrap: anywhere; }
 .route-pair .code { max-height: calc(100vh - var(--route-h) - var(--bar-h, 96px) - 160px); min-height: 180px; margin: var(--s-2) 0; }
@@ -2718,8 +2731,6 @@ body[data-page="finding"] .action-bar .bar-status { order: 3; }
 .provider-advanced > summary h2 { display: inline; margin: 0; }
 .provider-advanced[open] > summary { margin-bottom: var(--s-3); }
 /* умолчание для разбора кода – только у Ollama; у удалённых API вместо галочки – пояснение */
-.provider-form:has(input[name="kind"][value="chat_completions"]:checked) .provider-code-default,
-.provider-form:has(input[name="kind"][value="messages"]:checked) .provider-code-default,
 .provider-form:has(input[name="kind"][value="ollama"]:checked) .provider-chat-only { display: none; }
 .provider-form:has(input[name="kind"][value="ollama"]:checked) .provider-chat,
 .provider-form:has(input[name="kind"][value="chat_completions"]:checked) .provider-ollama,
@@ -2835,6 +2846,6 @@ body[data-page="finding"] .action-bar .bar-status { order: 3; }
 .example-state { margin: 0; overflow-wrap: anywhere; }
 .example-state[data-state="failed"] { color: var(--warn-ink); }
 .example-card .cluster { margin-top: auto; }
-.start-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; }
+.start-steps { margin: 0; padding-left: 1.4em; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .start-steps .inline-form { margin-top: 6px; }
 .help-toc ol { margin: 0; padding-left: 1.4em; columns: 2 220px; }

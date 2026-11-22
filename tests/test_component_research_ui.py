@@ -152,7 +152,7 @@ def test_component_list_shows_facts_research_and_operator_decision(web):
         'name="status"', 'name="decision"', 'name="ecosystem"', 'name="q"',
         'data-label="Текущая версия"', 'data-label="Актуальный стабильный релиз"',
         'data-label="Поддержка"', 'data-label="Публичные уязвимости"', 'data-label="Исследование"',
-        'data-label="Решение человека"', "открытая поддержка", "поддержка закончилась",
+        'data-label="Решение по компоненту"', "открытая поддержка", "поддержка закончилась",
         LATEST_VERSION, "риск принят", "Функция недоступна извне",
     ):
         assert needle in html, needle

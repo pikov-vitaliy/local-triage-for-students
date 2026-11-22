@@ -24,7 +24,7 @@
 <div class="page-head">
   <div>
     <h1>Исследование компонентов</h1>
-    <p class="page-sub">Версии, поддержка и публичные уязвимости библиотек из текущей выгрузки. Решение всегда принимает оператор.</p>
+    <p class="page-sub">Версии, поддержка и публичные уязвимости компонентов из текущей выгрузки. Решение всегда принимает оператор. Решение по компоненту – общее для версии; решения по отдельным находкам SCA принимаются в их карточках и здесь не показываются.</p>
   </div>
   <div class="page-actions">
     <a class="btn" href="/projects/{{ pid }}/components/report?format=md" download>{{ icon("download") }}Отчёт Markdown</a>
@@ -43,7 +43,7 @@
 <section class="panel panel-compact" aria-label="Сводка исследования компонентов">
   <div class="stats">
     <a class="stat-link" href="/projects/{{ pid }}/components">{{ stat(summary.total, "Компоненты") }}</a>
-    <a class="stat-link" href="/projects/{{ pid }}/components?status=vulnerable">{{ stat(summary.vulnerable, "Уязвимые", tone="err" if summary.vulnerable else "") }}</a>
+    <a class="stat-link" href="/projects/{{ pid }}/components?status=vulnerable">{{ stat(summary.vulnerable, "Уязвимые", sub="по исследованию", tone="err" if summary.vulnerable else "") }}</a>
     <a class="stat-link" href="/projects/{{ pid }}/components?status=incomplete">{{ stat(summary.incomplete, "Неполные", tone="warn" if summary.incomplete else "") }}</a>
     <a class="stat-link" href="/projects/{{ pid }}/components?status=identity_unresolved">{{ stat(summary.identity_unresolved, "Идентичность не определена", tone="warn" if summary.identity_unresolved else "") }}</a>
     <a class="stat-link" href="/projects/{{ pid }}/components?gaps=1">{{ stat(summary.with_gaps, "С пробелами", sub="исследованы, есть непроверенное") }}</a>
@@ -102,7 +102,7 @@
   <summary>Исследование провайдером{% if net.run %} · {{ net.state_labels.get(net.run.state, net.run.state) }}: сохранено {{ net.run.rows_saved }} из {{ net.run.rows_total }}{% endif %}</summary>
   <div class="service-body">
   <div class="panel-head"><h2 id="component-research-title">Исследование провайдером</h2></div>
-  <p class="hint">Второй способ исполнить задание: строки по одной уходят модели из профиля удалённого API (чат-завершения или Anthropic Messages API), ответы проверяются тем же валидатором и сохраняются ревизиями. Файловый путь (ZIP и ответ агента) остаётся как есть.</p>
+  <p class="hint">Второй способ исполнить задание: модель профиля исследования (например, DeepSeek по заготовке, со своим ключом) изучит каждый компонент и предложит вывод, вы его проверяете. С включённым в профиле поиском она смотрит открытые источники, без поиска – отвечает по своим знаниям. Без такого профиля – задание ZIP для агента выше или решение самому.</p>
   <form method="post" action="/projects/{{ pid }}/components/research-provider" class="inline-form" data-autosubmit>
     <label class="field"><span class="field-label">Профиль исследования</span>
       <select name="research_provider_id" id="research-provider">{% for o in net.options %}<option value="{{ o.value }}"{% if o.selected %} selected{% endif %}{% if o.disabled %} disabled{% endif %}>{{ o.label }}</option>{% endfor %}</select>
@@ -115,7 +115,7 @@
     <button type="submit" class="btn btn-primary" id="build-task-research" data-busy="Собираю…">{{ icon("refresh") }}Собрать задание</button>
   </form>
   {% elif not net.profile %}
-  <p class="callout callout-info" id="research-no-profile">Выберите профиль «API чат-завершений» или «Anthropic Messages API» для исследования – у проекта выше или в <a href="/settings/providers">«Провайдерах моделей»</a>. Профиль Ollama исследование не исполняет.</p>
+  <p class="callout callout-info" id="research-no-profile">Для исследования нужен профиль «API чат-завершений» или «Anthropic Messages API». Проще всего – DeepSeek со своим ключом: <a href="/settings/providers/new?preset=deepseek">создать по заготовке</a>, вставить ключ, «Проверить» и «Сохранить», затем выбрать его здесь. У другого сервера способ входа задаёт его профиль в <a href="/settings/providers">«Провайдерах моделей»</a>. Профиль Ollama исследование не исполняет.</p>
   {% elif net.run and net.run.state == "running" %}
   <p>Идёт получение <a href="/projects/{{ pid }}/components/research/{{ net.run.id }}">№{{ net.run.id }}</a>: в очереди {{ net.counts.queued }}, отправлено {{ net.counts.sending }}, сохранено {{ net.counts.saved }}.</p>
   {% else %}
@@ -272,7 +272,7 @@
         <th scope="col">Поддержка</th>
         <th scope="col">Публичные уязвимости</th>
         <th scope="col">Исследование</th>
-        <th scope="col">Решение человека</th>
+        <th scope="col">Решение по компоненту</th>
       </tr></thead>
       <tbody>
       {% for row in rows %}
@@ -313,7 +313,7 @@
             {% if row.gaps %}<span class="small muted block">пробелов: {{ row.gaps }}</span>{% endif %}
             <span class="small muted block">ревизия {{ row.revision }}{% if row.fresh_at %} · ответ принят <time datetime="{{ row.fresh_at }}">{{ row.fresh_at[:10] }}</time>{% endif %}</span>{% endif %}
           </td>
-          <td data-label="Решение человека">
+          <td data-label="Решение по компоненту">
             {% if row.decision %}<span class="badge badge-{{ 'warn' if row.decision_stale else 'info' }}">{{ row.decision.action_label }}</span>
             {% if row.decision_stale %}<span class="badge badge-warn">требует пересмотра</span>{% endif %}
             <span class="small block">{{ row.decision.rationale }}</span>

@@ -63,7 +63,7 @@
 
 <nav class="chips component-sections" aria-label="Разделы компонента">
   <a class="btn btn-small" href="#component-facts">Версии и поддержка</a>
-  <a class="btn btn-small" href="#public-findings">Уязвимости: {{ row.findings_total }}</a>
+  <a class="btn btn-small" href="#public-findings">Уязвимости: {{ row.findings_total if row.researched else "не исследован" }}</a>
   <a class="btn btn-small" href="#research-coverage">Охват источников</a>
   <a class="btn btn-small" href="#component-advice">Совет и пробелы</a>
   <a class="btn btn-small" href="#operator-decision">Решение оператора</a>

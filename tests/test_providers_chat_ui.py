@@ -64,20 +64,18 @@ def test_external_profile_is_saved_with_key_and_settings(web, monkeypatch):  # n
     assert 'value="chat_completions" checked' in form and 'id="provider-search-check"' in form
 
 
-def test_external_cannot_be_the_default_for_code(web, monkeypatch):  # noqa: F811
-    """Галочки у профиля API чат-завершений на странице нет: отметка, оставшаяся от Ollama
-    при смене протокола, не действует – профиль сохраняется, но умолчанием для разбора кода не становится."""
+def test_external_can_be_the_default_for_code(web, monkeypatch):  # noqa: F811
+    """Решение владельца 21.11.2026: профиль внешнего API может быть профилем по умолчанию; код ему уходит только у
+    проектов с отметкой «код не секретный» (проверка исполнителя), подсказка на странице это объясняет."""
     monkeypatch.setenv("LLM_EXTERNAL", "1")
-    before = web.app.state.settings.default_provider_id
     r = post(web, "/settings/providers/new", name="Внешний", trust="external", base_url="https://api.example.com",
              default_code="1", action="save")
     assert r.status_code == 303, r.text[:1500]
     db = web.app.state.db
     pid = next(p["id"] for p in db.list_providers() if p["name"] == "Внешний")
-    stored = db.get_settings().get("default_provider_id")
-    assert stored != pid and web.app.state.settings.default_provider_id == before
+    assert db.get_settings().get("default_provider_id") == pid
     page = web.client.get(f"/settings/providers/{pid}").text
-    assert 'id="provider-code-default-note"' in page
+    assert 'id="provider-code-default-note"' in page and "код не секретный" in page
 
 
 @pytest.mark.parametrize("fields, text", [

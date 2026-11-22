@@ -856,6 +856,28 @@
     window.setInterval(draw, 1000);
   }
 
+  // [data-fill-fields='{"имя": значение}']: подставляет значения в поля своей формы (рекомендуемые значения DeepSeek
+  // в профиле провайдера); флажки – true/false; сохраняет форма, как обычно
+  function initFillFields() {
+    document.addEventListener("click", function (event) {
+      var button = closest(event.target, "[data-fill-fields]");
+      if (!button || !button.form) return;
+      var values;
+      try { values = JSON.parse(button.getAttribute("data-fill-fields")); } catch (e) { return; }
+      var filled = 0;
+      Object.keys(values).forEach(function (name) {
+        var field = button.form.elements[name];
+        if (!field || field.length > 1 && !field.tagName) return;
+        if (field.type === "checkbox") field.checked = values[name] === true;
+        else field.value = String(values[name]);
+        field.dispatchEvent(new Event("change", { bubbles: true }));
+        filled += 1;
+      });
+      var status = byId(button.getAttribute("data-fill-status") || "");
+      if (status) status.textContent = "Подставлено полей: " + filled + ". Нажмите «Сохранить» внизу страницы.";
+    });
+  }
+
   // [data-dismiss] закрывает ближайшее сообщение
   function initDismiss() {
     document.addEventListener("click", function (event) {
@@ -1508,6 +1530,7 @@
       if (text && commentFor && text === initialComment) origin = commentFor;
       else if (text && modelComment && text === modelComment.trim()) origin = modelCommentFor;
       var d = decision();
+      if (!d) return false;  // решение не выбрано – в Hub пока ничего не уходит (сервер: comment_stale = False)
       var target = sastOutcome(d) ? d : (d === "later" ? "uncertain" : (d === "risk_accepted" ? "risk_accepted"
         : (d === "agree" && modelVerdict ? modelVerdict : ((select && select.value) || "uncertain"))));
       return !!origin && origin !== target;
@@ -3512,6 +3535,7 @@
   initDialogs();
   initDropzones();
   initElapsed();
+  initFillFields();
   initChecklists();
   initRemember();
   initCodeFold();

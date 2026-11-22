@@ -35,6 +35,33 @@ def test_presets_fill_the_new_profile_form(web):  # noqa: F811
     assert "заготовка" not in web.client.get("/settings/providers/new?preset=unknown").text.lower()
 
 
+def test_deepseek_preset_fills_recommended_advanced_values_with_hints(web, monkeypatch):  # noqa: F811
+    """Слово владельца 22.11.2026: заготовка DeepSeek сразу заполняет «Дополнительно» рекомендуемыми значениями, у полей
+    – подсказки; кнопка «Подставить рекомендуемые значения DeepSeek» – для уже созданных профилей."""
+    import html
+    import json
+    import re
+
+    from app.providers import ADVANCED_HINTS, DEEPSEEK_RECOMMENDED, read_form
+
+    page = web.client.get("/settings/providers/new?preset=deepseek").text
+    for name in ("context_window", "max_output", "tool_steps", "chat_timeout_s"):
+        assert f'name="{name}" value="{DEEPSEEK_RECOMMENDED[name]}"' in page, name
+    assert '<option value="enabled" selected>' in page and '<option value="high" selected>' in page
+    assert re.search(r'name="retry_on_drop" value="1" checked', page)
+    for hint in ADVANCED_HINTS.values():
+        assert html.escape(hint, quote=False) in page or html.escape(hint) in page
+    raw = re.search(r'data-fill-fields="([^"]+)"', page).group(1)
+    assert json.loads(html.unescape(raw)) == DEEPSEEK_RECOMMENDED
+    # рекомендуемые значения проходят проверку формы без ошибок
+    monkeypatch.setenv("LLM_EXTERNAL", "1")
+    form = {"name": "DeepSeek", "kind": "chat_completions", "trust": "external", "base_url": "https://api.deepseek.com",
+            "default_model": "deepseek-flash", "enabled": "1",
+            **{k: ("1" if v is True else v) for k, v in DEEPSEEK_RECOMMENDED.items()}}
+    parsed = read_form(form, None)
+    assert not parsed.errors, parsed.errors
+
+
 def test_deepseek_preset_without_key_sends_nothing(web, monkeypatch):  # noqa: F811
     """«Проверить» у заготовки без ключа не обращается к провайдеру: сразу просьба ввести ключ."""
     from app import llm_net

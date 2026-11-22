@@ -152,7 +152,7 @@
     <input type="hidden" name="fresh" value="0">
     <button type="submit" class="btn btn-primary" id="reanalyze-btn"{% if not run_models or pending_run or row.missing %} disabled{% endif %}>Разобрать моделью</button>
   </form>
-  {% if not run_models %}<p class="hint">Ollama недоступна или в ней нет моделей: проверьте адрес Ollama в настройках.</p>{% endif %}
+  {% if not run_models %}<p class="hint" id="run-models-missing">{% if code_profile_remote %}Сервер профиля «{{ code_profile_name }}» не вернул список моделей{% if run_models_error %}: {{ run_models_error }}{% endif %}. Проверьте ключ и адрес профиля: «Настройки» → «Провайдеры моделей», кнопка «Проверить».{% else %}Ollama недоступна или в ней нет моделей: проверьте адрес Ollama в настройках.{% endif %}</p>{% endif %}
   {% if code_profile_external %}<p class="hint" id="analyze-paid">Профиль проекта – внешний провайдер «{{ code_profile_name }}»: код находки уйдёт ему, каждый разбор – платный запрос.</p>{% endif %}
   {% endif %}
   {% if model_history and model_history.show %}
@@ -215,8 +215,8 @@
     {% if steer_outside or invis_outside %}<p class="small text-warn" id="display-outside-note">Вне окна модели{% if steer_outside %} похоже на указания для модели: строки {{ steer_outside|join(", ") }}{% endif %}{% if invis_outside %}{{ "; " if steer_outside else " " }}невидимые знаки: строки {{ invis_outside|join(", ") }}{% endif %}. Модель этих строк не видела, на её ответ они не повлияли.</p>{% endif %}
     {#- Сворачивается только тело кода; предупреждения выше видны всегда. Состояние – предпочтение оператора (initCodeFold) -#}
     <div class="code-body" id="code-body">
-    <p class="muted small dot-list"><span>{{ "срез из базы приложения" if code_from_db else CONTEXT_LABELS.get(ctx.status, ctx.status) }}</span>{% if ctx.file %}<span class="mono break">{{ ctx.file }}</span>{% endif %}{% if ctx.start_line %}<span>строки {{ ctx.start_line }}–{{ ctx.end_line }}</span>{% endif %}</p>
-    {% if editor %}<p class="small cluster" id="editor-link"><span class="mono break">{{ editor.path }}</span><button type="button" class="btn btn-small" data-copy-text="{{ editor.path }}">{{ icon("copy") }}Скопировать путь</button><a class="btn btn-small" href="{{ editor.url }}">{{ icon("external") }}Открыть в VS Code</a></p>{% elif ctx.file %}<p class="small muted" id="editor-missing">Ссылки на редактор нет: файл не найден в клоне однозначно – показан путь из выгрузки.</p>{% endif %}
+    <p class="muted small dot-list"><span>{{ "срез из базы приложения" if code_from_db else CONTEXT_LABELS.get(ctx.status, ctx.status) }}</span>{% if ctx.file %}<span class="mono break">{{ ctx.file }}</span>{% endif %}{% if ctx.start_line %}<span>строки {{ ctx.start_line }}–{{ ctx.end_line }}</span>{% endif %}{% if editor %}<span class="editor-links" id="editor-link"><button type="button" class="btn btn-ghost btn-small" data-copy-text="{{ editor.path }}" title="Скопировать полный путь к файлу: {{ editor.path }}">{{ icon("copy") }}Скопировать путь</button><a class="btn btn-ghost btn-small" href="{{ editor.url }}" title="Открыть {{ editor.path }} в VS Code на строке срабатывания">{{ icon("external") }}Открыть в VS Code</a></span>{% endif %}</p>
+    {% if not editor and ctx.file %}<p class="small muted" id="editor-missing">Ссылки на редактор нет: файл не найден в клоне однозначно – показан путь из выгрузки.</p>{% endif %}
     {% if ctx.enclosing %}<p class="small">{{ "Функция" if ctx.language == "python" else "Метод" }}: <code class="break">{{ ctx.enclosing|code_text }}</code></p>{% endif %}
     {% if code_from_db %}
     <p class="muted small" id="code-from-db">Клона с этим файлом нет: показан срез кода, сохранённый в базе приложения{% if verdict %}, – тот, который видела модель{% endif %}. Секреты в нём замаскированы. Решение, «Скопировать короткий текст для Hub» и текст дефекта работают с этим срезом.</p>
@@ -257,23 +257,6 @@
       </div>
     </div>
     {% endif %}
-    {#- dev14, ADR-0141: маскирование при показе выключено в параметрах проекта – текущий файл без масок отдельно от среза
-        разбора; ничего о совпадении со срезом не утверждается -#}
-    {% if not mask_shown %}
-    {% if plain_ctx and plain_ctx.status == "ok" and plain_ctx.lines %}
-    <div class="code-plain" id="code-plain">
-      <p class="small"><strong>Текущий файл в клоне, без масок</strong> – строки {{ plain_ctx.start_line }}–{{ plain_ctx.end_line }}. Это текущее содержимое файла, а не срез разбора выше: модели код уходит с масками.</p>
-      <div class="code code-wrap" tabindex="0" role="region" aria-label="Текущий файл в клоне без масок">
-        <table class="code-table"><tbody>
-        {% for line in plain_ctx.lines %}{% set n = plain_ctx.start_line + loop.index0 %}<tr{% if n == plain_ctx.target_line %} class="is-target"{% endif %}><td class="ln">{% if n == plain_ctx.target_line %}<span class="mark" aria-hidden="true">▶</span>{% endif %}{{ n }}</td><td class="src">{{ line|code_text }}</td></tr>
-        {% endfor %}
-        </tbody></table>
-      </div>
-    </div>
-    {% else %}
-    <p class="muted small" id="code-plain-missing">Показ без масок включён, но текущий файл из клона не показан{% if plain_ctx and plain_ctx.note %}: {{ plain_ctx.note }}{% endif %} – виден только срез с масками.</p>
-    {% endif %}
-    {% endif %}
     </div>
     {% else %}
     <p class="empty">Кода нет: ни клона, ни строки в выгрузке.</p>
@@ -282,6 +265,30 @@
   </section>
 </div>
 
+{% if not mask_shown %}
+{#- Текущий файл без масок – под сеткой шагов 1–3, вне закреплённой колонки кода: внутри неё колонка становилась выше
+    экрана, и «строка N» из разбора сдвигала страницу (e2e, с 0.10.0.dev35 – показ без масок по умолчанию) -#}
+<section class="panel code-plain-panel" aria-label="Текущий файл в клоне без масок">
+  {#- dev14, ADR-0141: маскирование при показе выключено в параметрах проекта – текущий файл без масок отдельно от среза
+      разбора; ничего о совпадении со срезом не утверждается -#}
+  {% if not mask_shown %}
+  {% if plain_ctx and plain_ctx.status == "ok" and plain_ctx.lines %}
+  <div class="code-plain" id="code-plain">
+    <p class="small"><strong>Текущий файл в клоне, без масок</strong> – строки {{ plain_ctx.start_line }}–{{ plain_ctx.end_line }}. Это текущее содержимое файла, а не срез разбора выше: модели код уходит с масками.</p>
+    <div class="code code-wrap" tabindex="0" role="region" aria-label="Текущий файл в клоне без масок">
+      <table class="code-table"><tbody>
+      {% for line in plain_ctx.lines %}{% set n = plain_ctx.start_line + loop.index0 %}<tr{% if n == plain_ctx.target_line %} class="is-target"{% endif %}><td class="ln">{% if n == plain_ctx.target_line %}<span class="mark" aria-hidden="true">▶</span>{% endif %}{{ n }}</td><td class="src">{{ line|code_text }}</td></tr>
+      {% endfor %}
+      </tbody></table>
+    </div>
+  </div>
+  {% else %}
+  <p class="muted small" id="code-plain-missing">Показ без масок включён, но текущий файл из клона не показан{% if plain_ctx and plain_ctx.note %}: {{ plain_ctx.note }}{% endif %} – виден только срез с масками.</p>
+  {% endif %}
+  {% endif %}
+</section>
+
+{% endif %}
 <div class="route-grid route-grid-aside">
   <div class="step-aside" aria-label="Шаг 3: что проверить">
     {% if verdict and is_v3 and verdict.check_by_eye %}
@@ -344,7 +351,7 @@
         <input type="hidden" name="fresh" value="1">
         <button type="submit" class="btn" id="reanalyze-btn"{% if not run_models or pending_run or row.missing %} disabled{% endif %}>Пересмотреть вердикт</button>
       </form>
-      <p class="hint">Новый разбор этой находки. Та же модель на том же коде обычно отвечает так же – для второго мнения выберите другую. Ваше решение новый разбор не сбрасывает, прежние разборы остаются в истории (шаг 2).{% if not run_models %} Ollama недоступна или в ней нет моделей.{% endif %}{% if code_profile_external %} <span id="reanalyze-paid">Профиль проекта – внешний провайдер «{{ code_profile_name }}»: повтор – новый платный запрос, готовый ответ из кэша не подставляется.</span>{% endif %}</p>
+      <p class="hint">Новый разбор этой находки. Та же модель на том же коде обычно отвечает так же – для второго мнения выберите другую. Ваше решение новый разбор не сбрасывает, прежние разборы остаются в истории (шаг 2).{% if not run_models %} {% if code_profile_remote %}Сервер профиля «{{ code_profile_name }}» не вернул список моделей: проверьте ключ и адрес профиля в «Провайдерах моделей».{% else %}Ollama недоступна или в ней нет моделей.{% endif %}{% endif %}{% if code_profile_external %} <span id="reanalyze-paid">Профиль проекта – внешний провайдер «{{ code_profile_name }}»: повтор – новый платный запрос, готовый ответ из кэша не подставляется.</span>{% endif %}</p>
       {% if model_history and model_history.reanalyzed %}<p class="hint" id="reanalyzed-count">Уже пересматривали: {{ model_history.reanalyzed }}, последний раз – <span class="mono">{{ model_history.last_card.model }}</span>, <time datetime="{{ model_history.last_card.created_at }}">{{ model_history.last_card.created_at|ts }}</time>.</p>{% elif model_history and model_history.count > 1 %}<p class="hint" id="reanalyzed-count">Разборов моделью: {{ model_history.count }} (вид запуска прежних прогонов не записан).</p>{% endif %}
     </details>
     <section class="opinion ask-panel" id="ask" aria-labelledby="ask-title">
@@ -556,18 +563,18 @@
   <div class="hub-when-tp">
     <p class="step-wait defect-wait" id="defect-wait">Дефект готовится после сохранения решения «Подтверждаю дефект»: нажмите «Сохранить». После новой правки обоснования или рекомендации сохраните ещё раз.</p>
     {% from "macros.html" import defect_panel_sast %}
-    {% if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix") %}
+    {% if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix", "no_team") %}
     <div class="callout callout-warn" role="note" id="defect-blocked">
-      <p><strong>Дефект для Hub не готовится.</strong> {{ defect.hint }}</p>
+      <p><strong>Дефект для Hub не готовится.</strong> {{ defect.hint }}{% if defect.state == "no_team" %} <a href="/settings#team-name" id="defect-team-link">Указать название команды</a>{% endif %}</p>
     </div>
     {% endif %}
     {{ defect_panel_sast(defect, card_base ~ "/defect" ~ sel_q, hub_defect.bound_summary if hub_defect else none, auto_defect) }}
     {# новая заготовка – только при «Подтверждаю дефект»; уже начатый дефект показывается ниже, при любом решении #}
-    {% if hub_defect and not (hub_defect.row and hub_defect.row.state != "failed") %}{% from "macros.html" import hub_defect_panel %}{{ hub_defect_panel(hub_defect, card_base ~ "/hub-defect" ~ sel_q, project.id, entered_hash, review_revision, defect.ready, ("причина в плашке «Дефект для Hub не готовится» выше." if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix") else defect.hint)) }}{% endif %}
+    {% if hub_defect and not (hub_defect.row and hub_defect.row.state != "failed") %}{% from "macros.html" import hub_defect_panel %}{{ hub_defect_panel(hub_defect, card_base ~ "/hub-defect" ~ sel_q, project.id, entered_hash, review_revision, defect.ready, ("причина в плашке «Дефект для Hub не готовится» выше." if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix", "no_team") else defect.hint)) }}{% endif %}
     {% if siblings and not defect.merge_split and not auto_defect %}<p class="small hub-group-reminder">Создайте дефект сразу из всех находок группы: в Hub отметьте галочками эту находку и находки из списка «Та же строка и та же категория» (шаг 5).</p>{% endif %}
   </div>
   {% if hub_defect and hub_defect.row and hub_defect.row.state != "failed" %}{% from "macros.html" import hub_defect_panel %}
-  <div class="hub-defect-current" id="hub-defect-current">{{ hub_defect_panel(hub_defect, card_base ~ "/hub-defect" ~ sel_q, project.id, entered_hash, review_revision, defect.ready, ("причина в плашке «Дефект для Hub не готовится» выше." if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix") else defect.hint)) }}</div>
+  <div class="hub-defect-current" id="hub-defect-current">{{ hub_defect_panel(hub_defect, card_base ~ "/hub-defect" ~ sel_q, project.id, entered_hash, review_revision, defect.ready, ("причина в плашке «Дефект для Hub не готовится» выше." if defect.state in ("missing", "changed", "verdict_changed", "code_changed", "no_reason", "no_fix", "no_team") else defect.hint)) }}</div>
   {% endif %}
 </section>
 
@@ -596,7 +603,7 @@
     {% if f.build_type %}<div><dt>Тип сборки</dt><dd>{{ f.build_type }}</dd></div>{% endif %}
     {% if f.licenses %}<div class="wide"><dt>Лицензии</dt><dd class="break">{{ f.licenses }}</dd></div>{% endif %}
   </dl>
-  {% if f.kind == "SCA" %}<p class="muted">Компоненты SCA разбираются на вкладке <a href="/projects/{{ project.id }}/sca">SCA</a>: там пакет для внешних агентов, их ответы и текст для Hub.</p>{% else %}<p class="muted">Такие находки только видны в списке: моделью разбираются находки SAST, компоненты SCA – на вкладке SCA проекта.</p>{% endif %}
+  {% if f.kind == "SCA" %}<p class="muted">Компоненты SCA разбираются на вкладке <a href="/projects/{{ project.id }}/sca">SCA</a>: там пакет для внешних агентов, их ответы и текст для Hub.</p>{% elif f.kind == "SCA-license" and catalog_example %}<p class="muted" id="license-note">Находка о лицензии – сведения для проверки лицензионной чистоты: лицензия компонента вне разрешённого перечня учебной политики (сильный копилефт GPL, AGPL – High; слабый LGPL, MPL, EPL, OFL – Medium; прочие и «лицензия не установлена» – Low). Решение по ней стенд не записывает: оцените, можно ли использовать компонент на таких условиях, – задания в руководстве студента, раздел о лицензиях.</p>{% else %}<p class="muted">Такие находки только видны в списке: моделью разбираются находки SAST, компоненты SCA – на вкладке SCA проекта.</p>{% endif %}
 </section>
 {% endif %}
 

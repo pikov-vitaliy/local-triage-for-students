@@ -65,15 +65,22 @@ def check_external(planned: Mapping[str, Any], creating: bool = False) -> None:
         raise ProfileInvalid(EXTERNAL_OFF)
 
 
-DEFAULT_UNFIT = ("Профиль по умолчанию для разбора кода – только Ollama на этом компьютере или сервер в сети "
-                 "организации: профиль API чат-завершений или Messages API код по умолчанию не разбирает.")
+DEFAULT_UNFIT = ("Профиль по умолчанию для разбора кода: Ollama – только на этом компьютере или на сервере в сети "
+                 "организации; API чат-завершений или Messages API – только внешний провайдер (интернет).")
 MESSAGES_LOCAL = ("Anthropic Messages API – внешний провайдер или шлюз в сети организации: вариант «этот компьютер» "
                   "для него не предлагается.")
 
 
 def code_default_ok(planned: Mapping[str, Any]) -> bool:
-    """Годится ли профиль в умолчание для разбора кода (executors.choose_profile): Ollama, класс local или lan."""
-    return str(planned.get("kind") or "ollama") == "ollama" and str(planned.get("trust") or "") in ("local", "lan")
+    """Годится ли профиль в умолчание для разбора кода: Ollama (local или lan) или внешний удалённый API (external) –
+    решение владельца 21.11.2026. Внешнему API код уходит только проекту с отметкой «код не секретный»: это проверяет
+    executors.choose_profile при каждом разборе, проекту без отметки разбор откажет с объяснением."""
+    kind, trust = str(planned.get("kind") or "ollama"), str(planned.get("trust") or "")
+    if kind == "ollama":
+        return trust in ("local", "lan")
+    # удалённый API разбирает код только как внешний профиль (executors.code_profile_fits): локальный или сетевой
+    # сервер API чат-завершений умолчанием для кода не годится – разбор с ним не запустился бы ни у одного проекта
+    return trust == "external"
 
 
 def confirmed_of(profile: Mapping[str, Any] | None) -> list[str]:
@@ -309,13 +316,37 @@ def _chat_values(profile: Mapping[str, Any] | None) -> dict[str, Any]:
             **{name: str(gen.get(key) or "") for name, (key, *_rest) in CHAT_NUMBERS.items()}}
 
 
+# Рекомендуемые значения раздела «Дополнительно» для DeepSeek (слово владельца 22.11.2026: студенты не должны искать
+# их сами). Сверено с документацией DeepSeek 22.11.2026: deepseek-flash – окно контекста 1M; рассуждение по умолчанию
+# включено, уровень high; max_tokens по умолчанию с рассуждением – 64K (до 384K); ответ json_object поддерживается;
+# поиск – /v1/tools/search и /v1/tools/fetch (api-docs.deepseek.com: quick_start/pricing, api/create-chat-completion,
+# guides/thinking_mode, guides/json_mode, guides/search). Шагов поиска 12 и срок 600 с – значения рабочего профиля
+# владельца. Новая модель или другие пределы у провайдера – поправить здесь.
+DEEPSEEK_RECOMMENDED: dict[str, Any] = {
+    "response_mode": "json_object", "thinking": "enabled", "effort": "high", "context_window": "1000000",
+    "max_output": "65536", "tool_steps": "12", "chat_timeout_s": "600", "retry_on_drop": True, "search_on": True,
+    "search_path": "/v1/tools/search", "fetch_path": "/v1/tools/fetch",
+}
+# Подсказки к полям раздела «Дополнительно»: что это простыми словами и что ставить для DeepSeek
+ADVANCED_HINTS = {
+    "response_mode": "В каком виде модель присылает ответ. Для DeepSeek – json_object: приложение само проверит, что "
+                     "ответ полный.",
+    "thinking": "Модель сначала рассуждает, потом отвечает: точнее, но дольше. Для DeepSeek – «включено» (так у "
+                "провайдера по умолчанию).",
+    "effort": "Насколько глубоко рассуждать: low – быстрее, high – точнее, max – дольше всех. Для DeepSeek – high.",
+    "context_window": "Сколько текста модель видит за раз: задание, код и ответ вместе. У deepseek-flash – 1 000 000.",
+    "max_output": "Самый длинный ответ модели вместе с рассуждением. Для DeepSeek – 65536: так у провайдера по "
+                  "умолчанию при рассуждении. Меньше – ответ может оборваться.",
+    "tool_steps": "Сколько раз модель может искать и открывать источники, исследуя один компонент. Для DeepSeek – 12.",
+    "chat_timeout_s": "Сколько секунд ждать один ответ. С рассуждением ответ идёт минутами; для DeepSeek – 600.",
+}
+
 # Заготовки нового профиля для учебного стенда (план стенда, раздел 5; ADR-0157): форма предзаполнена, ключ студент
 # вводит сам, «Проверить» сверяет имя модели со списком /models. Без ключа профиль ничего не отправляет.
 PRESETS: dict[str, dict[str, Any]] = {
     "deepseek": {"name": "DeepSeek", "kind": "chat_completions", "trust": "external",
                  "base_url": "https://api.deepseek.com", "default_model": "deepseek-flash", "requires_key": True,
-                 "response_mode": "json_object", "search_on": True, "search_path": "/v1/tools/search",
-                 "fetch_path": "/v1/tools/fetch"},
+                 **DEEPSEEK_RECOMMENDED},
     "ollama-local": {"name": "Ollama на этом компьютере", "kind": "ollama", "trust": "local",
                      "base_url": "http://127.0.0.1:11434", "default_model": "gpt-oss:20b", "requires_key": False},
 }
@@ -433,10 +464,8 @@ def read_form(form: Any, profile: Mapping[str, Any] | None, fixed: bool = False)
                 path = values[name]
                 if not path.startswith("/") or path.startswith("//") or any(c in path for c in "?#@ \\"):
                     errors[name] = "Путь от корня адреса профиля, например /v1/tools/search – без «?», «#» и пробелов."
-        if values["default_code"]:
-            # у удалённых API галочки на странице нет (ADR-0104 п. 3): отметка, оставшаяся
-            # от Ollama при смене протокола, не действует – умолчанием для кода такой профиль не становится
-            values["default_code"] = result.default_code = False
+        # удалённый API может быть профилем по умолчанию (решение владельца 21.11.2026): код ему уходит только у
+        # проектов с отметкой «код не секретный», остальным разбор откажет (executors.external_code_allowed)
     gen: dict[str, Any] = {}
     for name, (key, low, high, label) in NUMBER_FIELDS.items():
         raw = values[name]

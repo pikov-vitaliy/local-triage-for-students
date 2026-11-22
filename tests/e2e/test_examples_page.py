@@ -14,9 +14,10 @@ def test_examples_page_lists_catalog_and_start_panel(ui):
     expect(page.locator('#ex-juice-shop')).to_contain_text('OWASP Juice Shop')
     expect(page.locator('#ex-crapi')).to_contain_text('Кодовые базы')
     expect(page.locator('#ex-demo-library')).to_contain_text('Поставляется с приложением')
-    for width in (390, 1440):
+    # 360 – блок «Начало работы»; 768–1000 – шапка переносится, а не уезжает вбок (проверка стенда 22.11)
+    for width in (360, 390, 768, 820, 879, 1000, 1440):
         page.set_viewport_size({'width': width, 'height': 900})
-        assert no_horizontal_scroll(page)
+        assert no_horizontal_scroll(page), width
 
 
 def test_presets_open_prefilled_profile_form(ui):
@@ -24,6 +25,15 @@ def test_presets_open_prefilled_profile_form(ui):
     page.goto('/settings/providers/new?preset=deepseek')
     expect(page.locator('input[name=base_url]')).to_have_value('https://api.deepseek.com')
     expect(page.locator('#provider-notice')).to_contain_text('вставьте свой ключ API')
+    expect(page.locator('input[name=max_output]')).to_have_value('65536')
+    # уже созданный профиль: поля очищены, кнопка возвращает рекомендуемые значения
+    page.locator('#provider-chat summary').click()
+    page.fill('input[name=max_output]', '')
+    page.select_option('select[name=effort]', '')
+    page.locator('#deepseek-recommended button').click()
+    expect(page.locator('input[name=max_output]')).to_have_value('65536')
+    expect(page.locator('select[name=effort]')).to_have_value('high')
+    expect(page.locator('#deepseek-recommended-status')).to_contain_text('Сохранить')
 
 
 def test_help_opens_in_a_new_tab_with_glossary(ui):

@@ -93,11 +93,11 @@ def test_messages_profile_is_checked_saved_reopened_and_listed(web, external_loo
     assert json.loads(profile["generation_json"]) == {"context_window": 200000, "max_output": 4096, "timeout_s": 300,
                                                       "tool_steps": 5}
     assert load_key(web.app.state.db, profile["id"])["key"] == KEY
-    assert int(db.get_settings().get("default_provider_id") or 1) != profile["id"]
+    assert int(db.get_settings().get("default_provider_id") or 1) == profile["id"]  # решение владельца 21.11: внешний – умолчанием можно
     form = web.client.get(f"/settings/providers/{profile['id']}").text
     assert 'value="messages" checked' in form and 'value="tool_strict" selected' in form
     assert 'id="provider-search-check"' in form and "(расходует токены)" in form
-    assert 'id="provider-code-default-note"' in form and "«Профиль модели»" in form
+    assert 'id="provider-code-default-note"' in form and "код не секретный" in form
     listing = web.client.get("/settings/providers").text
     assert "Anthropic Messages API" in listing and "задан, …" + KEY[-4:] in listing and KEY not in listing
 
