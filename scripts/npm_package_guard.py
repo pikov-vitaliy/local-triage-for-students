@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hygiene_rules import (CONTROL, LOCAL_PATHS, PLACE_WORDS, REAL_PROJECT, STAND_LAN,  # noqa: E402
                            hub_number_hits)
 
-GENERATED = {"README.md", "README.ru.md", "npm/build.json"}
+GENERATED = {"README.md", "npm/build.json"}
 AUTHOR_EMAILS = {"pikov@" + "yandex.ru"}
 LICENSE_TEXTS = {"THIRD-PARTY-NOTICES.md", "LICENSE"}
 XLSX = {".xlsx", ".xlsm"}
@@ -324,6 +324,11 @@ def check(tgz: Path, manifest: Path) -> list[str]:
         problems += [f"{n}: в перечне есть, в пакете нет" for n in sorted(wanted - got)]
         if "package.json" not in got:
             problems.append("в пакете нет package.json")
+        # страница пакета на npmjs.com – README из корня пакета: второй README в корне npm может выбрать вместо
+        # английского (выпуск dev38 показал русский), поэтому в корне – только README.md
+        extra = sorted(n for n in got if "/" not in n and n.lower().startswith("readme") and n != "README.md")
+        if extra:
+            problems.append(f"в корне пакета лишние README: {', '.join(extra)} – страница npm может взять их вместо README.md")
         for name, member in sorted(names.items()):
             data = archive.extractfile(member).read()
             suffix = Path(name).suffix.lower()

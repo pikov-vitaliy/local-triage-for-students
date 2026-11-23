@@ -1,7 +1,6 @@
 # Состав пакета npm учебного стенда: сценарий npm/pack.mjs manifest, проверка – npm/pack.mjs check.
 LICENSE
 README.md
-README.ru.md
 THIRD-PARTY-NOTICES.md
 app/__init__.py
 app/affiliation.py
