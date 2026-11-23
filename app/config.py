@@ -22,6 +22,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from app import i18n
+
 VERDICTS = ("true_positive", "false_positive", "uncertain")
 # Итоги разбора, у которых есть статус Hub: вердикты и отдельное решение человека «Риск принят» (модель его
 # не предлагает, ADR 0024)
@@ -205,14 +207,14 @@ def _stand(raw: str) -> str:
     """TRIAGE_STAND: пусто – обычная установка; npm – учебный стенд из npm-пакета (ADR-0155)."""
     value = raw.strip().lower()
     if value not in ("", "npm"):
-        raise ConfigError("TRIAGE_STAND: допустимо только значение npm (учебный стенд) или пустое значение.")
+        raise ConfigError(i18n._("TRIAGE_STAND: допустимо только значение npm (учебный стенд) или пустое значение."))
     return value
 
 
 def _stand_token(raw: str) -> str:
     value = raw.strip().lower()
     if value and not STAND_TOKEN.fullmatch(value):
-        raise ConfigError("TRIAGE_STAND_TOKEN: нужны от 16 до 64 шестнадцатеричных знаков.")
+        raise ConfigError(i18n._("TRIAGE_STAND_TOKEN: нужны от 16 до 64 шестнадцатеричных знаков."))
     return value
 
 
@@ -223,7 +225,7 @@ def osv_url_value(raw: str, default: str) -> str:
         return default
     if value.casefold() == "off":
         return ""
-    hint = "OSV_URL: нужен адрес вида https://api.osv.dev (схема и узел, при необходимости порт; без пути, параметров, якоря и имени пользователя) или off."
+    hint = i18n._("OSV_URL: нужен адрес вида https://api.osv.dev (схема и узел, при необходимости порт; без пути, параметров, якоря и имени пользователя) или off.")
     if any(ch.isspace() for ch in value) or "#" in value or "@" in value:
         raise ConfigError(hint)
     try:
@@ -242,7 +244,7 @@ def model_json_schema_mode(raw: str) -> str:
     """Режим схемы ответа; пустое значение использует общий выбор по умолчанию."""
     value = raw.strip().casefold() or DEFAULT_MODEL_JSON_SCHEMA
     if value not in ("retry", "always", "off"):
-        raise ConfigError("MODEL_JSON_SCHEMA: допустимы retry, always или off")
+        raise ConfigError(i18n._("MODEL_JSON_SCHEMA: допустимы retry, always или off"))
     return value
 
 
@@ -252,9 +254,10 @@ def _positive_int(name: str, raw: str, default: int, low: int, high: int) -> int
     try:
         value = int(raw)
     except ValueError:
-        raise ConfigError(f"{name}: ожидается целое число, получено «{raw}»") from None
+        raise ConfigError(i18n._("{name}: ожидается целое число, получено «{raw}»", name=name, raw=raw)) from None
     if not low <= value <= high:
-        raise ConfigError(f"{name}: допустимо от {low} до {high}, получено {value}")
+        raise ConfigError(i18n._("{name}: допустимо от {low} до {high}, получено {value}", name=name, low=low, high=high,
+                                  value=value))
     return value
 
 
@@ -264,9 +267,9 @@ def _cvss(name: str, raw: str, default: float) -> float:
     try:
         value = float(raw.replace(",", "."))
     except ValueError:
-        raise ConfigError(f"{name}: ожидается число от 0 до 10, получено «{raw}»") from None
+        raise ConfigError(i18n._("{name}: ожидается число от 0 до 10, получено «{raw}»", name=name, raw=raw)) from None
     if not 0.0 <= value <= 10.0:
-        raise ConfigError(f"{name}: ожидается число от 0 до 10, получено {value}")
+        raise ConfigError(i18n._("{name}: ожидается число от 0 до 10, получено {value}", name=name, value=value))
     return value
 
 
@@ -279,15 +282,16 @@ def _status_map(raw: str) -> dict[str, str]:
     try:
         data = json.loads(raw)
     except ValueError:
-        raise ConfigError("HUB_STATUS_MAP: ожидается JSON-объект, например "
-                          '{"false_positive": "Ложное срабатывание"}') from None
+        raise ConfigError(i18n._("HUB_STATUS_MAP: ожидается JSON-объект, например {example}",
+                                  example='{"false_positive": "Ложное срабатывание"}')) from None
     if not isinstance(data, dict):
-        raise ConfigError("HUB_STATUS_MAP: ожидается JSON-объект «вердикт: статус»")
+        raise ConfigError(i18n._("HUB_STATUS_MAP: ожидается JSON-объект «вердикт: статус»"))
     for key, value in data.items():
         if key not in HUB_OUTCOMES:
-            raise ConfigError(f"HUB_STATUS_MAP: неизвестный вердикт «{key}», допустимы: {', '.join(HUB_OUTCOMES)}")
+            raise ConfigError(i18n._("HUB_STATUS_MAP: неизвестный вердикт «{key}», допустимы: {allowed}", key=key,
+                                      allowed=', '.join(HUB_OUTCOMES)))
         if not isinstance(value, str):
-            raise ConfigError(f"HUB_STATUS_MAP: статус для «{key}» должен быть строкой")
+            raise ConfigError(i18n._("HUB_STATUS_MAP: статус для «{key}» должен быть строкой", key=key))
         result[key] = value.strip()
     return result
 
@@ -304,46 +308,46 @@ def normalize_setting(key: str, value: Any) -> Any:
     if key == "ollama_url":
         text = str(value or "").strip().rstrip("/")
         if not text.startswith(("http://", "https://")) or len(text) > MAX_URL or any(ch.isspace() for ch in text):
-            raise ConfigError("Адрес Ollama: ожидается адрес вида http://127.0.0.1:11434")
+            raise ConfigError(i18n._("Адрес Ollama: ожидается адрес вида http://127.0.0.1:11434"))
         return text
     if key == "default_model":
         text = str(value or "").strip()
         if len(text) > MAX_MODEL_NAME or any(ord(ch) < 32 for ch in text):
-            raise ConfigError("Модель по умолчанию: слишком длинное или неверное имя модели")
+            raise ConfigError(i18n._("Модель по умолчанию: слишком длинное или неверное имя модели"))
         return text
     if key == "hub_status_map":
         if not isinstance(value, Mapping):
-            raise ConfigError("Статусы Hub: ожидаются статусы для вердиктов «истинная», «ложная», «неясно»")
+            raise ConfigError(i18n._("Статусы Hub: ожидаются статусы для вердиктов «истинная», «ложная», «неясно»"))
         result = dict(DEFAULT_STATUS_MAP)
         for verdict, status in value.items():
             if verdict not in HUB_OUTCOMES:
-                raise ConfigError(f"Статусы Hub: неизвестный вердикт «{verdict}»")
+                raise ConfigError(i18n._("Статусы Hub: неизвестный вердикт «{verdict}»", verdict=verdict))
             text = str(status or "").strip()
             if len(text) > MAX_STATUS or any(ord(ch) < 32 for ch in text):
-                raise ConfigError("Статусы Hub: статус – одна строка до 100 знаков")
+                raise ConfigError(i18n._("Статусы Hub: статус – одна строка до 100 знаков"))
             result[verdict] = text
         return result
     if key == "sca_urgent_cvss":
         try:
             number = float(str(value).strip().replace(",", ".")) if isinstance(value, str) else float(value)
         except (TypeError, ValueError):
-            raise ConfigError("Порог срочности SCA: ожидается число от 0 до 10") from None
+            raise ConfigError(i18n._("Порог срочности SCA: ожидается число от 0 до 10")) from None
         if isinstance(value, bool) or not math.isfinite(number) or not 0.0 <= number <= 10.0:
-            raise ConfigError("Порог срочности SCA: ожидается число от 0 до 10")
+            raise ConfigError(i18n._("Порог срочности SCA: ожидается число от 0 до 10"))
         return number
     if key in STORED_SETTINGS:
         # номер профиля: целое 1–999999999 или строка из цифр ASCII («²» и прочие «цифры» Юникода – нет)
         if isinstance(value, bool) or not (isinstance(value, int) or isinstance(value, str)
                                            and re.fullmatch(r"[0-9]{1,9}", value.strip())):
-            raise ConfigError("Профиль провайдера по умолчанию: ожидается номер профиля")
+            raise ConfigError(i18n._("Профиль провайдера по умолчанию: ожидается номер профиля"))
         number = int(value)
         if not 1 <= number <= 999_999_999:
-            raise ConfigError("Профиль провайдера по умолчанию: ожидается номер профиля")
+            raise ConfigError(i18n._("Профиль провайдера по умолчанию: ожидается номер профиля"))
         return number
     if key == "team_name":
         text = " ".join(str(value or "").split())
         if len(text) > MAX_TEAM_NAME or any(ord(ch) < 32 for ch in text):
-            raise ConfigError(f"Название команды: одна строка до {MAX_TEAM_NAME} знаков")
+            raise ConfigError(i18n._("Название команды: одна строка до {limit} знаков", limit=MAX_TEAM_NAME))
         return text
     if key == "sca_internal_prefixes":
         items = value if isinstance(value, (list, tuple)) else re.split(r"[,;\s]+", str(value or ""))
@@ -353,12 +357,12 @@ def normalize_setting(key: str, value: Any) -> Any:
             if not text:
                 continue
             if len(text) > MAX_PREFIX or any(ord(ch) < 32 or ch.isspace() for ch in text):
-                raise ConfigError(f"Префиксы внутренних компонентов: «{text[:40]}» – без пробелов, до {MAX_PREFIX} "
-                                  "знаков")
+                raise ConfigError(i18n._("Префиксы внутренних компонентов: «{prefix}» – без пробелов, до {limit} знаков",
+                                          prefix=text[:40], limit=MAX_PREFIX))
             if text not in result:
                 result.append(text)
         if len(result) > MAX_PREFIXES:
-            raise ConfigError(f"Префиксы внутренних компонентов: не больше {MAX_PREFIXES}")
+            raise ConfigError(i18n._("Префиксы внутренних компонентов: не больше {limit}", limit=MAX_PREFIXES))
         return tuple(result)
     if key == "affiliation_words":
         items = value if isinstance(value, (list, tuple)) else re.split(r"[,;\s]+", str(value or ""))
@@ -369,19 +373,19 @@ def normalize_setting(key: str, value: Any) -> Any:
             if not text:
                 continue
             if not AFFILIATION_WORD.fullmatch(text):
-                raise ConfigError(f"Слова принадлежности: «{text[:40]}» – слово из букв (от 2 до 50), в конце "
-                                  "допустима «*»")
+                raise ConfigError(i18n._("Слова принадлежности: «{word}» – слово из букв (от 2 до 50), в конце "
+                                          "допустима «*»", word=text[:40]))
             if text.casefold() not in seen:
                 seen.add(text.casefold())
                 found.append(text)
         if len(found) > MAX_AFFILIATION_WORDS:
-            raise ConfigError(f"Слова принадлежности: не больше {MAX_AFFILIATION_WORDS}")
+            raise ConfigError(i18n._("Слова принадлежности: не больше {limit}", limit=MAX_AFFILIATION_WORDS))
         return tuple(found)
     if key == "hub_url":
         text = str(value or "").strip().rstrip("/")
         if not text:
             return ""
-        hint = "Адрес Hub: нужен адрес вида https://hub.example.org (только https, без пути, параметров и #)."
+        hint = i18n._("Адрес Hub: нужен адрес вида https://hub.example.org (только https, без пути, параметров и #).")
         if len(text) > MAX_URL or any(ch.isspace() for ch in text) or "#" in text or "@" in text:
             raise ConfigError(hint)
         try:
@@ -394,7 +398,7 @@ def normalize_setting(key: str, value: Any) -> Any:
         if port is not None and not 1 <= port <= 65535:
             raise ConfigError(hint)
         return f"https://{parts.netloc}"
-    raise ConfigError(f"Неизвестная настройка «{key}»")
+    raise ConfigError(i18n._("Неизвестная настройка «{key}»", key=key))
 
 
 def _hosts(raw: str) -> tuple[str, ...]:
@@ -407,5 +411,5 @@ def _traffic_log(raw: str) -> str:
     """MODEL_TRAFFIC_LOG – журнал обмена с моделью: «on» (по умолчанию) или «off»."""
     value = raw.strip().casefold() if raw else "on"
     if value not in ("on", "off"):
-        raise ConfigError(f"MODEL_TRAFFIC_LOG: ожидается «on» или «off», получено «{raw}»")
+        raise ConfigError(i18n._("MODEL_TRAFFIC_LOG: ожидается «on» или «off», получено «{raw}»", raw=raw))
     return value

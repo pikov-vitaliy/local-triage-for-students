@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-from app import defect_drafts, defect_fields, defect_form, defect_local_text, defect_references, defect_where, hub_defects
+from app import defect_drafts, defect_fields, defect_form, defect_local_text, defect_references, defect_where, hub_defects, i18n
 from app.db import dumps, loads
 from app.routes.common import register_messages
 
@@ -18,12 +18,18 @@ from app.view import DECISION_LABELS, VERDICT_LABELS
 
 router = APIRouter()
 
-# Статусы находок так, как их показывает интерфейс Hub (вкладка «Связанные уязвимости» в Hub, в приложении – «Связанные находки»)
+# Статусы находок так, как их показывает русский интерфейс Hub (вкладка «Связанные уязвимости» в Hub, в приложении –
+# «Связанные находки»); при английском интерфейсе показывается сам статус Hub – значения Hub не переводятся (ADR-0158)
 HUB_STATUS_RU = {"To verify": "Не подтверждено", "Open": "Открыто", "Confirmed": "Подтверждено",
                  "False Positive": "Ложное срабатывание", "Accepted risk": "Риск принят", "Fixed": "Исправлено"}
 
 
 _scan_date = defect_where.scan_date
+
+
+def hub_status_label(status: str) -> str:
+    """Статус находки в Hub для показа: по-русски – как в русском интерфейсе Hub, иначе – значение Hub как есть."""
+    return HUB_STATUS_RU.get(status, status) if i18n.current() == "ru" else status
 
 
 def linked_rows(db, project_id: int, owner: dict, hub_obj: dict | None, targets: list[dict]) -> list[dict]:
@@ -39,7 +45,7 @@ def linked_rows(db, project_id: int, owner: dict, hub_obj: dict | None, targets:
             hub_id, kind = str(item.get("id") or ""), str(item.get("type") or "")
             scan = item.get("scanObject") if isinstance(item.get("scanObject"), dict) else {}
             rows.append({"hub_id": hub_id, "type": kind, "source": str(item.get("source") or ""),
-                         "status": HUB_STATUS_RU.get(str(item.get("status") or ""), str(item.get("status") or "")),
+                         "status": hub_status_label(str(item.get("status") or "")),
                          "scan_task": str(item.get("lastScanTaskId") or ""), "scan_date": _scan_date(item.get("lastScanTs")),
                          "scan_object": str(scan.get("name") or ""),
                          "url": flow._card_url_of(db, project_id, hub_id),
@@ -53,6 +59,11 @@ def linked_rows(db, project_id: int, owner: dict, hub_obj: dict | None, targets:
 
 
 CATALOG_KEYS = ("page", "q", "sort", "kind", "state", "origin", "page_size")  # отборы вкладки «Дефекты»
+REFERENCE_LABELS = i18n.Labels({"preview": "ожидает подтверждения", "loading": "загружается", "done": "получена",
+                                "failed": "ошибка", "cancelled": "отменена"})
+HISTORY_LABELS = i18n.Labels({"migration": "обновление схемы", "create": "создание черновика",
+                              "edit": "правка черновика", "hub_confirm": "подтверждение в Hub",
+                              "hub_sync": "принятие версии Hub"})
 
 
 def page_context(request, project_id, defect_id):
@@ -60,7 +71,7 @@ def page_context(request, project_id, defect_id):
     db = db_of(request)
     row = db.hub_defect(defect_id)
     if row is None or row["project_id"] != project_id:
-        raise HTTPException(404, "Дефект не найден.")
+        raise HTTPException(404, i18n._("Дефект не найден."))
     family = db.on_connection(lambda c: defect_drafts.family_in(c, row))
     for physical in family or [row]:
         hub_defects.sync(db, physical, flow.update_preparer(request))
@@ -75,7 +86,7 @@ def page_context(request, project_id, defect_id):
             review = db.get_review(project_id, hub_id) or {}
             targets[(hub_id, t.get("issue_type"))] = {
                 "hub_id": hub_id, "url": flow._card_url_of(db, project_id, hub_id),
-                "decision": review.get("final_verdict") or review.get("decision") or "решение не сохранено",
+                "decision": review.get("final_verdict") or review.get("decision") or i18n._("решение не сохранено"),
                 "revision": review.get("revision", 0), "sent_revision": t.get("revision", 0),
             }
     settings = settings_of(request)
@@ -103,9 +114,10 @@ def page_context(request, project_id, defect_id):
     basis_seen = sync_seen or observed
     draft = {"summary": owner["draft_summary"], "command_text": owner["draft_command_text"]}
     comparisons = []
-    for title, before, after in [("Подтверждённая база → черновик", base, draft),
-                                  ("Черновик → текущие решения", draft, decisions if not decisions.get("refusals") else None),
-                                  ("Подтверждённая база → наблюдение Hub", base, observed)]:
+    for title, before, after in [(i18n._("Подтверждённая база → черновик"), base, draft),
+                                  (i18n._("Черновик → текущие решения"), draft,
+                                   decisions if not decisions.get("refusals") else None),
+                                  (i18n._("Подтверждённая база → наблюдение Hub"), base, observed)]:
         if before is not None and after and "command_text" in after and not after.get("text_note"):
             left = (before.get("summary", "") + "\n" + before.get("command_text", "")).splitlines()
             right = (after.get("summary", "") + "\n" + after.get("command_text", "")).splitlines()
@@ -135,9 +147,9 @@ def page_context(request, project_id, defect_id):
     # «К списку» – туда, откуда пришли (back из заготовки: список SCA или общий список находок, по строгому образцу
     # пути, как у карточки SCA), иначе к списку своего вида (ревью dev28)
     back_param = str(request.query_params.get("back") or "")[:2000]
-    labels = {f"/projects/{project_id}/findings": "К списку находок"}
+    labels = {f"/projects/{project_id}/findings": i18n._("К списку находок")}
     if owner["kind"] == "SCA":
-        labels[f"/projects/{project_id}/sca"] = "К списку SCA"
+        labels[f"/projects/{project_id}/sca"] = i18n._("К списку SCA")
     back_path = back_param.split("?", 1)[0].split("#", 1)[0]
     back_fallback = back_path if back_path in labels else (
         f"/projects/{project_id}/sca" if owner["kind"] == "SCA" else f"/projects/{project_id}/findings")
@@ -171,18 +183,16 @@ def page_context(request, project_id, defect_id):
             "controls": defect_form.controls(loads(owner["draft_fields_json"], {}), basis, choices),
             "form_values": {}, "reference_load": latest["id"] if latest else "", "reference_rows": reference_rows,
             "reference_latest": latest, "can_read": can_read,
-            "reference_labels": {"preview": "ожидает подтверждения", "loading": "загружается", "done": "получена",
-                                 "failed": "ошибка", "cancelled": "отменена"},
+            "reference_labels": REFERENCE_LABELS,
             "conflict_groups": groups, "conflict_explanation": defect_local_text.explanation(groups),
             "observed": loads(owner["import_json"], {}), "attempt": hub_defects.update_state(owner),
             "conflicts": loads(owner["conflicts_json"], []),
             "decisions": decisions,
             "history": db._all("SELECT * FROM hub_defect_history WHERE defect_id = ? ORDER BY id DESC", (owner["id"],)),
             "state_labels": hub_defects.STATE_LABELS,
-            "decision_labels": {**VERDICT_LABELS, **DECISION_LABELS},
-            "history_labels": {"migration": "обновление схемы", "create": "создание черновика",
-                               "edit": "правка черновика", "hub_confirm": "подтверждение в Hub",
-                               "hub_sync": "принятие версии Hub"},
+            # Labels: подписи переводятся при чтении (распаковка ** копирует msgid, перевод – у нового Labels)
+            "decision_labels": i18n.Labels({**VERDICT_LABELS, **DECISION_LABELS}),
+            "history_labels": HISTORY_LABELS,
             "defect_card": True, "error": ""}
 
 
@@ -200,11 +210,11 @@ async def save(request: Request, project_id: int, defect_id: int, generate: bool
         db = db_of(request)
         row = db.hub_defect(defect_id)
         if row is None or row["project_id"] != project_id:
-            raise HTTPException(404, "Дефект не найден.")
+            raise HTTPException(404, i18n._("Дефект не найден."))
         owner = db.on_connection(lambda c: defect_drafts.owner_in(c, row))
         ref_id = str(form.get("reference_load") or "")
         if ref_id and not ref_id.isdigit():
-            raise defect_fields.FieldError("Неверный идентификатор снимка справочников.")
+            raise defect_fields.FieldError(i18n._("Неверный идентификатор снимка справочников."))
         choices, _ = db.on_connection(lambda c: defect_references.choices_in(c, owner, int(ref_id) if ref_id else None))
         operations = defect_form.parse(form, loads(owner["draft_fields_json"], {}), choices) if not generate else None
         return defect_drafts.save(db, row, str(form.get("draft_revision") or ""),
@@ -269,7 +279,7 @@ async def release_number(request: Request, project_id: int, defect_id: int):
     row = context["row"]
     keys, stamps = [str(k) for k in form.getlist("key")], [str(a) for a in form.getlist("assigned_at")]
     if len(keys) != len(stamps):
-        raise HTTPException(400, "Форма снятия номера неполная: обновите страницу.")
+        raise HTTPException(400, i18n._("Форма снятия номера неполная: обновите страницу."))
     shown = dict(zip(keys, stamps, strict=True))
 
     def apply():
@@ -277,19 +287,19 @@ async def release_number(request: Request, project_id: int, defect_id: int):
         with db._tx() as c:
             current = dict(c.execute("SELECT * FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone())
             if str(current.get("number")) != str(form.get("number") or "") or not shown:
-                raise ValueError("Номер дефекта изменился: обновите страницу.")
+                raise ValueError(i18n._("Номер дефекта изменился: обновите страницу."))
             if str(hub_defects.number_releases_in(c, current)) != str(form.get("releases") or ""):
-                raise ValueError("Номер уже снимали с этой страницы: обновите страницу.")
+                raise ValueError(i18n._("Номер уже снимали с этой страницы: обновите страницу."))
             for key, stamp in shown.items():  # то же назначение, что показано: повтор старой формы новый номер не снимет
                 have = c.execute("SELECT assigned_at FROM defects WHERE project_id = ? AND defect_key = ?",
                                  (project_id, key)).fetchone()
                 if have is None or str(have["assigned_at"]) != stamp:
-                    raise ValueError("Номер у этих находок выдан заново или уже снят: обновите страницу.")
+                    raise ValueError(i18n._("Номер у этих находок выдан заново или уже снят: обновите страницу."))
             own = hub_defects.own_number_keys_in(c, current, hub_defects.family_targets_in(c, current))
             released = hub_defects.release_number_in(c, current, current["number"], shown, own)
             if sorted(released) != sorted(set(shown)):
-                raise ValueError("Часть номеров снять нельзя: ключ стал своим, его держит другая запись или номер "
-                                 "сменился. Обновите страницу.")
+                raise ValueError(i18n._("Часть номеров снять нельзя: ключ стал своим, его держит другая запись или "
+                                        "номер сменился. Обновите страницу."))
             # снятый ключ уходит и из ключей номера семьи: отложенное последствие подтверждения не вернёт номер
             owner_id = int(current.get("draft_owner_id") or current["id"])
             for member in c.execute("SELECT id, number_keys_json FROM hub_defects WHERE COALESCE(draft_owner_id, id) = ?",
@@ -314,7 +324,7 @@ async def release_number(request: Request, project_id: int, defect_id: int):
 def references_prepare(request: Request, project_id: int, defect_id: int):
     context = page_context(request, project_id, defect_id)
     if not context["can_read"]:
-        raise HTTPException(409, "Загрузка для текущего Hub и приложения недоступна.")
+        raise HTTPException(409, i18n._("Загрузка для текущего Hub и приложения недоступна."))
     row, settings = context["row"], settings_of(request)
     try:
         load_id = defect_references.prepare(db_of(request), row, settings.hub_url, context["project"]["hub_app_id"],
@@ -331,7 +341,7 @@ def references_state(request: Request, project_id: int, defect_id: int, load_id:
                               (load_id, project_id))
     if (row is None or row["hub_url"] != context["row"]["hub_url"] or row["app_id"] != context["row"]["app_id"]
             or row["state"] == "preview" and loads(row["load_json"], {}).get("defect_id") != context["row"]["id"]):
-        raise HTTPException(404, "Загрузка не найдена.")
+        raise HTTPException(404, i18n._("Загрузка не найдена."))
     context.update(reference=row, plan=loads(row["load_json"], {}), shown=defect_references.signature(loads(row["load_json"], {})))
     return render(request, "projects/defect_references.html", context)
 
@@ -350,11 +360,11 @@ async def references_load(request: Request, project_id: int, defect_id: int):
                 plan = loads(found["load_json"], {}) if found else {}
                 if (not found or found["state"] != "preview" or plan.get("defect_id") != row["id"]
                         or defect_references.signature(plan) != form.get("shown")):
-                    raise ValueError("Предпросмотр изменился.")
+                    raise ValueError(i18n._("Предпросмотр изменился."))
                 c.execute("UPDATE hub_defect_reference_loads SET state = 'cancelled' WHERE id = ?", (load_id,))
         else:
             if not context["can_read"] or form.get("action") != "confirm":
-                raise ValueError("Подтверждение загрузки недоступно.")
+                raise ValueError(i18n._("Подтверждение загрузки недоступно."))
             await run_in_threadpool(defect_references.load, db, row, load_id, form.get("shown"),
                                     settings_of(request).hub_url, context["project"]["hub_app_id"],
                                     flow._update_target(request, project_id, row))

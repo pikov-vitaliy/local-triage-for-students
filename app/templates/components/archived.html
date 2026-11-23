@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, project_tabs %}
-{% block title %}{{ label }} · архив · Компоненты · Локальный триаж{% endblock %}
+{% block title %}{{ label }} · {{ _("архив") }} · {{ _("Компоненты") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}components{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">Компоненты</a><span aria-hidden="true"> / </span><span aria-current="page">архив</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">{{ _("Компоненты") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("архив") }}</span>{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1 class="break">{{ label }}</h1>
-    <p class="page-sub">Архив перехода идентичности пакетов – карточка только для чтения</p>
+    <h1 data-section="{{ _("Компоненты") }}" class="break">{{ label }}</h1>
+    <p class="page-sub">{{ _("Архив перехода идентичности пакетов – карточка только для чтения") }}</p>
   </div>
-  <div class="page-actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/components">{{ icon("arrow-left") }}К списку</a></div>
+  <div class="page-actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/components">{{ icon("arrow-left") }}{{ _("К списку") }}</a></div>
 </div>
-<div class="callout callout-warn" role="note" id="archive-banner"><p><strong>Строка в архиве.</strong> В текущем составе её нет: по сведениям Hub о библиотеке у её находок другая идентичность пакета, а исследования и решения прежней тройки сняты в архив. Решение по компоненту принимается на карточке новой строки.</p></div>
+<div class="callout callout-warn" role="note" id="archive-banner"><p><strong>{{ _("Строка в архиве.") }}</strong> {{ _("В текущем составе её нет: по сведениям Hub о библиотеке у её находок другая идентичность пакета, а исследования и решения прежней тройки сняты в архив. Решение по компоненту принимается на карточке новой строки.") }}</p></div>
 <section class="panel">
   {% set archive_open = true %}{% include "components/_archive.html" %}
 </section>

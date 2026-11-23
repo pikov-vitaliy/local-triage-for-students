@@ -1,64 +1,64 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon %}
-{% block title %}Папка с репозиториями · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Папка с репозиториями") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}folders{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Папка с репозиториями</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Папка с репозиториями") }}</span>{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Папка с репозиториями</h1>
-    <p class="page-sub">Найдите папку, в которой лежат клоны кодовых баз проекта, и нажмите «Выбрать эту папку». Видно только то, что внутри <span class="mono break">{{ root }}</span>, и только для чтения.</p>
+    <h1 data-section="{{ _("Клоны кодовых баз") }}">{{ _("Папка с репозиториями") }}</h1>
+    <p class="page-sub">{{ _("Найдите папку, в которой лежат клоны кодовых баз проекта, и нажмите «Выбрать эту папку».") }} {{ _("Видно только то, что внутри") }} <span class="mono break">{{ root }}</span>{{ _(", и только для чтения.") }}</p>
   </div>
-  <div class="page-actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}#step2">{{ icon("arrow-left") }}К проекту</a></div>
+  <div class="page-actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}#step2">{{ icon("arrow-left") }}{{ _("К проекту") }}</a></div>
 </div>
 
 {% if root_ok %}
-<p class="muted small">Сейчас для проекта выбрана <span class="mono break">{{ selected_display }}</span>.</p>
+<p class="muted small">{{ _("Сейчас для проекта выбрана") }} <span class="mono break">{{ selected_display }}</span>.</p>
 
 <div class="browser">
-  <nav class="path-crumbs" aria-label="Путь к папке">
+  <nav class="path-crumbs" aria-label="{{ _("Путь к папке") }}">
     {% if crumbs %}<a href="/projects/{{ project.id }}/folders?path=">{{ root }}</a>{% else %}<span aria-current="page" id="current-path">{{ root }}</span>{% endif %}
     {% for c in crumbs %}<span aria-hidden="true">/</span>{% if loop.last %}<span aria-current="page" id="current-path">{{ c.label }}</span>{% else %}<a href="/projects/{{ project.id }}/folders?path={{ c.rel|urlencode }}">{{ c.label }}</a>{% endif %}{% endfor %}
   </nav>
-  <ul class="folder-list" aria-label="Папки внутри {{ path_display }}">
+  <ul class="folder-list" aria-label="{{ _("Папки внутри {path}", path=path_display) }}">
     {% if parent is not none %}
-    <li><a class="folder folder-up" href="/projects/{{ project.id }}/folders?path={{ parent|urlencode }}">{{ icon("arrow-left") }}<span>на уровень выше</span></a></li>
+    <li><a class="folder folder-up" href="/projects/{{ project.id }}/folders?path={{ parent|urlencode }}">{{ icon("arrow-left") }}<span>{{ _("на уровень выше") }}</span></a></li>
     {% endif %}
     {% for d in subfolders %}
     <li><a class="folder{% if d.rel == selected %} is-current{% endif %}" href="/projects/{{ project.id }}/folders?path={{ d.rel|urlencode }}">{{ icon("folder") }}<span class="folder-name">{{ d.name }}</span>
-      {%- if d.kind == "git" %} <span class="badge badge-muted">клон git</span>{% elif d.kind == "src" %} <span class="badge badge-muted">исходники</span>{% endif %}
-      {%- if d.codebase %} <span class="badge badge-accent">кодовая база из выгрузки</span>{% endif %}
-      {%- if d.rel == selected %} <span class="badge badge-ok">выбрана</span>{% endif %}</a></li>
+      {%- if d.kind == "git" %} <span class="badge badge-muted">{{ _("клон git") }}</span>{% elif d.kind == "src" %} <span class="badge badge-muted">{{ _("исходники") }}</span>{% endif %}
+      {%- if d.codebase %} <span class="badge badge-accent">{{ _("кодовая база из выгрузки") }}</span>{% endif %}
+      {%- if d.rel == selected %} <span class="badge badge-ok">{{ _("выбрана") }}</span>{% endif %}</a></li>
     {% endfor %}
-    {% if not subfolders %}<li class="folder-empty">Других папок здесь нет.</li>{% endif %}
+    {% if not subfolders %}<li class="folder-empty">{{ _("Других папок здесь нет.") }}</li>{% endif %}
   </ul>
-  {% if more %}<p class="folder-empty small">Показаны первые {{ subfolders|length }} папок по имени.</p>{% endif %}
+  {% if more %}<p class="folder-empty small">{{ _("Показаны первые {n} папок по имени.", n=subfolders|length) }}</p>{% endif %}
   <div class="browser-actions">
     {% if is_clone %}
-    <p class="text-warn">{{ icon("warning") }} Это клон одной кодовой базы: в нём .git, файл сборки или папка src. Папка проекта – та, в которой лежат клоны{% if parent is not none %}: <a href="/projects/{{ project.id }}/folders?path={{ parent|urlencode }}">на уровень выше</a>{% endif %}.</p>
-    <p class="small"><a href="/projects/{{ project.id }}#step2">Таблица соответствия кодовых баз и папок</a></p>
+    <p class="text-warn">{{ icon("warning") }} {{ _("Это клон одной кодовой базы: в нём .git, файл сборки или папка src.") }} {{ _("Папка проекта – та, в которой лежат клоны") }}{% if parent is not none %}: <a href="/projects/{{ project.id }}/folders?path={{ parent|urlencode }}">{{ _("на уровень выше") }}</a>{% endif %}.</p>
+    <p class="small"><a href="/projects/{{ project.id }}#step2">{{ _("Таблица соответствия кодовых баз и папок") }}</a></p>
     {% if clone_offer %}
     <form method="post" action="/projects/{{ project.id }}/repos-clone" id="clone-offer"
-          data-confirm="Папка проекта станет «{{ clone_offer.parent_display }}», клон «{{ clone_offer.folder }}» – папкой кодовой базы «{{ clone_offer.codebase }}».{% if clone_offer.warning %} {{ clone_offer.warning }}{% endif %}">
+          data-confirm="{{ _("Папка проекта станет «{parent}», клон «{folder}» – папкой кодовой базы «{codebase}».", parent=clone_offer.parent_display, folder=clone_offer.folder, codebase=clone_offer.codebase) }}{% if clone_offer.warning %} {{ clone_offer.warning }}{% endif %}">
       <input type="hidden" name="clone" value="{{ path }}">
       <input type="hidden" name="codebase" value="{{ clone_offer.codebase }}">
       <input type="hidden" name="expect_repos_dir" value="{{ selected }}">
       <input type="hidden" name="expect_reset" value="{{ clone_offer.counts }}">
       <input type="hidden" name="confirm_reset" value="0">
-      <button type="submit" class="btn btn-primary">Сделать папку выше папкой проекта и назначить этот клон кодовой базе «{{ clone_offer.codebase }}»</button>
+      <button type="submit" class="btn btn-primary">{{ _("Сделать папку выше папкой проекта и назначить этот клон кодовой базе «{codebase}»", codebase=clone_offer.codebase) }}</button>
     </form>
     {% endif %}
     {% else %}
-    {% if codebase_total %}<p class="{% if matches %}text-ok{% else %}muted{% endif %} grow">Найдено здесь по именам: {{ matches|length }} из {{ codebase_total }} {{ codebase_total|plural("кодовой базы", "кодовых баз", "кодовых баз") }} выгрузки{% if matches %} – {% for codebase, folder in matches %}<span class="mono">{{ codebase }}</span>{% if folder != codebase %} → <span class="mono">{{ folder }}</span>{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}.</p>{% endif %}
+    {% if codebase_total %}<p class="{% if matches %}text-ok{% else %}muted{% endif %} grow">{{ _("Найдено здесь по именам: {found} из {total} {codebases} выгрузки", found=matches|length, total=codebase_total, codebases=codebase_total|plural("кодовой базы", "кодовых баз", "кодовых баз")) }}{% if matches %} – {% for codebase, folder in matches %}<span class="mono">{{ codebase }}</span>{% if folder != codebase %} → <span class="mono">{{ folder }}</span>{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}.</p>{% endif %}
     <form method="post" action="/projects/{{ project.id }}/repos"{% if reset_warning
       %} data-confirm="{{ reset_warning }}"{% endif %}>
       <input type="hidden" name="repos_dir" value="{{ path }}">
       <input type="hidden" name="confirm_reset" value="0">
-      <button type="submit" class="btn{% if path != selected %} btn-primary{% endif %}" aria-describedby="current-path">{{ icon("check") }}Выбрать эту папку</button>
+      <button type="submit" class="btn{% if path != selected %} btn-primary{% endif %}" aria-describedby="current-path">{{ icon("check") }}{{ _("Выбрать эту папку") }}</button>
     </form>
     {% endif %}
   </div>
 </div>
-<p class="hint">Клон кодовой базы – папка с .git, файлом сборки или папкой src. Скрытые папки и ссылки на другие папки здесь не показываются.</p>
+<p class="hint">{{ _("Клон кодовой базы – папка с .git, файлом сборки или папкой src. Скрытые папки и ссылки на другие папки здесь не показываются.") }}</p>
 {% endif %}
 {% endblock %}

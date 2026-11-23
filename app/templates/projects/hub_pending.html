@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% set heading = {'pending': 'Ждёт отправки в Hub', 'saved': 'Сохранено до принятия состояния Hub', 'restored': 'Возвращено в редактор', 'discarded': 'Отброшенная правка', 'delivered': 'Принято Hub'}.get(pending.state, 'Сохранённая правка') %}
+{% set heading = {'pending': _('Ждёт отправки в Hub'), 'saved': _('Сохранено до принятия состояния Hub'), 'restored': _('Возвращено в редактор'), 'discarded': _('Отброшенная правка'), 'delivered': _('Принято Hub')}.get(pending.state, _('Сохранённая правка')) %}
 {% block title %}{{ heading }}{% endblock %}
 {% block content %}
 <h1>{{ heading }}</h1>
-<p>{{ pending.entity_key }} · {{ pending.created_at|ts }} · {{ {'pending': 'сохранено отдельно', 'saved': 'заменено состоянием Hub при принятии, можно восстановить', 'restored': 'возвращено в редактор', 'discarded': 'снято с ожидания', 'delivered': 'состояние подтверждено чтением Hub'}.get(pending.state, pending.state) }}</p>
-{% if payload.history %}<section class="panel"><h2>История ожидания</h2>{% for event in payload.history %}<p>{{ event.at|ts }} · {{ event.reason }}</p>{% endfor %}</section>{% endif %}
-<p>Hub определяет принятое состояние. Правка сохранена отдельно и не отправляется при синхронизации.</p>
-{% if card_url %}<p><a href="{{ card_url }}">Открыть карточку</a></p>{% endif %}
-{% for title, values in [('Принято из Hub', accepted_values), ('Сохранённая правка', payload['values'])] %}
-<section class="panel"><h2>{{ title }}</h2><dl>{% for key,value in values.items() %}<dt>{{ {'status':'Статус','reason':'Основание','expiredAt':'Срок','summary':'Заголовок','command_text':'Текст дефекта'}.get(key,key) }}</dt><dd class="break">{% if value is mapping %}{{ value|tojson }}{% else %}{{ value if value is not none else 'Не задано' }}{% endif %}</dd>{% endfor %}</dl></section>{% endfor %}
-<details><summary>Исходная база и полная сохранённая правка</summary><pre class="hub-text">{{ payload|json_text }}</pre></details>
+<p>{{ pending.entity_key }} · {{ pending.created_at|ts }} · {{ {'pending': _('сохранено отдельно'), 'saved': _('заменено состоянием Hub при принятии, можно восстановить'), 'restored': _('возвращено в редактор'), 'discarded': _('снято с ожидания'), 'delivered': _('состояние подтверждено чтением Hub')}.get(pending.state, pending.state) }}</p>
+{% if payload.history %}<section class="panel"><h2>{{ _("История ожидания") }}</h2>{% for event in payload.history %}<p>{{ event.at|ts }} · {{ event.reason }}</p>{% endfor %}</section>{% endif %}
+<p>{{ _("Hub определяет принятое состояние. Правка сохранена отдельно и не отправляется при синхронизации.") }}</p>
+{% if card_url %}<p><a href="{{ card_url }}">{{ _("Открыть карточку") }}</a></p>{% endif %}
+{% for title, values in [(_('Принято из Hub'), accepted_values), (_('Сохранённая правка'), payload['values'])] %}
+<section class="panel"><h2>{{ title }}</h2><dl>{% for key,value in values.items() %}<dt>{{ {'status':_('Статус'),'reason':_('Основание'),'expiredAt':_('Срок'),'summary':_('Заголовок'),'command_text':_('Текст дефекта')}.get(key,key) }}</dt><dd class="break">{% if value is mapping %}{{ value|tojson }}{% else %}{{ value if value is not none else _('Не задано') }}{% endif %}</dd>{% endfor %}</dl></section>{% endfor %}
+<details><summary>{{ _("Исходная база и полная сохранённая правка") }}</summary><pre class="hub-text">{{ payload|json_text }}</pre></details>
 {% if pending.state in ('pending','saved','restored') %}
 <form method="post" action="/projects/{{ project.id }}/hub-pending/{{ pending.id }}" class="panel">
 <input type="hidden" name="confirmation" value="{{ confirmation }}">
-<p>«Вернуть в редактор» восстановит показанные поля локальной правки. Принятая база Hub сохранится. Затем откройте карточку и отдельно подтвердите отправку. Намерение изменения состава сохраняется в подробностях; отправка состава выполняется отдельным действием в Hub.</p>
-<label><input type="checkbox" name="confirm" value="yes" required> Подтверждаю выбранное действие с сохранённой правкой. Hub не меняется.</label>
-<div class="actions">{% if pending.state != 'restored' %}<button class="btn" name="action" value="restore">Вернуть в редактор</button>{% endif %}<button class="btn btn-ghost" name="action" value="discard">Отбросить</button></div>
+<p>{{ _("«Вернуть в редактор» восстановит показанные поля локальной правки. Принятая база Hub сохранится. Затем откройте карточку и отдельно подтвердите отправку. Намерение изменения состава сохраняется в подробностях; отправка состава выполняется отдельным действием в Hub.") }}</p>
+<label><input type="checkbox" name="confirm" value="yes" required> {{ _("Подтверждаю выбранное действие с сохранённой правкой. Hub не меняется.") }}</label>
+<div class="actions">{% if pending.state != 'restored' %}<button class="btn" name="action" value="restore">{{ _("Вернуть в редактор") }}</button>{% endif %}<button class="btn btn-ghost" name="action" value="discard">{{ _("Отбросить") }}</button></div>
 </form>{% endif %}
 {% endblock %}

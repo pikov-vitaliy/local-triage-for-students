@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Ошибка {{ status }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Ошибка {status} · Локальный триаж", status=status) }}{% endblock %}
 {% block page %}error{% endblock %}
 {% block content %}
-<h1>{% if status == 404 %}Не найдено{% else %}Ошибка {{ status }}{% endif %}</h1>
+<h1 data-section="{{ _("Ошибка") }}">{% if status == 404 %}{{ _("Не найдено") }}{% else %}{{ _("Ошибка {status}", status=status) }}{% endif %}</h1>
 <p class="lead">{{ message }}</p>
-<p><a class="btn" href="/">К проектам</a></p>
+<p><a class="btn" href="/">{{ _("К проектам") }}</a></p>
 {% endblock %}

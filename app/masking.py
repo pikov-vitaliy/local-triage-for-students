@@ -41,6 +41,8 @@ import time
 from collections import Counter
 from pathlib import Path
 
+from app import i18n
+
 KEY_SIZE = 32
 SECRET_TYPES = ("SECRET",)
 PII_TYPES = ("INN", "SNILS", "PHONE", "EMAIL", "PASSPORT")
@@ -74,8 +76,9 @@ def load_or_create_key(path: Path) -> bytes:
             break
         time.sleep(0.02)
     if len(key) != KEY_SIZE:
-        raise ValueError(f"Файл ключа маскирования {path.name} повреждён: ожидалось {KEY_SIZE} байта. Удалите его – "
-                         "будет создан новый ключ, номера плейсхолдеров в новых срезах сменятся.")
+        raise ValueError(i18n._("Файл ключа маскирования {name} повреждён: ожидалось {size} байта. Удалите его – "
+                                "будет создан новый ключ, номера плейсхолдеров в новых срезах сменятся.",
+                                name=path.name, size=KEY_SIZE))
     return key
 
 

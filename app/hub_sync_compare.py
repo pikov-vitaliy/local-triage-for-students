@@ -1,13 +1,13 @@
 """Сравнение сохранённых свидетельств без изменения решений, черновиков и состава."""
 
-from app import hub_entity_versions as versions, hub_sync_api as api
+from app import hub_entity_versions as versions, hub_sync_api as api, i18n
 from app.db import dumps, loads, finding_data_sig, text_hash, hub_verdict
 from app.defect_drafts import fields_of
 from app.hub_defects import UPDATE_SETTLED, linked_pairs, split_description
-from app.hub_ops import NOT_SENT, normalize_text
+from app.hub_ops import NOT_SENT, error_text as hub_ops_error, normalize_text
 from app.hub_status import HUB_ISSUE_TYPE, _day as expiry_day
 
-LABELS = {
+LABELS = i18n.Labels({
     "new": "Новые в Hub", "changed": "Изменены в Hub", "absent": "Отсутствуют или удалены в Hub",
     "pending": "Ждёт отправки в Hub", "conflict": "Изменены и в приложении, и в Hub после принятой базы",
     "sent_unaccepted": "Отправлено в Hub, ждёт принятия состояния Hub",
@@ -20,7 +20,7 @@ LABELS = {
     "fixed_external": "Исправлены в Hub, в приложении нет",
     "observed": "Изменены прочие сведения Hub",
     "unsendable": "Не отправляется: в Hub находка исправлена (Fixed)",
-}
+})
 
 
 # порядок основной группы объекта (страница синхронизации и отметки страниц, dev15): неизвестная группа – ошибка,
@@ -39,7 +39,9 @@ def primary_group(groups) -> str:
 # каждом изменении расчёта групп, причин или сведений отправки (ревью кода dev15, круг 4)
 COMPARE_VERSION = 23
 # объект появился в приложении после составления списка чтения (compare_in и страницы – одна причина)
-LOCAL_AFTER_READ = "Локальный объект появился после составления списка чтения. Нужен новый обход."
+# причины устаревания хранятся в hub_sync_items.stale_reason по-русски; перевод – при сборке пометок (evaluate)
+LOCAL_AFTER_READ = i18n.N_("Локальный объект появился после составления списка чтения. Нужен новый обход.")
+STALE_OBSERVATION = i18n.N_("Наблюдение устарело относительно принятой базы. Локальный пересчёт этого не меняет.")
 
 
 def instant_ms(value):
@@ -58,15 +60,23 @@ def instant_ms(value):
 DECISION_STATUSES = ("False Positive", "Accepted risk")
 HUB_REFUSED = "Hub не принял"  # начало заметки «Push в Hub», когда Hub отказал на отправленный PUT (hub_defects)
 
+
+def _refused_prefixes() -> tuple[str, str]:
+    """Начало заметки об отказе Hub на обоих языках: заметка хранится в строке дефекта и могла быть записана при
+    другом языке интерфейса (ADR-0158)."""
+    return HUB_REFUSED, i18n.translate(HUB_REFUSED, "en")
+
+
+
 # отправка – отдельное измерение состояния (dev15, план п. 2.1–2.2)
-DELIVERY_LABELS = {
+DELIVERY_LABELS = i18n.Labels({
     "unsendable": "В Hub исправлена – отправить нельзя",
     "queued": "Отправка ждёт исполнителя",
     "unconfirmed": "Отправка не подтверждена",
     "refused": "Hub не принял",
     "unsent": "Не отправлено в Hub",
     "sent": "Отправлено в Hub",
-}
+})
 
 
 def delivery_of(kind, key, local, diff, context, sources=None, observed=True) -> dict:
@@ -103,7 +113,7 @@ def delivery_of(kind, key, local, diff, context, sources=None, observed=True) ->
             # (ревью кода dev15, круг 4)
             state, out["action"] = "unsent", ("push" if phase == "observed_old" else "pull")
             out["error"] = str(update.get("note") or "")
-        elif (current or stored) and phase == "failed" and str(update.get("note") or "").startswith(HUB_REFUSED):
+        elif (current or stored) and phase == "failed" and str(update.get("note") or "").startswith(_refused_prefixes()):
             state, out["error"] = "refused", str(update.get("note") or "")
         elif current or stored:
             # ошибка подготовки (чтение перед PUT, проверка кандидата, запрос не ушёл) – запись в Hub не уходила
@@ -179,14 +189,16 @@ def _branch_changes(before, after) -> list[str]:
         if b == h:
             continue
         if b is None:
-            out.append(f"{name}: появилась")
+            out.append(i18n._("{branch}: появилась", branch=name))
         elif h is None:
-            out.append(f"{name}: исчезла")
+            out.append(i18n._("{branch}: исчезла", branch=name))
         elif b.get("status") != h.get("status"):
-            out.append(f"{name}: статус был {b.get('status') or '–'}, стал {h.get('status') or '–'}")
+            out.append(i18n._("{branch}: статус был {before}, стал {after}", branch=name, before=b.get('status') or '–',
+                              after=h.get('status') or '–'))
         else:
-            out.append(f"{name}: поля " + ", ".join(sorted(k for k in set(b) | set(h) if b.get(k) != h.get(k))))
-    return out or ["состав сведений"]
+            out.append(i18n._("{branch}: поля {fields}", branch=name,
+                              fields=", ".join(sorted(k for k in set(b) | set(h) if b.get(k) != h.get(k)))))
+    return out or [i18n._("состав сведений")]
 
 
 def observed_causes(diff) -> list[str]:
@@ -202,23 +214,25 @@ def observed_causes(diff) -> list[str]:
         if name == "issueBranchBriefData":
             branches.extend(_branch_changes(before, after))
         elif name == "currentBranch":
-            branches.append(f"текущая ветка была {before or '–'}, стала {after or '–'}")
+            branches.append(i18n._("текущая ветка была {before}, стала {after}", before=before or '–', after=after or '–'))
         elif name in PLACE_FIELDS:
-            place.append(f"{name} было {before if before not in (None, '') else '–'}, стало {after if after not in (None, '') else '–'}")
+            place.append(i18n._("{field} было {before}, стало {after}", field=name,
+                                before=before if before not in (None, '') else '–', after=after if after not in (None, '') else '–'))
         elif name in TEXT_FIELDS or isinstance(before, str) or isinstance(after, str):
             texts.append(name)
         else:
             other.append(name)
-    same = "; статус и решение не менялись" if diff.get("decision_same") else ""
     out = []
     if texts:
-        out.append(f"Hub изменил справочный текст находки (поля {', '.join(sorted(set(texts)))}){same}.")
+        fields = ", ".join(sorted(set(texts)))
+        out.append(i18n._("Hub изменил справочный текст находки (поля {fields}); статус и решение не менялись.", fields=fields)
+                   if diff.get("decision_same") else i18n._("Hub изменил справочный текст находки (поля {fields}).", fields=fields))
     if branches:
-        out.append("Hub изменил сведения веток: " + "; ".join(branches) + ".")
+        out.append(i18n._("Hub изменил сведения веток: {changes}.", changes="; ".join(branches)))
     if place:
-        out.append("Hub изменил место находки: " + "; ".join(place) + ".")
+        out.append(i18n._("Hub изменил место находки: {changes}.", changes="; ".join(place)))
     if other:
-        out.append(f"Hub изменил сведения находки: поля {', '.join(sorted(set(other)))}.")
+        out.append(i18n._("Hub изменил сведения находки: поля {fields}.", fields=", ".join(sorted(set(other)))))
     return out
 
 
@@ -233,8 +247,8 @@ def causes(kind, key, local, diff, context) -> list[str]:
     stored = [i for i in diff.get("pending_ids", []) if i not in set(diff.get("delivered_pending_ids", []))]
     if kind == "issue":
         if "unsendable" in groups:
-            out.append("В Hub находка исправлена (Fixed): решение приложения туда не уйдёт – Hub не меняет статус "
-                       "исправленной находки.")
+            out.append(i18n._("В Hub находка исправлена (Fixed): решение приложения туда не уйдёт – Hub не меняет статус "
+                              "исправленной находки."))
         elif unsent:
             # текущее решение и сохранённые отдельно правки – разные причины, у каждой своя дата (ревью Kimi dev14, к. 2)
             if current:
@@ -243,76 +257,89 @@ def causes(kind, key, local, diff, context) -> list[str]:
                 when = _when(review.get("decided_at") or review.get("updated_at"))
                 unknown = (local.get("status_intent") or {}).get("state") == "unknown"
                 # исход отправки этой редакции неизвестен – запись могла состояться: не «не отправлена» (Codex, к. 11)
-                out.append("Правка решения в приложении" + (f" от {when}" if when else "")
-                           + (": доставка в Hub не подтверждена." if unknown else " в Hub не отправлена."))
+                if unknown:
+                    out.append(i18n._("Правка решения в приложении от {when}: доставка в Hub не подтверждена.", when=when)
+                               if when else i18n._("Правка решения в приложении: доставка в Hub не подтверждена."))
+                else:
+                    out.append(i18n._("Правка решения в приложении от {when} в Hub не отправлена.", when=when)
+                               if when else i18n._("Правка решения в приложении в Hub не отправлена."))
             if stored:
                 dates = [_when(d) for d in diff.get("stored_dates", []) if d]
                 if len(stored) == 1:
-                    out.append("Правка решения, сохранённая отдельно при синхронизации" + (f" {dates[0]}" if dates else "")
-                               + ", в Hub не отправлена: откройте её, чтобы восстановить или отбросить.")
+                    out.append(i18n._("Правка решения, сохранённая отдельно при синхронизации {date}, в Hub не отправлена: "
+                                      "откройте её, чтобы восстановить или отбросить.", date=dates[0]) if dates else
+                               i18n._("Правка решения, сохранённая отдельно при синхронизации, в Hub не отправлена: откройте "
+                                      "её, чтобы восстановить или отбросить."))
                 else:
-                    out.append(f"Правки решения, сохранённые отдельно при синхронизации ({len(stored)}"
-                               + (f": {', '.join(dates)}" if dates else "") + "), в Hub не отправлены: откройте их, "
-                               "чтобы восстановить или отбросить.")
+                    count = str(len(stored)) + (f": {', '.join(dates)}" if dates else "")
+                    out.append(i18n._("Правки решения, сохранённые отдельно при синхронизации ({count}), в Hub не "
+                                      "отправлены: откройте их, чтобы восстановить или отбросить.", count=count))
             if diff.get("pending_ids") and not stored:
                 # тело доставленной операции совпадает с каждой сохранённой правкой (hub_pull.delivered_pending_ids):
                 # они закроются сверкой после принятия
-                out.append("Сохранённая правка уже отправлена в Hub; если принятое состояние Hub её содержит, она закроется "
-                           "после «Принять состояние Hub».")
+                out.append(i18n._("Сохранённая правка уже отправлена в Hub; если принятое состояние Hub её содержит, она "
+                                  "закроется после «Принять состояние Hub»."))
         # изменение Hub объясняется и рядом с сохранённой правкой: текущее решение не ждёт отправки, а Hub после
         # принятой базы изменился – причина не скрывается сообщением о доставке (ревью Kimi dev14, круг 9)
         if "unsendable" not in groups and not current:
             if "conflict" in groups:
                 # «текущее решение», а не «правки нет»: рядом может стоять неотправленная сохранённая правка (Kimi, к. 10)
-                out.append("Решение изменилось и в приложении, и в Hub после принятой базы; текущее решение отправки не "
-                           "ждёт – сравните поля и примите состояние Hub.")
+                out.append(i18n._("Решение изменилось и в приложении, и в Hub после принятой базы; текущее решение "
+                                  "отправки не ждёт – сравните поля и примите состояние Hub."))
             elif "changed" in groups:
-                out.append("Hub изменил находку сам (например, «Fixed» после пересканирования или «Open» при создании "
-                           "дефекта): примите состояние Hub.")
+                out.append(i18n._("Hub изменил находку сам (например, «Fixed» после пересканирования или «Open» при "
+                                  "создании дефекта): примите состояние Hub."))
         # неизвестный исход называется и у совпавшей с Hub находки: сведения отправки – «не подтверждена» (круг 9)
         unconfirmed = (diff.get("delivery") or {}).get("state") == "unconfirmed"
         last = context.last_status.get(key) if context and ("unsendable" in groups or unsent or unconfirmed) else None
         if last and last["state"] == "failed":  # и у Fixed: ответ Hub не теряется (ревью Kimi dev14)
-            out.append(f"Последняя отправка статуса (операция {last['id']}, {_when(last['created_at'])}) не прошла: "
-                       f"{last['error'] or 'ошибка'}.")
+            out.append(i18n._("Последняя отправка статуса (операция {op_id}, {when}) не прошла: {error}.", op_id=last['id'],
+                              when=_when(last['created_at']), error=hub_ops_error(last['error']) or i18n._("ошибка")))
         elif last and last["state"] == "unknown":
-            out.append(f"Исход последней отправки статуса (операция {last['id']}, {_when(last['created_at'])}) "
-                       "неизвестен: нажмите «Pull из Hub» в карточке находки – приложение прочитает статус в Hub.")
+            out.append(i18n._("Исход последней отправки статуса (операция {op_id}, {when}) неизвестен: нажмите «Pull из "
+                              "Hub» в карточке находки – приложение прочитает статус в Hub.", op_id=last['id'],
+                              when=_when(last['created_at'])))
         if "observed" in groups:
             out.extend(observed_causes(diff))
         for note in diff.get("hub_notes", []):
             # пометка, а не отличие: находка принимается по статусу Hub (dev15, план п. 1.2)
-            out.append("В Hub: " + note[0].lower() + note[1:] + " Находка принимается по статусу Hub.")
+            note = i18n._(note)  # пометка Hub хранится по-русски (сравнение с api.HUB_NOTES)
+            out.append(i18n._("В Hub: {note} Находка принимается по статусу Hub.", note=note[0].lower() + note[1:]))
     elif unsent:
         dstate = (diff.get("delivery") or {}).get("state")
         error = (diff.get("delivery") or {}).get("error") or ""
         action = (diff.get("delivery") or {}).get("action")
         if dstate == "unconfirmed" and action == "reread":
-            out.append("«Push в Hub» отправлен, но подтверждающее чтение не завершилось"
-                       + (f" ({error})" if error else "") + " – нажмите «Повторить чтение» на карточке дефекта.")
+            out.append(i18n._("«Push в Hub» отправлен, но подтверждающее чтение не завершилось ({error}) – нажмите "
+                              "«Повторить чтение» на карточке дефекта.", error=error) if error else
+                       i18n._("«Push в Hub» отправлен, но подтверждающее чтение не завершилось – нажмите «Повторить "
+                              "чтение» на карточке дефекта."))
         elif dstate == "unconfirmed" and action == "verify":
-            out.append("Исход «Push в Hub» неизвестен: запись могла состояться – нажмите «Сверить» на карточке дефекта, "
-                       "прежде чем отправлять снова.")
+            out.append(i18n._("Исход «Push в Hub» неизвестен: запись могла состояться – нажмите «Сверить» на карточке "
+                              "дефекта, прежде чем отправлять снова."))
         elif dstate == "unconfirmed":
-            out.append("Исход «Push в Hub» не установлен: запись могла состояться.")
+            out.append(i18n._("Исход «Push в Hub» не установлен: запись могла состояться."))
         elif dstate == "unsent" and action == "push":
-            out.append(f"Сверка после «Push в Hub»: {error or 'в Hub прежний текст'}. Правки в Hub сейчас нет – отправьте "
-                       "её снова («Push в Hub» на карточке дефекта).")
+            out.append(i18n._("Сверка после «Push в Hub»: {result}. Правки в Hub сейчас нет – отправьте её снова («Push в "
+                              "Hub» на карточке дефекта).", result=error or i18n._("в Hub прежний текст")))
         elif dstate == "unsent" and action == "pull":
-            out.append(f"Сверка после «Push в Hub»: {error or 'в Hub другое содержимое'}. Посмотрите версию Hub («Pull из "
-                       "Hub» на карточке дефекта) и при необходимости отправьте правку снова.")
+            out.append(i18n._("Сверка после «Push в Hub»: {result}. Посмотрите версию Hub («Pull из Hub» на карточке "
+                              "дефекта) и при необходимости отправьте правку снова.",
+                              result=error or i18n._("в Hub другое содержимое")))
         elif dstate == "queued":
-            out.append("«Push в Hub» выполняется: дождитесь его итога.")
+            out.append(i18n._("«Push в Hub» выполняется: дождитесь его итога."))
         elif dstate == "refused":
-            out.append(f"Hub не принял правку дефекта: {error.removeprefix(HUB_REFUSED).lstrip(': ') or 'отказ'}.")
+            said = next((error[len(p):] for p in _refused_prefixes() if error.startswith(p)), error).lstrip(': ')
+            out.append(i18n._("Hub не принял правку дефекта: {said}.", said=said or i18n._("отказ")))
         else:
-            out.append("Правка дефекта в приложении в Hub не отправлена («Push в Hub» на карточке дефекта)"
-                       + (f": {error}" if error else "") + ".")
+            out.append(i18n._("Правка дефекта в приложении в Hub не отправлена («Push в Hub» на карточке дефекта): "
+                              "{error}.", error=error) if error else
+                       i18n._("Правка дефекта в приложении в Hub не отправлена («Push в Hub» на карточке дефекта)."))
     elif "conflict" in groups:
-        out.append("Дефект изменился и в приложении, и в Hub после принятой базы; правки, ждущей отправки, нет – "
-                   "сравните поля и примите состояние Hub.")
+        out.append(i18n._("Дефект изменился и в приложении, и в Hub после принятой базы; правки, ждущей отправки, нет – "
+                          "сравните поля и примите состояние Hub."))
     elif "changed" in groups:
-        out.append("Дефект изменён в Hub: примите состояние Hub.")
+        out.append(i18n._("Дефект изменён в Hub: примите состояние Hub."))
     return out
 
 
@@ -368,8 +395,8 @@ def compare_defect(c, row, item, hub, context=None):
     context = context or ComparisonContext(c, row)
     local = context.defect_local(item["entity_key"])
     if item["entity_key"].startswith("local:"):
-        return {}, local, {"groups": ["pending"], "notes": ["Дефект ещё не подтверждён в Hub."], "fields": []}
-    notes = api.composition_problems(hub.get("detail"))
+        return {}, local, {"groups": ["pending"], "notes": [i18n._("Дефект ещё не подтверждён в Hub.")], "fields": []}
+    notes = [i18n._(n) for n in api.composition_problems(hub.get("detail"))]
     owner = local.get("owner")
     if not owner:
         return {}, {}, {"groups": ["new"] + (["incomplete"] if notes else []), "notes": notes, "fields": []}
@@ -401,7 +428,7 @@ def compare_defect(c, row, item, hub, context=None):
         fields = [{**f, "kind": "local_only"} if f["kind"] == "pending" else f for f in fields]
         if any(f["kind"] == "local_only" for f in fields):
             groups.append("local_only")
-    notes += api.composition_problems(base) if base else []
+    notes += [i18n._(n) for n in api.composition_problems(base)] if base else []
     if notes:
         groups.append("incomplete")
     notes += [n for n in (bnote, hnote) if n]
@@ -414,16 +441,19 @@ def compare_defect(c, row, item, hub, context=None):
                                       if HUB_ISSUE_TYPE.get(context.findings.get(str(i), {}).get("kind")) != t)}
     if local_links != remote_links or (base and base_links != remote_links):
         groups.append("composition")
-        notes.append("Состав (тип:ID): только локально " + ", ".join(f"{t}:{i}" for i, t in composition["local_only"])
-                     + "; только в Hub " + ", ".join(f"{t}:{i}" for i, t in composition["hub_only"]) + ".")
+        notes.append(i18n._("Состав (тип:ID): только локально {local}; только в Hub {hub}.",
+                            local=", ".join(f"{t}:{i}" for i, t in composition["local_only"]),
+                            hub=", ".join(f"{t}:{i}" for i, t in composition["hub_only"])))
         if base and base_links != remote_links:
-            notes.append("Относительно принятой базы: добавлены " + (", ".join(f"{t}:{i}" for i, t in sorted(remote_links - base_links)) or "нет")
-                         + "; отсутствуют " + (", ".join(f"{t}:{i}" for i, t in sorted(base_links - remote_links)) or "нет") + ".")
+            notes.append(i18n._("Относительно принятой базы: добавлены {added}; отсутствуют {missing}.",
+                                added=", ".join(f"{t}:{i}" for i, t in sorted(remote_links - base_links)) or i18n._("нет"),
+                                missing=", ".join(f"{t}:{i}" for i, t in sorted(base_links - remote_links)) or i18n._("нет")))
         if not base:
             groups.append("unknown_base")
     hub_notes = []
     if composition["unmapped"]:
-        text = "Состав Hub не сопоставлен с выгрузкой: " + ", ".join(f"{t}:{i}" for i, t in composition["unmapped"]) + "."
+        text = i18n._("Состав Hub не сопоставлен с выгрузкой: {links}.",
+                      links=", ".join(f"{t}:{i}" for i, t in composition["unmapped"]))
         if base and base_links == remote_links:
             # состав принят как есть (accept_defect хранит все пары): несопоставленная связь – пометка, не остаток
             # синхронизации (dev15, план п. 1.3)
@@ -438,7 +468,7 @@ def compare_defect(c, row, item, hub, context=None):
         if (member["state"] != "done" or member.get("update_op_id") or member.get("sync_op_id")
                 or member.get("verify_op_id") or phase not in UPDATE_SETTLED):
             groups.append("incomplete")
-            notes.append("В семье дефекта есть незавершённая операция или неподтверждённая запись.")
+            notes.append(i18n._("В семье дефекта есть незавершённая операция или неподтверждённая запись."))
             break
     return base, local, {"groups": groups or ["matched"], "notes": notes, "hub_notes": hub_notes, "fields": fields,
                          "composition": composition, "base_pending": not base and not groups}
@@ -646,7 +676,7 @@ def compare_issue(c, row, item, hub, adapter, context=None):
     finding, review, state = (local[k] for k in ("finding", "review", "state"))
     base = loads(state["confirmed_json"], {}) if state else {}
     problems = api.evidence_problems(hub, item["entity_key"], row["app_id"], adapter)
-    notes, hub_notes = api.blocking(problems), [p for p in problems if p in api.HUB_NOTES]
+    notes, hub_notes = [i18n._(p) for p in api.blocking(problems)], [p for p in problems if p in api.HUB_NOTES]
     key = item["entity_key"]
     b, l, h = issue_values(base, key), issue_local_values(local), issue_values(hub, key)
     intent = local.get("status_intent") or {}
@@ -920,7 +950,7 @@ def evaluate(c, row, context, item, adapter, links):
     sources, coverage = loads(item["source_ops_json"], {}), loads(item["coverage_json"], {})
     stale = item["stale_reason"]
     if sources and not context.observation_current(row, kind, key, sources):
-        stale = "Наблюдение устарело относительно принятой базы. Локальный пересчёт этого не меняет."
+        stale = STALE_OBSERVATION
     base, local, diff = (compare_defect(c, row, item, hub, context) if kind == "defect"
                          else compare_issue(c, row, item, hub, adapter, context))
     accepted = context.applications.get((kind, key))
@@ -931,10 +961,11 @@ def evaluate(c, row, context, item, adapter, links):
         waiting = "pending" in diff["groups"]
         diff = {"groups": ["matched" if agreed else "absent"] + (["pending"] if waiting else []),
                 "fields": [f for f in diff.get("fields", []) if f.get("kind") == "pending"],
-                "notes": ["Отсутствует в полном списке Hub, чтение по ID вернуло 404. Запись сохраняется с пометкой; удаление не утверждается."]}
+                "notes": [i18n._("Отсутствует в полном списке Hub, чтение по ID вернуло 404. Запись сохраняется с пометкой; "
+                                 "удаление не утверждается.")]}
     elif accepted and accepted["presence"] == "absent" and hub.get("detail") and "brief" in hub:
         diff["groups"].append("changed")
-        diff["notes"].append("Объект снова присутствует в Hub. Пометка отсутствия снимется при принятии состояния.")
+        diff["notes"].append(i18n._("Объект снова присутствует в Hub. Пометка отсутствия снимется при принятии состояния."))
     pending_ids = context.pending.get((kind, key), [])
     diff["current_pending"] = "pending" in diff["groups"]  # до сохранённых правок: ждёт ли текущее решение
     if pending_ids:
@@ -975,26 +1006,29 @@ def evaluate(c, row, context, item, adapter, links):
     if stale:
         # устаревшее наблюдение не стирает сведения отправки: «не отправлено» видно всегда (dev15, план п. 2.1)
         # срок записи Hub сохраняется и здесь: после него страница считает объект заново (ревью кода dev15, круг 2)
-        diff = {"groups": ["stale"], "notes": [stale], "fields": [], "delivery": diff["delivery"],
+        diff = {"groups": ["stale"], "notes": [i18n._(stale)], "fields": [], "delivery": diff["delivery"],
                 **({"valid_until": diff["valid_until"]} if "valid_until" in diff else {})}
     if coverage.get("absent_from_list") and not absent(item) and not key.startswith(("local:", "UNMAPPED:")):
         diff["groups"].append("absent")
-        diff["notes"].append("Отсутствует в списке; удаление не считается установленным без подтверждённой семантики ответа по ID.")
+        diff["notes"].append(i18n._("Отсутствует в списке; удаление не считается установленным без подтверждённой семантики "
+                                    "ответа по ID."))
     if coverage.get("inventory_contradiction"):
         diff["groups"].append("incomplete")
-        diff["notes"].append(coverage["inventory_contradiction"])
+        diff["notes"].append(i18n._(coverage["inventory_contradiction"]))
     for part, exception in coverage.get("exceptions", {}).items():
         diff["groups"].append("incomplete")
-        diff["notes"].append(f"Исключение {part}, операция {exception['op_id']}: {exception['reason']}")
+        diff["notes"].append(i18n._("Исключение {part}, операция {op_id}: {reason}", part=part, op_id=exception['op_id'],
+                                    reason=i18n._(exception['reason'])))
     if kind == "issue" and (defect_id := (hub.get("brief") or {}).get("defectId")):
         if str(defect_id) not in links["listed_defects"]:
             diff["groups"].extend(["composition", "incomplete"])
-            diff["notes"].append(f"defectId находки ссылается на дефект {defect_id}, отсутствующий в списке дефектов.")
+            diff["notes"].append(i18n._("defectId находки ссылается на дефект {defect_id}, отсутствующий в списке дефектов.",
+                                        defect_id=defect_id))
     if kind == "defect" and hub.get("detail"):
         linked = {f"{t}:{i}" for i, t in linked_pairs(hub["detail"])}
         if linked & links["known_links"] != links["issue_links"].get(key, set()):
             diff["groups"].extend(["composition", "incomplete"])
-            diff["notes"].append("linkedIssues дефекта и defectId списка находок расходятся.")
+            diff["notes"].append(i18n._("linkedIssues дефекта и defectId списка находок расходятся."))
     diff["groups"] = sorted(set(diff["groups"]))
     if len(diff["groups"]) > 1 and "matched" in diff["groups"]:
         diff["groups"].remove("matched")
@@ -1049,6 +1083,6 @@ def recompare(db, run_id):
     with db._tx() as c:
         row = run_in(c, run_id)
         if row["state"] != "ready" or row["closed_at"]:
-            raise ValueError("Пересчёт доступен после завершения чтения.")
+            raise ValueError(i18n._("Пересчёт доступен после завершения чтения."))
         reparse_saved(c, row)
         compare_in(c, run_in(c, run_id))

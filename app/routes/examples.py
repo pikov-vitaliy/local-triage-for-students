@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from app import examples
+from app import examples, i18n
 from app.hub_import import ImportFailure, parse_workbook
 from app.logsafe import log_failure
 from app.routes.common import db_of, project_or_404, redirect, register_messages, render, settings_of
@@ -154,7 +154,8 @@ def cards(request: Request) -> list[dict]:
         result.append({"entry": entry, "state": state, "link": link,
                        "folder": str(folder) if folder else "",
                        "folder_missing": bool(folder) and not Path(folder).is_dir(),
-                       "command": f"python -m app.examples fetch {entry['id']} --repos-root <корень клонов>"})
+                       "command": i18n._("python -m app.examples fetch {id} --repos-root <корень клонов>",
+                                         id=entry['id'])})
     return result
 
 
@@ -191,7 +192,8 @@ def examples_status(request: Request):
             try:
                 st = examples.status(entry, settings.repos_root)
             except (KeyError, TypeError, OSError) as e:
-                st = {"phase": "failed", "message": f"запись каталога не читается ({e.__class__.__name__})"}
+                st = {"phase": "failed", "message": i18n._("запись каталога не читается ({error})",
+                                                           error=e.__class__.__name__)}
             out[entry["id"]] = {"phase": st["phase"], "message": st.get("message", ""), "fresh": bool(st.get("fresh"))}
     return JSONResponse(out)
 
@@ -200,7 +202,7 @@ def _entry(example_id: str) -> dict:
     try:
         return examples.entry_of(examples.load_catalog(), example_id)
     except examples.ExampleError:
-        raise HTTPException(404, "Такого примера нет в каталоге.") from None
+        raise HTTPException(404, i18n._("Такого примера нет в каталоге.")) from None
 
 
 def _q(text: str) -> str:
@@ -223,7 +225,8 @@ async def fetch_example(request: Request, example_id: str):
         except examples.ExampleError as e:
             return redirect(f"/examples?error={_q(str(e))}#ex-{example_id}")
         except OSError as e:
-            return redirect(f"/examples?error={_q('Папка примеров недоступна на запись: ' + e.__class__.__name__)}")
+            message = i18n._("Папка примеров недоступна на запись: {error}", error=e.__class__.__name__)
+            return redirect(f"/examples?error={_q(message)}")
         linked = project_link(db_of(request), link_key(entry)) is not None
         if again:
             done = "example_refetched_project" if linked else "example_refetched"
@@ -247,7 +250,8 @@ def _prepared_import(settings, entry: dict, tree: Path):
     return result
 
 
-EXAMPLE_MARK_REASON = "Учебный пример: открытый исходный код из публичного репозитория GitHub"
+# хранимый текст: в базу пишется русский msgid, перевод – при показе (projects.mark_reason_shown, ADR-0158)
+EXAMPLE_MARK_REASON = i18n.N_("Учебный пример: открытый исходный код из публичного репозитория GitHub")
 
 
 def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
@@ -256,7 +260,7 @@ def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
     транзакции импорта. Повторное нажатие после обрыва продолжает тот же проект без второго импорта."""
     folders = examples.downloaded_folders(entry, settings.repos_root)
     if not folders:
-        raise examples.ExampleError("Исходники примера ещё не скачаны: нажмите «Скачать».")
+        raise examples.ExampleError(i18n._("Исходники примера ещё не скачаны: нажмите «Скачать»."))
     key = link_key(entry)
     link = project_link(db, key)
     if link and link.get("state") == "ready":
@@ -282,7 +286,8 @@ def create_example_project(settings, db, entry: dict) -> tuple[int, bool]:
         def link_project(c, pid: int) -> None:
             db.set_json_entry_in(c, LINK_KEY, key, {**record, "project_id": pid})
 
-        project_id = db.create_project(unique_name(db, f"Пример: {entry['title']}"[:200]), after=link_project)
+        project_id = db.create_project(unique_name(db, i18n._("Пример: {title}", title=i18n._(entry['title']))[:200]),
+                                       after=link_project)
         link = {**record, "project_id": project_id}
         created_now = True
     else:
@@ -378,7 +383,7 @@ async def create_project(request: Request, example_id: str):
 
     def apply():
         if not _IMPORT_SLOT.acquire(blocking=False):
-            return redirect(f"/examples?error={_q(IMPORT_BUSY)}")
+            return redirect(f"/examples?error={_q(i18n._(IMPORT_BUSY))}")
         try:
             with _CREATE_LOCK:
                 if entry.get("builtin") == "demo":
@@ -388,7 +393,8 @@ async def create_project(request: Request, example_id: str):
             return redirect(f"/examples?error={_q(str(e))}#ex-{example_id}")
         except Exception as e:  # noqa: BLE001
             eid = log_failure(log, "проект из примера не создан", e)
-            return redirect(f"/examples?error={_q(f'Проект не создан (ошибка {eid}).')}#ex-{example_id}")
+            message = i18n._("Проект не создан (ошибка {eid}).", eid=eid)
+            return redirect(f"/examples?error={_q(message)}#ex-{example_id}")
         finally:
             _IMPORT_SLOT.release()
         link = project_link(db, link_key(entry)) or {}
@@ -419,19 +425,21 @@ def mapping_problem(db, settings, project_id: int, changes: dict[str, str]) -> s
     """Почему восстановление сейчас не вернёт пример: другая папка проекта или нет папок примера на диске."""
     project = db.get_project(project_id) or {}
     if str(project.get("repos_dir") or "") != examples.EXAMPLES_FOLDER:
-        return (f"Папка проекта сейчас «{project.get('repos_dir') or 'не выбрана'}», а пример лежит в папке "
-                f"«{examples.EXAMPLES_FOLDER}». Сначала верните папку проекта «{examples.EXAMPLES_FOLDER}».")
+        return i18n._("Папка проекта сейчас «{folder}», а пример лежит в папке «{examples}». Сначала верните папку "
+                      "проекта «{examples}».", folder=project.get('repos_dir') or i18n._('не выбрана'),
+                      examples=examples.EXAMPLES_FOLDER)
     key = example_of_project(db, project_id)
     link = project_link(db, key) if key else None
     if link and link.get("root") and link["root"] != root_of(settings):
-        return ("Папка примеров на этом компьютере другая, чем при создании проекта: восстановление вернуло бы "
-                "соответствия на чужие папки. Создайте проект из примера заново.")
+        return i18n._("Папка примеров на этом компьютере другая, чем при создании проекта: восстановление вернуло "
+                      "бы соответствия на чужие папки. Создайте проект из примера заново.")
     base = examples.examples_root(settings.repos_root)
     targets = (link or {}).get("codebases") or changes
     missing = [folder for folder in targets.values()
                if not (base / folder).is_dir() or not any((base / folder).iterdir())]
     if missing:
-        return "Папок примера нет на диске или они пусты: " + ", ".join(missing[:3]) + ". Скачайте пример заново."
+        return i18n._("Папок примера нет на диске или они пусты: {folders}. Скачайте пример заново.",
+                      folders=", ".join(missing[:3]))
     return ""
 
 
@@ -453,20 +461,21 @@ def example_mapping_page(request: Request, project_id: int):
     db = db_of(request)
     key, changes = mapping_changes(db, project_id)
     if not key:
-        raise HTTPException(404, "Проект не из каталога учебных примеров.")
+        raise HTTPException(404, i18n._("Проект не из каталога учебных примеров."))
     preview = db.restore_preview(project_id, changes)  # строки, последствия и отпечаток – из одного снимка
     current, effects = preview["current"], preview["effects"]
     rows = [{"codebase": cb, "now": current.get(cb, ""), "then": folder} for cb, folder in sorted(changes.items())
             if current.get(cb, "") != folder]
     parts = []
     if effects["cases"]:
-        parts.append(f"удалятся сохранённые срезы кода: {effects['cases']}")
+        parts.append(i18n._("удалятся сохранённые срезы кода: {n}", n=effects['cases']))
     if effects["reviewed"]:
-        parts.append(f"снимутся отметки «Проверено»: {effects['reviewed']} (решения и комментарии останутся)")
+        parts.append(i18n._("снимутся отметки «Проверено»: {n} (решения и комментарии останутся)",
+                            n=effects['reviewed']))
     return render(request, "examples/mapping.html", {
         "project": project, "rows": rows, "expect": preview["expect"],
         "problem": mapping_problem(db, settings_of(request), project_id, changes),
-        "warning": ("При восстановлении " + "; ".join(parts) + ".") if parts else "",
+        "warning": i18n._("При восстановлении {effects}.", effects="; ".join(parts)) if parts else "",
         "stale": request.query_params.get("stale") == "1"})
 
 
@@ -480,7 +489,7 @@ async def restore_example_mapping(request: Request, project_id: int):
         project_or_404(request, project_id)
         key, changes = mapping_changes(db, project_id)
         if not key:
-            raise HTTPException(404, "Проект не из каталога учебных примеров.")
+            raise HTTPException(404, i18n._("Проект не из каталога учебных примеров."))
         if changes and mapping_problem(db, settings_of(request), project_id, changes):
             return redirect(f"/projects/{project_id}/example-mapping")
         if changes:
@@ -574,8 +583,10 @@ def example_reason(db, project_id: int, root: str | None = None) -> str:
     link = link_intact(db, project_id, root)
     if not link:
         return ""
-    return (f"Учебный пример «{link.get('title') or link.get('example_id')}» из каталога стенда: открытый код, "
-            f"{link.get('repo_url', '')}, коммит {str(link.get('commit', ''))[:7]}, лицензия {link.get('license', '')}.")
+    return i18n._("Учебный пример «{title}» из каталога стенда: открытый код, {repo_url}, коммит {commit}, "
+                  "лицензия {license}.", title=link.get('title') or link.get('example_id'),
+                  repo_url=link.get('repo_url', ''), commit=str(link.get('commit', ''))[:7],
+                  license=link.get('license', ''))
 
 
 @router.post("/examples/profile")
@@ -591,7 +602,7 @@ async def save_examples_profile(request: Request):
             return redirect("/examples?ok=examples_profile")
         profile = db.get_provider(int(raw)) if raw.isdigit() else None
         if profile is None or not profile.get("enabled"):
-            return redirect(f"/examples?error={_q('Профиль для примеров: выберите включённый профиль.')}")
+            return redirect(f"/examples?error={_q(i18n._('Профиль для примеров: выберите включённый профиль.'))}")
         db.set_settings({PROFILE_KEY: int(profile["id"])})
         return redirect("/examples?ok=examples_profile")
 
@@ -635,7 +646,9 @@ def common_research(request: Request) -> str:
     from app.routes.components import research_profile
 
     profile = research_profile(db_of(request), settings_of(request), {})
-    return f"через общий профиль исследования «{profile['name']}»" if profile else "файловый режим (ZIP-задание и answer.json)"
+    if profile:
+        return i18n._("через общий профиль исследования «{name}»", name=profile['name'])
+    return i18n._("файловый режим (ZIP-задание и answer.json)")
 
 
 def start_panel(request: Request) -> dict:
@@ -649,35 +662,42 @@ def start_panel(request: Request) -> dict:
     trust = str((chosen or {}).get("trust") or "")
     if state == "none":
         from app.routes.common import profile_for
-        mode = (f"Профиль для примеров не выбран: проекты из каталога разбирает профиль по умолчанию "
-                f"«{profile_for(request).get('name') or ''}».")
+        mode = i18n._("Профиль для примеров не выбран: проекты из каталога разбирает профиль по умолчанию «{name}».",
+                      name=profile_for(request).get('name') or '')
     elif state == "deleted":
-        mode = "Выбранный профиль для примеров удалён: выберите другой. Пока проекты получают профиль по умолчанию."
+        mode = i18n._("Выбранный профиль для примеров удалён: выберите другой. Пока проекты получают профиль по "
+                      "умолчанию.")
     elif not chosen.get("enabled"):
-        mode = f"Профиль «{chosen['name']}» выключен: проекты из каталога получат профиль по умолчанию."
+        mode = i18n._("Профиль «{name}» выключен: проекты из каталога получат профиль по умолчанию.",
+                      name=chosen['name'])
     elif trust == "external" and not external_on():
-        mode = (f"Профиль «{chosen['name']}» – модель в интернете, но внешние модели сейчас выключены (стенд запущен с "
-                "--local-only): проекты из каталога получат профиль по умолчанию.")
+        mode = i18n._("Профиль «{name}» – модель в интернете, но внешние модели сейчас выключены (стенд запущен с "
+                      "--local-only): проекты из каталога получат профиль по умолчанию.", name=chosen['name'])
     elif trust == "external":
-        research = ("Исследование компонентов – через этот же профиль." if research_profile_ok(chosen) else
-                    "Исследование компонентов – " + common_research(request) + ": в профиле не включено назначение "
-                    "«исследование».")
-        mode = (f"Профиль «{chosen['name']}» – модель в интернете: проекты десяти скачиваемых примеров получают "
-                f"отметку «код не секретный» при создании, и профиль назначается сразу; Demo Library – тоже с отметкой. {research}")
+        research = (i18n._("Исследование компонентов – через этот же профиль.") if research_profile_ok(chosen) else
+                    i18n._("Исследование компонентов – {mode}: в профиле не включено назначение «исследование».",
+                           mode=common_research(request)))
+        mode = i18n._("Профиль «{name}» – модель в интернете: проекты десяти скачиваемых примеров получают отметку "
+                      "«код не секретный» при создании, и профиль назначается сразу; Demo Library – тоже с отметкой. "
+                      "{research}", name=chosen['name'], research=research)
     elif code_profile_fits(chosen, {"external_allowed": 0}):
-        where = "в локальной сети" if trust == "lan" else "на этом компьютере"
-        mode = (f"Профиль «{chosen['name']}» работает {where}: назначается проекту сразу. Исследование компонентов – "
-                f"{common_research(request)}.")
+        if trust == "lan":
+            mode = i18n._("Профиль «{name}» работает в локальной сети: назначается проекту сразу. Исследование "
+                          "компонентов – {research}.", name=chosen['name'], research=common_research(request))
+        else:
+            mode = i18n._("Профиль «{name}» работает на этом компьютере: назначается проекту сразу. Исследование "
+                          "компонентов – {research}.", name=chosen['name'], research=common_research(request))
     else:
-        mode = (f"Профиль «{chosen['name']}» не годится для разбора кода (для кода в локальной сети принимается только "
-                "Ollama): проекты из каталога получат профиль по умолчанию.")
+        mode = i18n._("Профиль «{name}» не годится для разбора кода (для кода в локальной сети принимается только "
+                      "Ollama): проекты из каталога получат профиль по умолчанию.", name=chosen['name'])
     checks = []
     if chosen is not None:
         from app.routes.providers import check_state
-        words = {"passed": "прошёл", "failed": "не прошёл", "none": "не проверялся после последней правки профиля"}
-        checks.append(f"Пробный ответ: {words[check_state(db, chosen, 'probe')]}")
+        words = {"passed": i18n._("прошёл"), "failed": i18n._("не прошёл"),
+                 "none": i18n._("не проверялся после последней правки профиля")}
+        checks.append(i18n._("Пробный ответ: {state}", state=words[check_state(db, chosen, 'probe')]))
         if trust == "external":
-            checks.append(f"Проверка поиска: {words[check_state(db, chosen, 'search')]}")
+            checks.append(i18n._("Проверка поиска: {state}", state=words[check_state(db, chosen, 'search')]))
     return {"profiles": profiles, "chosen": chosen, "mode": mode, "checks": checks}
 
 

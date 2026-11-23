@@ -1,32 +1,32 @@
 {% extends "base.html" %}
 {% from "macros.html" import project_tabs %}
-{% block title %}Смена приложения Hub · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Смена приложения Hub") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}projects{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, review_stats.sca, "overview", counts.defects) }}{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Смена приложения Hub</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Смена приложения Hub") }}</span>{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <p class="eyebrow">Подтверждение</p>
-    <h1>Смена приложения Hub</h1>
-    <p class="page-sub">Номер приложения в Hub: {{ project.hub_app_id if project.hub_app_id is not none else "не указан" }} → {{ new_app if new_app is not none else "не указан" }}. Сведения о библиотеках и решения из Hub относятся к прежнему приложению: при смене они сбрасываются, а новое приложение заносится в проект синхронизацией («Синхронизировать с Hub», затем «Принять состояние Hub»). Запросов к Hub эта смена не делает.</p>
+    <p class="eyebrow">{{ _("Подтверждение") }}</p>
+    <h1 data-section="{{ _("Рабочее место") }}">{{ _("Смена приложения Hub") }}</h1>
+    <p class="page-sub">{{ _("Номер приложения в Hub:") }} {{ project.hub_app_id if project.hub_app_id is not none else _("не указан") }} → {{ new_app if new_app is not none else _("не указан") }}. {{ _("Сведения о библиотеках и решения из Hub относятся к прежнему приложению: при смене они сбрасываются, а новое приложение заносится в проект синхронизацией («Синхронизировать с Hub», затем «Принять состояние Hub»). Запросов к Hub эта смена не делает.") }}</p>
   </div>
 </div>
 
 <section class="panel" aria-labelledby="assignment-title">
-  <h2 id="assignment-title">Что изменится</h2>
+  <h2 id="assignment-title">{{ _("Что изменится") }}</h2>
   <dl class="terms" id="hub-assignment-summary">
-    <dt>Сведения Hub о библиотеках сбрасываются</dt><dd>{{ summary.identity_cleared or 0 }} {{ (summary.identity_cleared or 0)|plural("находка", "находки", "находок") }}</dd>
-    <dt>Решения из Hub уходят в историю</dt><dd>{{ summary.hub_decisions_withdrawn or 0 }}</dd>
-    <dt>Находок с другим пакетом</dt><dd>{{ summary.findings or 0 }}</dd>
-    {% if summary.decisions %}<dt>Снимается «Проверено»</dt><dd>{{ summary.decisions.reviewed_removed or 0 }}</dd>{% endif %}
-    {% if summary.defects %}<dt>Дефектов с пересчитанными ключами номеров</dt><dd>{{ summary.defects.families or 0 }}</dd>
-    <dt>Резервов номеров перенесено / в архив</dt><dd>{{ summary.defects.reserves_moved or 0 }} / {{ summary.defects.reserves_archived or 0 }}</dd>{% endif %}
-    {% if summary.pending_total %}<dt>Мест в наборах выбрать заново</dt><dd>{{ summary.pending_total }}</dd>{% endif %}
+    <dt>{{ _("Сведения Hub о библиотеках сбрасываются") }}</dt><dd>{{ summary.identity_cleared or 0 }} {{ (summary.identity_cleared or 0)|plural("находка", "находки", "находок") }}</dd>
+    <dt>{{ _("Решения из Hub уходят в историю") }}</dt><dd>{{ summary.hub_decisions_withdrawn or 0 }}</dd>
+    <dt>{{ _("Находок с другим пакетом") }}</dt><dd>{{ summary.findings or 0 }}</dd>
+    {% if summary.decisions %}<dt>{{ _("Снимается «Проверено»") }}</dt><dd>{{ summary.decisions.reviewed_removed or 0 }}</dd>{% endif %}
+    {% if summary.defects %}<dt>{{ _("Дефектов с пересчитанными ключами номеров") }}</dt><dd>{{ summary.defects.families or 0 }}</dd>
+    <dt>{{ _("Резервов номеров перенесено / в архив") }}</dt><dd>{{ summary.defects.reserves_moved or 0 }} / {{ summary.defects.reserves_archived or 0 }}</dd>{% endif %}
+    {% if summary.pending_total %}<dt>{{ _("Мест в наборах выбрать заново") }}</dt><dd>{{ summary.pending_total }}</dd>{% endif %}
   </dl>
   {% if entity_rows %}
   <div class="table-wrap"><table class="table" id="hub-assignment-entities">
-    <thead><tr><th scope="col">Что</th><th scope="col">Перенесено</th><th scope="col">В архив</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Что") }}</th><th scope="col">{{ _("Перенесено") }}</th><th scope="col">{{ _("В архив") }}</th></tr></thead>
     <tbody>
     {% for e in entity_rows %}<tr><td>{{ e.label }}</td><td>{{ e.moved }}</td><td>{{ e.archived }}</td></tr>{% endfor %}
     </tbody>
@@ -34,17 +34,17 @@
   {% endif %}
   {% if summary.groups %}
   <div class="table-wrap"><table class="table">
-    <thead><tr><th scope="col">Было</th><th scope="col">Стало</th><th scope="col">Вид</th><th scope="col">Находок</th><th scope="col">Перенесено / в архив</th><th scope="col">Новые места в наборах</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Было") }}</th><th scope="col">{{ _("Стало") }}</th><th scope="col">{{ _("Вид") }}</th><th scope="col">{{ _("Находок") }}</th><th scope="col">{{ _("Перенесено / в архив") }}</th><th scope="col">{{ _("Новые места в наборах") }}</th></tr></thead>
     <tbody>
-    {% for g in summary.groups %}<tr><td class="mono">{{ g["from"] }}</td><td class="mono">{{ g["to"]|join(", ") }}</td><td>{{ g.kind }}{% if g.change %} ({{ g.change }}){% endif %}</td><td>{{ g.findings }}</td><td>{% for table, n in (g.moved or {}).items() %}{{ table_labels.get(table, table) }}: перенесено {{ n }}; {% endfor %}{% for table, n in (g.archived or {}).items() %}{{ table_labels.get(table, table) }}: в архив {{ n }}; {% endfor %}{% if not g.moved and not g.archived %}–{% endif %}</td><td>{% for t, n in g.new_sets %}набор {{ n }}{% if not loop.last %}, {% endif %}{% else %}–{% endfor %}</td></tr>{% endfor %}
+    {% for g in summary.groups %}<tr><td class="mono">{{ g["from"] }}</td><td class="mono">{{ g["to"]|join(", ") }}</td><td>{{ _(g.kind) }}{% if g.change %} ({{ _(g.change) }}){% endif %}</td><td>{{ g.findings }}</td><td>{% for table, n in (g.moved or {}).items() %}{{ table_labels.get(table, table) }}: {{ _("перенесено {n}", n=n) }}; {% endfor %}{% for table, n in (g.archived or {}).items() %}{{ table_labels.get(table, table) }}: {{ _("в архив {n}", n=n) }}; {% endfor %}{% if not g.moved and not g.archived %}–{% endif %}</td><td>{% for t, n in g.new_sets %}{{ _("набор {n}", n=n) }}{% if not loop.last %}, {% endif %}{% else %}–{% endfor %}</td></tr>{% endfor %}
     </tbody>
   </table></div>
   {% endif %}
   <form method="post" action="/projects/{{ project.id }}/hub-assignment" class="actions">
     <input type="hidden" name="app" value="{{ new_app if new_app is not none else '' }}">
     <input type="hidden" name="token" value="{{ token }}">
-    <button class="btn btn-primary" type="submit" id="hub-assignment-apply">Сменить приложение Hub</button>
-    <a class="btn" href="/projects/{{ project.id }}?open=params#params">Отмена</a>
+    <button class="btn btn-primary" type="submit" id="hub-assignment-apply">{{ _("Сменить приложение Hub") }}</button>
+    <a class="btn" href="/projects/{{ project.id }}?open=params#params">{{ _("Отмена") }}</a>
   </form>
 </section>
 {% endblock %}

@@ -29,6 +29,8 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+from app import i18n
+
 from .example_tree import MARKER, tree_hash_of_dir
 
 log = logging.getLogger(__name__)
@@ -71,22 +73,25 @@ def load_catalog(path: Path | None = None) -> dict:
     except FileNotFoundError:
         return {"schema": 1, "examples": []}
     except (OSError, ValueError) as e:  # оборванный или нечитаемый каталог: приложение работает, причина – на странице
-        raise ExampleError(f"Каталог примеров не читается ({e.__class__.__name__}): переустановите стенд.") from None
+        raise ExampleError(i18n._("Каталог примеров не читается ({error}): переустановите стенд.",
+                                  error=e.__class__.__name__)) from None
     if not isinstance(data, dict) or not isinstance(data.get("examples"), list):
-        raise ExampleError("Каталог примеров повреждён: нет списка examples.")
+        raise ExampleError(i18n._("Каталог примеров повреждён: нет списка examples."))
     for item in data["examples"]:
         if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not isinstance(item.get("codebases"), list):
-            raise ExampleError("Каталог примеров повреждён: запись без id или кодовых баз – переустановите стенд.")
+            raise ExampleError(i18n._("Каталог примеров повреждён: запись без id или кодовых баз – переустановите стенд."))
         src, exp = item.get("source"), item.get("export")
         if src is None and item.get("builtin") != "demo":
-            raise ExampleError(f"Каталог примеров повреждён: у записи {item['id']} нет источника.")
+            raise ExampleError(i18n._("Каталог примеров повреждён: у записи {id} нет источника.", id=item['id']))
         if src is not None:
             if not (isinstance(src, dict) and isinstance(exp, dict)):
-                raise ExampleError(f"Каталог примеров повреждён: у записи {item['id']} нет источника или выгрузки.")
+                raise ExampleError(i18n._("Каталог примеров повреждён: у записи {id} нет источника или выгрузки.",
+                                          id=item['id']))
             need = ("commit", "tree_sha256", "files", "unpacked_bytes", "archive_url", "repo_url")
             if any(k not in src for k in need) or any(k not in exp for k in ("file", "sha256")) or \
                     not re.fullmatch(r"[0-9a-f]{40}", str(src.get("commit"))):
-                raise ExampleError(f"Каталог примеров повреждён: у записи {item['id']} неполный источник или выгрузка.")
+                raise ExampleError(i18n._("Каталог примеров повреждён: у записи {id} неполный источник или выгрузка.",
+                                          id=item['id']))
     return data
 
 
@@ -94,7 +99,7 @@ def entry_of(catalog: dict, example_id: str) -> dict:
     for entry in catalog.get("examples") or []:
         if entry.get("id") == example_id:
             return entry
-    raise ExampleError(f"Примера «{example_id}» нет в каталоге.")
+    raise ExampleError(i18n._("Примера «{id}» нет в каталоге.", id=example_id))
 
 
 def is_downloadable(entry: dict) -> bool:
@@ -196,10 +201,10 @@ def check_path_room(target: Path, entry: dict) -> None:
     temp_len = len(str(target.parent.resolve())) + 1 + len(TEMP_PREFIX) + TEMP_SUFFIX_LEN
     base = max(len(str(target.resolve())), temp_len)
     if not path_room_ok(base, longest, False) or not path_room_ok(base, longest_dir, True):
-        raise ExampleError(
-            f"Путь {target} слишком длинный для файлов примера: самый длинный путь внутри – {longest} знаков, в сумме "
-            f"{base + 1 + longest} при пределе Windows 259. Запустите стенд с коротким --code-dir (например C:\\lt) или "
-            "включите длинные пути Windows (LongPathsEnabled).")
+        raise ExampleError(i18n._(
+            "Путь {path} слишком длинный для файлов примера: самый длинный путь внутри – {longest} знаков, в сумме "
+            "{total} при пределе Windows 259. Запустите стенд с коротким --code-dir (например C:\\lt) или "
+            "включите длинные пути Windows (LongPathsEnabled).", path=target, longest=longest, total=base + 1 + longest))
 
 
 # ============================================================================ скачивание
@@ -209,11 +214,13 @@ def archive_url_ok(entry: dict) -> tuple[str, str]:
     url = str(entry["source"].get("archive_url") or "")
     prefix = f"https://{HOST}"
     if not url.startswith(prefix + "/"):
-        raise ExampleError(f"Адрес архива примера {entry['id']} – не {HOST}: скачивание не выполняется.")
+        raise ExampleError(i18n._("Адрес архива примера {id} – не {host}: скачивание не выполняется.",
+                                  id=entry['id'], host=HOST))
     path = url[len(prefix):]
     m = _ARCHIVE_PATH.fullmatch(path)
     if not m or m.group(3) != entry["source"]["commit"]:
-        raise ExampleError(f"Адрес архива примера {entry['id']} не совпадает с форматом /<владелец>/<репо>/tar.gz/<коммит>.")
+        raise ExampleError(i18n._("Адрес архива примера {id} не совпадает с форматом "
+                                  "/<владелец>/<репо>/tar.gz/<коммит>.", id=entry['id']))
     return HOST, path
 
 
@@ -234,7 +241,7 @@ def fetch_archive(entry: dict, tmp_dir: Path, connect=None) -> Path:
     try:
         conn, watchdog = (connect or _connection)(host, deadline)
     except Exception as e:  # noqa: BLE001 – причина сети в понятном сообщении
-        raise ExampleError(f"Не удалось соединиться с {host}: {e}") from None
+        raise ExampleError(i18n._("Не удалось соединиться с {host}: {error}", host=host, error=e)) from None
     tmp_dir.mkdir(parents=True, exist_ok=True)
     fd, name = tempfile.mkstemp(prefix="example-", suffix=".tar.gz", dir=tmp_dir)
     target = Path(name)
@@ -244,28 +251,34 @@ def fetch_archive(entry: dict, tmp_dir: Path, connect=None) -> Path:
                                                "Accept-Encoding": "identity"})
             response = conn.getresponse()
         except (OSError, http.client.HTTPException) as e:
-            raise ExampleError(f"Скачивание {entry['id']} прервано: {e.__class__.__name__}") from None
+            raise ExampleError(i18n._("Скачивание {id} прервано: {error}", id=entry['id'],
+                                      error=e.__class__.__name__)) from None
         if response.status != 200:
-            raise ExampleError(f"{host} ответил {response.status} на запрос архива {entry['id']}: скачивание отменено "
-                               "(перенаправления не принимаются).")
+            raise ExampleError(i18n._("{host} ответил {status} на запрос архива {id}: скачивание отменено "
+                                      "(перенаправления не принимаются).", host=host, status=response.status,
+                                      id=entry['id']))
         length = response.getheader("Content-Length")
         if length and length.isdigit() and int(length) > MAX_ARCHIVE_BYTES:
-            raise ExampleError(f"Архив {entry['id']} больше {MAX_ARCHIVE_BYTES // 2**20} МБ – отказ.")
+            raise ExampleError(i18n._("Архив {id} больше {mb} МБ – отказ.", id=entry['id'],
+                                      mb=MAX_ARCHIVE_BYTES // 2**20))
         size = 0
         with os.fdopen(fd, "wb") as out:
             fd = -1
             while True:
                 if time.monotonic() > deadline:
-                    raise ExampleError(f"Скачивание {entry['id']} не уложилось в {int(FETCH_SECONDS)} с.")
+                    raise ExampleError(i18n._("Скачивание {id} не уложилось в {seconds} с.", id=entry['id'],
+                                              seconds=int(FETCH_SECONDS)))
                 try:
                     chunk = response.read1(CHUNK)
                 except (OSError, http.client.HTTPException) as e:
-                    raise ExampleError(f"Скачивание {entry['id']} прервано: {e.__class__.__name__}") from None
+                    raise ExampleError(i18n._("Скачивание {id} прервано: {error}", id=entry['id'],
+                                              error=e.__class__.__name__)) from None
                 if not chunk:
                     break
                 size += len(chunk)
                 if size > MAX_ARCHIVE_BYTES:
-                    raise ExampleError(f"Архив {entry['id']} больше {MAX_ARCHIVE_BYTES // 2**20} МБ – отказ.")
+                    raise ExampleError(i18n._("Архив {id} больше {mb} МБ – отказ.", id=entry['id'],
+                                              mb=MAX_ARCHIVE_BYTES // 2**20))
                 out.write(chunk)
         return target
     except BaseException:
@@ -293,7 +306,7 @@ class _CountingInfo(tarfile.TarInfo):
         count = getattr(tarfile_obj, "_lt_headers", 0) + 1
         tarfile_obj._lt_headers = count
         if count > getattr(tarfile_obj, "_lt_limit", MAX_MEMBERS_ANY):
-            raise ExampleError("В архиве больше элементов, чем заявлено в каталоге – отказ.")
+            raise ExampleError(i18n._("В архиве больше элементов, чем заявлено в каталоге – отказ."))
         return info
 
 
@@ -307,7 +320,7 @@ class _Counter:
         data = self.raw.read(size)
         self.count += len(data)
         if self.count > self.limit:
-            raise ExampleError("Распакованный архив больше заявленного в каталоге – отказ.")
+            raise ExampleError(i18n._("Распакованный архив больше заявленного в каталоге – отказ."))
         return data
 
 
@@ -330,7 +343,7 @@ def unpack(archive: Path, entry: dict, target: Path) -> Path:
     # pax-заголовки – тоже идут через счётчик); у прежней записи каталога – объём файлов плюс 10 %
     stream_limit = (int(src["tar_bytes"]) if src.get("tar_bytes") else int(bytes_limit * 1.1)) + 1024 * 1024
     if target.exists():
-        raise ExampleError(f"Папка {target} уже есть: стенд не трогает папки примеров.")
+        raise ExampleError(i18n._("Папка {path} уже есть: стенд не трогает папки примеров.", path=target))
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=TEMP_PREFIX, dir=target.parent))
     _journal(target.parent, add=tmp.name)  # очистка после сбоя удаляет только папки из журнала
@@ -346,29 +359,32 @@ def unpack(archive: Path, entry: dict, target: Path) -> Path:
                 root_name: str | None = None
                 for member in tar:
                     if member.name.startswith("/") or "\\" in member.name:
-                        raise ExampleError(f"Недопустимое имя в архиве: {member.name[:120]}")
+                        raise ExampleError(i18n._("Недопустимое имя в архиве: {name}", name=member.name[:120]))
                     parts = member.name.split("/", 1)
                     if root_name is None:  # первая запись – общий корень архива (каталог), он срезается
                         if not member.isdir() or len(parts) > 1 and parts[1].strip("/"):
-                            raise ExampleError("Архив не того вида: первая запись – не общая папка исходников.")
+                            raise ExampleError(i18n._("Архив не того вида: первая запись – не общая папка исходников."))
                         root_name = parts[0]
                         continue
                     if parts[0] != root_name or len(parts) < 2 or not parts[1].strip("/"):
-                        raise ExampleError(f"Запись вне общей папки архива: {member.name[:120]} – отказ.")
+                        raise ExampleError(i18n._("Запись вне общей папки архива: {name} – отказ.",
+                                                  name=member.name[:120]))
                     rel = parts[1].rstrip("/")
                     if not _name_ok(rel):
-                        raise ExampleError(f"Недопустимое имя в архиве: {rel[:120]}")
+                        raise ExampleError(i18n._("Недопустимое имя в архиве: {name}", name=rel[:120]))
                     dest = os.path.realpath(os.path.join(tmp_real, *rel.split("/")))
                     if os.path.commonpath([tmp_real, dest]) != tmp_real or dest == tmp_real:
-                        raise ExampleError(f"Путь в архиве выходит за папку распаковки: {rel[:120]}")
+                        raise ExampleError(i18n._("Путь в архиве выходит за папку распаковки: {name}", name=rel[:120]))
                     if check_room and not path_room_ok(len(tmp_real), len(rel), member.isdir()):
-                        raise ExampleError(f"Путь {rel[:120]} не помещается в предел длины пути Windows: запустите "
-                                           "стенд с коротким --code-dir или включите длинные пути Windows.")
+                        raise ExampleError(i18n._("Путь {name} не помещается в предел длины пути Windows: запустите "
+                                                  "стенд с коротким --code-dir или включите длинные пути Windows.",
+                                                  name=rel[:120]))
                     if member.issym() or member.islnk() or not (member.isfile() or member.isdir()):
-                        raise ExampleError(f"В архиве ссылка или особый файл: {rel[:120]} – отказ.")
+                        raise ExampleError(i18n._("В архиве ссылка или особый файл: {name} – отказ.", name=rel[:120]))
                     key = unicodedata.normalize("NFC", rel).casefold()
                     if key in seen:
-                        raise ExampleError(f"Имена в архиве совпадают без учёта регистра: {rel[:120]} – отказ.")
+                        raise ExampleError(i18n._("Имена в архиве совпадают без учёта регистра: {name} – отказ.",
+                                                  name=rel[:120]))
                     seen.add(key)
                     if member.isdir():
                         member.name = rel
@@ -377,12 +393,13 @@ def unpack(archive: Path, entry: dict, target: Path) -> Path:
                     files += 1
                     total += member.size
                     if files > files_limit or total > bytes_limit:
-                        raise ExampleError("В архиве больше файлов или байт, чем заявлено в каталоге – отказ.")
+                        raise ExampleError(i18n._("В архиве больше файлов или байт, чем заявлено в каталоге – отказ."))
                     member.name = rel
                     tar.extract(member, tmp, filter="data")
         digest, n, size, _ = tree_hash_of_dir(tmp)
         if digest != src["tree_sha256"] or n != int(src["files"]) or size != int(src["unpacked_bytes"]):
-            raise ExampleError(f"Хеш дерева {entry['id']} не совпал с каталогом: архив повреждён или подменён.")
+            raise ExampleError(i18n._("Хеш дерева {id} не совпал с каталогом: архив повреждён или подменён.",
+                                      id=entry['id']))
         (tmp / MARKER).write_text(json.dumps({"id": entry["id"], "commit": src["commit"], "tree_sha256": digest,
                                               "license": src.get("license", ""), "repo_url": src.get("repo_url", ""),
                                               "lines": verified_lines(entry, tmp)},
@@ -422,7 +439,7 @@ def _journal(root: Path, add: str = "", remove: str = "") -> list[str]:
 def download(entry: dict, repos_root: Path, tmp_dir: Path, again: bool = False, connect=None) -> Path:
     """Скачать и распаковать пример; уже скачан и again=False – прежняя папка. again – новая папка с суффиксом."""
     if not is_downloadable(entry):
-        raise ExampleError(f"Пример {entry['id']} поставляется с приложением и не скачивается.")
+        raise ExampleError(i18n._("Пример {id} поставляется с приложением и не скачивается.", id=entry['id']))
     existing = downloaded_folders(entry, repos_root)
     if existing and not again:
         return existing[0]
@@ -432,7 +449,7 @@ def download(entry: dict, repos_root: Path, tmp_dir: Path, again: bool = False, 
         suffix += 1
     target = root / folder_name(entry, suffix)
     with _FETCH_LOCK:
-        _set_state(entry["id"], "fetching", "скачивается")
+        _set_state(entry["id"], "fetching", i18n._("скачивается"))
         try:
             check_path_room(target, entry)
             archive = fetch_archive(entry, tmp_dir, connect)
@@ -444,9 +461,10 @@ def download(entry: dict, repos_root: Path, tmp_dir: Path, again: bool = False, 
             _set_state(entry["id"], "failed", str(e))
             raise
         except Exception as e:  # noqa: BLE001
-            _set_state(entry["id"], "failed", f"не удалось скачать: {e.__class__.__name__}")
-            raise ExampleError(f"Не удалось скачать {entry['id']}: {e.__class__.__name__}") from None
-        _set_state(entry["id"], "done", "скачан в этом запуске")
+            _set_state(entry["id"], "failed", i18n._("не удалось скачать: {error}", error=e.__class__.__name__))
+            raise ExampleError(i18n._("Не удалось скачать {id}: {error}", id=entry['id'],
+                                      error=e.__class__.__name__)) from None
+        _set_state(entry["id"], "done", i18n._("скачан в этом запуске"))
         return result
 
 
@@ -462,7 +480,7 @@ def fetch_all_background(repos_root: Path, tmp_dir: Path) -> threading.Thread:
             _journal(root, remove=name)
     todo = [e for e in catalog["examples"] if is_downloadable(e) and not downloaded_folders(e, repos_root)]
     for e in todo:
-        _set_state(e["id"], "queued", "в очереди на скачивание")
+        _set_state(e["id"], "queued", i18n._("в очереди на скачивание"))
 
     def work() -> None:
         for e in todo:
@@ -490,9 +508,10 @@ def check_export(entry: dict) -> Path:
     try:
         data = path.read_bytes()
     except OSError:
-        raise ExampleError(f"Выгрузки примера {entry['id']} нет в установке: переустановите стенд.") from None
+        raise ExampleError(i18n._("Выгрузки примера {id} нет в установке: переустановите стенд.",
+                                  id=entry['id'])) from None
     if hashlib.sha256(data).hexdigest() != entry["export"]["sha256"]:
-        raise ExampleError(f"Выгрузка примера {entry['id']} не совпала с каталогом по SHA-256.")
+        raise ExampleError(i18n._("Выгрузка примера {id} не совпала с каталогом по SHA-256.", id=entry['id']))
     return path
 
 
@@ -555,9 +574,9 @@ def filled_export(entry: dict, tree: Path, tmp_dir: Path) -> tuple[Path, list[st
     lines = marker.get("lines")
     if not isinstance(lines, dict):
         # копия скачана прежней версией стенда: строки из рабочей папки (её мог править студент) не берутся
-        raise ExampleError("Эта копия примера скачана прежней версией стенда: нажмите «Скачать заново» и создайте "
-                           f"проект из новой копии (в Docker-установке – на компьютере: python -m app.examples fetch "
-                           f"{entry['id']} --again --repos-root <корень клонов>).")
+        raise ExampleError(i18n._("Эта копия примера скачана прежней версией стенда: нажмите «Скачать заново» и "
+                                  "создайте проект из новой копии (в Docker-установке – на компьютере: python -m "
+                                  "app.examples fetch {id} --again --repos-root <корень клонов>).", id=entry['id']))
     wb = openpyxl.load_workbook(check_export(entry))
     warnings: list[str] = []
     if "SAST" in wb.sheetnames:
@@ -568,11 +587,13 @@ def filled_export(entry: dict, tree: Path, tmp_dir: Path) -> tuple[Path, list[st
             file, line, codebase = (row[col["File"]].value, row[col["Line number"]].value, row[col["Codebase"]].value)
             code = lines.get(f"{codebase}/{file}:{line}")
             if code is None:
-                warnings.append(f"{codebase}/{file}:{line} – файла или строки нет в папке примера")
+                warnings.append(i18n._("{place} – файла или строки нет в папке примера",
+                                       place=f"{codebase}/{file}:{line}"))
                 continue
             value = f"{code} : {line}"
             if len(value) > MAX_SNIPPET_CHARS or _XLSX_BAD.search(value):
-                warnings.append(f"{codebase}/{file}:{line} – строка кода не помещается в выгрузку, оставлено «-»")
+                warnings.append(i18n._("{place} – строка кода не помещается в выгрузку, оставлено «-»",
+                                       place=f"{codebase}/{file}:{line}"))
                 continue
             cell = row[col["Source code"]]
             cell.value = value
@@ -591,13 +612,14 @@ def filled_export(entry: dict, tree: Path, tmp_dir: Path) -> tuple[Path, list[st
 # ============================================================================ командная строка
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="python -m app.examples", description="Скачивание учебных примеров каталога")
+    ap = argparse.ArgumentParser(prog="python -m app.examples",
+                                 description=i18n._("Скачивание учебных примеров каталога"))
     sub = ap.add_subparsers(dest="cmd", required=True)
-    f = sub.add_parser("fetch", help="скачать и распаковать примеры")
+    f = sub.add_parser("fetch", help=i18n._("скачать и распаковать примеры"))
     f.add_argument("ids", nargs="*")
     f.add_argument("--all", action="store_true")
     f.add_argument("--repos-root", type=Path, required=True)
-    f.add_argument("--again", action="store_true", help="новая копия рядом с прежней")
+    f.add_argument("--again", action="store_true", help=i18n._("новая копия рядом с прежней"))
     args = ap.parse_args(argv)
     if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
@@ -605,7 +627,7 @@ def main(argv: list[str] | None = None) -> int:
     entries = [e for e in catalog["examples"] if is_downloadable(e)] if args.all else \
         [entry_of(catalog, i) for i in args.ids]
     if not entries:
-        print("Укажите примеры или --all.")
+        print(i18n._("Укажите примеры или --all."))
         return 2
     failed = 0
     for e in entries:
@@ -620,3 +642,15 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+DATA_PART = "examples_data"  # часть каталога: тексты правил и описания примеров (ADR-0158)
+
+
+def rule_text(rule: object) -> str:
+    """Категория (правило) находки для показа (ADR-0158): тексты наших правил учебных примеров и демо – на языке
+    интерфейса по части каталога examples_data; остальное – как в выгрузке. В базе правило хранится как в выгрузке:
+    оно входит в отпечаток случая, и повторная загрузка той же выгрузки не должна менять находки."""
+    text = str(rule or "")
+    if not text or i18n.current() == "ru":
+        return text
+    return i18n.catalog_part(DATA_PART).get(text, text)

@@ -19,7 +19,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from app import __version__, ask, defect, defect_drafts, hub_defects, hub_onboarding, hub_state, mask_display, worklists
+from app import (__version__, ask, defect, defect_drafts, hub_defects, hub_onboarding, hub_state, i18n, mask_display,
+                 worklists)
 from app.config import VERDICTS
 from app.context import (build_context, display_context, export_fragment_scope, export_fragment_shift,
                          export_fragment_view, shift_code_lines, window_code_lines)
@@ -38,6 +39,7 @@ from app.routes.common import (COUNT, MAX_NAME, CommentNeedsCheck, client_of, co
                                form_int, mask_key_of, models_of, project_or_404, query, redirect, register_messages,
                                profile_for, render, runner_of, settings_of, web_of)
 from app.routes.feeds import store_of
+from app.run_errors import shown_error
 from app.triage import (CONTEXT_CHARS, MIN_CONTEXT_CHARS, TriageError, case_hash, current_code, repo_dir_for,
                         snapshot_code, source_codebases)
 from app.view import DECISION_LABELS, KIND_LABELS, VERDICT_LABELS, fmt_ts, missing_line_refs, review_json
@@ -49,8 +51,9 @@ PAGE_SIZE = 200
 SECOND_OPINION_MODELS = ("gpt-oss:20b", "mistral-small3.2:24b", "qwen2.5-coder:14b")
 MAX_COMMENT = 20000  # знаков в комментарии для Hub
 
-# Почему решение не сохранено (StaleReview.reason) – текст для человека
-STALE_MESSAGES = {
+# Почему решение не сохранено (StaleReview.reason) – текст для человека. Сообщения модуля – msgid (ADR-0158):
+# константы переводятся там, где выводятся (i18n._), словари – Labels (перевод при чтении)
+STALE_MESSAGES = i18n.Labels({
     "source": "Находка или папка с её кодом изменились, пока карточка была открыта (новая выгрузка или другой "
               "клон). Решение не сохранено: проверьте карточку ещё раз.",
     "verdict": "Вердикт модели изменился, пока карточка была открыта (новый прогон). Решение не сохранено: "
@@ -63,42 +66,46 @@ STALE_MESSAGES = {
                      "разберите находку заново или выберите «Не согласен»",
     "number": "Номер дефекта изменили в другой вкладке, пока карточка была открыта: номер не перезаписан. "
               "Обновите карточку и проверьте номер.",
-}
+})
 # Срез кода разбора не совпадает с текущим (изменился код в клоне или построение среза в новой версии): вердикт
 # модели – про прежний срез. Это предупреждение, а не запрет: решение человека по текущему коду сохраняется
 # с отметкой «Проверено» (ADR-0145; ADR-0147). Текст – для прежних ссылок ?ok=code_changed
-CODE_CHANGED_REVIEW = ("Решение сохранено. Срез кода, который разбирала модель, не совпадает с текущим: её вердикт "
-                       "относится к прежнему срезу. Чтобы модель посмотрела текущий код, нажмите «Разобрать заново».")
-ENTERED_STALE = ("Решение по находке изменили в другой вкладке или окне: отметка «Внесено в Hub» не поставлена. "
-                 "Обновите карточку и отметьте ещё раз.")
-ENTERED_NO_DECISION = ("Сначала сохраните решение по находке: отметка «Внесено в Hub» – о тексте этого "
-                       "решения.")
-RISK_NEEDS_REASON = ("«Риск принят» сохраняется только с обоснованием: напишите в комментарии для Hub, почему риск "
-                     "принимается и при каком условии решение пересматривается (например, срок или событие).")
-NEED_VERDICT = "Выберите итоговый вердикт"
+CODE_CHANGED_REVIEW = i18n.N_("Решение сохранено. Срез кода, который разбирала модель, не совпадает с текущим: её "
+                              "вердикт относится к прежнему срезу. Чтобы модель посмотрела текущий код, нажмите "
+                              "«Разобрать заново».")
+ENTERED_STALE = i18n.N_("Решение по находке изменили в другой вкладке или окне: отметка «Внесено в Hub» не "
+                        "поставлена. Обновите карточку и отметьте ещё раз.")
+ENTERED_NO_DECISION = i18n.N_("Сначала сохраните решение по находке: отметка «Внесено в Hub» – о тексте этого "
+                              "решения.")
+RISK_NEEDS_REASON = i18n.N_("«Риск принят» сохраняется только с обоснованием: напишите в комментарии для Hub, почему "
+                            "риск принимается и при каком условии решение пересматривается (например, срок или "
+                            "событие).")
+NEED_VERDICT = i18n.N_("Выберите итоговый вердикт")
 # Текст для Hub – решение человека: предложенный моделью вердикт без выбранного решения не выдаётся (R092-03)
-NEED_DECISION = ("Выберите решение: «Ложное срабатывание», «Подтверждаю дефект» или «Отложить». Ответ модели ещё не "
-                 "принят – без решения текст для Hub не выдаётся.")
+NEED_DECISION = i18n.N_("Выберите решение: «Ложное срабатывание», «Подтверждаю дефект» или «Отложить». Ответ модели "
+                        "ещё не принят – без решения текст для Hub не выдаётся.")
 # SAST с 0.9.6 (ADR-0089): два исхода – ложное срабатывание (короткий комментарий) и подтверждённый дефект (полный
 # текст); «Отложить» – вернуться позже. «Неясно» и «Риск принят» для SAST не выбираются
 SAST_OUTCOMES = ("false_positive", "true_positive")
-SAST_TWO_OUTCOMES = ("Для находки SAST два решения: «Ложное срабатывание» – короткий комментарий в Hub, или "
-                     "«Подтверждаю дефект» – дефект в Hub. «Отложить» – вернуться к находке позже.")
-SAST_NEED_REASON = {"false_positive": "Напишите комментарий для Hub: одной-двумя фразами, почему срабатывание ложное.",
-                    "true_positive": "Напишите обоснование дефекта: откуда приходят данные, что за ошибка и чем она "
-                                     "опасна."}
-SAST_ENTER_ONLY = ("Отметка «Внесено в Hub» – только для решений «Ложное срабатывание» и «Подтверждаю дефект»: "
-                   "отложенная находка в Hub не переносится.")
-ENTERED_TEXT_MOVED = ("Текст для Hub изменился после того, как вы его скопировали (например, название команды или "
-                      "решение): скопируйте текст заново, вставьте его в Hub и отметьте ещё раз.")
-ENTERED_RELOAD = "Обновите карточку: отметка «Внесено в Hub» сверяет текст, который вы видите, а страница открыта раньше."
-ENTERED_NEEDS_REASON = ("Отметка «Внесено в Hub» не поставлена: у решения нет обоснования. Допишите его, сохраните "
-                        "решение и перенесите текст в Hub.")
-DEFECT_NEEDS_REASON = ("Дефект не выдан: нет обоснования. Напишите, откуда приходят данные, что за ошибка и чем она "
-                       "опасна, и сохраните решение.")
+SAST_TWO_OUTCOMES = i18n.N_("Для находки SAST два решения: «Ложное срабатывание» – короткий комментарий в Hub, или "
+                            "«Подтверждаю дефект» – дефект в Hub. «Отложить» – вернуться к находке позже.")
+SAST_NEED_REASON = i18n.Labels({
+    "false_positive": "Напишите комментарий для Hub: одной-двумя фразами, почему срабатывание ложное.",
+    "true_positive": "Напишите обоснование дефекта: откуда приходят данные, что за ошибка и чем она опасна."})
+SAST_ENTER_ONLY = i18n.N_("Отметка «Внесено в Hub» – только для решений «Ложное срабатывание» и «Подтверждаю дефект»: "
+                          "отложенная находка в Hub не переносится.")
+ENTERED_TEXT_MOVED = i18n.N_("Текст для Hub изменился после того, как вы его скопировали (например, название команды "
+                             "или решение): скопируйте текст заново, вставьте его в Hub и отметьте ещё раз.")
+ENTERED_RELOAD = i18n.N_("Обновите карточку: отметка «Внесено в Hub» сверяет текст, который вы видите, а страница "
+                         "открыта раньше.")
+ENTERED_NEEDS_REASON = i18n.N_("Отметка «Внесено в Hub» не поставлена: у решения нет обоснования. Допишите его, "
+                               "сохраните решение и перенесите текст в Hub.")
+DEFECT_NEEDS_REASON = i18n.N_("Дефект не выдан: нет обоснования. Напишите, откуда приходят данные, что за ошибка и чем "
+                              "она опасна, и сохраните решение.")
 # рекомендация дефекта – пункты оператора словами (ADR-0092): код модели и общий пункт в текст не подставляются
 # отказ сервера не знает, что показала карточка, поэтому о кнопке не говорит; подсказка у поля – по факту (need_fix_text)
-SAST_NEED_FIX = "Напишите рекомендацию: что исправить и как, по пункту в строке. Без рекомендации дефект не выдаётся."
+SAST_NEED_FIX = i18n.N_("Напишите рекомендацию: что исправить и как, по пункту в строке. Без рекомендации дефект не "
+                        "выдаётся.")
 
 
 
@@ -160,31 +167,32 @@ def need_fix_text(model_fix: str, model_points: list[str], history_points: bool 
     пунктах словами в рекомендации модели; у рекомендации из одного кода и при её отсутствии кнопки нет; пункты
     прежнего разбора берутся в истории разборов (history_points, ADR-0097)."""
     if model_points:
-        return ("Напишите рекомендацию: что исправить и как, по пункту в строке. Пункты модели можно взять за основу "
-                "кнопкой «Взять пункты из рекомендации модели» под полем – пример кода в пункты не переносится.")
+        return i18n._("Напишите рекомендацию: что исправить и как, по пункту в строке. Пункты модели можно взять за "
+                      "основу кнопкой «Взять пункты из рекомендации модели» под полем – пример кода в пункты не "
+                      "переносится.")
     if history_points:
-        return ("Напишите рекомендацию словами: что исправить и как, по пункту в строке. У текущего разбора пунктов "
-                "словами нет, у прежнего – есть: возьмите их кнопкой «Взять пункты из этого разбора» в истории "
-                "разборов (шаг 2).")
+        return i18n._("Напишите рекомендацию словами: что исправить и как, по пункту в строке. У текущего разбора "
+                      "пунктов словами нет, у прежнего – есть: возьмите их кнопкой «Взять пункты из этого разбора» в "
+                      "истории разборов (шаг 2).")
     if model_fix.strip():
-        return ("Напишите рекомендацию словами: что исправить и как, по пункту в строке. У модели в рекомендации "
-                "только пример кода – в пункты дефекта он не переносится.")
-    return ("Напишите рекомендацию словами: что исправить и как, по пункту в строке. Пунктов рекомендации модели "
-            "нет.")
-DEFECT_NEEDS_TEAM = ("Дефект не выдан: не указано название команды для первой фразы дефекта. Укажите его на "
-                     "странице «Настройки» (раздел «Текст дефекта»).")
-DEFECT_NEEDS_FIX = ("Дефект не выдан: нет рекомендации. Напишите, что исправить и как (по пункту в строке), и сохраните "
-                    "решение.")
-ENTERED_NEEDS_FIX = ("Отметка «Внесено в Hub» не поставлена: у дефекта нет рекомендации. Допишите её, сохраните решение "
-                     "и перенесите текст в Hub.")
-DEFECT_OTHER_REVISION = ("Решение по находке изменили в другой вкладке или окне: обновите карточку, сверьте решение и "
-                         "скопируйте текст дефекта заново.")
-SAST_COPY_DEFECT = ("Комментарий для Hub копируется только при решении «Ложное срабатывание». Для подтверждённого "
-                    "дефекта сохраните решение и скопируйте заголовок и текст дефекта; отложенная находка в Hub не "
-                    "переносится.")
+        return i18n._("Напишите рекомендацию словами: что исправить и как, по пункту в строке. У модели в рекомендации "
+                      "только пример кода – в пункты дефекта он не переносится.")
+    return i18n._("Напишите рекомендацию словами: что исправить и как, по пункту в строке. Пунктов рекомендации "
+                  "модели нет.")
+DEFECT_NEEDS_TEAM = i18n.N_("Дефект не выдан: не указано название команды для первой фразы дефекта. Укажите его на "
+                            "странице «Настройки» (раздел «Текст дефекта»).")
+DEFECT_NEEDS_FIX = i18n.N_("Дефект не выдан: нет рекомендации. Напишите, что исправить и как (по пункту в строке), и "
+                           "сохраните решение.")
+ENTERED_NEEDS_FIX = i18n.N_("Отметка «Внесено в Hub» не поставлена: у дефекта нет рекомендации. Допишите её, сохраните "
+                            "решение и перенесите текст в Hub.")
+DEFECT_OTHER_REVISION = i18n.N_("Решение по находке изменили в другой вкладке или окне: обновите карточку, сверьте "
+                                "решение и скопируйте текст дефекта заново.")
+SAST_COPY_DEFECT = i18n.N_("Комментарий для Hub копируется только при решении «Ложное срабатывание». Для "
+                           "подтверждённого дефекта сохраните решение и скопируйте заголовок и текст дефекта; "
+                           "отложенная находка в Hub не переносится.")
 MAX_FIX = 20000  # знаков в рекомендации дефекта SAST
-FIX_TOO_LONG = (f"Рекомендация длиннее {MAX_FIX} знаков и не сохранена: сократите её – текст в поле остался "
-                "как есть.")
+FIX_TOO_LONG = i18n.N_("Рекомендация длиннее {limit} знаков и не сохранена: сократите её – текст в поле остался как "
+                       "есть.")
 
 # Отбор списка находок, внутри которого карточка ведёт к следующей находке (параметры адреса)
 SELECTION_KEYS = ("kind", "verdict", "decision", "cb", "urgent", "steering", "reviewed", "copied", "entered",
@@ -193,33 +201,52 @@ SELECTION_KEYS = ("kind", "verdict", "decision", "cb", "urgent", "steering", "re
 MAX_HUB_STATUSES = 20  # значений «Статус Hub» в одном отборе
 
 # отбор по состоянию относительно Hub (dev15, бэклог 88): то же состояние, что в строках списка и в синхронизации
-HUB_SYNC_FILTERS = {"unsent": "не отправлено в Hub", "differs": "есть отличия от Hub"}
+HUB_SYNC_FILTERS = i18n.Labels({"unsent": "не отправлено в Hub", "differs": "есть отличия от Hub"})
 
-# Готовые отборы над фильтрами списка находок: (подпись, параметры)
-PRESETS = (("Непроверенные", {"kind": "SAST", "reviewed": "no"}), ("Срочные", {"urgent": "1"}),
-           ("Неясно", {"verdict": "uncertain"}), ("Hub и модель разошлись", {"hub_model_diff": "1"}),
-           ("Живые в Hub", {"hub_live": "1"}), ("Отложенные", {"decision": "later"}),
-           ("Не внесены в Hub", {"reviewed": "yes", "entered": "no"}), ("С указаниями для модели", {"steering": "1"}))
+# Готовые отборы над фильтрами списка находок: (подпись – msgid, параметры)
+PRESETS = ((i18n.N_("Непроверенные"), {"kind": "SAST", "reviewed": "no"}), (i18n.N_("Срочные"), {"urgent": "1"}),
+           (i18n.N_("Неясно"), {"verdict": "uncertain"}), (i18n.N_("Hub и модель разошлись"), {"hub_model_diff": "1"}),
+           (i18n.N_("Живые в Hub"), {"hub_live": "1"}), (i18n.N_("Отложенные"), {"decision": "later"}),
+           (i18n.N_("Не внесены в Hub"), {"reviewed": "yes", "entered": "no"}),
+           (i18n.N_("С указаниями для модели"), {"steering": "1"}))
 
 # Фильтры списка находок чипами: группы с одним выбранным значением – (параметр, подпись, ((значение, подпись), …)),
-# "" – без фильтра; флажки – (параметр, значение, подпись)
+# "" – без фильтра; флажки – (параметр, значение, подпись). Подписи – msgid, значения словарей подписей
+# (KIND_LABELS и др.) – ключом словаря: перевод при построении страницы (translated_filter_groups, ADR-0158)
 FILTER_GROUPS = (
-    ("kind", "Вид", (("", "все"), *KIND_LABELS.items())),
-    ("verdict", "Вердикт модели", (("", "любой"), *VERDICT_LABELS.items(), ("none", "нет вердикта"))),
-    ("decision", "Моё решение", (("", "любое"), *DECISION_LABELS.items(), ("none", "нет решения"))),
-    ("reviewed", "Проверено", (("", "все"), ("no", "нет"), ("yes", "да"))),
-    ("entered", "Внесено в Hub", (("", "все"), ("no", "нет"), ("yes", "да"))),
-    ("missing", "В выгрузке", (("", "все"), ("no", "есть"), ("yes", "нет в новой выгрузке"))),
-    ("hubsync", "Синхронизация с Hub", (("", "все"), *HUB_SYNC_FILTERS.items())),
+    ("kind", i18n.N_("Вид"), (("", i18n.N_("все")), KIND_LABELS)),
+    ("verdict", i18n.N_("Вердикт модели"), (("", i18n.N_("любой")), VERDICT_LABELS, ("none", i18n.N_("нет вердикта")))),
+    ("decision", i18n.N_("Моё решение"), (("", i18n.N_("любое")), DECISION_LABELS, ("none", i18n.N_("нет решения")))),
+    ("reviewed", i18n.N_("Проверено"), (("", i18n.N_("все")), ("no", i18n.N_("нет")), ("yes", i18n.N_("да")))),
+    ("entered", i18n.N_("Внесено в Hub"), (("", i18n.N_("все")), ("no", i18n.N_("нет")), ("yes", i18n.N_("да")))),
+    ("missing", i18n.N_("В выгрузке"), (("", i18n.N_("все")), ("no", i18n.N_("есть")),
+                                         ("yes", i18n.N_("нет в новой выгрузке")))),
+    ("hubsync", i18n.N_("Синхронизация с Hub"), (("", i18n.N_("все")), HUB_SYNC_FILTERS)),
 )
-# «Срочные» и «С указаниями для модели» – среди готовых отборов, здесь их не повторяем
-FILTER_FLAGS = (("copied", "no", "проверены, но не скопированы в Hub"),
-                ("run_error", "1", "с ошибкой в последнем прогоне"),
-                ("dropped", "1", "выбыли из дефекта"),
-                ("no_code", "1", "без кода в клоне"))
 
-# Уверенность модели словами: (нижняя граница, слово)
-CONFIDENCE_WORDS = ((80, "высокая"), (50, "средняя"), (0, "низкая"))
+
+def translated_filter_groups() -> list[tuple[str, str, list[tuple[str, str]]]]:
+    """FILTER_GROUPS с подписями на действующем языке: словарь подписей разворачивается в пары (ключ, перевод)."""
+    out = []
+    for key, label, options in FILTER_GROUPS:
+        pairs: list[tuple[str, str]] = []
+        for option in options:
+            if isinstance(option, dict):
+                pairs += list(option.items())
+            else:
+                pairs.append((option[0], i18n._(option[1])))
+        out.append((key, i18n._(label), pairs))
+    return out
+
+
+# «Срочные» и «С указаниями для модели» – среди готовых отборов, здесь их не повторяем
+FILTER_FLAGS = (("copied", "no", i18n.N_("проверены, но не скопированы в Hub")),
+                ("run_error", "1", i18n.N_("с ошибкой в последнем прогоне")),
+                ("dropped", "1", i18n.N_("выбыли из дефекта")),
+                ("no_code", "1", i18n.N_("без кода в клоне")))
+
+# Уверенность модели словами: (нижняя граница, слово – msgid)
+CONFIDENCE_WORDS = ((80, i18n.N_("высокая")), (50, i18n.N_("средняя")), (0, i18n.N_("низкая")))
 
 register_messages({
     "saved": "Решение сохранено.",
@@ -358,42 +385,45 @@ def selection_labels(selection: dict[str, str]) -> list[str]:
     """Отбор словами – для строки «В выборке: …» в карточке."""
     labels = []
     if selection.get("urgent"):
-        labels.append("срочные")
+        labels.append(i18n._("срочные"))
     if selection.get("cb"):
-        labels.append("без кодовой базы" if selection["cb"] == "~" else selection["cb"])
+        labels.append(i18n._("без кодовой базы") if selection["cb"] == "~" else selection["cb"])
     if selection.get("kind"):
         labels.append(KIND_LABELS.get(selection["kind"], selection["kind"]))
     verdict = selection.get("verdict", "")
     if verdict:
-        labels.append("модель: " + ("нет вердикта" if verdict == "none" else VERDICT_LABELS.get(verdict, verdict)))
+        labels.append(i18n._("модель: {verdict}", verdict=i18n._("нет вердикта") if verdict == "none"
+                             else VERDICT_LABELS.get(verdict, verdict)))
     decision = selection.get("decision", "")
     if decision:
-        labels.append("решение: " + ("нет" if decision == "none" else DECISION_LABELS.get(decision, decision)))
+        labels.append(i18n._("решение: {decision}", decision=i18n._("нет") if decision == "none"
+                             else DECISION_LABELS.get(decision, decision)))
     if selection.get("hub_status"):
         statuses = selection["hub_status"]
-        labels.append("статус Hub: " + (", ".join(statuses) if isinstance(statuses, (list, tuple)) else str(statuses)))
+        labels.append(i18n._("статус Hub: {statuses}", statuses=", ".join(statuses)
+                             if isinstance(statuses, (list, tuple)) else str(statuses)))
     if selection.get("hub_live"):
-        labels.append("живые в Hub")
+        labels.append(i18n._("живые в Hub"))
     if selection.get("hub_model_diff"):
-        labels.append("Hub и модель разошлись")
+        labels.append(i18n._("Hub и модель разошлись"))
     if selection.get("no_code"):
-        labels.append("без кода в клоне")
+        labels.append(i18n._("без кода в клоне"))
     if selection.get("steering"):
-        labels.append("с текстом-указанием для модели")
+        labels.append(i18n._("с текстом-указанием для модели"))
     if selection.get("reviewed"):
-        labels.append("проверенные" if selection["reviewed"] == "yes" else "непроверенные")
+        labels.append(i18n._("проверенные") if selection["reviewed"] == "yes" else i18n._("непроверенные"))
     if selection.get("copied"):
-        labels.append("не скопированы в Hub")
+        labels.append(i18n._("не скопированы в Hub"))
     if selection.get("dropped"):
-        labels.append("выбыли из дефекта")
+        labels.append(i18n._("выбыли из дефекта"))
     if selection.get("group"):
-        labels.append("одна группа SAST")
+        labels.append(i18n._("одна группа SAST"))
     if selection.get("entered"):
-        labels.append("внесены в Hub" if selection["entered"] == "yes" else "не внесены в Hub")
+        labels.append(i18n._("внесены в Hub") if selection["entered"] == "yes" else i18n._("не внесены в Hub"))
     if selection.get("missing"):
-        labels.append("нет в новой выгрузке" if selection["missing"] == "yes" else "есть в выгрузке")
+        labels.append(i18n._("нет в новой выгрузке") if selection["missing"] == "yes" else i18n._("есть в выгрузке"))
     if selection.get("run_error"):
-        labels.append("с ошибкой в последнем прогоне")
+        labels.append(i18n._("с ошибкой в последнем прогоне"))
     if selection.get("hubsync"):
         labels.append(HUB_SYNC_FILTERS[selection["hubsync"]])
     return labels
@@ -435,12 +465,13 @@ def masked_extra(f: Finding, key: bytes) -> dict[str, str]:
 def card_note(ctx: CodeContext) -> str:
     """Заметка к срезу без прежнего предположения о смене коммита по несовпадению строки."""
     parts = [p for p in str(ctx.note or "").split("; ") if p.strip()]
-    parts = [p for p in parts if "не совпадает со строкой из выгрузки" not in p]
-    return "; ".join(parts)
+    parts = [p for p in parts if "не совпадает со строкой из выгрузки" not in p]  # заметка хранится по-русски
+    from app.view import context_note
+    return context_note("; ".join(parts))
 
 
 # что делать оператору – по ключу общей классификации причин (view.code_reason_key, бэклог 103)
-CODE_REASON_ADVICE = {
+CODE_REASON_ADVICE = i18n.Labels({
     "file_missing": "Разбор и решение – по сведениям из выгрузки Hub: правило, путь и строка кода.",
     "no_file": "Разбор и решение – по сведениям из выгрузки Hub.",
     "ambiguous": "Код не показан: уточните путь или оставьте клон до разбора.",
@@ -449,19 +480,19 @@ CODE_REASON_ADVICE = {
     "binary": "Файл в клоне есть, но двоичный.",
     "unreadable": "Файл в клоне есть, но не читается.",
     "empty": "Файл в клоне есть, но пуст.",
-}
+})
 
 
 def code_reason(ctx: CodeContext) -> str:
     """Почему карточка показывает сведения выгрузки вместо кода из файла клона (ADR-0073): причина – общей
     классификацией списка и сводок (view.code_reason, бэклог 103), с тем, что делать; без клона и прежние срезы – пояснение
     среза (например, «клон отвязан»). Тексты для модели (ctx.note) не меняются."""
-    from app.view import code_reason as reason_label, code_reason_key
+    from app.view import code_reason as reason_label, code_reason_key, context_note
     if ctx.status == "ok":
         return ""
     key = code_reason_key(ctx.status, ctx.reason, ctx.file)
     if key not in CODE_REASON_ADVICE:
-        return ctx.note
+        return context_note(ctx.note)
     label = reason_label(ctx.status, ctx.reason, ctx.file, len(ctx.lines or []))
     return f"{label[:1].upper()}{label[1:]}. {CODE_REASON_ADVICE[key]}"
 
@@ -472,13 +503,21 @@ def confidence_label(value: Any) -> str:
         number = int(value)
     except (TypeError, ValueError):
         number = 0
-    return next(word for bound, word in CONFIDENCE_WORDS if number >= bound)
+    return i18n._(next(word for bound, word in CONFIDENCE_WORDS if number >= bound))
 
 
 def model_comment_verdict(text: str, verdict: str) -> str:
     """Исход, к которому на деле написан текст модели: начало «Ложное срабатывание» важнее вердикта ответа: при вердикте
     «истинная» такой текст подставлялся в обоснование дефекта и спорил с решением (план dev9, часть 2, п. 1)."""
-    return "false_positive" if str(text or "").lstrip().casefold().startswith("ложное срабатывание") else str(verdict or "")
+    start = str(text or "").lstrip().casefold()
+    # начало распознаётся на обоих языках, независимо от языка интерфейса (ADR-0158)
+    # «False positive:» / «False positive – …» / «False positive.» – метка; «False positive(s) was ruled out…» – нет
+    english = re.match(r"false positive\s*(?:[:.\u2013\u2014-]|$)", start)
+    return ("false_positive" if start.startswith(FALSE_POSITIVE_STARTS[0]) or english else str(verdict or ""))
+
+
+# «Ложное срабатывание» в начале текста модели – на русском и на английском (текст модели при английском интерфейсе)
+FALSE_POSITIVE_STARTS = ("ложное срабатывание", "false positive")
 
 
 def target_line_hidden(f: Finding, ctx: CodeContext | None) -> bool:
@@ -526,17 +565,33 @@ def saved_hub_text(f: Finding, review: dict | None, status_map: dict) -> str:
     return hub_text(f, hub_verdict(review["decision"], review["final_verdict"]), review["final_comment"], status_map)
 
 
-def entered_text_changed(review: dict | None, text: str) -> bool:
+def both_languages(build: Callable[[], str]) -> list[str]:
+    """Текст, собранный на действующем языке интерфейса и на втором (ADR-0158): отпечаток отметки «Внесено в Hub»
+    мог быть снят при любом языке – совпадение с любым из двух текстов засчитывается."""
+    first = i18n.current()
+    texts = [build()]
+    for lang in i18n.LANGS:
+        if lang != first:
+            with i18n.use(lang):
+                texts.append(build())
+    return texts
+
+
+def entered_text_changed(review: dict | None, text: str | Iterable[str]) -> bool:
     """Отметка «Внесено в Hub» стоит, а текст для Hub с тех пор другой (например, сменились статусы Hub
-    в настройках). Отметки без отпечатка (поставлены до этапа 3) – entered_unconfirmed."""
+    в настройках). Отметки без отпечатка (поставлены до этапа 3) – entered_unconfirmed. text – текст или тексты
+    на обоих языках (both_languages): изменился – если отпечаток не совпал ни с одним."""
+    texts = [text] if isinstance(text, str) else list(text)
     expected = (review.get("entered_decision_hash") if review.get("entered_origin") == "defect"
                 else review.get("entered_text_hash")) if review else ""
-    return bool(review and review.get("entered_hub") and expected and text_hash(text) != expected)
+    return bool(review and review.get("entered_hub") and expected and texts
+                and all(text_hash(t) != expected for t in texts))
 
 
 # составляющие текста SAST для Hub (О8): (ключ, что называет карточка, если изменилось). Статусы Hub в текст SAST
 # не входят (prompts.hub_text): их смена причиной не называется
-ENTERED_PARTS = (("comment", "текст решения"), ("fix", "рекомендация"), ("team", "название команды в настройках"))
+ENTERED_PARTS = (("comment", i18n.N_("текст решения")), ("fix", i18n.N_("рекомендация")),
+                 ("team", i18n.N_("название команды в настройках")))
 
 
 def entered_parts(settings, review: dict | None) -> str:
@@ -571,30 +626,31 @@ def entered_change_reasons(settings, review: dict | None) -> list[str] | None:
     if not isinstance(was, dict):
         return None
     now = json.loads(entered_parts(settings, review))
-    reasons = [label for key, label in ENTERED_PARTS if key in was and was[key] != now.get(key)]
+    reasons = [i18n._(label) for key, label in ENTERED_PARTS if key in was and was[key] != now.get(key)]
     if not reasons and was.get("app") and was["app"] != now["app"]:
         fix = str((review or {}).get("final_fix") or "")
         comment = str((review or {}).get("final_comment") or "")
         if (app_before(was["app"], "0.9.11")
                 and defect.sast_reason(comment, legacy=True) != defect.reason_text(comment, clean=True)):
             # с 0.9.11 первая буква обоснования – заглавная (ADR-0101): текст изменился из-за этого
-            reasons.append(f"первая буква обоснования теперь заглавная (версия {now['app']}, отметка поставлена в "
-                           f"{was['app']})")
+            reasons.append(i18n._("первая буква обоснования теперь заглавная (версия {now}, отметка поставлена в "
+                                  "{was})", now=now['app'], was=was['app']))
         if app_before(was["app"], "0.10.0.dev21") and defect.as_written_changed(comment, fix if "fix" in now else ""):
             # с 0.10.0.dev21 текст оператора уходит как написан: без среза вводного слова,
             # тегов, схем, невидимых знаков, замены тире и схлопывания пустых строк
-            reasons.append(f"текст оператора теперь уходит в Hub как написан, без правок приложения (версия "
-                           f"{now['app']}, отметка поставлена в {was['app']})")
+            reasons.append(i18n._("текст оператора теперь уходит в Hub как написан, без правок приложения (версия "
+                                  "{now}, отметка поставлена в {was})", now=now['app'], was=was['app']))
         if "fix" in now and app_before(was["app"], "0.9.11") and defect.marker_rule_changed(fix):
             # с 0.9.11 маркер «N)» снимается и без пробела: «2)мера» больше не пункт «2) 2)мера»
-            reasons.append(f"маркер пункта «N)» без пробела больше не остаётся в тексте пункта (версия {now['app']}, "
-                           f"отметка поставлена в {was['app']})")
+            reasons.append(i18n._("маркер пункта «N)» без пробела больше не остаётся в тексте пункта (версия {now}, "
+                                  "отметка поставлена в {was})", now=now['app'], was=was['app']))
         if "fix" in now and app_before(was["app"], "0.9.10") and defect.recommendation_points(fix)[1]:
             # с 0.9.10 пример кода в рекомендацию дефекта не переносится (ADR-0098): текст изменился из-за этого
-            reasons.append(f"пример кода в рекомендации больше не переносится в Hub (версия {now['app']}, отметка "
-                           f"поставлена в {was['app']})")
+            reasons.append(i18n._("пример кода в рекомендации больше не переносится в Hub (версия {now}, отметка "
+                                  "поставлена в {was})", now=now['app'], was=was['app']))
         if not reasons:
-            reasons.append(f"формат текста в версии приложения {now['app']} (отметка поставлена в {was['app']})")
+            reasons.append(i18n._("формат текста в версии приложения {now} (отметка поставлена в {was})",
+                                  now=now['app'], was=was['app']))
     return reasons
 
 
@@ -605,7 +661,7 @@ def app_before(version: str, release: str) -> bool:
     return key(version) < key(release)
 
 
-def entered_format_updated(review: dict | None, text: str, legacy) -> bool:
+def entered_format_updated(review: dict | None, text: str | Iterable[str], legacy) -> bool:
     """Отметка «Внесено в Hub» поставлена по тексту прежнего формата (до 0.9.0 или 0.9.0–0.9.5), решение с тех пор
     прежнее: текст для Hub изменился только из-за нового формата. Карточка показывает спокойную пометку вместо «текст
     изменился» и предлагает подтвердить отметку заново, если человек обновит комментарий в Hub. legacy – текст
@@ -619,6 +675,12 @@ def entered_format_updated(review: dict | None, text: str, legacy) -> bool:
     expected.discard("")
     return bool(entered_text_changed(review, text) and review
                 and any(t and text_hash(t) in expected for t in texts))
+
+
+def legacy_texts_ru(f: Finding, review: dict | None, settings) -> list[str]:
+    """Тексты прежних форматов (saved_legacy_texts) – русские: отметки тех версий ставились только по-русски."""
+    with i18n.use("ru"):
+        return saved_legacy_texts(f, review, settings.hub_status_map, settings.team_name)
 
 
 def saved_hub_text_v1(f: Finding, review: dict | None, status_map: dict) -> str:
@@ -696,13 +758,20 @@ def line_warnings(comment: str, fix: str, shown: set[int] | None) -> list[str]:
     ни одна ссылка."""
     known = shown if shown is not None else set()
     result = []
-    for label, text in (("Обоснование", defect.reason_text(comment)), ("Рекомендации модели", fix)):
+    for kind, text in (("reason", defect.reason_text(comment)), ("fix", fix)):
         missing = missing_line_refs(text, known)
         if missing:
-            numbers = ", ".join(str(n) for n in missing[:10]) + (" и другие" if len(missing) > 10 else "")
-            where = "в показанном коде" if shown else "– показанного кода нет"
-            verb = "ссылается" if label == "Обоснование" else "ссылаются"
-            result.append(f"{label} {verb} на строки, которых нет {where}: {numbers}. Сверьте с кодом.")
+            numbers = ", ".join(str(n) for n in missing[:10]) + (i18n._(" и другие") if len(missing) > 10 else "")
+            if kind == "reason":
+                result.append(i18n._("Обоснование ссылается на строки, которых нет в показанном коде: {numbers}. Сверьте "
+                                     "с кодом.", numbers=numbers) if shown else
+                              i18n._("Обоснование ссылается на строки, которых нет – показанного кода нет: {numbers}. "
+                                     "Сверьте с кодом.", numbers=numbers))
+            else:
+                result.append(i18n._("Рекомендации модели ссылаются на строки, которых нет в показанном коде: {numbers}. "
+                                     "Сверьте с кодом.", numbers=numbers) if shown else
+                              i18n._("Рекомендации модели ссылаются на строки, которых нет – показанного кода нет: "
+                                     "{numbers}. Сверьте с кодом.", numbers=numbers))
     return result
 
 
@@ -744,15 +813,15 @@ def defect_shown_lines(request: Request, project_id: int, f: Finding, case: dict
     return lines or None
 
 
-DEFECT_RACE = "Дефект не выдан: пока готовился текст, данные изменились."
+DEFECT_RACE = i18n.N_("Дефект не выдан: пока готовился текст, данные изменились.")
 
-SAST_OUTCOME_LABELS = {"true_positive": "истинная", "false_positive": "ложная", "uncertain": "неясно",
-                       "risk_accepted": "риск принят"}
+SAST_OUTCOME_LABELS = i18n.Labels({"true_positive": "истинная", "false_positive": "ложная", "uncertain": "неясно",
+                                   "risk_accepted": "риск принят"})
 
 
-RUN_ORIGIN_LABELS = {"project": "прогон проекта", "card": "пересмотр из карточки", "retry": "повтор ошибок",
-                     "": "вид запуска не записан"}
-ATTEMPT_LABELS = {"error": "ошибка разбора", "skipped": "пропуск", "pending": "в очереди"}
+RUN_ORIGIN_LABELS = i18n.Labels({"project": "прогон проекта", "card": "пересмотр из карточки", "retry": "повтор ошибок",
+                                 "": "вид запуска не записан"})
+ATTEMPT_LABELS = i18n.Labels({"error": "ошибка разбора", "skipped": "пропуск", "pending": "в очереди"})
 
 
 def history_view(history: dict, current_id: int | None, decided_id: int | None, case_hash: str, own_outcome: str,
@@ -774,8 +843,8 @@ def history_view(history: dict, current_id: int | None, decided_id: int | None, 
             "current": a["id"] == current_id, "decided": a["id"] == decided_id,
             "disagrees": own_outcome in SAST_OUTCOMES and a.get("verdict") in SAST_OUTCOMES
                          and a.get("verdict") != own_outcome,
-            "note": "" if comparable else ("по другим входным данным" if a.get("case_hash") != case_hash
-                                           else "другая версия промпта"),
+            "note": "" if comparable else (i18n._("по другим входным данным") if a.get("case_hash") != case_hash
+                                           else i18n._("другая версия промпта")),
             "comparable": comparable,
             "runs": [{"run_id": u["run_id"], "origin": RUN_ORIGIN_LABELS.get(u.get("origin") or "",
                                                                              RUN_ORIGIN_LABELS[""])}
@@ -786,6 +855,7 @@ def history_view(history: dict, current_id: int | None, decided_id: int | None, 
     card = [r for r in rows if any(run["origin"] == RUN_ORIGIN_LABELS["card"] for run in r["runs"])]
     return {"rows": rows, "count": len(rows), "disagree": len(verdicts) > 1, "tally": verdict_tally(rows),
             "attempts": [{**x, "label": ATTEMPT_LABELS.get(x["state"], x["state"]),
+                          "error": shown_error(x.get("error")),  # ошибка находки прогона хранится по-русски
                           "origin": RUN_ORIGIN_LABELS.get(x.get("origin") or "", RUN_ORIGIN_LABELS[""])}
                          for x in attempts][-5:],
             "attempts_total": len(attempts),
@@ -875,15 +945,19 @@ def sast_outcome(decision: str, final_verdict: str) -> str:
 
 def sast_state_text(state: str, outcome: str) -> str:
     """Почему дефект не готовится – одной строкой (для списков и журнала)."""
-    return {"none": "решения нет", "later": "отложено", "missing": "нет в текущей выгрузке",
-            "changed": "решение принято по прежней версии находки",
-            "verdict_changed": "вердикт модели, по которому принято решение, уже не текущий",
-            "code_changed": "код в клоне изменился после решения",
-            "not_ready": ("ложное срабатывание – дефект не создаётся" if outcome == "false_positive"
-                          else f"прежнее решение «{SAST_OUTCOME_LABELS.get(outcome, outcome)}»")}.get(state, state)
+    if state == "not_ready":
+        return (i18n._("ложное срабатывание – дефект не создаётся") if outcome == "false_positive"
+                else i18n._("прежнее решение «{outcome}»", outcome=SAST_OUTCOME_LABELS.get(outcome, outcome)))
+    return SAST_STATE_TEXTS.get(state, state)
 
 
-SAST_STATE_HINTS = {
+SAST_STATE_TEXTS = i18n.Labels({"none": "решения нет", "later": "отложено", "missing": "нет в текущей выгрузке",
+                                "changed": "решение принято по прежней версии находки",
+                                "verdict_changed": "вердикт модели, по которому принято решение, уже не текущий",
+                                "code_changed": "код в клоне изменился после решения"})
+
+
+SAST_STATE_HINTS = i18n.Labels({
     "missing": "Находки нет в текущей выгрузке: дефект по ней не готовится.",
     "changed": "Решение принято по прежней версии находки: после него сменились правило, файл, строка, код из "
                "выгрузки или папка клона. Сверьте решение и сохраните ещё раз – тогда дефект станет доступен.",
@@ -892,20 +966,20 @@ SAST_STATE_HINTS = {
                        "дефект станет доступен.",
     "code_changed": "Код в клоне не тот, который вы видели при решении: текст дефекта ссылался бы на прежние "
                     "строки. Сверьте решение с текущим кодом и сохраните ещё раз – тогда дефект станет доступен.",
-}
+})
 SAST_BLOCKED_STATES = tuple(SAST_STATE_HINTS)
 # решение записано без отпечатка кода (прежняя версия приложения): «код не тот» было бы неправдой (НТ17)
-SAST_CODE_UNKNOWN = ("При решении отпечаток кода не сохранён (решение записано прежней версией приложения): какой код "
-                     "вы видели, неизвестно. Сверьте решение с текущим кодом и сохраните ещё раз – тогда дефект станет "
-                     "доступен.")
+SAST_CODE_UNKNOWN = i18n.N_("При решении отпечаток кода не сохранён (решение записано прежней версией приложения): "
+                            "какой код вы видели, неизвестно. Сверьте решение с текущим кодом и сохраните ещё раз – "
+                            "тогда дефект станет доступен.")
 
 
 def sast_state_hint(state: str, review: dict | None, default: str = "") -> str:
     """Почему дефект не выдаётся – для панели дефекта и отказа выдачи (SAST_STATE_HINTS); у решения без отпечатка
     кода – SAST_CODE_UNKNOWN."""
     if state == "code_changed" and review and not review.get("code_hash"):
-        return SAST_CODE_UNKNOWN
-    return SAST_STATE_HINTS.get(state, default)
+        return i18n._(SAST_CODE_UNKNOWN)
+    return SAST_STATE_HINTS.get(state, i18n._(default))  # default – msgid (SAST_DEFECT_NOT_READY и др.)
 # Состояния, при которых сохранённый текст для Hub – исторический: решение относится к другому состоянию находки
 SAST_HISTORIC_STATES = ("missing", "changed", "verdict_changed", "code_changed")
 
@@ -983,7 +1057,7 @@ def sast_defect(db: Database, settings, store: FeedStore, project_id: int, f: Fi
     if merge:
         plan = merged_number_plan(merged_members(all_rows, mine_cmp, f.hub_id, stored, foreign), f.hub_id,
                                   merge["numbers"], None)
-        plan = (plan[0], plan[1], " ".join(x for x in (MERGE_NOTICE.format(date=fmt_ts(merge["merged_at"])),
+        plan = (plan[0], plan[1], " ".join(x for x in (i18n._(MERGE_NOTICE, date=fmt_ts(merge["merged_at"])),
                                                          plan[2]) if x))
     else:
         plan = group_number_plan(rows, None, stored)
@@ -991,16 +1065,19 @@ def sast_defect(db: Database, settings, store: FeedStore, project_id: int, f: Fi
     number = number or sibling or db.next_defect_number(project_id)
     outcome_now = hub_verdict(review["decision"], review["final_verdict"]) if review and review.get("decision") else ""
     result = {"ready": state == "ok", "number": number, "stored": stored is not None, "title": "",
-              "body": "", "needs_team": not settings.team_name, "subject": "находки", "warnings": [], "note": "",
-              "state": state, "sibling_number": sibling if sibling is not None and sibling != stored else None,
-              "saved_number": saved_number, "merge_split": bool(merge and plan[2] and "могли быть два дефекта" in plan[2]),
-              "group_note": " ".join(x for x in (plan[2], FOREIGN_NUMBER.format(n=foreign_own)
+              "body": "", "needs_team": not settings.team_name, "subject": i18n._("находки"), "warnings": [],
+              "note": "", "state": state,
+              "sibling_number": sibling if sibling is not None and sibling != stored else None,
+              # признак пометки – на обоих языках: пометку собирает merged_number_plan на языке интерфейса
+              "saved_number": saved_number, "merge_split": bool(merge and plan[2] and any(
+                  marker in plan[2] for marker in MERGE_SPLIT_MARKERS)),
+              "group_note": " ".join(x for x in (plan[2], i18n._(FOREIGN_NUMBER, n=foreign_own)
                                                 if foreign_own is not None else "") if x),
               "hint": sast_state_hint(state, review,
-                      "Ложное срабатывание закрывается коротким комментарием в Hub, дефект не создаётся."
+                      i18n.N_("Ложное срабатывание закрывается коротким комментарием в Hub, дефект не создаётся.")
                       if outcome_now == "false_positive" else
-                      "Дефект – только для решения «Подтверждаю дефект»: обоснование и рекомендация – ваши, "
-                      "рекомендацию модели можно взять за основу.")}
+                      i18n.N_("Дефект – только для решения «Подтверждаю дефект»: обоснование и рекомендация – ваши, "
+                              "рекомендацию модели можно взять за основу."))}
     # ложное срабатывание с номером, оставшимся от прежней выдачи текста, и без дефекта в приложении – номер можно снять:
     # дефект не создаётся, а номер занимает чужой заголовок Hub (db.release_defect_number)
     result["can_release"] = (saved_number is not None and outcome_now == "false_positive"
@@ -1009,17 +1086,17 @@ def sast_defect(db: Database, settings, store: FeedStore, project_id: int, f: Fi
         # прежнее решение без обоснования: в Hub ушло бы «Обоснование: Нет информации» (ADR-0089)
         result["ready"] = False
         result["state"] = "no_reason"
-        result["hint"] = DEFECT_NEEDS_REASON
+        result["hint"] = i18n._(DEFECT_NEEDS_REASON)
     if result["ready"] and not str(settings.team_name or "").strip():
         # стандартная фраза команды – с названием (ADR-0092 п. 11)
         result["ready"] = False
         result["state"] = "no_team"
-        result["hint"] = DEFECT_NEEDS_TEAM
+        result["hint"] = i18n._(DEFECT_NEEDS_TEAM)
     if result["ready"] and not defect.has_recommendation(str(review.get("final_fix") or "")):
         # решение без своей рекомендации (в том числе прежнее «Согласен»): кода модели и общего пункта в Hub нет
         result["ready"] = False
         result["state"] = "no_fix"
-        result["hint"] = DEFECT_NEEDS_FIX
+        result["hint"] = i18n._(DEFECT_NEEDS_FIX)
     if result["ready"]:
         outcome = hub_verdict(review["decision"], review["final_verdict"])
         fix = str(review.get("final_fix") or "")  # рекомендация – только своими словами оператора (ADR-0092)
@@ -1048,7 +1125,8 @@ def defect_form_problems(db: Database, settings, project_id: int, view: dict) ->
     return view
 
 
-DEFECT_CONFIRM = "Есть спорные места – проверьте и отметьте «Предупреждения проверены», затем скопируйте ещё раз."
+DEFECT_CONFIRM = i18n.N_("Есть спорные места – проверьте и отметьте «Предупреждения проверены», затем скопируйте ещё "
+                         "раз.")
 
 
 class DefectNeedsConfirm(ValueError):
@@ -1056,7 +1134,7 @@ class DefectNeedsConfirm(ValueError):
 
     def __init__(self, warnings: list[str]) -> None:
         self.warnings = list(warnings)
-        super().__init__(DEFECT_CONFIRM + " " + " ".join(self.warnings))
+        super().__init__(i18n._(DEFECT_CONFIRM) + " " + " ".join(self.warnings))
 
 
 def defect_error_response(e: ValueError, rejected: type) -> JSONResponse:
@@ -1093,12 +1171,14 @@ def group_conflict_rows(rows: list[dict], mine: tuple) -> str:
     if not (differ or other):
         return ""
     parts = []
+    more = i18n._(" и других")
     if other:
-        parts.append(f"другое решение – у {', '.join(other[:5])}{' и других' if len(other) > 5 else ''}")
+        parts.append(i18n._("другое решение – у {ids}", ids=", ".join(other[:5]) + (more if len(other) > 5 else "")))
     if differ:
-        parts.append(f"другой текст – у {', '.join(differ[:5])}{' и других' if len(differ) > 5 else ''}")
-    return ("Та же строка и та же категория – в Hub один дефект или одно решение, решение и текст должны совпадать: "
-            + "; ".join(parts) + ". Возьмите решение и текст соседней находки (кнопка в карточке) или поправьте её.")
+        parts.append(i18n._("другой текст – у {ids}", ids=", ".join(differ[:5]) + (more if len(differ) > 5 else "")))
+    return i18n._("Та же строка и та же категория – в Hub один дефект или одно решение, решение и текст должны "
+                  "совпадать: {parts}. Возьмите решение и текст соседней находки (кнопка в карточке) или поправьте её.",
+                  parts="; ".join(parts))
 
 
 def same_code(rows: list[dict], mine_cmp: str) -> list[dict]:
@@ -1151,8 +1231,8 @@ def state_print(row: dict, current_source: str = "") -> tuple:
             current_source)
 
 
-GROUP_MOVED = ("Находка с той же строкой и категорией изменилась, пока вы работали с карточкой (решение, код или ответ "
-               "модели): обновите карточку и повторите.")
+GROUP_MOVED = i18n.N_("Находка с той же строкой и категорией изменилась, пока вы работали с карточкой (решение, код "
+                      "или ответ модели): обновите карточку и повторите.")
 
 
 def current_rows(rows: list[dict], states: dict[str, tuple],
@@ -1172,7 +1252,7 @@ def current_rows(rows: list[dict], states: dict[str, tuple],
             continue
         now = state_print(r, source_of(r["hub_id"]) if source_of else st[-1])
         if tuple(st[1:]) != now:  # оценённое состояние изменилось – оценка недействительна
-            raise ReviewRejected(GROUP_MOVED)
+            raise ReviewRejected(i18n._(GROUP_MOVED))
         if st[0] == "ok":
             keep.append(r)
     return keep
@@ -1207,8 +1287,8 @@ def number_rows(rows: list[dict], mine_cmp: str, own: int | None,
     return mine, foreign
 
 
-FOREIGN_NUMBER = ("Номер ID{n} принадлежит находкам той же строки и категории с другим кодом: в Hub это другой "
-                  "дефект. Выдайте дефект с новым номером.")
+FOREIGN_NUMBER = i18n.N_("Номер ID{n} принадлежит находкам той же строки и категории с другим кодом: в Hub это "
+                         "другой дефект. Выдайте дефект с новым номером.")
 
 
 def group_conflict(db: Database, project_id: int, f: Finding, outcome: str, comment: str, fix: str) -> str:
@@ -1260,21 +1340,26 @@ def group_number_plan(rows: list[dict], requested: int | None,
         return (requested if requested is not None else own), "", ""
     if own is not None:
         counts[own] = counts.get(own, 0) + 1
-        owners.setdefault(own, []).append("эта находка")
+        owners.setdefault(own, []).append(i18n._("эта находка"))
     canonical = max(counts, key=lambda n: (counts[n], -n))
     note = ""
     if len(counts) > 1:
-        note = ("У находок той же строки и категории разные номера дефекта: "
-                + "; ".join(f"ID{n} – {', '.join(owners[n][:5])}" for n in sorted(counts))
-                + f". В Hub это один дефект: выдайте его заново с номером ID{canonical} там, где номер другой.")
+        note = i18n._("У находок той же строки и категории разные номера дефекта: {numbers}. В Hub это один дефект: "
+                      "выдайте его заново с номером ID{n} там, где номер другой.", n=canonical,
+                      numbers="; ".join(f"ID{n} – {', '.join(owners[n][:5])}" for n in sorted(counts)))
     if requested is None or requested == canonical:
         return canonical, "", note
-    return None, (f"У находок той же строки и категории номер дефекта ID{canonical}: в Hub это один дефект. "
-                  f"Укажите ID{canonical}."), note
+    return None, i18n._(ONE_NUMBER, n=canonical), note
 
 
-MERGE_NOTICE = ("Группа объединена при обновлении приложения {date}: раньше это были разные группы. Номера дефектов "
-                "не сводились.")
+# отказ выдачи: номер группы один (group_number_plan, merged_number_plan)
+ONE_NUMBER = i18n.N_("У находок той же строки и категории номер дефекта ID{n}: в Hub это один дефект. Укажите ID{n}.")
+
+
+MERGE_NOTICE = i18n.N_("Группа объединена при обновлении приложения {date}: раньше это были разные группы. Номера "
+                       "дефектов не сводились.")
+# начало предупреждения merged_number_plan «могли быть два дефекта» – на обоих языках (признак merge_split)
+MERGE_SPLIT_MARKERS = ("могли быть два дефекта", "may have two defects")
 
 
 def merged_number_plan(members: list[dict], own_hub_id: str, history: list[int],
@@ -1294,25 +1379,25 @@ def merged_number_plan(members: list[dict], own_hub_id: str, history: list[int],
             continue
         n = int(m["number"])
         counts[n] = counts.get(n, 0) + 1
-        owners.setdefault(n, []).append("эта находка" if m.get("hub_id") == own_hub_id else str(m.get("hub_id")))
+        owners.setdefault(n, []).append(i18n._("эта находка") if m.get("hub_id") == own_hub_id
+                                        else str(m.get("hub_id")))
         if m.get("hub_id") == own_hub_id:
             own = n
     kept = sorted(set(counts) & {int(x) for x in history})
     if len(kept) >= 2:
         proposed = own if own in kept else max(kept, key=lambda n: (counts[n], -n))
-        warning = ("В Hub могли быть два дефекта – " + "; ".join(f"ID{n} ({', '.join(owners[n])})" for n in kept)
-                   + ". Оставьте номер, под которым находка уже заведена в Hub.")
+        warning = i18n._("В Hub могли быть два дефекта – {numbers}. Оставьте номер, под которым находка уже заведена в "
+                         "Hub.", numbers="; ".join(f"ID{n} ({', '.join(owners[n])})" for n in kept))
         if requested is None or requested in kept:
             return (proposed if requested is None else requested), "", warning
-        return None, ("В этой группе после обновления приложения номера " + ", ".join(f"ID{n}" for n in kept)
-                      + ": выберите один из них."), warning
+        return None, i18n._("В этой группе после обновления приложения номера {numbers}: выберите один из них.",
+                            numbers=", ".join(f"ID{n}" for n in kept)), warning
     if not counts:
         return requested, "", ""
     canonical = max(counts, key=lambda n: (counts[n], -n))
     if requested is None or requested == canonical:
         return canonical, "", ""
-    return None, (f"У находок той же строки и категории номер дефекта ID{canonical}: в Hub это один дефект. "
-                  f"Укажите ID{canonical}."), ""
+    return None, i18n._(ONE_NUMBER, n=canonical), ""
 
 
 def merged_members(rows: list[dict], mine_cmp: str, own_hub_id: str, own: int | None,
@@ -1366,7 +1451,8 @@ def question_view(q: dict, verdict_id: Any) -> dict:
     stats = q.get("stats") or {}
     data = q.get("answer_data") or {}
     return {"id": q["id"], "question": q.get("question") or "", "answer": q.get("answer") or "",
-            "state": q.get("state") or "", "error": q.get("error") or "", "model": q.get("model") or "",
+            # ошибка вопроса хранится русским каноническим текстом – на языке интерфейса при показе (ADR-0158)
+            "state": q.get("state") or "", "error": shown_error(q.get("error")), "model": q.get("model") or "",
             "created_at": q.get("created_at") or "", "answered_at": q.get("answered_at") or "",
             "verdict_changes": str(data.get("verdict_changes") or ""),
             "tps": stats.get("eval_tps") or None, "seconds": stats.get("total_s") or None,
@@ -1509,14 +1595,15 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
     # вердикту вместо текста – пояснение (сам текст даёт только копирование после решения или отметки «Текст проверен»)
     preview_note = ""
     if draft is not None:
-        preview_note = "Решение не сохранено: текст появится после сохранения."
+        preview_note = i18n._("Решение не сохранено: текст появится после сохранения.")
         preview = ""
     elif not decision:
-        preview_note = "Текст появится после выбора и сохранения решения: без решения ответ модели в Hub не уходит."
+        preview_note = i18n._("Текст появится после выбора и сохранения решения: без решения ответ модели в Hub не "
+                              "уходит.")
         preview = ""
     elif saved_stale:
-        preview_note = ("Текст не показан: обоснование написано моделью к другому вердикту. Поправьте комментарий и "
-                        "сохраните решение или отметьте «Текст проверен» и скопируйте текст.")
+        preview_note = i18n._("Текст не показан: обоснование написано моделью к другому вердикту. Поправьте "
+                              "комментарий и сохраните решение или отметьте «Текст проверен» и скопируйте текст.")
         preview = ""
     # Решение принято по прежнему ответу модели (новый разбор после решения): решение остаётся в силе (ADR-0097),
     # карточка говорит, что разбор новый и совпадает ли он с решением человека
@@ -1642,7 +1729,7 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
         "progress": {"total": total, "reviewed": reviewed},
         "selection": selection, "sel_query": sel_query, "selection_labels": selection_labels(selection),
         "saved_row": saved_row,
-        "need_texts": {"reason": RISK_NEEDS_REASON, "verdict": NEED_VERDICT,
+        "need_texts": {"reason": i18n._(RISK_NEEDS_REASON), "verdict": i18n._(NEED_VERDICT),
                        "reason_fp": SAST_NEED_REASON["false_positive"], "reason_tp": SAST_NEED_REASON["true_positive"],
                        "fix": need_fix_text(model_fix, model_points,
                                             bool(model_history and model_history["earlier_points"]))},
@@ -1660,7 +1747,8 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
         # отпечатку текста сохранённого решения, как у отметки «Внесено в Hub»), «Привязать к дефекту»
         "hub_defect": hub_defect_routes.card_context(
             request, project, f.hub_id,
-            current_hash=text_hash(sast_entered_text(db, settings, pid, f, review)) if review and review.get("decision")
+            current_hash=tuple(text_hash(x) for x in both_languages(
+                lambda: sast_entered_text(db, settings, pid, f, review))) if review and review.get("decision")
             else "") if sast else None,
         # версия находки и папки с её кодом из того же снимка, по которому построен срез
         "finding_version": source_version(source),
@@ -1696,12 +1784,12 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
         "entered_reasons": entered_change_reasons(settings, review) if sast else None,
         # отметка общим комментарием из списка (ADR-0119): текст в Hub другой по замыслу, это не «текст изменился»
         "entered_bulk": bool(review and review.get("entered_hub")) and entered_by_bulk(review),
-        "entered_changed": (entered_text_changed(review, sast_entered_text(db, settings, pid, f, review))
+        # текст для отметки – на обоих языках интерфейса (ADR-0158), прежние форматы – русские, как их собирали тогда
+        "entered_changed": (entered_text_changed(review, entered_now := both_languages(
+                                lambda: sast_entered_text(db, settings, pid, f, review)))
                             and not entered_by_bulk(review)
-                            and not entered_format_updated(review, sast_entered_text(db, settings, pid, f, review),
-                                                           saved_legacy_texts(f, review, settings.hub_status_map, settings.team_name))),
-        "entered_format_updated": entered_format_updated(review, sast_entered_text(db, settings, pid, f, review),
-                                                         saved_legacy_texts(f, review, settings.hub_status_map, settings.team_name)),
+                            and not entered_format_updated(review, entered_now, legacy_texts_ru(f, review, settings))),
+        "entered_format_updated": entered_format_updated(review, entered_now, legacy_texts_ru(f, review, settings)),
         "group_total": group_total, "group_other_total": group_other_total,
         # прежние редакции текста решения (О5): что было в комментарии и рекомендации до последней правки
         "text_history": (history := db.review_text_history(pid, f.hub_id) if sast else ([], 0))[0],
@@ -1720,7 +1808,7 @@ def finding_view(request: Request, project: dict, row: dict, selection: dict[str
         "model_code_dropped": model_code_dropped,
         "siblings": siblings, "group_other": group_other, "group_compared": bool(mine_cmp),
         # группа слилась при обновлении схемы 20 (ADR-0095 п. 4): уведомление – в карточке всегда
-        "group_merge_notice": (MERGE_NOTICE.format(date=fmt_ts(group_merge["merged_at"]))
+        "group_merge_notice": (i18n._(MERGE_NOTICE, date=fmt_ts(group_merge["merged_at"]))
                                if sast and (group_merge := db.group_merge(pid, group_key(f))) else ""),
         "group_take_all": group_take_all([s for s in siblings if s["state"] == "ok"], group_total) if sast else None,
         "entered_hash": (text_hash(sast_entered_text(db, settings, pid, f, review))
@@ -1760,14 +1848,14 @@ def check_code(request: Request, project_id: int, f: Finding, case: dict | None,
         return {"hash": None, "chars": 0, "stale_verdict": False}
     source = db_of(request).case_input(project_id, f.hub_id)
     if source is None:
-        raise StaleReview("находки нет", "source")
+        raise StaleReview(i18n._("находки нет"), "source")
     settings, mask_key = settings_of(request), mask_key_of(request)
     case_chars = int((case or {}).get("context", {}).get("max_chars") or CONTEXT_CHARS)
     chars = shown_chars if shown_chars is not None and MIN_CONTEXT_CHARS <= shown_chars <= CONTEXT_CHARS \
         else case_chars
     _, _, current = current_code(settings, source, mask_key, chars, case=case)
     if shown_hash and current != shown_hash:
-        raise StaleReview("код изменился", "code")
+        raise StaleReview(i18n._("код изменился"), "code")
     stale_verdict = False
     if case and case.get("verdict_id"):
         at_case = current if chars == case_chars else current_code(settings, source, mask_key, case_chars,
@@ -1781,13 +1869,13 @@ def check_shown(db: Database, project_id: int, f: Finding, case: dict | None, sh
     """Что видел человек – находка, вердикт модели и редакция решения – не устарело (иначе StaleReview).
     Страница без редакции (открытая до обновления приложения) проверяется по версии находки и вердикту."""
     if db.review_version(project_id, f.hub_id) != shown_version:
-        raise StaleReview("страница устарела", "source")
+        raise StaleReview(i18n._("страница устарела"), "source")
     current_verdict = case["verdict_id"] if case and case.get("verdict_id") else None
     if current_verdict != shown_verdict:
-        raise StaleReview("страница устарела", "verdict")
+        raise StaleReview(i18n._("страница устарела"), "verdict")
     old = db.get_review(project_id, f.hub_id)
     if shown_revision is not None and (int(old["revision"]) if old else 0) != shown_revision:
-        raise StaleReview("страница устарела", "revision")
+        raise StaleReview(i18n._("страница устарела"), "revision")
 
 
 def card_response(request: Request, project_id: int, finding_id: int, error: str = "",
@@ -1797,7 +1885,7 @@ def card_response(request: Request, project_id: int, finding_id: int, error: str
     project = project_or_404(request, project_id)
     row = db_of(request).get_finding(project_id, finding_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="Находка не найдена: возможно, её нет в новой выгрузке.")
+        raise HTTPException(status_code=404, detail=i18n._("Находка не найдена: возможно, её нет в новой выгрузке."))
     view = finding_view(request, project, row, read_selection(request.query_params), draft, ask_draft)
     # текст выдан по отметке «Текст проверен» (форма без скрипта): раскрывается, только если решение в карточке – та же
     # редакция, по которой текст выдан (между выдачей и чтением карточки его могли сохранить заново в другой вкладке)
@@ -1816,7 +1904,7 @@ def finding_or_404(request: Request, project_id: int, finding_id: int) -> dict:
     project_or_404(request, project_id)
     row = db_of(request).get_finding(project_id, finding_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="Находка не найдена.")
+        raise HTTPException(status_code=404, detail=i18n._("Находка не найдена."))
     return row
 
 
@@ -1884,7 +1972,8 @@ def findings_page(request: Request, project_id: int, error: str = ""):
         row["entered"] = int(bool(row.get("entered_hub")))
     w = worklists.table(worklists.sort_findings(descriptors, presentation["sort"]), filters,
                         path=f"/projects/{project_id}/findings", default_size=PAGE_SIZE, kind="findings",
-                        sorts={"": "Как в отчёте", "severity_desc": "Критичность ↓", "severity_asc": "Критичность ↑"})
+                        sorts={"": i18n._("Как в отчёте"), "severity_desc": i18n._("Критичность ↓"),
+                               "severity_asc": i18n._("Критичность ↑")})
     ids = tuple(r["id"] for r in w["rows"])
     shown, _ = db.list_findings(project_id, ids=ids, limit=w["size"])
     order = {fid: n for n, fid in enumerate(ids)}
@@ -1912,7 +2001,7 @@ def findings_page(request: Request, project_id: int, error: str = ""):
     filter_groups = [{"key": key, "label": label,
                       "chips": [{"label": text, "href": link(**{key: value}), "active": filters[key] == value}
                                 for value, text in options]}
-                     for key, label, options in FILTER_GROUPS]
+                     for key, label, options in translated_filter_groups()]
     # Тот же действующий статус, что в карточке: подтверждение, принятая сверка, выгрузка.
     statuses = db.finding_statuses(project_id)
     chosen = filters["hub_status"]
@@ -1920,12 +2009,12 @@ def findings_page(request: Request, project_id: int, error: str = ""):
         # чипы переключают значение по одному: выбранное снимается, новое добавляется (бэклог 99)
         def toggled(value: str) -> tuple[str, ...]:
             return tuple(s for s in chosen if s != value) if value in chosen else (*chosen, value)
-        filter_groups.insert(1, {"key": "hub_status", "label": "Статус Hub", "chips": [
-            {"label": "любой", "href": link(hub_status=()), "active": not chosen},
+        filter_groups.insert(1, {"key": "hub_status", "label": i18n._("Статус Hub"), "chips": [
+            {"label": i18n._("любой"), "href": link(hub_status=()), "active": not chosen},
             *({"label": s, "href": link(hub_status=toggled(s)), "active": s in chosen}
               for s in dict.fromkeys((*statuses, *chosen)))]})
-    filter_flags = [{"label": text, "href": link(**{key: "" if filters[key] else value}), "active": bool(filters[key])}
-                    for key, value, text in FILTER_FLAGS]
+    filter_flags = [{"label": i18n._(text), "href": link(**{key: "" if filters[key] else value}),
+                     "active": bool(filters[key])} for key, value, text in FILTER_FLAGS]
     stats = db.review_stats(project_id)
     # отбор «одна группа»: находка, по ключу которой отобран список, – для строки над таблицей
     group_anchor = db.get_finding(project_id, int(selection["group"])) if selection.get("group") else None
@@ -1948,7 +2037,7 @@ def findings_page(request: Request, project_id: int, error: str = ""):
         "counts": db.count_findings(project_id),  # числа на вкладках проекта
         "hub_step": hub_onboarding.state(db, project, settings_of(request).hub_url, light=True),
         "hub_states": hub_states["by_hub_id"], "hub_summary": hub_states["summary"],
-        "card_query": card_query, "queue_query": card_query, "presets": [(label, query(presentation, **params, page=""), label == active_preset)
+        "card_query": card_query, "queue_query": card_query, "presets": [(i18n._(label), query(presentation, **params, page=""), label == active_preset)
                                               for label, params in PRESETS],
         "first_unreviewed": queue_neighbor(db, project_id, None, {**selection, **presentation},
                                            descriptors=descriptors),
@@ -1967,7 +2056,7 @@ def finding_by_hub_id(request: Request, project_id: int, hub_id: str = ""):
     project_or_404(request, project_id)
     row = db_of(request).get_finding_by_hub_id(project_id, hub_id.strip())
     if row is None:
-        return findings_page(request, project_id, "Находка с таким ID не найдена.")
+        return findings_page(request, project_id, i18n._("Находка с таким ID не найдена."))
     section = "sca/findings" if row["kind"] == "SCA" else "findings"
     return redirect(f"/projects/{project_id}/{section}/{row['id']}")
 
@@ -2025,18 +2114,18 @@ async def save_review(request: Request, project_id: int, finding_id: int):
         nonlocal decision, final_verdict, final_fix
         project_or_404(request, project_id)
         if fix_too_long:
-            raise ReviewRejected(FIX_TOO_LONG)
+            raise ReviewRejected(i18n._(FIX_TOO_LONG, limit=MAX_FIX))
         db = db_of(request)
         settings = settings_of(request)
         row = db.get_finding(project_id, finding_id)
         if row is None:
-            raise HTTPException(status_code=404, detail="Находка не найдена.")
+            raise HTTPException(status_code=404, detail=i18n._("Находка не найдена."))
         if (decision not in ("", *DECISIONS, *SAST_OUTCOMES) or final_verdict not in ("", *VERDICTS)
                 or (shown_verdict and not shown_verdict.isdigit())):
-            raise HTTPException(status_code=400, detail="Неверное решение или вердикт.")
+            raise HTTPException(status_code=400, detail=i18n._("Неверное решение или вердикт."))
         f = Finding.from_dict(row["data"])
         if decision in SAST_OUTCOMES and f.kind != "SAST":
-            raise HTTPException(status_code=400, detail="Неверное решение или вердикт.")
+            raise HTTPException(status_code=400, detail=i18n._("Неверное решение или вердикт."))
         case = db.get_case(project_id, f.hub_id)
         model_verdict = case["verdict"] if case else None
         expected_verdict = int(shown_verdict) if shown_verdict else None
@@ -2050,7 +2139,7 @@ async def save_review(request: Request, project_id: int, finding_id: int):
             decision, final_verdict = sast_choice(decision, final_verdict, model_verdict, code["stale_verdict"], old,
                                                   case["verdict_id"] if case and case.get("verdict_id") else None)
             if decision == "risk_accepted":
-                raise ReviewRejected(SAST_TWO_OUTCOMES)
+                raise ReviewRejected(i18n._(SAST_TWO_OUTCOMES))
             # рекомендация – только у подтверждённого дефекта; у остальных исходов она не сохраняется
             if outcome_key and outcome_key != "true_positive":
                 final_fix = ""
@@ -2059,22 +2148,22 @@ async def save_review(request: Request, project_id: int, finding_id: int):
         chosen = final_verdict
         group_check = None
         if action == "copy" and not decision:
-            raise ReviewRejected(NEED_DECISION)
+            raise ReviewRejected(i18n._(NEED_DECISION))
         if decision == "disagree" and not final_verdict:
-            raise ReviewRejected(NEED_VERDICT)
+            raise ReviewRejected(i18n._(NEED_VERDICT))
         if decision == "agree":
             if model_verdict is None:
-                raise HTTPException(status_code=400, detail="«Согласен» можно выбрать, только когда есть вердикт "
-                                                            "модели.")
+                raise HTTPException(status_code=400, detail=i18n._("«Согласен» можно выбрать, только когда есть "
+                                                                   "вердикт модели."))
             if code["stale_verdict"]:
-                raise StaleReview("код изменился после разбора", "stale_verdict")
+                raise StaleReview(i18n._("код изменился после разбора"), "stale_verdict")
             chosen = model_verdict["verdict"]
         if decision == "risk_accepted" and not comment.strip():
-            raise ReviewRejected(RISK_NEEDS_REASON)
+            raise ReviewRejected(i18n._(RISK_NEEDS_REASON))
         if f.kind == "SAST" and decision in ("agree", "disagree"):
             outcome = hub_verdict(decision, chosen)
             if outcome not in SAST_OUTCOMES:
-                raise ReviewRejected(SAST_TWO_OUTCOMES)
+                raise ReviewRejected(i18n._(SAST_TWO_OUTCOMES))
             # обоснование обязательно: одно вводное «Ложное срабатывание:» его не заменяет (ADR-0089 п. 6); в Hub
             # комментарий уходит как написан (ADR-0149), вводное слово снимается только для этой проверки
             if not defect.reason_text(comment):
@@ -2083,12 +2172,12 @@ async def save_review(request: Request, project_id: int, finding_id: int):
             # проверяется сохранённая
             if outcome == "true_positive" and not defect.has_recommendation(
                     final_fix if final_fix is not None else str((old or {}).get("final_fix") or "")):
-                raise ReviewRejected(SAST_NEED_FIX)
+                raise ReviewRejected(i18n._(SAST_NEED_FIX))
         # короткий текст копируется только для ложного срабатывания: у дефекта в Hub уходит полный текст, отложенная
         # находка в Hub не переносится
         if f.kind == "SAST" and action == "copy":
             if hub_verdict(decision, chosen) != "false_positive":
-                raise ReviewRejected(SAST_COPY_DEFECT)
+                raise ReviewRejected(i18n._(SAST_COPY_DEFECT))
             mine = defect.sast_effective("false_positive", comment, "")
             mine_cmp = str((case or {}).get("code_cmp") or "")  # срез, по которому проверен код выше
             near = same_code(db.group_rows(project_id, group_key(f), f.hub_id), mine_cmp)
@@ -2105,7 +2194,7 @@ async def save_review(request: Request, project_id: int, finding_id: int):
             def copy_group_check(rows: list[dict]) -> None:
                 now = db.get_case(project_id, f.hub_id) or {}  # то же соединение, внутри транзакции записи
                 if now.get("case_hash") != own_case or str(now.get("code_cmp") or "") != mine_cmp:
-                    raise ReviewRejected(GROUP_MOVED)
+                    raise ReviewRejected(i18n._(GROUP_MOVED))
                 found = group_conflict_rows(current_rows(same_code(rows, mine_cmp), states, source_now), mine)
                 if found:
                     raise ReviewRejected(found)
@@ -2198,9 +2287,9 @@ async def save_review(request: Request, project_id: int, finding_id: int):
                  "final_verdict": final_verdict if final_verdict in VERDICTS else "", "comment": comment,
                  "reviewed": False, "fix": final_fix or ""}
         return await run_in_threadpool(card_response, request, project_id, finding_id,
-                                       message + " Ваш вариант решения подставлен в форму – сверьте его с "
-                                       "находкой и сохраните ещё раз. Отметка «Проверено» снята: после сверки "
-                                       "установите её заново.", 409, draft)
+                                       message + i18n._(" Ваш вариант решения подставлен в форму – сверьте его с "
+                                                        "находкой и сохраните ещё раз. Отметка «Проверено» снята: "
+                                                        "после сверки установите её заново."), 409, draft)
     if json_answer:
         return JSONResponse({"ok": True, "hub_text": text, "copy_allowed": text_ok,
                              # отпечаток выданного текста: отметка «Внесено в Hub» сверит его с текущим
@@ -2235,7 +2324,7 @@ async def mark_copied(request: Request, project_id: int, finding_id: int):
     form = await request.form()
     raw = str(form.get("revision") or "").strip()
     if not raw.isdigit() or int(raw) < 1:
-        raise HTTPException(status_code=400, detail="Не указана редакция решения.")
+        raise HTTPException(status_code=400, detail=i18n._("Не указана редакция решения."))
 
     def apply():
         row = finding_or_404(request, project_id, finding_id)
@@ -2243,8 +2332,8 @@ async def mark_copied(request: Request, project_id: int, finding_id: int):
 
     copied_at = await run_in_threadpool(apply)
     if copied_at is None:
-        raise HTTPException(status_code=409, detail="Решение не сохранено или изменилось после копирования: "
-                                                    "скопируйте текст ещё раз.")
+        raise HTTPException(status_code=409, detail=i18n._("Решение не сохранено или изменилось после копирования: "
+                                                           "скопируйте текст ещё раз."))
     return {"ok": True, "copied_at": copied_at}
 
 
@@ -2265,7 +2354,7 @@ async def mark_reviewed(request: Request, project_id: int, finding_id: int):
         row = finding_or_404(request, project_id, finding_id)
         db = db_of(request)
         if shown_verdict and not shown_verdict.isdigit():
-            raise HTTPException(status_code=400, detail="Неверный вердикт.")
+            raise HTTPException(status_code=400, detail=i18n._("Неверный вердикт."))
         f = Finding.from_dict(row["data"])
         case = db.get_case(project_id, f.hub_id)
         expected_verdict = int(shown_verdict) if shown_verdict else None
@@ -2301,8 +2390,9 @@ async def mark_reviewed(request: Request, project_id: int, finding_id: int):
         marks = review_json(review)
         return {"ok": True, **marks, "progress": progress, "checked": {"reviewed-box": marks["reviewed"]},
                 "show" if marks["reviewed"] else "hide": ["reviewed-badge"],
-                "text": {"progress-label": f"Проверено {progress['reviewed']} из {progress['total']} · осталось "
-                                           f"{max(0, progress['total'] - progress['reviewed'])}"}}
+                "text": {"progress-label": i18n._("Проверено {done} из {total} · осталось {left}",
+                                                  done=progress['reviewed'], total=progress['total'],
+                                                  left=max(0, progress['total'] - progress['reviewed']))}}
     return redirect(card_url(project_id, finding_id, selection, ok="reviewed" if reviewed else "unreviewed"))
 
 
@@ -2322,18 +2412,18 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
         db = db_of(request)
         review = db.get_review(project_id, row["hub_id"])
         if entered and not (review and review.get("decision")):
-            raise ValueError(ENTERED_NO_DECISION)
+            raise ValueError(i18n._(ENTERED_NO_DECISION))
         if entered and revision is None:  # страница до обновления приложения: без редакции отметка не ставится
             return None
         f = Finding.from_dict(row["data"])
         if (entered and f.kind == "SAST"
                 and sast_outcome(review["decision"], review["final_verdict"]) not in SAST_OUTCOMES):
-            raise ValueError(SAST_ENTER_ONLY)
+            raise ValueError(i18n._(SAST_ENTER_ONLY))
         if entered and f.kind == "SAST" and not defect.reason_text(review.get("final_comment") or ""):
-            raise ValueError(ENTERED_NEEDS_REASON)  # прежнее решение без обоснования: в Hub такого текста нет
+            raise ValueError(i18n._(ENTERED_NEEDS_REASON))  # прежнее решение без обоснования: в Hub такого текста нет
         if (entered and f.kind == "SAST" and sast_outcome(review["decision"], review["final_verdict"]) == "true_positive"
                 and not defect.has_recommendation(str(review.get("final_fix") or ""))):
-            raise ValueError(ENTERED_NEEDS_FIX)  # дефект без рекомендации оператора не готовится (ADR-0092)
+            raise ValueError(i18n._(ENTERED_NEEDS_FIX))  # дефект без рекомендации оператора не готовится (ADR-0092)
         if entered:  # отметка – о тексте с обоснованием человека, не модели к другому вердикту (ADR-0088)
             origin = comment_origin(db, db.get_case(project_id, f.hub_id), review, review.get("final_comment") or "",
                                     project_id=project_id, hub_id=f.hub_id)
@@ -2341,14 +2431,19 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
             if origin and origin != target and not comment_confirm_valid(form, review):
                 raise CommentNeedsCheck(entered_check_text(origin, target))
         settings = settings_of(request)  # один снимок: отпечаток текста и его составляющие – по одним настройкам
-        text = sast_entered_text(db, settings, project_id, f, review)
+        # текст на обоих языках интерфейса (ADR-0158): карточку могли показать до смены языка – отметка о том
+        # тексте, который человек видел
+        texts = both_languages(lambda: sast_entered_text(db, settings, project_id, f, review))
+        text = texts[0]
         # отпечаток текста, который человек скопировал или видел в карточке: если текст с тех пор другой (например,
         # сменилось название команды), отметка подтвердила бы то, чего в Hub нет
         shown_hash = str(form.get("text_hash") or "").strip()
         if entered and f.kind == "SAST" and not shown_hash:  # страница до 0.9.6: что показано – неизвестно
-            raise ValueError(ENTERED_RELOAD)
-        if entered and shown_hash and shown_hash != text_hash(text):
-            raise ValueError(ENTERED_TEXT_MOVED)
+            raise ValueError(i18n._(ENTERED_RELOAD))
+        if entered and shown_hash:
+            text = next((t for t in texts if text_hash(t) == shown_hash), None)
+            if text is None:
+                raise ValueError(i18n._(ENTERED_TEXT_MOVED))
         parts = entered_parts(settings, review) if entered and f.kind == "SAST" else ""
         # снять отметку у находки в дефекте, созданном в Hub, – только с подтверждением; Hub не трогается (ADR-0121 п. 4)
         check = None if entered or defect_confirmed else hub_defects.unenter_check(project_id, row["hub_id"])
@@ -2371,8 +2466,8 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
         return await run_in_threadpool(card_response, request, project_id, finding_id, str(e), 400)
     if review is None:
         if wants_json(request):
-            return JSONResponse({"ok": False, "detail": ENTERED_STALE, "reason": "revision"}, status_code=409)
-        return await run_in_threadpool(card_response, request, project_id, finding_id, ENTERED_STALE, 409)
+            return JSONResponse({"ok": False, "detail": i18n._(ENTERED_STALE), "reason": "revision"}, status_code=409)
+        return await run_in_threadpool(card_response, request, project_id, finding_id, i18n._(ENTERED_STALE), 409)
     if wants_json(request):
         marks = review_json(review)
         # Редакция решения не меняется и в ответ не входит: иначе скрипт записал бы её в форму решения, и форма
@@ -2381,8 +2476,8 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
         shown, hidden = ["entered-badge", "entered-note"], ["mark-entered", "entered-changed", "entered-unconfirmed",
                                                             "entered-format-updated", "entered-bulk"]
         return {"ok": True, **marks,
-                "message": "Отмечено: внесено в Hub." if entered else "Отметка «Внесено в Hub» снята.",
-                "times": {"entered-at": {"prefix": "Внесено в Hub " if entered else "",
+                "message": i18n._("Отмечено: внесено в Hub.") if entered else i18n._("Отметка «Внесено в Hub» снята."),
+                "times": {"entered-at": {"prefix": i18n._("Внесено в Hub ") if entered else "",
                                            "datetime": marks['entered_at'] if entered else "", "suffix": "."}},
                 "show": shown if entered else ["mark-entered"],
                 # пометка «общим комментарием из списка» относится к снятой или заменённой отметке
@@ -2390,12 +2485,12 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
     return redirect(card_url(project_id, finding_id, selection, ok="entered" if entered else "unentered"))
 
 
-DEFECT_NOT_READY = ("Дефект готовится только по сохранённому решению с итогом «истинная» или «ложная»: сохраните "
+DEFECT_NOT_READY = i18n.N_("Дефект готовится только по сохранённому решению с итогом «истинная» или «ложная»: сохраните "
                     "решение и попробуйте ещё раз.")
-SAST_DEFECT_NOT_READY = ("Дефект готовится только по сохранённому решению «Подтверждаю дефект»: сохраните решение и "
+SAST_DEFECT_NOT_READY = i18n.N_("Дефект готовится только по сохранённому решению «Подтверждаю дефект»: сохраните решение и "
                          "попробуйте ещё раз. Для ложного срабатывания в Hub уходит короткий комментарий.")
-DEFECT_BAD_NUMBER = "Номер дефекта – целое число от 1 до 999999 (число после «ID» в Hub)."
-NUMBER_CHANGED = ("Номер дефекта изменили в другой вкладке, пока карточка была открыта: номер не перезаписан. "
+DEFECT_BAD_NUMBER = i18n.N_("Номер дефекта – целое число от 1 до 999999 (число после «ID» в Hub).")
+NUMBER_CHANGED = i18n.N_("Номер дефекта изменили в другой вкладке, пока карточка была открыта: номер не перезаписан. "
                   "Обновите карточку и проверьте номер.")
 
 
@@ -2440,8 +2535,9 @@ def number_shown_changed(form, stored: int | None) -> bool:
 
 def duplicate_number_warning(keys: list[str]) -> list[str]:
     """Предупреждение до записи: этот номер уже у других находок или пакетов проекта (не той же группы)."""
-    return [f"Номер уже дан ещё {len(keys)} {'находке или пакету' if len(keys) == 1 else 'находкам или пакетам'} "
-            "проекта: если в Hub это другой дефект, укажите другой номер."] if keys else []
+    return [i18n._("Номер уже дан ещё {count} {holders} проекта: если в Hub это другой дефект, укажите другой номер.",
+                   count=len(keys), holders=i18n._("находке или пакету") if len(keys) == 1
+                   else i18n._("находкам или пакетам"))] if keys else []
 
 register_messages({"defect_saved": "Номер дефекта сохранён: заголовок и текст – в разделе «Дефект для Hub»."})
 
@@ -2453,19 +2549,19 @@ def read_defect_number(form) -> int | None:
         return None
     number = _form_int(raw)
     if number is None or not 1 <= number <= 999_999:
-        raise ValueError(DEFECT_BAD_NUMBER)
+        raise ValueError(i18n._(DEFECT_BAD_NUMBER))
     return number
 
 
-GROUP_NUMBER_NOTE = ("Тот же номер – у находок с той же строкой и категорией: в Hub это один дефект, создайте его "
+GROUP_NUMBER_NOTE = i18n.N_("Тот же номер – у находок с той же строкой и категорией: в Hub это один дефект, создайте его "
                      "сразу из всех этих находок.")
 
 
 def defect_duplicates_note(keys: list[str]) -> str:
     if not keys:
         return ""
-    return (f"Этот номер уже дан ещё {len(keys)} "
-            f"{'находке' if len(keys) == 1 else 'находкам'} проекта – проверьте, что в Hub это один дефект.")
+    return i18n._("Этот номер уже дан ещё {count} {holders} проекта – проверьте, что в Hub это один дефект.",
+                  count=len(keys), holders=i18n._("находке") if len(keys) == 1 else i18n._("находкам"))
 
 
 @router.post("/projects/{project_id}/findings/{finding_id}/defect")
@@ -2487,10 +2583,10 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
         # из этой находки, а перед записью номера снимок проверяется заново в короткой транзакции (CWE-367)
         source = db.case_input(project_id, row["hub_id"])
         if source is None:
-            raise DefectBlocked(SAST_STATE_HINTS["missing"])
+            raise DefectBlocked(SAST_STATE_HINTS["missing"])  # Labels: перевод при чтении
         f = Finding.from_dict(source["data"])
         if f.kind != "SAST":
-            raise ValueError("Дефект SCA готовится в карточке SCA.")
+            raise ValueError(i18n._("Дефект SCA готовится в карточке SCA."))
         review = db.get_review(project_id, f.hub_id)
         case = db.get_case(project_id, f.hub_id)
         # актуальность решения проверяется при каждой выдаче текста, а не только при открытии карточки:
@@ -2503,15 +2599,15 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
         # которую человек видит, иначе «скопировано» и «Внесено в Hub» разошлись бы с формой. Проверяется до
         # остальных отказов: другая вкладка могла сменить и само решение (на «Отложить» или ложное срабатывание)
         if shown_revision is not None and shown_revision != int((review or {}).get("revision") or 0):
-            raise DefectReload(DEFECT_OTHER_REVISION)
+            raise DefectReload(i18n._(DEFECT_OTHER_REVISION))
         if assessment["state"] != "ok":
-            raise DefectBlocked(sast_state_hint(assessment["state"], review, SAST_DEFECT_NOT_READY))
+            raise DefectBlocked(sast_state_hint(assessment["state"], review, i18n._(SAST_DEFECT_NOT_READY)))
         if not defect.reason_text(review.get("final_comment") or ""):
-            raise DefectBlocked(DEFECT_NEEDS_REASON)
+            raise DefectBlocked(i18n._(DEFECT_NEEDS_REASON))
         if not defect.has_recommendation(str(review.get("final_fix") or "")):
-            raise DefectBlocked(DEFECT_NEEDS_FIX)
+            raise DefectBlocked(i18n._(DEFECT_NEEDS_FIX))
         if not str(settings_of(request).team_name or "").strip():
-            raise DefectBlocked(DEFECT_NEEDS_TEAM)
+            raise DefectBlocked(i18n._(DEFECT_NEEDS_TEAM))
         # комментарий модели к другому вердикту не выдаётся молча ни коротким, ни полным текстом (R092-02)
         origin = comment_origin(db, case, review, review.get("final_comment") or "", project_id=project_id,
                                 hub_id=f.hub_id)
@@ -2529,7 +2625,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
 
         own_number = db.defect_number(project_id, defect.defect_key_sast(f.hub_id))
         if number_shown_changed(form, own_number):
-            raise DefectReload(NUMBER_CHANGED)
+            raise DefectReload(i18n._(NUMBER_CHANGED))
         own_at = db.defect_assigned_at(project_id, defect.defect_key_sast(f.hub_id))
         mine_cmp = own_code_cmp(db, project_id, f.hub_id)
         own_case = (case or {}).get("case_hash")
@@ -2540,7 +2636,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
         def defect_group_check(rows: list[dict], issued: int | None, own: int | None, at: str | None = None) -> None:
             now = db.get_case(project_id, f.hub_id) or {}  # собственный срез – тот же, что при оценке (ADR-0092 п. 6)
             if now.get("case_hash") != own_case or str(now.get("code_cmp") or "") != mine_cmp:
-                raise DefectReload(GROUP_MOVED)
+                raise DefectReload(i18n._(GROUP_MOVED))
             try:
                 near = current_rows(same_code(rows, mine_cmp), states,
                                     lambda hub_id: source_sig(db.case_input(project_id, hub_id)))
@@ -2551,7 +2647,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
                 raise DefectBlocked(conflict)
             plan_rows, foreign = number_rows(rows, mine_cmp, own, own_at if at is None else at, f.hub_id)
             if issued is not None and issued in foreign:
-                raise ValueError(FOREIGN_NUMBER.format(n=issued))
+                raise ValueError(i18n._(FOREIGN_NUMBER, n=issued))
             if merge:  # группа слилась при обновлении схемы: номера не сводятся (ADR-0095 п. 4)
                 error = merged_number_plan(merged_members(rows, mine_cmp, f.hub_id, own, foreign), f.hub_id,
                                            merge["numbers"], issued)[1]
@@ -2579,16 +2675,24 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
             expect_number=expected_number(form), foreign_check=foreign_number_check(group, confirmed))
         note = defect_duplicates_note([k for k in duplicates if k not in group])
         if any(k in group for k in duplicates):
-            note = (note + " " if note else "") + GROUP_NUMBER_NOTE
+            note = (note + " " if note else "") + i18n._(GROUP_NUMBER_NOTE)
         if view.get("group_note"):
             note = (note + " " if note else "") + view["group_note"]
         # редакция и отпечаток выданного текста: «скопировано» и «Внесено в Hub» относятся к ним
         # entered_current – отметка «Внесено в Hub» поставлена именно по этому тексту (иначе её нужно подтвердить)
         body_hash = text_hash(view["body"])
         entered_hash = review.get("entered_decision_hash") if review.get("entered_origin") == "defect" else review.get("entered_text_hash")
+        # отметка могла быть поставлена на другом языке интерфейса (ADR-0158): тот же текст на любом из двух
+        body_hashes = {body_hash}
+        if entered_hash and entered_hash != body_hash:
+            other = "en" if i18n.current() == "ru" else "ru"
+            with i18n.use(other):
+                body_hashes.add(text_hash(sast_defect(db, settings_of(request), store_of(request), project_id, f, review,
+                                                      verdict, number, shown=defect_shown_lines(request, project_id, f, case),
+                                                      state="ok", source=source)["body"]))
         return {**view, "stored": True, "note": note, "revision": int(review["revision"]),
                 "entered": bool(review.get("entered_hub")), "entered_hash": body_hash,
-                "entered_current": bool(review.get("entered_hub")) and entered_hash == body_hash}
+                "entered_current": bool(review.get("entered_hub")) and entered_hash in body_hashes}
 
     try:
         view = await run_in_threadpool(apply)
@@ -2597,7 +2701,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
             return JSONResponse({"ok": False, "detail": str(e), "reason": "comment"}, status_code=409)
         return await run_in_threadpool(card_response, request, project_id, finding_id, str(e), 409)
     except StaleReview as e:  # снимок изменился между проверкой и записью номера
-        message = DEFECT_RACE + " " + STALE_MESSAGES.get(e.reason, STALE_MESSAGES["source"])
+        message = i18n._(DEFECT_RACE) + " " + STALE_MESSAGES.get(e.reason, STALE_MESSAGES["source"])
         if wants_json(request):
             return JSONResponse({"ok": False, "detail": message, "reason": e.reason, "reload": True}, status_code=409)
         return await run_in_threadpool(card_response, request, project_id, finding_id, message, 409)
@@ -2621,7 +2725,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
 
 register_messages({"defect_number_released": "Номер дефекта снят: находка – ложное срабатывание, дефект не создаётся.",
                    "defect_number_released_others": "Номер дефекта снят у этой находки, но он остаётся у других находок проекта (например, у соседа по группе с решением «Подтверждаю дефект»): дефект с этим номером в заголовке Hub по-прежнему считает его занятым."})
-RELEASE_NOT_FALSE = "Номер снимается только у находки с решением «Ложное срабатывание»: обновите карточку."
+RELEASE_NOT_FALSE = i18n.N_("Номер снимается только у находки с решением «Ложное срабатывание»: обновите карточку.")
 
 
 register_messages({"defect_dropped_cleared": "Пометка «выбыла из дефекта» снята: находка остаётся без дефекта."})
@@ -2637,7 +2741,7 @@ async def clear_defect_dropped(request: Request, project_id: int, finding_id: in
     def apply():
         row = finding_or_404(request, project_id, finding_id)
         if not db_of(request).clear_defect_dropped(project_id, str(row["hub_id"]), str(form.get("dropped_shown") or "")):
-            raise ValueError("Пометка изменилась или уже снята: обновите карточку.")
+            raise ValueError(i18n._("Пометка изменилась или уже снята: обновите карточку."))
         return row
 
     try:
@@ -2667,7 +2771,7 @@ async def release_defect_number(request: Request, project_id: int, finding_id: i
         row = finding_or_404(request, project_id, finding_id)
         number = _form_int(form.get("number_shown"))
         if number is None:
-            raise ValueError("Номера у находки нет: обновите карточку.")
+            raise ValueError(i18n._("Номера у находки нет: обновите карточку."))
         hub_id = str(row["hub_id"])
 
         def still_false(c) -> None:
@@ -2675,7 +2779,7 @@ async def release_defect_number(request: Request, project_id: int, finding_id: i
                                (project_id, hub_id)).fetchone()
             if review is None or not review["decision"] or hub_verdict(
                     review["decision"], review["final_verdict"]) != "false_positive":
-                raise ValueError(RELEASE_NOT_FALSE)
+                raise ValueError(i18n._(RELEASE_NOT_FALSE))
 
         return db_of(request).release_defect_number(project_id, defect.defect_key_sast(hub_id), hub_id, number,
                                                     check=still_false)
@@ -2735,7 +2839,7 @@ def question_state(request: Request, project_id: int, finding_id: int, question_
     db = db_of(request)
     q = db.get_question(question_id)
     if q is None or q["project_id"] != project_id or q["hub_id"] != row["hub_id"]:
-        raise HTTPException(status_code=404, detail="Вопрос не найден.")
+        raise HTTPException(status_code=404, detail=i18n._("Вопрос не найден."))
     case = db.get_case(project_id, row["hub_id"])
     done = q["state"] != "pending"
     return {"question": question_view(q, case["verdict_id"] if case else None), "done": done, "reload": done}
@@ -2753,11 +2857,11 @@ async def reanalyze(request: Request, project_id: int, finding_id: int):
     def apply():
         row = finding_or_404(request, project_id, finding_id)
         if row["kind"] != "SAST":
-            raise TriageError("Моделью разбираются только находки SAST.")
+            raise TriageError(i18n._("Моделью разбираются только находки SAST."))
         if row.get("missing"):
-            raise TriageError("Находки нет в текущей выгрузке: разбирать нечего.")
+            raise TriageError(i18n._("Находки нет в текущей выгрузке: разбирать нечего."))
         if any(ord(ch) < 32 for ch in model):
-            raise TriageError("Не выбрана модель.")
+            raise TriageError(i18n._("Не выбрана модель."))
         return runner_of(request).enqueue(project_id, model, "selected", [row["hub_id"]], fresh=fresh, origin="card")
 
     try:

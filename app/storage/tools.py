@@ -15,6 +15,7 @@ from pathlib import Path
 
 import psycopg
 
+from app import i18n
 from app.storage import local_state, migrate
 from app.storage import schema as manifest
 
@@ -54,7 +55,7 @@ def _existing_database(conninfo: str):
     """Database создал бы схему в пустой базе: на пустой базе команда отказывает и оставляет её пустой."""
     from app.db import Database
     if status(conninfo)["state"] == "empty":
-        raise ToolError("База пуста: команда выполняется на существующей базе.")
+        raise ToolError(i18n._("База пуста: команда выполняется на существующей базе."))
     return Database(conninfo or None)
 
 
@@ -65,11 +66,13 @@ def set_pause(paused: bool, conninfo: str = "", *, accept_unknown: bool = False)
         try:
             db.set_hub_write_paused(paused, accept_unknown=accept_unknown)
         except HubUnknownWrites as e:
-            raise ToolError(f"Пауза не снята: операций записи с неизвестным исходом – {e.args[0]}. Сначала сверьте их с Hub; "
-                            "если сверка показала расхождение и решение принято: hub-resume --accept-unknown.") from e
+            raise ToolError(i18n._("Пауза не снята: операций записи с неизвестным исходом – {count}. Сначала сверьте их "
+                                   "с Hub; если сверка показала расхождение и решение принято: hub-resume "
+                                   "--accept-unknown.", count=e.args[0])) from e
         except HubResyncRequired as e:
-            raise ToolError(f"Пауза не снята: база восстановлена из копии, а «Синхронизировать» и «Принять состояние Hub» не прошли по проектам: {e.args[0]}. "
-                            "Если это невозможно и решение принято: hub-resume --accept-unknown.") from e
+            raise ToolError(i18n._("Пауза не снята: база восстановлена из копии, а «Синхронизировать» и «Принять "
+                                   "состояние Hub» не прошли по проектам: {count}. Если это невозможно и решение "
+                                   "принято: hub-resume --accept-unknown.", count=e.args[0])) from e
         return {"hub_write_paused": db.hub_write_paused()}
     finally:
         db.close()
@@ -92,7 +95,7 @@ def backup_note(name: str, checked_at: str, conninfo: str = "") -> dict:
 
     from app.db import BACKUP_NOTE_KEY, dumps, now_iso
     if not re.fullmatch(r"triage-[0-9]{8}-[0-9]{6}\.dump", name):
-        raise ValueError(f"Имя копии не вида triage-ГГГГММДД-ЧЧММСС.dump: {name}")
+        raise ValueError(i18n._("Имя копии не вида triage-ГГГГММДД-ЧЧММСС.dump: {name}", name=name))
     moment = datetime.fromisoformat(checked_at)  # ValueError – время не в ISO 8601
     if moment.tzinfo is None:
         moment = moment.replace(tzinfo=UTC)
@@ -139,7 +142,7 @@ def ensure_database(expect_data_dir: str, create: bool) -> tuple[int, dict]:
     from psycopg import sql
     name = (os.environ.get("PGDATABASE") or "").strip()
     if not _DB_NAME.fullmatch(name):
-        raise ToolError("PGDATABASE: нужно имя базы из латинских строчных букв, цифр и «_».")
+        raise ToolError(i18n._("PGDATABASE: нужно имя базы из латинских строчных букв, цифр и «_»."))
     with _service_conn() as conn:
         directory = str(conn.execute("SHOW data_directory").fetchone()[0])
         answer = {"data_directory": directory, "match": _same_dir(directory, expect_data_dir), "exists": False,
@@ -194,23 +197,23 @@ def summary(conninfo: str = "") -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.storage.tools", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    stand = commands.add_parser("ensure-database", help="учебный стенд npm: база из PGDATABASE на своём сервере")
-    stand.add_argument("--expect-data-dir", required=True, help="каталог данных сервера, который ждёт обёртка")
-    stand.add_argument("--create", action="store_true", help="создать базу, если её нет (только первая установка)")
-    commands.add_parser("whoami", help="учебный стенд npm: тот ли сервер").add_argument(
-        "--expect-data-dir", required=True, help="каталог данных сервера, который ждёт обёртка")
-    commands.add_parser("summary", help="сводка базы: строки таблиц и операции Hub по состояниям")
+    stand = commands.add_parser("ensure-database", help=i18n._("учебный стенд npm: база из PGDATABASE на своём сервере"))
+    stand.add_argument("--expect-data-dir", required=True, help=i18n._("каталог данных сервера, который ждёт обёртка"))
+    stand.add_argument("--create", action="store_true", help=i18n._("создать базу, если её нет (только первая установка)"))
+    commands.add_parser("whoami", help=i18n._("учебный стенд npm: тот ли сервер")).add_argument(
+        "--expect-data-dir", required=True, help=i18n._("каталог данных сервера, который ждёт обёртка"))
+    commands.add_parser("summary", help=i18n._("сводка базы: строки таблиц и операции Hub по состояниям"))
     for name in ("local-state-import", "local-state-verify"):
         commands.add_parser(name).add_argument("--data", type=Path, default=Path(os.environ.get("DATA_DIR") or "/data"),
-                                                help="папка данных с прежними файлами состояния; читается, не меняется")
+                                                help=i18n._("папка данных с прежними файлами состояния; читается, не меняется"))
     for name in ("status", "migrate", "hub-pause", "hub-resume", "after-restore"):
         sub = commands.add_parser(name)
         if name == "hub-resume":
             sub.add_argument("--accept-unknown", action="store_true",
-                             help="снять паузу при неизвестных исходах: они остаются неизвестными и повторно не выдаются")
+                             help=i18n._("снять паузу при неизвестных исходах: они остаются неизвестными и повторно не выдаются"))
     note = commands.add_parser("backup-note")
-    note.add_argument("--name", required=True, help="имя файла проверенной копии: triage-ГГГГММДД-ЧЧММСС.dump")
-    note.add_argument("--checked-at", required=True, help="время пройденной проверки восстановления, ISO 8601, UTC")
+    note.add_argument("--name", required=True, help=i18n._("имя файла проверенной копии: triage-ГГГГММДД-ЧЧММСС.dump"))
+    note.add_argument("--checked-at", required=True, help=i18n._("время пройденной проверки восстановления, ISO 8601, UTC"))
     args = parser.parse_args(argv)
     try:
         code, answer = _run(args)
@@ -238,7 +241,7 @@ def _run(args: argparse.Namespace) -> tuple[int, dict]:
         return (0 if answer["state"] in ("ok", "empty") else 1), answer
     if args.command == "migrate":
         if status()["state"] == "empty":
-            raise ToolError("База пуста: обновлять нечего. Новая база получает схему при запуске.")
+            raise ToolError(i18n._("База пуста: обновлять нечего. Новая база получает схему при запуске."))
         with psycopg.connect("", autocommit=True) as conn:
             return 0, {"applied": migrate.apply_pending(conn)}
     if args.command == "hub-pause":

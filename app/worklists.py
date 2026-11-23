@@ -6,6 +6,7 @@ import json
 import re
 from urllib.parse import urlencode, urlsplit
 
+from app import i18n
 from app.db import hub_verdict
 
 SIZES = (25, 50, 100, 200)
@@ -67,7 +68,7 @@ def family(row, kind):
     if not name:
         key += (str(row.get("id", row.get("input_ref", ""))),)
     token = hashlib.sha256(json.dumps(key, ensure_ascii=False).encode()).hexdigest()[:24]
-    return token, str(name or "Имя не указано"), scope
+    return token, str(name or i18n._("Имя не указано")), scope
 
 
 def severity_key(row):
@@ -93,11 +94,14 @@ def sort_findings(rows, sort):
 
 
 # столбцы обзора групп находок и SCA (план dev7, раздел 3): находка попадает ровно в один, сумма равна «Находок»
-BUCKETS = (("in_defect", "В дефекте", "Находка входит в дефект"),
-           ("false_positive", "Ложные", "Решение – ложное срабатывание"),
-           ("risk_accepted", "Риск принят", "Решение – риск принят"),
-           ("no_defect", "Подтверждено, без дефекта", "Находка подтверждена, дефекта нет"),
-           ("undecided", "Без решения", "Решения нет, находка отложена или вывод «неясно»"))
+# подписи – msgid (ADR-0158): перевод при построении страницы (buckets в выдаче work_list)
+BUCKETS = (("in_defect", i18n.N_("В дефекте"), i18n.N_("Находка входит в дефект")),
+           ("false_positive", i18n.N_("Ложные"), i18n.N_("Решение – ложное срабатывание")),
+           ("risk_accepted", i18n.N_("Риск принят"), i18n.N_("Решение – риск принят")),
+           ("no_defect", i18n.N_("Подтверждено, без дефекта"), i18n.N_("Находка подтверждена, дефекта нет")),
+           ("undecided", i18n.N_("Без решения"), i18n.N_("Решения нет, находка отложена или вывод «неясно»")))
+
+GROUP_SEVERITY_LABELS = i18n.Labels({4: "критическая", 3: "высокая", 2: "средняя", 1: "низкая", 0: "информация"})
 
 
 def finding_bucket(decision, final_verdict, in_defect: bool) -> str:
@@ -183,12 +187,13 @@ def table(rows, params, *, path, default_size=200, kind="", sorts=None):
                  # «все версии закрыты» – только по подтверждённому закрытию каждой находки (ревью dev27: незавершённый
                  # дефект и находка без решения рядом с дефектом группу не закрывают)
                  all_closed=bool(g["versions"]) and g["versions"] <= g["versions_done"],
-                 severity_label=({4: "критическая", 3: "высокая", 2: "средняя", 1: "низкая", 0: "информация"}.get(g["severity"][0], "–") if g["severity"] else "–"),
+                 severity_label=(GROUP_SEVERITY_LABELS.get(g["severity"][0], "–") if g["severity"] else "–"),
                  versions_preview=sorted(g["versions"])[:5],
                  # открытая группа – сразу у таблицы, а не в начале страницы
                  url=list_anchor(url(family=g["token"], group_by="family", page=1)))
     sort = params.get("sort", "")
-    return {"rows": [] if overview else shown, "groups": shown if overview else [], "buckets": BUCKETS,
+    buckets = [(key, i18n._(label), i18n._(hint)) for key, label, hint in BUCKETS]
+    return {"rows": [] if overview else shown, "groups": shown if overview else [], "buckets": buckets,
             "overview": overview, "grouped": grouped, "can_group": bool(kind), "active": active,
             "family_selected": bool(selected), "all_total": all_total, "total": len(units),
             "row_total": len(rows), "group_total": len(groups), "page": page, "pages": pages,

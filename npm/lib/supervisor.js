@@ -25,6 +25,7 @@ const stand = require('./stand');
 const { StandError, canonical, pathMargin } = require('./paths');
 const { npmVersionOf } = require('./version');
 const { run, tail, settle } = require('./proc');
+const { t, setLang } = require('./lang');
 
 const APP_STOP_MS = 25000; // сколько ждать штатной остановки приложения после закрытия его stdin
 const READY_MS = 60000; // ожидание готовности /healthz
@@ -35,6 +36,7 @@ const APP_PORT_FIRST = 8765;
 const APP_PORT_TRIES = 30;
 
 const opts = JSON.parse(process.argv[2] || '{}');
+setLang(opts.lang); // язык окна стенда (--lang или TRIAGE_LANG), ADR-0158
 const home = opts.home;
 const codeDir = opts.codeDir;
 const packageDir = opts.packageDir;
@@ -235,8 +237,9 @@ async function classify(dir, port) {
   // 4 – каталог не признан кластером: pg_ctl ничего не проверял; ни «остановлен», ни «работает» (ревью круга 6)
   if (st.code === 4) return 'notcluster';
   if (st.code !== 0) {
-    throw new StandError(`pg_ctl status для ${dir} не ответил штатно (код ${st.code}): состояние сервера неизвестно, ничего ` +
-      'не изменено. Запустите стенд снова; если повторится – переустановите: npx local-triage --reinstall.');
+    throw new StandError(t(`pg_ctl status для ${dir} не ответил штатно (код ${st.code}): состояние сервера неизвестно, ничего ` +
+      'не изменено. Запустите стенд снова; если повторится – переустановите: npx local-triage --reinstall.', `pg_ctl status for ${dir} did not answer normally (code ${st.code}): the server state is unknown, nothing ` +
+      'was changed. Start the stand again; if it happens again, reinstall: npx local-triage --reinstall.'));
   }
   if (STARTING.test(whoamiError)) return 'starting';
   const pf = pidFile(dir);
@@ -258,7 +261,7 @@ async function awaitStartup(dir, port, ms = 300000) {
   let told = false;
   while (who === 'starting' && Date.now() < deadline && !stopping) {
     if (!told) {
-      say('PostgreSQL восстанавливается после прерванной работы – жду…');
+      say(t('PostgreSQL восстанавливается после прерванной работы – жду…', 'PostgreSQL is recovering after an interrupted session – waiting…'));
       told = true;
     }
     await new Promise((r) => setTimeout(r, 2000));
@@ -269,24 +272,30 @@ async function awaitStartup(dir, port, ms = 300000) {
 
 function unconfirmedError(dir, port) {
   const auth = /password authentication failed/i.test(whoamiError);
-  return new StandError(`На порту ${port} отвечает PostgreSQL, но подтвердить, что это сервер стенда с каталогом ${dir}, не удалось – ` +
+  return new StandError(t(`На порту ${port} отвечает PostgreSQL, но подтвердить, что это сервер стенда с каталогом ${dir}, не удалось – ` +
     `${auth ? 'не подходит пароль в secrets/pg.pw' : `ответ: ${whoamiError || 'нет ответа'}`}. Ничего не изменено: порт, ` +
     `журнал и сервер оставлены как были. ${auth ? 'Верните прежний файл пароля или остановите' : 'Остановите'} сервер ` +
-    `вручную: "${pg.exe(binDir, 'pg_ctl')}" stop -D "${dir}" -m fast`);
+    `вручную: "${pg.exe(binDir, 'pg_ctl')}" stop -D "${dir}" -m fast`, `PostgreSQL answers on port ${port}, but it could not be confirmed as the stand server with directory ${dir} – ` +
+    `${auth ? 'the password in secrets/pg.pw does not match' : `answer: ${whoamiError || 'no answer'}`}. Nothing was changed: the port, ` +
+    `log and server are left as they were. ${auth ? 'Restore the previous password file or stop' : 'Stop'} the server ` +
+    `manually: "${pg.exe(binDir, 'pg_ctl')}" stop -D "${dir}" -m fast`));
 }
 
 function staleError(dir) {
   const pf = pidFile(dir) || { pid: 0 };
-  return new StandError(`В ${dir} лежит postmaster.pid процесса ${pf.pid}: процесс работает, но PostgreSQL ни на каком ` +
+  return new StandError(t(`В ${dir} лежит postmaster.pid процесса ${pf.pid}: процесс работает, но PostgreSQL ни на каком ` +
     'порту не отвечает. Вероятно, файл остался после сбоя, а номер процесса достался другой программе. Проверьте, что ' +
-    `процесс ${pf.pid} – не postgres (Диспетчер задач или ps), удалите файл postmaster.pid и запустите стенд снова.`);
+    `процесс ${pf.pid} – не postgres (Диспетчер задач или ps), удалите файл postmaster.pid и запустите стенд снова.`, `${dir} contains postmaster.pid of process ${pf.pid}: the process is running, but PostgreSQL does not answer on any ` +
+    'port. The file probably remained after a crash and the process number went to another program. Check that ' +
+    `process ${pf.pid} is not postgres (Task Manager or ps), delete postmaster.pid and start the stand again.`));
 }
 
 function stateError(who, dir, port) {
   if (who === 'unconfirmed') return unconfirmedError(dir, port);
   if (who === 'starting') {
-    return new StandError(`PostgreSQL на ${dir} восстанавливается дольше 5 минут. Подождите и запустите стенд снова; журнал – ` +
-      `${path.join(dirs.logs, 'postgres.log')}.`);
+    return new StandError(t(`PostgreSQL на ${dir} восстанавливается дольше 5 минут. Подождите и запустите стенд снова; журнал – ` +
+      `${path.join(dirs.logs, 'postgres.log')}.`, `PostgreSQL on ${dir} has been recovering for more than 5 minutes. Wait and start the stand again; log: ` +
+      `${path.join(dirs.logs, 'postgres.log')}.`));
   }
   return staleError(dir);
 }
@@ -325,11 +334,11 @@ async function stopServer(dir, port) {
     return false;
   }
   if (who === 'foreign') {
-    say(`На порту ${port} отвечает сервер с другим каталогом данных: сигнал остановки не посылается.`);
+    say(t(`На порту ${port} отвечает сервер с другим каталогом данных: сигнал остановки не посылается.`, `A server with a different data directory answers on port ${port}: no stop signal is sent.`));
     return false;
   }
   if (who === 'unconfirmed') {
-    say(`Сервер на ${dir} работает, но его каталог не подтверждён: сигнал остановки не посылается.`);
+    say(t(`Сервер на ${dir} работает, но его каталог не подтверждён: сигнал остановки не посылается.`, `The server on ${dir} is running, but its directory is not confirmed: no stop signal is sent.`));
     return false;
   }
   if (who === 'down') return confirmDown(dir);
@@ -339,10 +348,10 @@ async function stopServer(dir, port) {
     // за 30 с сервер на каталоге мог смениться: сигнал – только снова подтверждённому
     const again = await serverOn(dir, port);
     if (again === 'running') {
-      say('PostgreSQL не остановился штатно за 30 с – останавливаю немедленно.');
+      say(t('PostgreSQL не остановился штатно за 30 с – останавливаю немедленно.', 'PostgreSQL did not stop normally within 30 s – stopping it immediately.'));
       await run(binary, pg.stopArgs(dir, 'immediate'), { env: pgEnv(), cwd: home, timeoutMs: 60000 });
     } else if (again !== 'down') {
-      say(`Сервер на ${dir} после штатной остановки не подтверждён: немедленная остановка не посылается.`);
+      say(t(`Сервер на ${dir} после штатной остановки не подтверждён: немедленная остановка не посылается.`, `The server on ${dir} is not confirmed after the normal stop: no immediate stop is sent.`));
       return false;
     }
   }
@@ -360,11 +369,12 @@ async function startServer(dir, port, logName = 'postgres.log') {
   // признаёт кластером (4), не трогаются (ревью круга 7)
   const pre = await pgStatus(dir);
   if (pre.code === 4) {
-    throw new StandError(`pg_ctl не признаёт каталог ${dir} кластером: запуск остановлен, журнал и настройки не тронуты.`);
+    throw new StandError(t(`pg_ctl не признаёт каталог ${dir} кластером: запуск остановлен, журнал и настройки не тронуты.`, `pg_ctl does not recognise directory ${dir} as a cluster: start aborted, the log and settings were not touched.`));
   }
   if (pre.code !== 3) {
-    throw new StandError(`PostgreSQL на ${dir} уже работает, хотя по порту ${port} его не видно: журнал и настройки сервера ` +
-      'не тронуты. Закройте прежние процессы postgres этого стенда или перезагрузите компьютер и запустите стенд снова.');
+    throw new StandError(t(`PostgreSQL на ${dir} уже работает, хотя по порту ${port} его не видно: журнал и настройки сервера ` +
+      'не тронуты. Закройте прежние процессы postgres этого стенда или перезагрузите компьютер и запустите стенд снова.', `PostgreSQL on ${dir} is already running, although it is not visible on port ${port}: the server log and settings ` +
+      'were not touched. Close the previous postgres processes of this stand or restart the computer and start the stand again.'));
   }
   const logPath = logName === 'postgres.log' ? pg.rotateLog(dirs.logs) : path.join(dirs.logs, logName);
   pg.writeConf(dir, port);
@@ -380,7 +390,7 @@ async function startServer(dir, port, logName = 'postgres.log') {
     return;
   }
   if (who === 'notcluster') {
-    throw new StandError(`pg_ctl не признаёт каталог ${dir} кластером: запуск остановлен, каталог не изменён.`);
+    throw new StandError(t(`pg_ctl не признаёт каталог ${dir} кластером: запуск остановлен, каталог не изменён.`, `pg_ctl does not recognise directory ${dir} as a cluster: start aborted, the directory was not changed.`));
   }
   if (who === 'unconfirmed' || who === 'starting' || who === 'stale' || who === 'elsewhere') {
     // процесс работает, а каталог не подтверждён: сигнал остановки ему не посылается, и об этом сказано прямо
@@ -391,8 +401,8 @@ async function startServer(dir, port, logName = 'postgres.log') {
   let journal = '';
   try { journal = tail(fs.readFileSync(logPath, 'utf8'), 15); } catch { journal = ''; }
   const hint = /lock file .* already exists|shared memory block .* still in use/i.test(journal)
-    ? '\nПрежний процесс postgres этого стенда ещё работает: закройте его или перезагрузите компьютер.' : '';
-  throw new StandError(`PostgreSQL не запустился (pg_ctl start – код ${result.code}, pg_ctl status – ${st.code}).\n${journal}${hint}`);
+    ? t('\nПрежний процесс postgres этого стенда ещё работает: закройте его или перезагрузите компьютер.', '\nA previous postgres process of this stand is still running: close it or restart the computer.') : '';
+  throw new StandError(t(`PostgreSQL не запустился (pg_ctl start – код ${result.code}, pg_ctl status – ${st.code}).\n${journal}${hint}`, `PostgreSQL did not start (pg_ctl start – code ${result.code}, pg_ctl status – ${st.code}).\n${journal}${hint}`));
 }
 
 async function initCluster() {
@@ -405,7 +415,7 @@ async function initCluster() {
   password = pw.password;
   const logPath = path.join(dirs.logs, `initdb-${stamp().replace(/[:.]/g, '-')}.log`);
   const fd = fs.openSync(logPath, 'w');
-  say('Создаю базу PostgreSQL…');
+  say(t('Создаю базу PostgreSQL…', 'Creating the PostgreSQL database…'));
   let result;
   try {
     result = await run(pg.exe(binDir, 'initdb'), pg.initdbArgs(target, pw.file), { env: pgEnv(), cwd: home, fd, timeoutMs: 300000 });
@@ -415,7 +425,7 @@ async function initCluster() {
   if (result.code !== 0) {
     let journal = '';
     try { journal = tail(fs.readFileSync(logPath, 'utf8'), 15); } catch { journal = ''; }
-    throw new StandError(`initdb не создал кластер (код ${result.code}).\n${journal}`);
+    throw new StandError(t(`initdb не создал кластер (код ${result.code}).\n${journal}`, `initdb did not create the cluster (code ${result.code}).\n${journal}`));
   }
   fsx.renameSync(target, dataDir);
 }
@@ -426,8 +436,9 @@ async function setAsideCluster() {
     // прежний сервер мог пережить держатель: переносится только кластер, который точно не работает
     if (pg.passwordReadable(dirs.secrets)) password = pg.ensurePassword(dirs.secrets, true).password;
     if (!(await ensureStopped(dataDir, state.data.pg_port || 0))) {
-      throw new StandError(`Не удалось установить, что сервер на ${dataDir} остановлен: прежняя база не тронута. Закройте ` +
-        'процессы postgres этого стенда и запустите стенд с --new-database снова.');
+      throw new StandError(t(`Не удалось установить, что сервер на ${dataDir} остановлен: прежняя база не тронута. Закройте ` +
+        'процессы postgres этого стенда и запустите стенд с --new-database снова.', `Could not confirm that the server on ${dataDir} is stopped: the previous database was not touched. Close ` +
+        'the postgres processes of this stand and start the stand with --new-database again.'));
     }
   }
   const pw = path.join(dirs.secrets, 'pg.pw');
@@ -462,7 +473,7 @@ async function setAsideCluster() {
     if (!fs.existsSync(copy)) fsx.writeSecret(copy, fs.readFileSync(pw), (file) => pg.restrictToUser(file));
     cluster.fsyncDir(target);
     if (!fs.readFileSync(copy).equals(fs.readFileSync(pw))) { // единственный действующий пароль – только после сверки копии
-      throw new StandError(`Копия пароля ${copy} не совпала с ${pw}: исходный файл оставлен. Запустите стенд с --new-database снова.`);
+      throw new StandError(t(`Копия пароля ${copy} не совпала с ${pw}: исходный файл оставлен. Запустите стенд с --new-database снова.`, `The password copy ${copy} does not match ${pw}: the original file was kept. Start the stand with --new-database again.`));
     }
     fsx.rmSync(pw, { force: true });
   }
@@ -476,7 +487,7 @@ async function setAsideCluster() {
   // прежняя база ушла в копию: с этого момента действует папка кода нового запуска (ревью круга 5)
   stand.save(state, { phase: 'none', pg_port: 0, code_dir: codeDir, code_dir_real: canonical(codeDir) });
   password = '';
-  say(`Прежняя база перенесена в ${target}; создаю новую.`);
+  say(t(`Прежняя база перенесена в ${target}; создаю новую.`, `The previous database was moved to ${target}; creating a new one.`));
 }
 
 /** Копия --new-database, перенос в которую прервался: метаданные с state «moving» и папка на месте. */
@@ -510,8 +521,9 @@ function clusterVersion() {
 }
 
 function lost(why) {
-  return new StandError(`${why} Это прежняя установка стенда, и пустую базу вместо неё стенд сам не создаёт. Прежние базы – в ` +
-    `${path.join(dirs.pg, 'backups')}. Начать с новой базы: запустите стенд с ключом --new-database.`);
+  return new StandError(t(`${why} Это прежняя установка стенда, и пустую базу вместо неё стенд сам не создаёт. Прежние базы – в ` +
+    `${path.join(dirs.pg, 'backups')}. Начать с новой базы: запустите стенд с ключом --new-database.`, `${why} This is an existing stand installation, and the stand does not replace it with an empty database by itself. Previous databases are in ` +
+    `${path.join(dirs.pg, 'backups')}. To start with a new database, run the stand with --new-database.`));
 }
 
 /** Прежние копии есть. Нет папки – нет копий; не прочиталась – отказ: иначе прежняя установка стала бы первой. */
@@ -520,8 +532,9 @@ function backupsPresent() {
     return fs.readdirSync(path.join(dirs.pg, 'backups')).length > 0;
   } catch (error) {
     if (error.code === 'ENOENT') return false;
-    throw new StandError(`Папка прежних копий ${path.join(dirs.pg, 'backups')} не читается (${error.code}): стенд не решает, ` +
-      'первая это установка или прежняя. Проверьте права на папку и запустите стенд снова.');
+    throw new StandError(t(`Папка прежних копий ${path.join(dirs.pg, 'backups')} не читается (${error.code}): стенд не решает, ` +
+      'первая это установка или прежняя. Проверьте права на папку и запустите стенд снова.', `The previous copies folder ${path.join(dirs.pg, 'backups')} cannot be read (${error.code}): the stand cannot tell ` +
+      'whether this is a first or an existing installation. Check the folder permissions and start the stand again.'));
   }
 }
 
@@ -533,8 +546,9 @@ async function preparePostgres() {
   if (fs.existsSync(pwFile)) {
     if (pg.passwordReadable(dirs.secrets)) password = pg.ensurePassword(dirs.secrets, true).password;
     else if (fs.existsSync(dataDir) && !opts.newDatabase) {
-      throw new StandError(`Файл пароля базы ${pwFile} повреждён, а кластер на месте: к базе не подключиться. Начать с новой ` +
-        'базы: запустите стенд с ключом --new-database (прежняя база останется в pg/backups).');
+      throw new StandError(t(`Файл пароля базы ${pwFile} повреждён, а кластер на месте: к базе не подключиться. Начать с новой ` +
+        'базы: запустите стенд с ключом --new-database (прежняя база останется в pg/backups).', `The database password file ${pwFile} is damaged, but the cluster is in place: cannot connect to the database. To start with a new ` +
+        'database, run the stand with --new-database (the previous database stays in pg/backups).'));
     }
   }
   await cluster.recover(dirs.pg, { ensureStopped, verify: (dir, required) => pg.checkMajor(dir, required) }, say);
@@ -545,7 +559,7 @@ async function preparePostgres() {
   }
   if (!fs.existsSync(dataDir)) {
     // база уже создавалась (db-created) или работала (ready): пропавший каталог – утрата, а не первая установка
-    if (state.data.phase === 'ready' || state.data.phase === 'db-created') throw lost(`Каталога базы ${dataDir} нет.`);
+    if (state.data.phase === 'ready' || state.data.phase === 'db-created') throw lost(t(`Каталога базы ${dataDir} нет.`, `Database directory ${dataDir} is missing.`));
     stand.save(state, { phase: 'none' });
     await initCluster();
   }
@@ -559,24 +573,25 @@ async function preparePostgres() {
   }
   if (who === 'starting') who = await awaitStartup(dataDir, pgPort);
   if (who === 'notcluster') {
-    throw new StandError(`pg_ctl не признаёт каталог ${dataDir} кластером: стенд его не меняет. Пришлите журнал преподавателю.`);
+    throw new StandError(t(`pg_ctl не признаёт каталог ${dataDir} кластером: стенд его не меняет. Пришлите журнал преподавателю.`, `pg_ctl does not recognise directory ${dataDir} as a cluster: the stand does not change it. Send the log to your teacher.`));
   }
   if (who === 'starting' || who === 'stale' || who === 'elsewhere' || who === 'unconfirmed') {
     throw stateError(who, dataDir, pgPort);
   }
   if (who === 'foreign') {
-    throw new StandError(`На порту базы ${pgPort} отвечает другой сервер PostgreSQL. Закройте его или запустите стенд с другой ` +
-      'служебной папкой (--home).');
+    throw new StandError(t(`На порту базы ${pgPort} отвечает другой сервер PostgreSQL. Закройте его или запустите стенд с другой ` +
+      'служебной папкой (--home).', `Another PostgreSQL server answers on the database port ${pgPort}. Close it or start the stand with a different ` +
+      'home folder (--home).'));
   }
   if (who === 'running') {
     pgStarted = true;
     if (pgPort !== state.data.pg_port) stand.save(state, { pg_port: pgPort }); // порт из postmaster.pid – запомнить
-    say('PostgreSQL этого стенда уже работает – подключаюсь к нему.');
+    say(t('PostgreSQL этого стенда уже работает – подключаюсь к нему.', 'PostgreSQL of this stand is already running – connecting to it.'));
   } else {
     if (!pgPort || !(await canBind(pgPort))) pgPort = await freePort(); // занят или зарезервирован – новый (круг 7)
     stand.save(state, { pg_port: pgPort });
     checkStop();
-    say('Запускаю PostgreSQL…');
+    say(t('Запускаю PostgreSQL…', 'Starting PostgreSQL…'));
     pgStarted = true; // остановка с этого момента проверит сервер (с подтверждением каталога), даже если запуск не дошёл
     await startServer(dataDir, pgPort);
   }
@@ -586,31 +601,32 @@ async function preparePostgres() {
   if (state.data.phase === 'none') stand.save(state, { phase: 'db-creating' });
   const { code, answer, result } = await tools(['ensure-database', '--expect-data-dir', dataDir, ...(create ? ['--create'] : [])], pgPort);
   if (code === 1 && answer && answer.match === false) {
-    throw new StandError(`Сервер на порту ${pgPort} – не кластер этого стенда (${answer.data_directory}): записи не было.`);
+    throw new StandError(t(`Сервер на порту ${pgPort} – не кластер этого стенда (${answer.data_directory}): записи не было.`, `The server on port ${pgPort} is not this stand's cluster (${answer.data_directory}): nothing was written.`));
   }
-  if (code === 1 && answer && !answer.exists) throw lost('Базы triage в кластере нет.');
-  if (code !== 0 || !answer) throw new StandError(`База не подготовлена: ${answer && answer.error ? answer.error : tail(result.stderr, 8)}`);
+  if (code === 1 && answer && !answer.exists) throw lost(t('Базы triage в кластере нет.', 'The cluster has no triage database.'));
+  if (code !== 0 || !answer) throw new StandError(t(`База не подготовлена: ${answer && answer.error ? answer.error : tail(result.stderr, 8)}`, `The database is not prepared: ${answer && answer.error ? answer.error : tail(result.stderr, 8)}`));
   if (create) stand.save(state, { phase: 'db-created' });
   // один ответ: 0 – готова или пуста, 1 – migrate, newer, foreign; ошибка команды – отказ сразу (§3.4, ревью круга 6)
   const first = await tools(['status'], pgPort);
   if (!first.answer || first.answer.error || (first.code !== 0 && first.code !== 1)) {
-    throw new StandError(`Состояние схемы базы не прочитано: ${first.answer && first.answer.error ? first.answer.error
-      : tail(first.result.stderr || first.result.stdout, 8)}`);
+    throw new StandError(t(`Состояние схемы базы не прочитано: ${first.answer && first.answer.error ? first.answer.error
+      : tail(first.result.stderr || first.result.stdout, 8)}`, `Could not read the database schema state: ${first.answer && first.answer.error ? first.answer.error
+      : tail(first.result.stderr || first.result.stdout, 8)}`));
   }
   const st = first.answer;
-  if (st.state === 'empty' && state.data.phase === 'ready') throw lost('База пуста.');
+  if (st.state === 'empty' && state.data.phase === 'ready') throw lost(t('База пуста.', 'The database is empty.'));
   if (st.state === 'newer') {
-    throw new StandError(`Схема базы (${st.schema}) новее этой версии стенда (${st.expected}). Запустите новую версию: npx local-triage@latest.`);
+    throw new StandError(t(`Схема базы (${st.schema}) новее этой версии стенда (${st.expected}). Запустите новую версию: npx local-triage@latest.`, `The database schema (${st.schema}) is newer than this stand version (${st.expected}). Run the new version: npx local-triage@latest.`));
   }
-  if (st.state === 'foreign') throw new StandError('В базе triage нет схемы приложения: это чужая база.');
+  if (st.state === 'foreign') throw new StandError(t('В базе triage нет схемы приложения: это чужая база.', 'The triage database has no app schema: it is a foreign database.'));
   if (st.state === 'migrate') {
     const backup = await cluster.updateSchema(dirs.pg, {
       port: pgPort, schema: st.schema, expected: st.expected, fromVersion: clusterVersion(), toVersion: version,
       passwordFile: path.join(dirs.secrets, 'pg.pw'),
     }, {
-      summary: (port) => toolOk(['summary'], port, 'Сводка базы не снята'),
+      summary: (port) => toolOk(['summary'], port, t('Сводка базы не снята', 'Database summary not taken')),
       stop: async (dir, port) => {
-        if (!(await stopServer(dir, port))) throw new StandError(`Сервер на ${dir} не остановлен.`);
+        if (!(await stopServer(dir, port))) throw new StandError(t(`Сервер на ${dir} не остановлен.`, `The server on ${dir} is not stopped.`));
         if (tempServer && tempServer.dir === dir) tempServer = null;
       },
       start: async (dir, port) => {
@@ -618,21 +634,21 @@ async function preparePostgres() {
         await startServer(dir, port, dir === dataDir ? 'postgres.log' : 'postgres-next.log');
       },
       status: (port) => tools(['status'], port).then((r) => r.answer || {}),
-      migrate: (port) => toolOk(['migrate'], port, 'Миграция схемы не выполнена'),
+      migrate: (port) => toolOk(['migrate'], port, t('Миграция схемы не выполнена', 'Schema migration not performed')),
       syncOnly: async (dir) => {
         const r = await run(pg.exe(binDir, 'initdb'), pg.syncOnlyArgs(dir), { env: pgEnv(), cwd: home, timeoutMs: 600000 });
-        if (r.code !== 0) throw new StandError(`initdb --sync-only: код ${r.code}`);
+        if (r.code !== 0) throw new StandError(t(`initdb --sync-only: код ${r.code}`, `initdb --sync-only: code ${r.code}`));
       },
       freePort: () => freePort(),
       restrict: (file) => pg.restrictToUser(file),
     }, say);
-    say(`Схема обновлена; база до обновления – ${path.join(dirs.pg, 'backups', backup)}.`);
+    say(t(`Схема обновлена; база до обновления – ${path.join(dirs.pg, 'backups', backup)}.`, `Schema updated; the database from before the update is in ${path.join(dirs.pg, 'backups', backup)}.`));
     // шаг 7: рабочий сервер на новом каталоге – база на месте и схема этой сборки, только потом приложение
     const again = await tools(['ensure-database', '--expect-data-dir', dataDir], pgPort);
-    if (again.code !== 0) throw new StandError('После обновления схемы база triage не найдена на рабочем сервере.');
+    if (again.code !== 0) throw new StandError(t('После обновления схемы база triage не найдена на рабочем сервере.', 'After the schema update the triage database was not found on the working server.'));
     const now = await tools(['status'], pgPort);
     if (!now.answer || now.answer.state !== 'ok') {
-      throw new StandError(`После обновления схемы база в состоянии «${now.answer ? now.answer.state : 'неизвестно'}».`);
+      throw new StandError(t(`После обновления схемы база в состоянии «${now.answer ? now.answer.state : 'неизвестно'}».`, `After the schema update the database is in the "${now.answer ? now.answer.state : 'unknown'}" state.`));
     }
   }
 }
@@ -691,11 +707,13 @@ function clusterMarked() {
 function bindingError(bound) {
   const moved = canonical(bound.path) === canonical(codeDir) && bound.real && bound.real !== canonical(codeDir);
   if (moved) {
-    return new StandError(`Папка кода ${codeDir} теперь указывает на ${canonical(codeDir)}, а база привязана к ${bound.real}. ` +
-      'Верните ссылку на прежнюю папку или запустите стенд с --code-dir прежней папки.');
+    return new StandError(t(`Папка кода ${codeDir} теперь указывает на ${canonical(codeDir)}, а база привязана к ${bound.real}. ` +
+      'Верните ссылку на прежнюю папку или запустите стенд с --code-dir прежней папки.', `The code folder ${codeDir} now points to ${canonical(codeDir)}, but the database is bound to ${bound.real}. ` +
+      'Point the link back to the previous folder or start the stand with --code-dir set to the previous folder.'));
   }
-  return new StandError(`Папка кода этой базы – ${bound.path}. Сменить её нельзя: проекты стенда ссылаются на неё. Запустите ` +
-    `стенд с этой папкой (npx local-triage --code-dir "${bound.path}"); другая папка кода – это другой стенд (ключ --home).`);
+  return new StandError(t(`Папка кода этой базы – ${bound.path}. Сменить её нельзя: проекты стенда ссылаются на неё. Запустите ` +
+    `стенд с этой папкой (npx local-triage --code-dir "${bound.path}"); другая папка кода – это другой стенд (ключ --home).`, `The code folder of this database is ${bound.path}. It cannot be changed: the stand projects refer to it. Start ` +
+    `the stand with this folder (npx local-triage --code-dir "${bound.path}"); another code folder means another stand (--home).`));
 }
 
 /** Запись о начатой публикации демо – в служебной папке: только по ней стенд узнаёт свой временный каталог и свою метку. */
@@ -752,8 +770,9 @@ function checkFoldersApart() {
   const inside = (a, b) => a === b || a.startsWith(b.endsWith(path.sep) ? b : b + path.sep);
   const [c, h] = [canonical(codeDir), canonical(home)];
   if (inside(c, h) || inside(h, c)) {
-    throw new StandError(`Папка кода ${codeDir} и служебная папка ${home} вложены друг в друга: служебные каталоги стенд ` +
-      'чистит и заменяет, а приложение видит всё внутри папки кода. Выберите папки, не вложенные одна в другую.');
+    throw new StandError(t(`Папка кода ${codeDir} и служебная папка ${home} вложены друг в друга: служебные каталоги стенд ` +
+      'чистит и заменяет, а приложение видит всё внутри папки кода. Выберите папки, не вложенные одна в другую.', `The code folder ${codeDir} and the home folder ${home} are nested in each other: the stand cleans and replaces its ` +
+      'service directories, and the app sees everything inside the code folder. Choose folders that are not nested.'));
   }
 }
 
@@ -772,10 +791,10 @@ function prepareCodeDir() {
   if (fs.existsSync(demo) && !fs.existsSync(target)) publishDemo(demo, target);
   const margin = pathMargin(codeDir);
   if (process.platform === 'win32') {
-    say(`Папка кода: ${margin.path} (запас длины пути для самого длинного файла примеров – ${margin.margin} знаков).`);
-    if (margin.margin < 0) say('Путь длинный: часть файлов примеров не откроется без политики LongPathsEnabled; лучше короткая папка кода (--code-dir).');
+    say(t(`Папка кода: ${margin.path} (запас длины пути для самого длинного файла примеров – ${margin.margin} знаков).`, `Code folder: ${margin.path} (path length margin for the longest example file – ${margin.margin} characters).`));
+    if (margin.margin < 0) say(t('Путь длинный: часть файлов примеров не откроется без политики LongPathsEnabled; лучше короткая папка кода (--code-dir).', 'The path is long: some example files will not open without the LongPathsEnabled policy; a short code folder (--code-dir) is better.'));
   } else {
-    say(`Папка кода: ${margin.path}`);
+    say(t(`Папка кода: ${margin.path}`, `Code folder: ${margin.path}`));
   }
 }
 
@@ -800,7 +819,7 @@ function lockBeat() {
 
 /** Прежний процесс приложения убит, а отметка его замка ещё свежая: ждать, пока она перестанет меняться (код 75). */
 async function waitLockStale() {
-  say('Прежний процесс приложения ещё держит папку данных – жду, пока его отметка устареет…');
+  say(t('Прежний процесс приложения ещё держит папку данных – жду, пока его отметка устареет…', 'A previous app process still holds the data folder – waiting for its lock mark to expire…'));
   let last = lockBeat();
   let quietSince = Date.now();
   const deadline = Date.now() + 120000;
@@ -814,13 +833,15 @@ async function waitLockStale() {
       return;
     }
   }
-  throw new StandError('Папку данных держит другой работающий экземпляр приложения: его отметка продолжает обновляться. ' +
-    'Закройте его и запустите стенд снова.');
+  throw new StandError(t('Папку данных держит другой работающий экземпляр приложения: его отметка продолжает обновляться. ' +
+    'Закройте его и запустите стенд снова.', 'Another running app instance holds the data folder: its lock mark keeps updating. ' +
+    'Close it and start the stand again.'));
 }
 
 function spawnApp(port) {
+  // язык – только заданный явно (--lang или TRIAGE_LANG): иначе приложение берёт сохранённую настройку или английский
   const env = envs.appEnv({ dataDir: dirs.data, tmpDir: dirs.tmp, codeDir, codeReal, libpq: envs.libpqEnv(pgPort, password),
-    external: !opts.local, build: opts.build || {}, token });
+    external: !opts.local, build: opts.build || {}, token, lang: opts.appLang || '' });
   const proc = spawn(py, ['-E', '-s', '-X', 'utf8', '-m', 'app.serve', '--host', '127.0.0.1', '--port', String(port)],
     { cwd: appRoot, env, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
   const out = appLogStream();
@@ -864,7 +885,7 @@ async function waitReady(proc, port) {
     const answer = await healthz(port, Math.min(3000, deadline - Date.now()));
     if (proc.bound && answer && answer.stand && answer.stand.token === token && ['ok', 'hub_write_paused'].includes(answer.status)) {
       if (answer.status === 'hub_write_paused') {
-        say('В базе отмечена пауза записи в Hub; в стенде Hub выключен, на работу с находками это не влияет.');
+        say(t('В базе отмечена пауза записи в Hub; в стенде Hub выключен, на работу с находками это не влияет.', 'The database has Hub writes paused; Hub is disabled on the stand, so this does not affect work with findings.'));
       }
       return true;
     }
@@ -885,7 +906,7 @@ async function startApp() {
     checkStop();
     if (await portAnswers(port)) {
       if (opts.port && port === opts.port) { // и при перезапуске: явный порт не меняется (ревью круга 9)
-        throw new StandError(`Порт ${port}, заданный ключом --port, занят другой программой. Освободите его или выберите другой.`);
+        throw new StandError(t(`Порт ${port}, заданный ключом --port, занят другой программой. Освободите его или выберите другой.`, `Port ${port} set with --port is used by another program. Free it or choose another one.`));
       }
       port += 1;
       continue;
@@ -896,7 +917,7 @@ async function startApp() {
     if (ready) return { proc, port };
     if (proc.exitCode === null) {
       await killTree(proc);
-      throw new StandError(`Приложение не ответило за ${READY_MS / 1000} с.\n${appLogTail()}`);
+      throw new StandError(t(`Приложение не ответило за ${READY_MS / 1000} с.\n${appLogTail()}`, `The app did not respond within ${READY_MS / 1000} s.\n${appLogTail()}`));
     }
     if (proc.exitCode === 75) {
       await waitLockStale();
@@ -904,15 +925,16 @@ async function startApp() {
     }
     if (proc.exitCode === 76) {
       if (opts.port && port === opts.port) {
-        throw new StandError(`Порт ${port}, заданный ключом --port, занять нельзя (зарезервирован системой или занят). ` +
-          'Выберите другой порт.');
+        throw new StandError(t(`Порт ${port}, заданный ключом --port, занять нельзя (зарезервирован системой или занят). ` +
+          'Выберите другой порт.', `Port ${port} set with --port cannot be used (reserved by the system or in use). ` +
+          'Choose another port.'));
       }
       port += 1;
       continue;
     }
-    throw new StandError(`Приложение не запустилось (код ${proc.exitCode}).\n${appLogTail()}`);
+    throw new StandError(t(`Приложение не запустилось (код ${proc.exitCode}).\n${appLogTail()}`, `The app did not start (code ${proc.exitCode}).\n${appLogTail()}`));
   }
-  throw new StandError(`Свободного порта для приложения не нашлось (${firstPort}–${Math.min(65535, port - 1)}).`);
+  throw new StandError(t(`Свободного порта для приложения не нашлось (${firstPort}–${Math.min(65535, port - 1)}).`, `No free port was found for the app (${firstPort}–${Math.min(65535, port - 1)}).`));
 }
 
 /**
@@ -930,7 +952,7 @@ async function killTree(proc) {
 }
 
 function exitText(code) {
-  return code === null || code < 0 || code > 255 ? 'процесс завершён извне' : `код ${code}`;
+  return code === null || code < 0 || code > 255 ? t('процесс завершён извне', 'process terminated externally') : t(`код ${code}`, `code ${code}`);
 }
 
 async function waitPortFree(port, ms = 15000) {
@@ -942,19 +964,19 @@ function watchApp(proc) {
   proc.exited.then(async (raw) => {
     if (stopping || proc !== child) return;
     const code = exitText(raw);
-    setPhase('restarting', `приложение остановилось (${code})`); // прежний адрес больше не выдаётся как готовый
+    setPhase('restarting', t(`приложение остановилось (${code})`, `the app stopped (${code})`)); // прежний адрес больше не выдаётся как готовый
     appUrl = '';
     await waitPortFree(appPort); // прежний процесс ещё может держать порт: перезапуск – на том же адресе
     if (stopping) return;
     const now = Date.now();
     while (restarts.length && now - restarts[0] > RESTART_WINDOW_MS) restarts.shift();
     if (restarts.length >= RESTARTS) {
-      setPhase('failed', `приложение остановилось (${code}) и перезапуски не помогли`);
-      say(`Приложение остановилось (${code}), перезапуски не помогли. Журнал: ${dirs.logs}\n${appLogTail()}`);
+      setPhase('failed', t(`приложение остановилось (${code}) и перезапуски не помогли`, `the app stopped (${code}) and restarts did not help`));
+      say(t(`Приложение остановилось (${code}), перезапуски не помогли. Журнал: ${dirs.logs}\n${appLogTail()}`, `The app stopped (${code}), restarts did not help. Logs: ${dirs.logs}\n${appLogTail()}`));
       return;
     }
     restarts.push(now);
-    say(`Приложение остановилось (${code}) – перезапускаю…`);
+    say(t(`Приложение остановилось (${code}) – перезапускаю…`, `The app stopped (${code}) – restarting…`));
     try {
       const started = await startApp();
       child = started.proc;
@@ -962,7 +984,7 @@ function watchApp(proc) {
       appUrl = `http://127.0.0.1:${appPort}/`;
       watchApp(child);
       setPhase('ready');
-      say(`Стенд снова работает: ${appUrl}`);
+      say(t(`Стенд снова работает: ${appUrl}`, `The stand is running again: ${appUrl}`));
       watchExamples(); // перезапущенное приложение снова скачивает недостающие примеры
     } catch (error) {
       if (stopping || error instanceof Cancelled) return; // остановку доводит shutdown
@@ -983,7 +1005,7 @@ async function stopApps() {
     try { proc.stdin.end(); } catch { /* канал уже закрыт */ }
     const done = await Promise.race([proc.exited.then(() => true), new Promise((r) => setTimeout(() => r(false), APP_STOP_MS))]);
     if (!done) {
-      say('Приложение не остановилось за 25 с – останавливаю принудительно.');
+      say(t('Приложение не остановилось за 25 с – останавливаю принудительно.', 'The app did not stop within 25 s – forcing it to stop.'));
       await killTree(proc);
     }
     if (proc.exitCode === null) stopIssues += 1;
@@ -994,7 +1016,7 @@ async function shutdown(code = 0, fromMain = false) {
   if (stopping) return;
   stopping = true;
   if (phase !== 'failed') setPhase('stopping'); // причина отказа остаётся видна ждущему окну
-  say('Останавливаю стенд…');
+  say(t('Останавливаю стенд…', 'Stopping the stand…'));
   stopCollector();
   await stopApps();
   await settle(60000); // установщик, initdb, pg_ctl, начатые до остановки
@@ -1006,18 +1028,18 @@ async function shutdown(code = 0, fromMain = false) {
     try {
       return await stopServer(dir, port);
     } catch (error) {
-      say(`Сервер на ${dir}: ${error.message}`);
+      say(t(`Сервер на ${dir}: ${error.message}`, `Server on ${dir}: ${error.message}`));
       return false;
     }
   };
   if (tempServer && py) {
     const stopped = await tryStop(tempServer.dir, tempServer.port);
-    say(stopped ? 'Временный сервер обновления схемы остановлен.' : 'Временный сервер обновления схемы остановить не удалось.');
+    say(stopped ? t('Временный сервер обновления схемы остановлен.', 'The temporary schema update server was stopped.') : t('Временный сервер обновления схемы остановить не удалось.', 'Could not stop the temporary schema update server.'));
     if (!stopped) stopIssues += 1;
   }
   if (pgStarted && pgPort && fs.existsSync(dataDir) && py) {
     const stopped = await tryStop(dataDir, pgPort);
-    say(stopped ? 'PostgreSQL остановлен.' : 'PostgreSQL остановить не удалось: подробности выше.');
+    say(stopped ? t('PostgreSQL остановлен.', 'PostgreSQL stopped.') : t('PostgreSQL остановить не удалось: подробности выше.', 'Could not stop PostgreSQL: see the details above.'));
     if (!stopped) stopIssues += 1;
   }
   if (!(pgStarted && pgPort) && fs.existsSync(dataDir) && !fs.existsSync(pg.exe(binDir, 'pg_ctl')) && !dataState) {
@@ -1028,10 +1050,10 @@ async function shutdown(code = 0, fromMain = false) {
     let code = -1;
     try { code = (await pgStatus(nextDir)).code; } catch { code = -1; }
     if (code === 0) {
-      say(`На ${nextDir} (прерванное обновление схемы) работает процесс PostgreSQL: сигнал остановки не посылался.`);
+      say(t(`На ${nextDir} (прерванное обновление схемы) работает процесс PostgreSQL: сигнал остановки не посылался.`, `A PostgreSQL process is running on ${nextDir} (interrupted schema update): no stop signal was sent.`));
       stopIssues += 1;
     } else if (code !== 3) {
-      say(`Работает ли PostgreSQL на ${nextDir} (прерванное обновление схемы), не установлено: сигнал не посылался.`);
+      say(t(`Работает ли PostgreSQL на ${nextDir} (прерванное обновление схемы), не установлено: сигнал не посылался.`, `Whether PostgreSQL is running on ${nextDir} (interrupted schema update) could not be determined: no signal was sent.`));
       stopIssues += 1;
     }
   }
@@ -1055,7 +1077,7 @@ async function shutdown(code = 0, fromMain = false) {
     }
     if (who === 'running') {
       const stopped = await tryStop(dataDir, pgPort || state.data.pg_port);
-      say(stopped ? 'PostgreSQL остановлен после восстановления.' : 'PostgreSQL остановить не удалось: подробности выше.');
+      say(stopped ? t('PostgreSQL остановлен после восстановления.', 'PostgreSQL stopped after recovery.') : t('PostgreSQL остановить не удалось: подробности выше.', 'Could not stop PostgreSQL: see the details above.'));
       if (!stopped) stopIssues += 1;
       else dataState = 'down';
     }
@@ -1067,21 +1089,21 @@ async function shutdown(code = 0, fromMain = false) {
       try { await serverOn(dataDir, state.data.pg_port || (pidFile(dataDir) || {}).port || 0); } catch { dataState = 'error'; }
     }
     if (dataState === 'running') {
-      say('PostgreSQL стенда оставлен работать: сигнал остановки ему не посылался.');
+      say(t('PostgreSQL стенда оставлен работать: сигнал остановки ему не посылался.', 'The stand PostgreSQL was left running: no stop signal was sent to it.'));
       stopIssues += 1;
     } else if (['unconfirmed', 'starting', 'elsewhere', 'process'].includes(dataState)) {
-      say('На каталоге базы работает процесс PostgreSQL, но по SQL он не подтверждён: сигнал остановки не посылался.');
+      say(t('На каталоге базы работает процесс PostgreSQL, но по SQL он не подтверждён: сигнал остановки не посылался.', 'A PostgreSQL process is running on the database directory, but it is not confirmed via SQL: no stop signal was sent.'));
       stopIssues += 1;
     } else if (['stale', 'foreign', 'error', 'notcluster'].includes(dataState)) {
-      say('Работает ли PostgreSQL стенда, не установлено: сигнал остановки не посылался.');
+      say(t('Работает ли PostgreSQL стенда, не установлено: сигнал остановки не посылался.', 'Whether the stand PostgreSQL is running could not be determined: no stop signal was sent.'));
       stopIssues += 1;
     }
   }
   if (stopIssues) {
-    say('Стенд остановлен не полностью: часть процессов оставлена работать, подробности выше.');
+    say(t('Стенд остановлен не полностью: часть процессов оставлена работать, подробности выше.', 'The stand did not stop completely: some processes were left running, see the details above.'));
     if (code === 0) code = 1;
   } else {
-    say('Стенд остановлен.');
+    say(t('Стенд остановлен.', 'The stand has stopped.'));
   }
   if (lockServer) lockServer.close();
   setTimeout(() => process.exit(code), 200);
@@ -1094,8 +1116,9 @@ async function main() {
     lockServer = await holdLock(opts.lockPort);
   } catch (error) {
     if (error && error.code === 'EADDRINUSE') process.exit(3); // другое окно успело первым: CLI подключится к нему
-    say(`Служебный порт стенда ${opts.lockPort} недоступен (${error && error.code ? error.code : error}): вероятно, Windows ` +
-      'зарезервировала его для Hyper-V, WSL или Docker. Запустите стенд с другой служебной папкой: npx local-triage --home <папка>.');
+    say(t(`Служебный порт стенда ${opts.lockPort} недоступен (${error && error.code ? error.code : error}): вероятно, Windows ` +
+      'зарезервировала его для Hyper-V, WSL или Docker. Запустите стенд с другой служебной папкой: npx local-triage --home <папка>.', `The stand service port ${opts.lockPort} is unavailable (${error && error.code ? error.code : error}): Windows has probably ` +
+      'reserved it for Hyper-V, WSL or Docker. Start the stand with a different home folder: npx local-triage --home <folder>.'));
     process.exit(4);
   }
   checkFoldersApart(); // до любых записей и чисток: ни один файл в папке кода ещё не тронут (ревью кругов 7–8)
@@ -1115,9 +1138,9 @@ async function main() {
   if (!state.existed && (backupsPresent() || clusterMarked()) && !opts.newDatabase) stand.save(state, { phase: 'ready' });
   let npmShown = version;
   try { npmShown = npmVersionOf(version); } catch { /* как есть */ }
-  say(`Учебный стенд «Локальный триаж» ${version} (пакет npm ${npmShown}). Служебная папка: ${home}`);
+  say(t(`Учебный стенд «Локальный триаж» ${version} (пакет npm ${npmShown}). Служебная папка: ${home}`, `Local Triage training stand ${version} (npm package ${npmShown}). Home folder: ${home}`));
   if (typeof process.getuid === 'function' && process.getuid() === 0) {
-    throw new StandError('Стенд не запускается от root: PostgreSQL от root не работает. Запустите от обычного пользователя.');
+    throw new StandError(t('Стенд не запускается от root: PostgreSQL от root не работает. Запустите от обычного пользователя.', 'The stand does not run as root: PostgreSQL does not work as root. Run it as a regular user.'));
   }
   pg.platformPackage();
   py = await python.ensurePython({ home, version, requirements: path.join(packageDir, 'npm', 'requirements.txt'),
@@ -1131,7 +1154,7 @@ async function main() {
   if (after && !opts.newDatabase && !binding.matches(after, codeDir)) throw bindingError(after);
   checkStop();
   stopCollector = metrics.startCollector(dirs.data, (error) => log(`сведения о компьютере не записаны: ${error.message}`));
-  say('Запускаю приложение…');
+  say(t('Запускаю приложение…', 'Starting the app…'));
   const started = await startApp();
   child = started.proc;
   appPort = started.port;
@@ -1139,8 +1162,9 @@ async function main() {
   watchApp(child);
   // Д10: привязка – тот физический путь, с которым работает Python; ссылку перенацелили во время запуска – отказ
   if (canonical(codeDir) !== canonical(codeReal)) {
-    throw new StandError(`Папка кода ${codeDir} во время запуска стала указывать на ${canonical(codeDir)}, а приложение ` +
-      `работает с ${canonical(codeReal)}. Верните ссылку и запустите стенд снова.`);
+    throw new StandError(t(`Папка кода ${codeDir} во время запуска стала указывать на ${canonical(codeDir)}, а приложение ` +
+      `работает с ${canonical(codeReal)}. Верните ссылку и запустите стенд снова.`, `During startup the code folder ${codeDir} started pointing to ${canonical(codeDir)}, but the app ` +
+      `works with ${canonical(codeReal)}. Restore the link and start the stand again.`));
   }
   stand.save(state, { phase: 'ready', app_port: appPort, last_good_version: version, code_dir: codeDir,
     code_dir_real: canonical(codeReal) });
@@ -1148,7 +1172,7 @@ async function main() {
   try { fs.writeFileSync(path.join(dataDir, 'local-triage.version'), `${version}\n`); } catch { /* не критично */ }
   try { fs.writeFileSync(path.join(dataDir, binding.FILE), binding.fileText(codeDir, codeReal)); } catch { /* не критично */ }
   setPhase('ready');
-  say(`Стенд работает: ${appUrl}`);
+  say(t(`Стенд работает: ${appUrl}`, `The stand is running: ${appUrl}`));
   try { process.stdout.write(`@@ready ${appUrl}\n`); } catch { /* окно закрыто */ }
   watchExamples();
 }
@@ -1163,7 +1187,7 @@ function watchExamples() {
   const generation = ++examplesGeneration; // опрос, дождавшийся ответа после перезапуска, дальше не планируется
   const seen = {};
   const until = Date.now() + 30 * 60 * 1000;
-  const words = { downloaded: 'скачан', failed: 'не скачан', fetching: 'скачивается', queued: 'в очереди' };
+  const words = { downloaded: t('скачан', 'downloaded'), failed: t('не скачан', 'not downloaded'), fetching: t('скачивается', 'downloading'), queued: t('в очереди', 'queued') };
   const tick = async () => {
     if (stopping || Date.now() > until || !appPort) return;
     let busy = true;
@@ -1178,7 +1202,7 @@ function watchExamples() {
           if (phase === 'queued') { seen[id] = phase; continue; } // очередь запоминается, строка не нужна
           if (seen[id] === undefined && phase === 'downloaded' && !item.fresh) { seen[id] = phase; continue; } // был до запуска
           seen[id] = phase;
-          say(`Пример ${id}: ${words[phase]}${phase === 'failed' && item.message ? ` – ${item.message}` : ''}`);
+          say(t(`Пример ${id}: ${words[phase]}${phase === 'failed' && item.message ? ` – ${item.message}` : ''}`, `Example ${id}: ${words[phase]}${phase === 'failed' && item.message ? ` – ${item.message}` : ''}`));
         }
       }
     } catch { /* приложение ещё не ответило – следующий опрос */ }
@@ -1192,9 +1216,9 @@ function watchExamples() {
 const mainRun = main().then(() => null, (error) => error);
 mainRun.then(async (error) => {
   if (!error || error instanceof Cancelled || stopping) return; // остановку доводит shutdown
-  const text = error instanceof StandError ? error.message : `Сбой стенда: ${error && error.stack ? error.stack : error}`;
+  const text = error instanceof StandError ? error.message : t(`Сбой стенда: ${error && error.stack ? error.stack : error}`, `Stand failure: ${error && error.stack ? error.stack : error}`);
   setPhase('failed', text.split('\n')[0]);
   say(text);
-  say(`Журналы: ${dirs.logs}`);
+  say(t(`Журналы: ${dirs.logs}`, `Logs: ${dirs.logs}`));
   await shutdown(1, true);
 });

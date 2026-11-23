@@ -7,11 +7,17 @@
 
 from __future__ import annotations
 
+import os
 import socket
 import sys
 from pathlib import Path
 
 import pytest
+
+# Язык интерфейса (ADR-0158): прежний набор проверок написан на русском интерфейсе – до импорта приложения язык
+# по умолчанию для тестов русский (и у сервера e2e: он наследует окружение). Английский проверяют отдельные тесты
+# (i18n.use("en"), отдельный процесс без TRIAGE_LANG).
+os.environ["TRIAGE_LANG"] = "ru"
 
 # Ответ службы имён по каждому имени запоминается на весь прогон. Тестовые адреса (example.org и др., RFC 2606)
 # разрешает app/llm_net.py перед соединением; через медленный DNS (VPN) одно разрешение шло около 11 с, и прогон
@@ -183,3 +189,12 @@ def no_retry_sleep(monkeypatch):
     from app import llm_net, sca_research_net
     monkeypatch.setattr(llm_net, "_sleep", lambda seconds: None)
     monkeypatch.setattr(sca_research_net, "_sleep", lambda seconds: None)
+
+
+@pytest.fixture(autouse=True)
+def _ui_language_reset():
+    """Сохранённый язык интерфейса (app.i18n) – глобальный на процесс: после каждого теста – снова не задан, и
+    действует TRIAGE_LANG=ru прежнего набора."""
+    yield
+    from app import i18n
+    i18n.set_saved(None)

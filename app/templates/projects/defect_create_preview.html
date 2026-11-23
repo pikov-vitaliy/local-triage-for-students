@@ -1,17 +1,17 @@
 {% if create_preview %}
-<section class="panel" id="hub-defect-preview"><h2>Создание в Hub</h2>
+<section class="panel" id="hub-defect-preview"><h2>{{ _("Создание в Hub") }}</h2>
 <p id="hub-defect-summary">{{ create_preview.summary }}</p><pre class="hub-text" id="hub-defect-body">{{ create_preview.command_text }}</pre>
-<p>Назначение: {{ row.hub_url }} · приложение {{ row.app_id }}. Блок Hub из заготовки сохраняется. Статусы находок не меняются.</p>
-<p id="hub-defect-targets">Будут привязаны находки ({{ create_preview.targets | length }}): {% for t in create_preview.targets %}<a href="{{ t.url }}">{{ t.hub_id }}</a>{{ ', ' if not loop.last }}{% endfor %}.</p>
+<p>{{ _("Назначение: {url} · приложение {app}. Блок Hub из заготовки сохраняется. Статусы находок не меняются.", url=row.hub_url, app=row.app_id) }}</p>
+<p id="hub-defect-targets">{{ _("Будут привязаны находки ({n}):", n=create_preview.targets | length) }} {% for t in create_preview.targets %}<a href="{{ t.url }}">{{ t.hub_id }}</a>{{ ', ' if not loop.last }}{% endfor %}.</p>
 {% if create_preview.left_out %}<ul id="hub-defect-left-out">{% for t in create_preview.left_out %}<li>{{ t.hub_id }}: {{ t.why }}</li>{% endfor %}</ul>{% endif %}
 {% for w in create_preview.warnings %}<p class="text-warn">{{ w }}</p>{% endfor %}
 <form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/create" class="stack-form" id="hub-defect-create-form">
 <input type="hidden" name="back" value="defect-card"><input type="hidden" name="create_snapshot" value="{{ create_preview.snapshot }}">
-{% for field, label, options, value in [('priority', 'Приоритет', create_preview.priorities, create_preview.priority), ('severity', 'Серьёзность', create_preview.severities, create_preview.severity)] %}
+{% for field, label, options, value in [('priority', _('Приоритет'), create_preview.priorities, create_preview.priority), ('severity', _('Серьёзность'), create_preview.severities, create_preview.severity)] %}
 <label class="field"><span class="field-label">{{ label }}</span>{% if options %}<select name="{{ field }}" id="hub-defect-{{ field }}">{% for option in options %}<option value="{{ option }}"{% if option == value %} selected{% endif %}>{{ option }}</option>{% endfor %}</select>{% else %}<input name="{{ field }}" id="hub-defect-{{ field }}" value="{{ value }}" readonly>{% endif %}</label>{% endfor %}
-<p>«Создать» разрешает один POST /defects с этим составом и чтение результата. Если Hub не привязал часть состава, разрешена одна первичная привязка недостающих находок и подтверждающее чтение. Повторного создания нет. Полный успех требует точного состава и подтверждённого текста.</p>
-<button class="btn btn-primary" id="hub-defect-create" type="submit">Создать</button>
+<p>{{ _("«Создать» разрешает один POST /defects с этим составом и чтение результата. Если Hub не привязал часть состава, разрешена одна первичная привязка недостающих находок и подтверждающее чтение. Повторного создания нет. Полный успех требует точного состава и подтверждённого текста.") }}</p>
+<button class="btn btn-primary" id="hub-defect-create" type="submit">{{ _("Создать") }}</button>
 </form>
-<form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/cancel"><input type="hidden" name="back" value="defect-card"><button class="btn" id="hub-defect-cancel">Отменить предпросмотр</button><p class="field-hint">Резерв освободится, сохранённые решения останутся. Для изменения общего решения подготовьте состав заново.</p></form>
+<form method="post" action="/projects/{{ project.id }}/hub/defects/{{ row.id }}/cancel"><input type="hidden" name="back" value="defect-card"><button class="btn" id="hub-defect-cancel">{{ _("Отменить предпросмотр") }}</button><p class="field-hint">{{ _("Резерв освободится, сохранённые решения останутся. Для изменения общего решения подготовьте состав заново.") }}</p></form>
 </section>
 {% endif %}

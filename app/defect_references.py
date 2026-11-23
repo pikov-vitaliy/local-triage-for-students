@@ -3,7 +3,7 @@
 import hashlib
 import json
 
-from app import defect_fields, hub_ops
+from app import defect_fields, hub_ops, i18n
 from app.db import dumps, loads, now_iso
 from app.defect_dto import ID_NAME, is_int64, validate_value
 from app.defect_fields import FieldError
@@ -22,7 +22,7 @@ def _target(c, row, hub_url, app_id):
     project = c.execute("SELECT hub_app_id FROM projects WHERE id = ?", (row["project_id"],)).fetchone()
     if (project is None or not is_int64(app_id) or project["hub_app_id"] != app_id
             or row["app_id"] != app_id or row["hub_url"] != hub_ops.hub_base(hub_url)):
-        raise ValueError("Hub или приложение проекта изменились: подготовьте загрузку заново.")
+        raise ValueError(i18n._("Hub или приложение проекта изменились: подготовьте загрузку заново."))
 
 
 def prepare(db, row, hub_url, app_id, check):
@@ -43,10 +43,10 @@ def load(db, row, load_id, shown, hub_url, app_id, check):
         found = c.execute("SELECT * FROM hub_defect_reference_loads WHERE id = ?", (load_id,)).fetchone()
         if (found is None or found["project_id"] != row["project_id"] or found["hub_url"] != row["hub_url"]
                 or found["app_id"] != app_id or found["state"] != "preview"):
-            raise ValueError("Предпросмотр справочников изменился или уже использован.")
+            raise ValueError(i18n._("Предпросмотр справочников изменился или уже использован."))
         plan = loads(found["load_json"], {})
         if signature(plan) != shown or plan.get("defect_id") != row["id"] or plan["requests"] != requests(app_id):
-            raise ValueError("Показанная загрузка изменилась.")
+            raise ValueError(i18n._("Показанная загрузка изменилась."))
         ops = [db._hub_insert(c, purpose="defect_reference", request=req, hub_url=hub_url, app_id=app_id,
                              project_id=row["project_id"], targets=[{"reference_load": load_id,
                                  "issue_type": "DEFECT_REFERENCE", "issue_id": f"{load_id}:{index}"}],
@@ -96,12 +96,12 @@ def sync(db, project_id):
                         "hub_url": op["hub_url"], "app_id": op["app_id"], "raw": result,
                         "error": op["error"] if op["state"] != "done" else ""}
                 if result.get("truncated"):
-                    item["error"] = "Ответ усечён: загрузка неполна."
+                    item["error"] = i18n._("Ответ усечён: загрузка неполна.")
                 if not item["error"]:
                     try:
                         item["body"] = json.loads(result.get("body_text", ""))
                     except (ValueError, TypeError):
-                        item["error"] = "Ответ не является JSON."
+                        item["error"] = i18n._("Ответ не является JSON.")
                 results[str(op_id)] = item
             state, closed = "loading", None
             if len(results) == 3:
@@ -125,7 +125,7 @@ def choices_in(c, row, load_id):
     found = c.execute("SELECT * FROM hub_defect_reference_loads WHERE id = ?", (load_id,)).fetchone()
     if (found is None or found["state"] != "done" or found["project_id"] != row["project_id"]
             or found["hub_url"] != row["hub_url"] or found["app_id"] != row["app_id"]):
-        raise FieldError("Снимок справочников недоступен для этого Hub и приложения.")
+        raise FieldError(i18n._("Снимок справочников недоступен для этого Hub и приложения."))
     plan = loads(found["load_json"], {})
     return plan["projection"], {"load_id": found["id"], "signature": signature(plan), "at": found["closed_at"]}
 
@@ -134,7 +134,7 @@ def check_selected(c, row, references):
     for reference in references.values():
         _, actual = choices_in(c, row, reference["load_id"])
         if actual != reference:
-            raise ValueError("Источник выбранных полей изменился: обновите предпросмотр.")
+            raise ValueError(i18n._("Источник выбранных полей изменился: обновите предпросмотр."))
 
 
 def check_candidate(c, row, body):
@@ -149,16 +149,16 @@ def check_candidate(c, row, body):
         selected = {k: draft[k] for k in group if k in draft}
         candidate = {k: body[k] for k in group if k in body}
         if not defect_fields.equal(candidate, selected):
-            raise FieldError(f"/{group[0]}: кандидат PUT не совпадает с выбранным справочным вариантом.")
+            raise FieldError(i18n._("/{field}: кандидат PUT не совпадает с выбранным справочным вариантом.", field=group[0]))
         if not selected:  # Явное удаление всей необязательной группы не требует справочника.
             continue
         value = candidate if name == "structureUnits" else candidate["releaseObject"]
         for root in sorted(roots):
             reference = references.get(root)
             if not reference:
-                raise FieldError(f"/{group[0]}: нет сохранённого источника выбранного справочного варианта.")
+                raise FieldError(i18n._("/{field}: нет сохранённого источника выбранного справочного варианта.", field=group[0]))
             choices, actual = choices_in(c, row, reference["load_id"])
             if actual != reference:
-                raise FieldError(f"/{group[0]}: источник выбранного справочного варианта изменился.")
+                raise FieldError(i18n._("/{field}: источник выбранного справочного варианта изменился.", field=group[0]))
             if not any(defect_fields.equal(value, option) for option in choices.get(name, [])):
-                raise FieldError(f"/{group[0]}: кандидат PUT не соответствует варианту сохранённого справочника.")
+                raise FieldError(i18n._("/{field}: кандидат PUT не соответствует варианту сохранённого справочника.", field=group[0]))

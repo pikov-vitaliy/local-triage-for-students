@@ -11,6 +11,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { t } = require('./lang');
 
 const ASCII = /^[\x20-\x7e]*$/;
 const LOCK_PORT_MIN = 49152;
@@ -77,7 +78,7 @@ function resolveHome({ override = '', env = process.env, platform = process.plat
   const join = platform === 'win32' ? path.win32 : path.posix;
   const requested = join.resolve(override || env.LOCAL_TRIAGE_HOME || defaultHome(env, platform, homedir));
   if (platform !== 'win32' || isAscii(requested)) {
-    if (!writable(requested)) throw new StandError(`Служебную папку ${requested} не создать: нет доступа. Укажите другую ключом --home.`);
+    if (!writable(requested)) throw new StandError(t(`Служебную папку ${requested} не создать: нет доступа. Укажите другую ключом --home.`, `Cannot create the stand home folder ${requested}: access denied. Choose another one with --home.`));
     return { requested, home: requested, how: 'as-is' };
   }
   const existed = fs.existsSync(requested);
@@ -92,8 +93,9 @@ function resolveHome({ override = '', env = process.env, platform = process.plat
   }
   const root = fallbackRoot(env, requested);
   if (writable(root)) return { requested, home: root, how: 'fallback' };
-  throw new StandError(`В пути служебной папки ${requested} есть буквы не из латиницы, короткого имени нет, а запасную ` +
-    `папку ${root} создать не удалось. Укажите папку из латинских букв ключом --home, например --home C:\\local-triage.`);
+  throw new StandError(t(`В пути служебной папки ${requested} есть буквы не из латиницы, короткого имени нет, а запасную ` +
+    `папку ${root} создать не удалось. Укажите папку из латинских букв ключом --home, например --home C:\\local-triage.`, `The stand home folder path ${requested} contains non-Latin letters, it has no short name, and the fallback ` +
+    `folder ${root} could not be created. Choose a folder with Latin letters using --home, for example --home C:\\local-triage.`));
 }
 
 function resolveCodeDir({ override = '', env = process.env, platform = process.platform, homedir = os.homedir() } = {}) {

@@ -30,7 +30,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 
-from app import hub_onboarding, hub_state
+from app import hub_onboarding, hub_state, i18n
 from app.config import ConfigError, Settings, normalize_setting
 from app.context import build_context, resolve_repo
 from app.db import Database, ProjectBusy, case_signature, code_notice_version
@@ -73,11 +73,12 @@ DEMO_SCAN_SECONDS = 3.0
 
 # Выгрузки разбираются по одной: разбор большой книги занимает память и время
 _IMPORT_SLOT = threading.BoundedSemaphore(1)
-IMPORT_BUSY = "Сейчас загружается другая выгрузка. Дождитесь окончания и повторите."
+IMPORT_BUSY = i18n.N_("Сейчас загружается другая выгрузка. Дождитесь окончания и повторите.")
 # Срезы кода сохраняются по одному проекту за раз: повторное нажатие не запускает второй обход клонов
 _SNAPSHOT_SLOT = threading.BoundedSemaphore(1)
-SNAPSHOT_BUSY = "Срезы кода уже сохраняются. Дождитесь окончания и обновите страницу."
-SNAPSHOT_RUNNING = "У проекта идёт прогон: сохраните срезы кода после него – разобранные находки сохранят их сами."
+SNAPSHOT_BUSY = i18n.N_("Срезы кода уже сохраняются. Дождитесь окончания и обновите страницу.")
+SNAPSHOT_RUNNING = i18n.N_("У проекта идёт прогон: сохраните срезы кода после него – разобранные находки сохранят их "
+                           "сами.")
 
 _NAME_JUNK = re.compile(r"[\W_]+")
 
@@ -199,10 +200,12 @@ def auto_folder(codebase: str, candidates: list[str]) -> str:
 def repos_missing(settings: Settings) -> str:
     """Текст, когда корня папок с репозиториями нет: приложение запущено не с той папкой."""
     if settings.stand == "npm":  # учебный стенд (ADR-0155): папку кода создаёт окно стенда при запуске
-        return (f"Папка кода {repos_display(settings)} не найдена: её удалили или переименовали. Закройте окно стенда и "
-                "запустите стенд снова – он создаст папку заново и положит в неё демо-проект.")
-    return (f"Папка с репозиториями не подключена: {repos_display(settings)} не найдена. Перезапустите приложение "
-            "через start.ps1 – он подключает диск с папкой приложения; другой корень – параметр -ReposRoot.")
+        return i18n._("Папка кода {path} не найдена: её удалили или переименовали. Закройте окно стенда и "
+                      "запустите стенд снова – он создаст папку заново и положит в неё демо-проект.",
+                      path=repos_display(settings))
+    return i18n._("Папка с репозиториями не подключена: {path} не найдена. Перезапустите приложение "
+                  "через start.ps1 – он подключает диск с папкой приложения; другой корень – параметр -ReposRoot.",
+                  path=repos_display(settings))
 
 
 def repos_base(settings: Settings, project: dict) -> tuple[Path | None, str]:
@@ -214,7 +217,7 @@ def repos_base(settings: Settings, project: dict) -> tuple[Path | None, str]:
     except ValueError as e:
         return None, str(e)
     if not path.is_dir():
-        return None, "Выбранная папка проекта не найдена внутри папки с репозиториями."
+        return None, i18n._("Выбранная папка проекта не найдена внутри папки с репозиториями.")
     return path, ""
 
 
@@ -343,20 +346,22 @@ def codebase_rows(db: Database, project: dict, base: Path | None) -> dict:
         detached = bool(entry.get("detached"))
         stored = bool(folder and (detached or not exists) and row["sast"] and snap["none"] == 0)
         if detached and snap["none"]:
-            state, tone = f"клон отвязан, без среза: {snap['none']}", "warn"
+            state, tone = i18n._("клон отвязан, без среза: {n}", n=snap['none']), "warn"
         elif detached:
-            state, tone = ("клон удалён, срезы в базе" if not exists else "клон не читается, срезы в базе"), "ok"
+            state, tone = (i18n._("клон удалён, срезы в базе") if not exists
+                           else i18n._("клон не читается, срезы в базе")), "ok"
         elif exists:
-            state, tone = ("из примера" if manual and example_map.get(row["codebase"]) == folder and from_examples
-                           else "указана вручную" if manual else "найдена"), "ok"
+            state, tone = (i18n._("из примера") if manual and example_map.get(row["codebase"]) == folder
+                           and from_examples
+                           else i18n._("указана вручную") if manual else i18n._("найдена")), "ok"
         elif stored:
-            state, tone = "клон удалён, срезы в базе", "ok"
+            state, tone = i18n._("клон удалён, срезы в базе"), "ok"
         elif suggestion:
-            state, tone = "найдена, не сохранено", "accent"
+            state, tone = i18n._("найдена, не сохранено"), "accent"
         elif folder:
-            state, tone = "папки нет", "warn"
+            state, tone = i18n._("папки нет"), "warn"
         else:
-            state, tone = "не найдена", "warn"
+            state, tone = i18n._("не найдена"), "warn"
         selected = folder or suggestion
         rows.append({**row, "folder": folder, "selected": selected, "suggestion": suggestion, "exists": exists,
                      "manual": manual, "state": state, "tone": tone, "stored": stored, "snapshots": snap,
@@ -369,10 +374,11 @@ def codebase_rows(db: Database, project: dict, base: Path | None) -> dict:
     detached = {r["codebase"] for r in rows if r["detached"]}
     summary = snapshot_summary({cb: n for cb, n in snapshots.items() if cb}, mapped, present, detached)
     summary["can_upgrade"] = upgradable(db, pid, base, present, cmap) if summary["line"] or summary["empty"] else 0
-    reasons = {"ambiguous": "несколько подходящих файлов", "too_large": "больше 2 МБ", "binary": "двоичный",
-               "unreadable": "не читается", "no_repo": "клон был недоступен при сохранении среза",
-               "line_out_of_range": "строка за концом файла – клон, похоже, не на коммите скана",
-               "": "сохранён прежней версией"}
+    reasons = {"ambiguous": i18n._("несколько подходящих файлов"), "too_large": i18n._("больше 2 МБ"),
+               "binary": i18n._("двоичный"), "unreadable": i18n._("не читается"),
+               "no_repo": i18n._("клон был недоступен при сохранении среза"),
+               "line_out_of_range": i18n._("строка за концом файла – клон, похоже, не на коммите скана"),
+               "": i18n._("сохранён прежней версией")}
     incomplete = [{**row, "reason_text": reasons.get(row["reason"], row["reason"])}
                   for row in db.incomplete_snapshots(pid)]
     return {"codebases": rows, "nameless": nameless, "to_clone": to_clone, "reset": reset,
@@ -448,19 +454,19 @@ def resolve_folder(settings: Settings, raw: str) -> tuple[str | None, Path | Non
         return None, None, repos_missing(settings)
     text = str(raw or "").strip()
     if len(text) > MAX_PATH:
-        return None, None, "Слишком длинный путь к папке."
+        return None, None, i18n._("Слишком длинный путь к папке.")
     try:
         resolve_repo(settings.repos_root, text)
     except ValueError as e:
         return None, None, str(e)
     parts = [p for p in text.replace("\\", "/").split("/") if p not in ("", ".")]
     if any(p.startswith(".") for p in parts):
-        return None, None, "Скрытые папки (имя начинается с точки) не выбираются."
+        return None, None, i18n._("Скрытые папки (имя начинается с точки) не выбираются.")
     current = settings.repos_root
     for part in parts:
         entry = _child_dir(current, part)
         if entry is None:
-            return None, None, "Такой папки нет внутри корня папок с репозиториями (или это ссылка)."
+            return None, None, i18n._("Такой папки нет внутри корня папок с репозиториями (или это ссылка).")
         current = Path(entry.path)
     return "/".join(parts), current, ""
 
@@ -472,8 +478,8 @@ def check_project_folder(settings: Settings, raw: str) -> tuple[str | None, str]
     if error:
         return None, error
     if rel and path is not None and _is_codebase(path):
-        return None, ("Это папка одного клона (в ней .git, файл сборки или src). Папка проекта – та, в которой лежат "
-                      "клоны кодовых баз: выберите папку уровнем выше.")
+        return None, i18n._("Это папка одного клона (в ней .git, файл сборки или src). Папка проекта – та, в которой "
+                            "лежат клоны кодовых баз: выберите папку уровнем выше.")
     return rel, ""
 
 
@@ -539,8 +545,9 @@ def reset_warning(db: Database, project_id: int, codebases: set[str] | None = No
     mapped = db.get_codebase_map(project_id)
     reviewed = sum(counts.get(cb, {}).get("reviewed", 0) for cb in selected
                    if codebases is not None or (mapped.get(cb) or {}).get("folder"))
-    return (f"Будет удалено срезов кода: {cases}; отметок «Проверено»: {reviewed}. "
-            "После удаления клонов это единственная копия кода. Подтвердите удаление.")
+    return i18n._("Будет удалено срезов кода: {cases}; отметок «Проверено»: {reviewed}. "
+                  "После удаления клонов это единственная копия кода. Подтвердите удаление.",
+                  cases=cases, reviewed=reviewed)
 
 
 def clone_reset_warning(counts: tuple[int, int]) -> str:
@@ -550,8 +557,9 @@ def clone_reset_warning(counts: tuple[int, int]) -> str:
     cases, reviewed = counts
     if not cases and not reviewed:
         return ""
-    return (f"Будет удалено срезов кода: {cases}; отметок «Проверено»: {reviewed}. "
-            "После удаления клонов это единственная копия кода. Подтвердите удаление.")
+    return i18n._("Будет удалено срезов кода: {cases}; отметок «Проверено»: {reviewed}. "
+                  "После удаления клонов это единственная копия кода. Подтвердите удаление.",
+                  cases=cases, reviewed=reviewed)
 
 
 def parse_counts(raw: object) -> tuple[int, int] | None:
@@ -574,19 +582,20 @@ def import_mismatch(db: Database, project_id: int, result: ImportResult) -> str:
         return ""
     skipped = int((result.summary or {}).get('skipped_findings') or 0)
     if skipped:
-        return (f'При разборе пропущено строк без ID: {skipped}. Повторная выгрузка неполна: прежние находки '
-                'могут ложно получить отметку «нет в выгрузке». Проверьте файл или явно подтвердите '
-                '«Загрузить всё равно». До подтверждения данные проекта не меняются.')
+        return i18n._('При разборе пропущено строк без ID: {n}. Повторная выгрузка неполна: прежние находки '
+                      'могут ложно получить отметку «нет в выгрузке». Проверьте файл или явно подтвердите '
+                      '«Загрузить всё равно». До подтверждения данные проекта не меняются.', n=skipped)
     old_app = str((previous.get("summary") or {}).get("application") or "").strip()
     new_app = str((result.summary or {}).get("application") or "").strip()
     new_ids = {f.hub_id for f in result.findings}
     problems = []
     if old_app and new_app and old_app.casefold() != new_app.casefold():
-        problems.append(f"в новой выгрузке система «{new_app}», а в проекте – «{old_app}»")
+        problems.append(i18n._("в новой выгрузке система «{new}», а в проекте – «{old}»", new=new_app, old=old_app))
     if not new_ids:
-        problems.append("в новой выгрузке нет ни одной находки – все прежние получили бы пометку «нет в выгрузке»")
+        problems.append(i18n._("в новой выгрузке нет ни одной находки – все прежние получили бы пометку «нет в "
+                               "выгрузке»"))
     elif not new_ids & old_ids:
-        problems.append("ни один ID находки не совпал с прежними")
+        problems.append(i18n._("ни один ID находки не совпал с прежними"))
     detached = db.detached_codebases(project_id)
     if detached:
         # Клоны удалены после разбора (ADR-0072): новые и изменённые находки этих кодовых баз разобрать не по чему
@@ -595,14 +604,14 @@ def import_mismatch(db: Database, project_id: int, result: ImportResult) -> str:
         fresh = [f for f in result.findings if f.kind == "SAST" and f.codebase in detached
                  and old.get(f.hub_id) != case_signature(f.to_dict())]
         if fresh:
-            problems.append(f"клоны кодовых баз {', '.join(sorted({f.codebase for f in fresh}))} удалены, а у "
-                            f"{len(fresh)} новых или изменённых находок SAST кода нет – для новой выгрузки создайте "
-                            "новый проект")
+            problems.append(i18n._("клоны кодовых баз {codebases} удалены, а у {n} новых или изменённых находок SAST "
+                                   "кода нет – для новой выгрузки создайте новый проект",
+                                   codebases=', '.join(sorted({f.codebase for f in fresh})), n=len(fresh)))
     if not problems:
         return ""
-    return ("Похоже, это выгрузка другой системы: " + "; ".join(problems) + ". Выгрузка не загружена. Если это "
-            "всё же выгрузка этого проекта, выберите файл ещё раз и отметьте «Загрузить всё равно»: прежние находки "
-            "получат пометку «нет в новой выгрузке».")
+    return i18n._("Похоже, это выгрузка другой системы: {problems}. Выгрузка не загружена. Если это всё же выгрузка "
+                  "этого проекта, выберите файл ещё раз и отметьте «Загрузить всё равно»: прежние находки получат "
+                  "пометку «нет в новой выгрузке».", problems="; ".join(problems))
 
 
 def store_import(settings: Settings, db: Database, project_id: int, filename: str, result: ImportResult,
@@ -614,8 +623,9 @@ def store_import(settings: Settings, db: Database, project_id: int, filename: st
     seen: set[str] = set()
     repeated = sorted({f.hub_id for f in result.findings if f.hub_id in seen or seen.add(f.hub_id)})
     if repeated:
-        warnings.append(f"ID находок повторяются ({len(repeated)}): {', '.join(repeated[:10])}"
-                        + (" …" if len(repeated) > 10 else "") + ". Взята первая строка каждого ID.")
+        warnings.append(i18n._("ID находок повторяются ({n}): {ids}{more}. Взята первая строка каждого ID.",
+                               n=len(repeated), ids=', '.join(repeated[:10]),
+                               more=" …" if len(repeated) > 10 else ""))
     rows = order_findings(result.findings, settings.sca_urgent_cvss)
     from app.sca_research_net import composition_change
     with composition_change():  # состав проекта меняется не между проверкой и отправкой исследования
@@ -771,26 +781,36 @@ def model_listed(name: str, models: list[dict], profile: dict | None) -> bool:
 def fallback_model(settings: Settings, profile: dict | None) -> tuple[str, str]:
     """Модель проекта без своей модели и откуда она: модель профиля, которым пойдёт разбор (common.default_model), иначе
     модель из «Настроек». Второе – «из настроек» или «из профиля «…»» (у профиля 1 – «из настроек»)."""
+    model, from_profile = _fallback(settings, profile)
+    if from_profile:
+        return model, i18n._("из профиля «{name}»", name=(profile or {}).get('name') or '')
+    return model, i18n._("из настроек")
+
+
+def _fallback(settings: Settings, profile: dict | None) -> tuple[str, bool]:
+    """(модель, взята ли она из профиля) – код источника для сравнения, подпись делает fallback_model (ADR-0158)."""
     from app.db import DEFAULT_PROVIDER_ID
 
     model = str((profile or {}).get("default_model") or "")
     if model and (profile or {}).get("id") != DEFAULT_PROVIDER_ID:
-        return model, f"из профиля «{profile.get('name') or ''}»"
-    return model or settings.default_model, "из настроек"
+        return model, True
+    return model or settings.default_model, False
 
 
 def model_options(settings: Settings, models: list[dict], project: dict, profile: dict | None = None) -> list[dict]:
     """Варианты модели проекта: «как в профиле» (или «как в настройках») и модели сервера профиля (с объёмом и пометкой
     рассуждения, view.model_option); модель проекта, которой нет в Ollama, остаётся в списке с пометкой."""
     current = project.get("model") or ""
-    fallback, source = fallback_model(settings, profile)
-    label = f"Как в настройках: {fallback}" if source == "из настроек" else f"Как в профиле: {fallback}"
+    fallback, from_profile = _fallback(settings, profile)
+    label = (i18n._("Как в профиле: {model}", model=fallback) if from_profile
+             else i18n._("Как в настройках: {model}", model=fallback))
     options = [{"value": "", "label": label, "selected": not current}]
     from app.executors import same_model
 
     key = same_model(str((profile or {}).get("kind") or "ollama"))
     if current and not model_listed(current, models, profile):
-        options.append({"value": current, "label": f"{current} – нет на сервере профиля", "selected": True})
+        options.append({"value": current, "label": i18n._("{model} – нет на сервере профиля", model=current),
+                        "selected": True})
     options += [{"value": m["name"], "label": model_option(m), "selected": bool(current) and key(m["name"]) == key(current)}
                 for m in models]
     return options
@@ -803,15 +823,15 @@ def provider_number(raw: str) -> int | None:
     return int(raw) if raw.isascii() and raw.isdigit() and len(raw) <= 9 else None
 
 
-CODE_PROFILE_REFUSED = ("Этот профиль не разбирает код: разбор кода – Ollama на этом компьютере или сервер в сети "
-                        "организации; внешний провайдер – только проекту с отметкой «код не секретный».")
+CODE_PROFILE_REFUSED = i18n.N_("Этот профиль не разбирает код: разбор кода – Ollama на этом компьютере или сервер в "
+                               "сети организации; внешний провайдер – только проекту с отметкой «код не секретный».")
 
 
-NOT_FOR_CODE_YET = "для разбора кода недоступен"
-NOT_WITHOUT_MARK = "нужна отметка «код не секретный»"
-NOT_FOR_CODE_NOTE = ("Внешнему провайдеру код уходит только проекту с отметкой «код не секретный» – она ставится "
-                     "ниже, после предпросмотра. Сервер удалённого API (чат-завершения или Messages) не в интернете "
-                     "код не разбирает.")
+NOT_FOR_CODE_YET = i18n.N_("для разбора кода недоступен")
+NOT_WITHOUT_MARK = i18n.N_("нужна отметка «код не секретный»")
+NOT_FOR_CODE_NOTE = i18n.N_("Внешнему провайдеру код уходит только проекту с отметкой «код не секретный» – она "
+                            "ставится ниже, после предпросмотра. Сервер удалённого API (чат-завершения или Messages) "
+                            "не в интернете код не разбирает.")
 
 
 def code_profile_ok(profile: dict, project: dict | None = None) -> bool:
@@ -831,22 +851,24 @@ def provider_options(db: Database, settings: Settings, project: dict) -> list[di
     from app.executors import REMOTE_KINDS
     current = project.get("provider_id")
     default = db.get_provider(settings.default_provider_id or DEFAULT_PROVIDER_ID) or {}
-    options = [{"value": "", "label": f"Как в настройках: {default.get('name') or 'профиль по умолчанию'}",
+    options = [{"value": "", "label": i18n._("Как в настройках: {name}",
+                                             name=default.get('name') or i18n._('профиль по умолчанию')),
                 "selected": not current}]
+    places = {"local": i18n._("этот компьютер"), "lan": i18n._("сеть организации"), "external": i18n._("интернет")}
     for p in db.list_providers():
         if not p["enabled"] and p["id"] != current:
             continue
-        where = {"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"}.get(
-            str(p["trust"]), str(p["trust"]))
+        where = places.get(str(p["trust"]), str(p["trust"]))
         if not code_profile_ok(p, project):
             # негодный профиль (внешний без отметки проекта, сервер удалённого API не в интернете, профиль, ставший
             # негодным после смены протокола) – виден неактивным с причиной, выбранный раньше – выбранным
             why = (NOT_WITHOUT_MARK if str(p["trust"]) == "external" and str(p.get("kind")) in REMOTE_KINDS
                    else NOT_FOR_CODE_YET)
-            options.append({"value": str(p["id"]), "label": f"{p['name']} ({where}) – {why}",
+            options.append({"value": str(p["id"]), "label": f"{p['name']} ({where}) – {i18n._(why)}",
                             "selected": p["id"] == current, "disabled": True})
             continue
-        label = f"{p['name']} ({where})" + ("" if p["enabled"] else " – выключен")
+        label = (f"{p['name']} ({where})" if p["enabled"]
+                 else i18n._("{name} ({where}) – выключен", name=p['name'], where=where))
         options.append({"value": str(p["id"]), "label": label, "selected": p["id"] == current})
     return options
 
@@ -921,7 +943,9 @@ def project_context(request: Request, project: dict) -> dict:
         "model_missing": bool(models["models"]) and not model_listed(model_name or fallback_model(settings, profile)[0],
                                                                       models["models"], profile),
         "model_options": model_options(settings, models["models"], project, profile),
-        "provider_options": provider_options(db, settings, project), "not_for_code_note": NOT_FOR_CODE_NOTE,
+        "provider_options": provider_options(db, settings, project), "not_for_code_note": i18n._(NOT_FOR_CODE_NOTE),
+        # обоснование отметки «код не секретный» для показа: известный текст по умолчанию – переводом (ADR-0158)
+        "external_reason_display": mark_reason_shown(project.get("external_reason")),
         "run_profile": profile,
         "vram_total_mb": vram_total, "runs": db.list_runs(pid, 10), "active_runs": active,
         "review_stats": stats, "first_unreviewed": first_unreviewed, "sca_unreviewed": sca_unreviewed,
@@ -988,7 +1012,7 @@ async def create_project(request: Request):
     form = await request.form()
     name = " ".join(str(form.get("name") or "").split())[:MAX_NAME]
     if not name:
-        return await run_in_threadpool(list_response, request, False, "Укажите название проекта.", 400)
+        return await run_in_threadpool(list_response, request, False, i18n._("Укажите название проекта."), 400)
     # флажок «маскировать при показе» (dev14, ADR-0141): снят – в карточках код без масок, модели – всегда с масками
     mask = form.get("mask_secrets") == "1" if form.get("mask_form") == "1" else False  # поля нет – без масок
     project_id = await run_in_threadpool(lambda: db_of(request).create_project(name, mask_secrets=mask))
@@ -1001,7 +1025,7 @@ async def create_demo(request: Request):
 
     def apply():
         if not _IMPORT_SLOT.acquire(blocking=False):
-            return list_response(request, error=IMPORT_BUSY, status_code=409)
+            return list_response(request, error=i18n._(IMPORT_BUSY), status_code=409)
         try:
             made = make_demo(request)
             if not isinstance(made, tuple):
@@ -1014,7 +1038,29 @@ async def create_demo(request: Request):
     return await run_in_threadpool(apply)
 
 
-DEMO_MARK_REASON = "Демо-пример: выдуманный код, написанный для приложения, без секретов и реальных данных"
+# хранимый текст: в базу пишется русский msgid, перевод – при показе (mark_reason_shown, ADR-0158)
+DEMO_MARK_REASON = i18n.N_("Демо-пример: выдуманный код, написанный для приложения, без секретов и реальных данных")
+
+
+def _known_mark_reasons() -> tuple[str, ...]:
+    from app.routes.examples import EXAMPLE_MARK_REASON
+    return DEMO_MARK_REASON, EXAMPLE_MARK_REASON
+
+
+def mark_reason_shown(text: object) -> str:
+    """Обоснование отметки для показа: обоснование по умолчанию (демо, пример каталога) хранится русским msgid и
+    показывается на языке интерфейса; текст оператора – как сохранён."""
+    value = str(text or "")
+    return i18n._(value) if value in _known_mark_reasons() else value
+
+
+def mark_reason_stored(text: str) -> str:
+    """Обоснование из формы для записи: обоснование по умолчанию, отправленное в переводе, пишется прежним русским
+    текстом (тексты в базе не меняются с языком); остальное – как ввёл оператор."""
+    for msgid in _known_mark_reasons():
+        if text == " ".join(i18n.translate(msgid, "en").split()):
+            return msgid
+    return text
 
 
 def make_demo(request: Request, after=None, import_after=None, project_id: int | None = None):
@@ -1025,23 +1071,26 @@ def make_demo(request: Request, after=None, import_after=None, project_id: int |
     db = db_of(request)
     demo = find_demo(settings)
     if demo["report"] is None:
-        where = ("Установка стенда повреждена: запустите его заново с ключом --reinstall." if settings.stand == "npm"
-                 else "Запустите приложение через start.ps1 из папки приложения – он подключает весь диск с ней.")
-        return list_response(request, error=(
+        where = (i18n._("Установка стенда повреждена: запустите его заново с ключом --reinstall.")
+                 if settings.stand == "npm"
+                 else i18n._("Запустите приложение через start.ps1 из папки приложения – он подключает весь диск с "
+                             "ней."))
+        return list_response(request, error=i18n._(
             "Демо-выгрузка examples/demo/demo-hub-report.xlsx приложению не видна: её нет ни рядом "
-            "с приложением, ни внутри корня папок с репозиториями. " + where), status_code=404)
+            "с приложением, ни внутри корня папок с репозиториями. {hint}", hint=where), status_code=404)
     try:
         result = parse_workbook(demo["report"], settings.max_upload_bytes)
     except ImportFailure as e:
         return list_response(request, error=str(e), status_code=400)
     except Exception as e:
         eid = log_failure(log, "демо-выгрузка не прочитана", e)
-        return list_response(request, error=f"Не удалось прочитать демо-выгрузку (ошибка {eid}).",
+        return list_response(request, error=i18n._("Не удалось прочитать демо-выгрузку (ошибка {eid}).", eid=eid),
                              status_code=500)
     application = str(result.summary.get("application") or "").strip() or "Demo Library"
     created_now = project_id is None
     if project_id is None:
-        project_id = db.create_project(unique_name(db, f"Демо: {application}"[:MAX_NAME]), after=after)
+        project_id = db.create_project(unique_name(db, i18n._("Демо: {application}", application=application)[:MAX_NAME]),
+                                       after=after)
     if demo["repos_dir"] is not None:
         db.set_repos_dir(project_id, demo["repos_dir"])
     store_import(settings, db, project_id, DEMO_REPORT, result, after=import_after)
@@ -1061,12 +1110,13 @@ def project_page(request: Request, project_id: int):
     return project_response(request, project_id)
 
 
-HUB_APP_ID_REFUSED = ("Приложение в Hub: укажите номер приложения – целое число из адреса его страницы в Hub "
-                      "(…/#/appprofile/<номер>/…) или вставьте эту ссылку целиком – или оставьте поле пустым.")
+HUB_APP_ID_REFUSED = i18n.N_("Приложение в Hub: укажите номер приложения – целое число из адреса его страницы в Hub "
+                             "(…/#/appprofile/<номер>/…) или вставьте эту ссылку целиком – или оставьте поле пустым.")
 _HUB_APP_LINK = re.compile(r"https?://[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::[0-9]{1,5})?(?:/\S*?)?/appprofile/([0-9]{1,12})(?:[/?#]\S*)?")
 
 
-CATALOG_HUB_REFUSED = "Проект из каталога учебных примеров с Hub не связывается: его выгрузка – выгрузка примера."
+CATALOG_HUB_REFUSED = i18n.N_("Проект из каталога учебных примеров с Hub не связывается: его выгрузка – выгрузка "
+                              "примера.")
 
 
 def catalog_hub_refused(db: Database, project_id: int) -> bool:
@@ -1104,27 +1154,27 @@ async def save_params(request: Request, project_id: int):
     def apply():
         project = project_or_404(request, project_id)
         if not name:
-            return project_response(request, project_id, "Укажите название проекта.", 400)
+            return project_response(request, project_id, i18n._("Укажите название проекта."), 400)
         try:
             model = normalize_setting("default_model", raw_model)
         except ConfigError:
-            return project_response(request, project_id, "Модель проекта: неверное имя модели.", 400)
+            return project_response(request, project_id, i18n._("Модель проекта: неверное имя модели."), 400)
         db = db_of(request)
         provider_id: int | None | bool = False if "provider_id" not in form else None
         if raw_provider:
             profile = db.get_provider(number) if (number := provider_number(raw_provider)) is not None else None
             if profile is None or (not profile["enabled"] and profile["id"] != project.get("provider_id")):
-                return project_response(request, project_id, "Профиль модели: выберите включённый профиль.", 400)
+                return project_response(request, project_id, i18n._("Профиль модели: выберите включённый профиль."), 400)
             if not code_profile_ok(profile, project):
-                return project_response(request, project_id, CODE_PROFILE_REFUSED, 400)
+                return project_response(request, project_id, i18n._(CODE_PROFILE_REFUSED), 400)
             provider_id = int(profile["id"])
         hub_app_id: int | None | bool = False
         if raw_hub_app is not None:
             number = hub_app_number(raw_hub_app)
             if raw_hub_app and number is None:
-                return project_response(request, project_id, HUB_APP_ID_REFUSED, 400)
+                return project_response(request, project_id, i18n._(HUB_APP_ID_REFUSED), 400)
             if number is not None and catalog_hub_refused(db, project_id):
-                return project_response(request, project_id, CATALOG_HUB_REFUSED, 400)
+                return project_response(request, project_id, i18n._(CATALOG_HUB_REFUSED), 400)
             hub_app_id = number
         db.update_project(project_id, name=name, model=model, provider_id=provider_id, mask_secrets=mask_secrets)
         if hub_app_id is not False:
@@ -1153,9 +1203,9 @@ def hub_assignment_preview(request: Request, project_id: int, app: str = ""):
     db = db_of(request)
     number = hub_app_number(app) if app else None
     if app and number is None:
-        return project_response(request, project_id, HUB_APP_ID_REFUSED, 400)
+        return project_response(request, project_id, i18n._(HUB_APP_ID_REFUSED), 400)
     if number is not None and catalog_hub_refused(db, project_id):
-        return project_response(request, project_id, CATALOG_HUB_REFUSED, 400)
+        return project_response(request, project_id, i18n._(CATALOG_HUB_REFUSED), 400)
     try:
         result = db.change_hub_assignment(project_id, number, dry=True)
     except ValueError as e:
@@ -1182,9 +1232,9 @@ async def hub_assignment_apply(request: Request, project_id: int):
         project_or_404(request, project_id)
         number = hub_app_number(raw) if raw else None
         if raw and number is None:
-            return project_response(request, project_id, HUB_APP_ID_REFUSED, 400)
+            return project_response(request, project_id, i18n._(HUB_APP_ID_REFUSED), 400)
         if number is not None and catalog_hub_refused(db_of(request), project_id):
-            return project_response(request, project_id, CATALOG_HUB_REFUSED, 400)
+            return project_response(request, project_id, i18n._(CATALOG_HUB_REFUSED), 400)
         try:
             if db_of(request).change_hub_assignment(project_id, number, expect=token).get("unchanged"):
                 return redirect(f"/projects/{project_id}?ok=project_saved")  # уже такое – сброса нет
@@ -1207,9 +1257,9 @@ def project_models(request: Request, project_id: int, provider_id: str = ""):
     if raw:
         profile = db.get_provider(number) if (number := provider_number(raw)) is not None else None
         if profile is None or (not profile["enabled"] and profile["id"] != project.get("provider_id")):
-            return JSONResponse({"detail": "Профиль модели: выберите включённый профиль."}, status_code=400)
+            return JSONResponse({"detail": i18n._("Профиль модели: выберите включённый профиль.")}, status_code=400)
         if not code_profile_ok(profile, project):
-            return JSONResponse({"detail": CODE_PROFILE_REFUSED}, status_code=400)
+            return JSONResponse({"detail": i18n._(CODE_PROFILE_REFUSED)}, status_code=400)
     else:
         profile = profile_for(request, {**project, "provider_id": None})
     models = models_of(request, profile=profile)
@@ -1231,9 +1281,9 @@ async def save_provider(request: Request, project_id: int):
         if raw_provider:
             profile = db.get_provider(number) if (number := provider_number(raw_provider)) is not None else None
             if profile is None or (not profile["enabled"] and profile["id"] != project.get("provider_id")):
-                return project_response(request, project_id, "Профиль модели: выберите включённый профиль.", 400)
+                return project_response(request, project_id, i18n._("Профиль модели: выберите включённый профиль."), 400)
             if not code_profile_ok(profile, project):
-                return project_response(request, project_id, CODE_PROFILE_REFUSED, 400)
+                return project_response(request, project_id, i18n._(CODE_PROFILE_REFUSED), 400)
             provider_id = int(profile["id"])
         db.update_project(project_id, provider_id=provider_id)
         return redirect(f"/projects/{project_id}?ok=provider_changed#step3")
@@ -1244,14 +1294,22 @@ async def save_provider(request: Request, project_id: int):
 # ------------------------------------------------------------------ отметка «код не секретный» (ADR-0104 п. 3, К9)
 
 EXTERNAL_REASON_MIN, EXTERNAL_REASON_MAX = 10, 1000
+# msgid каталога: перевод и подстановка {min}/{max} – при показе (external_problem, ADR-0158)
 EXTERNAL_PROBLEMS = {
-    "external_off": "Отправка в интернет в этой установке выключена (LLM_EXTERNAL): отметку ставить не к чему.",
-    "external_confirm": "Отметка не поставлена: нужно подтвердить отправку флажком.",
-    "external_preview": "Отметка не поставлена: форма не со страницы предпросмотра или то, что уйдёт провайдеру, с тех "
-                        "пор изменилось – посмотрите предпросмотр заново и подтвердите ещё раз.",
-    "external_reason": f"Отметка не поставлена: обоснование – от {EXTERNAL_REASON_MIN} до {EXTERNAL_REASON_MAX} знаков.",
-    "external_busy": "Отметка не снята: отправка внешнему провайдеру не закончилась – повторите через минуту.",
+    "external_off": i18n.N_("Отправка в интернет в этой установке выключена (LLM_EXTERNAL): отметку ставить не к чему."),
+    "external_confirm": i18n.N_("Отметка не поставлена: нужно подтвердить отправку флажком."),
+    "external_preview": i18n.N_("Отметка не поставлена: форма не со страницы предпросмотра или то, что уйдёт "
+                                "провайдеру, с тех пор изменилось – посмотрите предпросмотр заново и подтвердите ещё "
+                                "раз."),
+    "external_reason": i18n.N_("Отметка не поставлена: обоснование – от {min} до {max} знаков."),
+    "external_busy": i18n.N_("Отметка не снята: отправка внешнему провайдеру не закончилась – повторите через минуту."),
 }
+
+
+def external_problem(key: str) -> str:
+    """Текст отказа отметки по ключу из адреса на языке интерфейса; неизвестный ключ – пусто."""
+    msgid = EXTERNAL_PROBLEMS.get(key, "")
+    return i18n._(msgid, min=EXTERNAL_REASON_MIN, max=EXTERNAL_REASON_MAX) if msgid else ""
 
 
 def external_preview_context(request: Request, project: dict) -> dict:
@@ -1281,8 +1339,8 @@ def external_preview_context(request: Request, project: dict) -> dict:
             messages = affiliation.mask_messages(
                 runner_of(request)._masked(build_sast_messages(f, ctx, mask_key=mask_key_of(request))))
     if not messages:
-        note = ("В проекте нет находок SAST текущей выгрузки – показать промпт не из чего, а отметка ставится только "
-                "после предпросмотра: загрузите выгрузку с находками SAST и откройте эту страницу снова.")
+        note = i18n._("В проекте нет находок SAST текущей выгрузки – показать промпт не из чего, а отметка ставится "
+                      "только после предпросмотра: загрузите выгрузку с находками SAST и откройте эту страницу снова.")
     from app.executors import REMOTE_KINDS
     externals = [p for p in db.list_providers()
                  if p["enabled"] and str(p["trust"]) == "external" and str(p.get("kind")) in REMOTE_KINDS]
@@ -1298,12 +1356,13 @@ def external_preview_context(request: Request, project: dict) -> dict:
     # проект из каталога: обоснование – только по целой связи с примером; прежнее (после чужого импорта) не подставляется
     from app.routes.examples import root_of
     reason_default = (example_reason(db, pid, root_of(settings)) if is_catalog_project(db, pid)
+                      else mark_reason_shown(project.get("external_reason")) if project.get("external_reason")
                       else project.get("external_reason"))
     return {"project": project, "messages": messages, "hub_id": hub_id, "note": note, "externals": externals,
             "reason_default": reason_default, "pending_profile": pending,
             "counts": db.count_findings(pid), "review_stats": db.review_stats(pid), "external_on": external_enabled(),
             "reason_min": EXTERNAL_REASON_MIN, "reason_max": EXTERNAL_REASON_MAX, "nonce": nonce, "token": token,
-            "error": EXTERNAL_PROBLEMS.get(request.query_params.get("err", ""), "")}
+            "error": external_problem(request.query_params.get("err", ""))}
 
 
 def external_fingerprint(project: dict, messages: list[dict], externals: list[dict], revision: int = 0) -> str:
@@ -1379,7 +1438,7 @@ async def external_mark(request: Request, project_id: int):
                             if nonce and shown["messages"] else "")
                 if not token or not expected or not hmac.compare_digest(expected, token):
                     return redirect(f"/projects/{project_id}/external?err=external_preview")
-                db_of(request).set_external_mark(project_id, reason)
+                db_of(request).set_external_mark(project_id, mark_reason_stored(reason))
                 # проект из каталога с целой связью: внешний профиль для примеров – теперь, после отметки (ADR-0157)
                 from app.routes.examples import finish_pending_profile, remember_mark_root, root_of
                 remember_mark_root(db_of(request), project_id, settings_of(request))
@@ -1387,7 +1446,7 @@ async def external_mark(request: Request, project_id: int):
                 outcome = finish_pending_profile(db_of(request), project_id, root_of(settings_of(request)),
                                                  int(promised["id"]) if promised else None)
         except TimeoutError:
-            return project_response(request, project_id, EXTERNAL_PROBLEMS["external_busy"], 409)
+            return project_response(request, project_id, i18n._(EXTERNAL_PROBLEMS["external_busy"]), 409)
         log.info("проект %d: отметка «код не секретный» поставлена", project_id)
         if outcome == "assigned":
             return redirect(f"/projects/{project_id}?ok=external_marked_example#params")
@@ -1425,7 +1484,7 @@ async def external_clear(request: Request, project_id: int):
             with project_gate(project_id).write():
                 db_of(request).clear_external_mark(project_id)
         except TimeoutError:
-            return project_response(request, project_id, EXTERNAL_PROBLEMS["external_busy"], 409)
+            return project_response(request, project_id, i18n._(EXTERNAL_PROBLEMS["external_busy"]), 409)
         log.info("проект %d: отметка «код не секретный» снята", project_id)
         return redirect(f"/projects/{project_id}?ok=external_cleared#params")
 
@@ -1480,7 +1539,8 @@ async def delete_project(request: Request, project_id: int):
         project = project_or_404(request, project_id)
         if not confirmed:
             return render(request, "projects/delete.html",
-                          {**delete_context(request, project), "error": "Подтвердите удаление кнопкой ниже."}, 400)
+                          {**delete_context(request, project), "error": i18n._("Подтвердите удаление кнопкой ниже.")},
+                          400)
         try:
             db_of(request).delete_project(project_id)
         except ProjectBusy as e:
@@ -1503,17 +1563,17 @@ async def upload_export(request: Request, project_id: int):
     form = await request.form(max_files=1, max_fields=10)
     if not _IMPORT_SLOT.acquire(blocking=False):
         await form.close()
-        return await run_in_threadpool(project_response, request, project_id, IMPORT_BUSY, 409)
+        return await run_in_threadpool(project_response, request, project_id, i18n._(IMPORT_BUSY), 409)
     try:
         upload = form.get("file")
         confirmed = str(form.get("confirm_other") or "") == "1"
         try:
             if not isinstance(upload, UploadFile) or not upload.filename:
-                raise ImportFailure("Выберите файл выгрузки (.xlsx или .csv).")
+                raise ImportFailure(i18n._("Выберите файл выгрузки (.xlsx или .csv)."))
             filename = Path(upload.filename.replace("\\", "/")).name[:MAX_NAME]
             suffix = Path(filename).suffix.lower()
             if suffix not in (".xlsx", ".csv"):
-                raise ImportFailure("Поддерживаются выгрузки .xlsx (отчёт AppSec.Hub) и .csv.")
+                raise ImportFailure(i18n._("Поддерживаются выгрузки .xlsx (отчёт AppSec.Hub) и .csv."))
             settings.tmp_dir.mkdir(parents=True, exist_ok=True)
             fd, tmp_name = tempfile.mkstemp(dir=settings.tmp_dir, suffix=suffix)
             tmp = Path(tmp_name)
@@ -1523,7 +1583,8 @@ async def upload_export(request: Request, project_id: int):
                     while chunk := await upload.read(1024 * 1024):
                         size += len(chunk)
                         if size > settings.max_upload_bytes:
-                            raise ImportFailure(f"Файл больше {settings.max_upload_mb} МБ – это предел приложения.")
+                            raise ImportFailure(i18n._("Файл больше {mb} МБ – это предел приложения.",
+                                                       mb=settings.max_upload_mb))
                         out.write(chunk)
                 result = await run_in_threadpool(parse_workbook, tmp, settings.max_upload_bytes)
             finally:
@@ -1533,8 +1594,8 @@ async def upload_export(request: Request, project_id: int):
         except Exception as e:
             eid = log_failure(log, "выгрузка не прочитана", e)
             return await run_in_threadpool(project_response, request, project_id,
-                                           "Не удалось прочитать файл: он повреждён или это не выгрузка AppSec.Hub "
-                                           f"(ошибка {eid}).", 400)
+                                           i18n._("Не удалось прочитать файл: он повреждён или это не выгрузка "
+                                                  "AppSec.Hub (ошибка {eid}).", eid=eid), 400)
         finally:
             await form.close()
         if not confirmed:
@@ -1588,21 +1649,22 @@ async def set_repos_and_clone(request: Request, project_id: int):
         db = db_of(request)
         rel, path, error = resolve_folder(settings, clone_rel)
         if error or not rel or path is None or not _is_codebase(path):
-            return project_response(request, project_id, error or "Это не клон кодовой базы.", 400)
+            return project_response(request, project_id, error or i18n._("Это не клон кодовой базы."), 400)
         parent, folder = (rel.rsplit("/", 1) if "/" in rel else ("", rel))
         repos_dir, error = check_project_folder(settings, parent)
         if repos_dir is None:
             return project_response(request, project_id, error, 400)
         offer = folders_context(request, project, rel).get("clone_offer")
         if not offer or offer["codebase"] != codebase:
-            return project_response(request, project_id, "Назначить клон можно, когда у проекта ровно одна кодовая база "
-                                    "без папки: откройте страницу выбора папки заново.", 409)
+            return project_response(request, project_id, i18n._("Назначить клон можно, когда у проекта ровно одна "
+                                                                "кодовая база без папки: откройте страницу выбора "
+                                                                "папки заново."), 409)
         counts = db.clone_reset_counts(project_id, codebase, repos_dir)
         if str(form.get("confirm_reset") or "") == "1":
             shown = parse_counts(form.get("expect_reset"))  # цена, которую видел и подтвердил оператор
             if shown is None:
                 return render(request, "projects/folders.html", {**folders_context(request, project, rel),
-                              "error": "Откройте страницу заново и подтвердите назначение ещё раз."}, 409)
+                              "error": i18n._("Откройте страницу заново и подтвердите назначение ещё раз.")}, 409)
         else:
             if clone_reset_warning(counts):
                 return render(request, "projects/folders.html", {**folders_context(request, project, rel),
@@ -1628,9 +1690,9 @@ async def store_snapshots(request: Request, project_id: int):
         db = db_of(request)
         if any(r["state"] == "running" for r in db.active_runs(project_id)):
             # находка, которую прогон разбирает сейчас, сохранит свой срез сама: параллельная запись не нужна
-            return project_response(request, project_id, SNAPSHOT_RUNNING, 409)
+            return project_response(request, project_id, i18n._(SNAPSHOT_RUNNING), 409)
         if not _SNAPSHOT_SLOT.acquire(blocking=False):
-            return project_response(request, project_id, SNAPSHOT_BUSY, 409)
+            return project_response(request, project_id, i18n._(SNAPSHOT_BUSY), 409)
         try:
             settings = settings_of(request)
             sync_revisions(db, settings, project)  # ревизии клонов сверяются до записи срезов
@@ -1697,8 +1759,8 @@ async def set_codebases(request: Request, project_id: int):
             if codebase not in known or (current.get(codebase) or {}).get("folder", "") == folder:
                 continue  # строка без изменений (в том числе папка, которой уже нет на диске)
             if folder and folder not in candidates:
-                return project_response(request, project_id, base_error or f"Папка «{folder}» не найдена в папке "
-                                                                           "проекта.", 400)
+                return project_response(request, project_id, base_error or i18n._(
+                    "Папка «{folder}» не найдена в папке проекта.", folder=folder), 400)
             if folder and base is not None:
                 try:  # настоящий путь папки – внутри папки проекта (не ссылка и не точка соединения наружу)
                     resolve_repo(base, folder)

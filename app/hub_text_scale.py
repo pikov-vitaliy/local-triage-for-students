@@ -14,15 +14,15 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from app import package_identity
+from app import i18n, package_identity
 from app.db import Database, hub_verdict, text_hash
 from app.models import Finding
 from app.sca_contract import input_ref
 
-ORIGINS = {"manual": "отметка оператора", "defect": "по созданному дефекту", "status": "по записи статуса",
-           "hub_sync": "принята из Hub", "bulk": "общим комментарием"}
-OUTCOMES = {"true_positive": "истинная (дефект)", "false_positive": "ложное срабатывание",
-            "risk_accepted": "риск принят", "uncertain": "решение не принято"}
+ORIGINS = i18n.Labels({"manual": "отметка оператора", "defect": "по созданному дефекту", "status": "по записи статуса",
+                       "hub_sync": "принята из Hub", "bulk": "общим комментарием"})
+OUTCOMES = i18n.Labels({"true_positive": "истинная (дефект)", "false_positive": "ложное срабатывание",
+                        "risk_accepted": "риск принят", "uncertain": "решение не принято"})
 
 
 def _mark(review: dict, current: str, prior: str) -> dict:
@@ -38,14 +38,14 @@ def _mark(review: dict, current: str, prior: str) -> dict:
         origin = "bulk"
     hashes = {review.get("entered_text_hash") or "", review.get("entered_decision_hash") or ""} - {""}
     if not hashes:
-        basis = "без отпечатка текста"
+        basis = i18n._("без отпечатка текста")
     elif text_hash(prior) in hashes:
-        basis = "по прежнему тексту"
+        basis = i18n._("по прежнему тексту")
     elif text_hash(current) in hashes:
-        basis = "по нынешнему тексту"
+        basis = i18n._("по нынешнему тексту")
     else:
-        basis = "по другому тексту"
-    return {"entered": True, "origin": ORIGINS.get(origin, origin or "не указано"), "basis": basis}
+        basis = i18n._("по другому тексту")
+    return {"entered": True, "origin": ORIGINS.get(origin, origin or i18n._("не указано")), "basis": basis}
 
 
 def _set_member(db: Database, project_id: int, item: dict, note: dict) -> bool:
@@ -148,12 +148,12 @@ def _mark_by_sig(review: dict, current: str, prior: str) -> dict:
     origin = str(review.get("entered_origin") or "")
     sig = str((review.get("entered_decision_hash") if origin == "defect" else review.get("entered_text_hash")) or "")
     if not sig:
-        basis = "без отпечатка текста"
+        basis = i18n._("без отпечатка текста")
     elif prior and sig == prior:
-        basis = "по прежнему тексту"
+        basis = i18n._("по прежнему тексту")
     elif current and sig == current:
-        basis = "по нынешнему тексту"
+        basis = i18n._("по нынешнему тексту")
     else:
-        basis = "по другому тексту"
-    return {"entered": True, "origin": ORIGINS.get(origin, origin or "не указано"), "basis": basis}
+        basis = i18n._("по другому тексту")
+    return {"entered": True, "origin": ORIGINS.get(origin, origin or i18n._("не указано")), "basis": basis}
 

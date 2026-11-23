@@ -13,6 +13,7 @@ const path = require('node:path');
 const fsx = require('./fsx');
 
 const { StandError } = require('./paths');
+const { t } = require('./lang');
 const { readJson, writeJsonAtomic } = require('./stand');
 const { npmVersionOf } = require('./version');
 
@@ -72,12 +73,13 @@ function decide(s) {
 
 function unclear(pgDir, s) {
   const where = [];
-  if (s.data) where.push(`рабочий каталог: ${path.join(pgDir, 'data')}`);
-  if (s.next) where.push(`копия после обновления: ${path.join(pgDir, 'next')}`);
+  if (s.data) where.push(t(`рабочий каталог: ${path.join(pgDir, 'data')}`, `working directory: ${path.join(pgDir, 'data')}`));
+  if (s.next) where.push(t(`копия после обновления: ${path.join(pgDir, 'next')}`, `copy after the update: ${path.join(pgDir, 'next')}`));
   const name = (s.mark && s.mark.backup) || (s.nextInfo && s.nextInfo.backup);
-  if (name) where.push(`оригинал до обновления: ${path.join(pgDir, 'backups', name)}`);
-  return new StandError('Обновление схемы базы прервано в состоянии, из которого стенд не продолжает сам. Ничего не удалено. ' +
-    `${where.join('; ')}. Порядок возврата базы до обновления – в README пакета, раздел «Вернуть базу до обновления».`);
+  if (name) where.push(t(`оригинал до обновления: ${path.join(pgDir, 'backups', name)}`, `original before the update: ${path.join(pgDir, 'backups', name)}`));
+  return new StandError(t('Обновление схемы базы прервано в состоянии, из которого стенд не продолжает сам. Ничего не удалено. ' +
+    `${where.join('; ')}. Порядок возврата базы до обновления – в README пакета, раздел «Вернуть базу до обновления».`, 'The database schema update was interrupted in a state from which the stand does not continue by itself. Nothing was deleted. ' +
+    `${where.join('; ')}. How to restore the database from before the update: see the package README, section "Restore the database from before the update".`));
 }
 
 /**
@@ -108,10 +110,10 @@ async function recover(pgDir, ops, say = () => {}) {
     if (step === 'remove-next-tmp') {
       fsx.rmSync(p('next.tmp'), { recursive: true, force: true });
     } else if (step === 'switch') {
-      say('Довожу переключение базы после обновления схемы…');
+      say(t('Довожу переключение базы после обновления схемы…', 'Finishing the database switch after the schema update…'));
       switchOver(pgDir, s.mark.backup);
     } else if (step === 'second-rename' || step === 'second-rename-unmarked') {
-      say('Довожу второй шаг переключения базы…');
+      say(t('Довожу второй шаг переключения базы…', 'Finishing the second step of the database switch…'));
       fsx.renameSync(p('next'), p('data'));
       fsyncDir(pgDir);
       if (fs.existsSync(p('backups'))) fsyncDir(p('backups'));
@@ -121,11 +123,12 @@ async function recover(pgDir, ops, say = () => {}) {
     } else if (step === 'remove-next' || step === 'restore-original') {
       const port = s.nextInfo && s.nextInfo.port;
       if (!(await ops.ensureStopped(p('next'), port))) {
-        throw new StandError(`Не удалось установить, остановлен ли сервер на ${p('next')}: каталог не тронут. Закройте ` +
-          'процессы postgres этого стенда и запустите стенд снова.');
+        throw new StandError(t(`Не удалось установить, остановлен ли сервер на ${p('next')}: каталог не тронут. Закройте ` +
+          'процессы postgres этого стенда и запустите стенд снова.', `Could not determine whether the server on ${p('next')} is stopped: the directory was not touched. Close ` +
+          'the postgres processes of this stand and start the stand again.'));
       }
       if (step === 'restore-original') {
-        say('Обновление схемы не завершилось: возвращаю прежнюю базу на место…');
+        say(t('Обновление схемы не завершилось: возвращаю прежнюю базу на место…', 'The schema update did not finish: putting the previous database back…'));
         fsx.renameSync(p(path.join('backups', s.nextInfo.backup)), p('data'));
         fsyncDir(pgDir);
         fsyncDir(p('backups'));
@@ -168,7 +171,7 @@ function sha256(file) {
 /** Копия остановленного кластера с проверкой SHA-256 каждого файла; ответ – перечень {путь: sha256 оригинала}. */
 function copyVerified(source, target) {
   if (fs.existsSync(path.join(source, 'postmaster.pid'))) {
-    throw new StandError(`Сервер на ${source} не остановлен (есть postmaster.pid): копия не снимается.`);
+    throw new StandError(t(`Сервер на ${source} не остановлен (есть postmaster.pid): копия не снимается.`, `The server on ${source} is not stopped (postmaster.pid exists): no copy is taken.`));
   }
   const files = {};
   const walk = (rel) => {
@@ -183,10 +186,10 @@ function copyVerified(source, target) {
       else if (entry.isFile()) {
         fs.copyFileSync(path.join(source, name), path.join(target, name));
         const original = sha256(path.join(source, name));
-        if (sha256(path.join(target, name)) !== original) throw new StandError(`Копия файла базы ${name} не совпала с оригиналом.`);
+        if (sha256(path.join(target, name)) !== original) throw new StandError(t(`Копия файла базы ${name} не совпала с оригиналом.`, `The copy of database file ${name} does not match the original.`));
         files[name.split(path.sep).join('/')] = original;
       } else {
-        throw new StandError(`В каталоге базы есть ссылка или особый файл ${name}: копия не снимается.`);
+        throw new StandError(t(`В каталоге базы есть ссылка или особый файл ${name}: копия не снимается.`, `The database directory contains a link or special file ${name}: no copy is taken.`));
       }
     }
   };
@@ -229,7 +232,7 @@ function uniqueBackupName(pgDir, base) {
   const taken = (name) => ['', '.files.json', '.json', '.pg.pw'].some((ext) => fs.existsSync(path.join(pgDir, 'backups', `${name}${ext}`)));
   if (!taken(base)) return base;
   for (let n = 2; n < 1000; n += 1) if (!taken(`${base}-${n}`)) return `${base}-${n}`;
-  throw new StandError(`В ${path.join(pgDir, 'backups')} нет свободного имени для копии ${base}.`);
+  throw new StandError(t(`В ${path.join(pgDir, 'backups')} нет свободного имени для копии ${base}.`, `There is no free name for copy ${base} in ${path.join(pgDir, 'backups')}.`));
 }
 
 function comparable(summary) {
@@ -268,15 +271,16 @@ async function updateSchema(pgDir, ctx, ops, say = () => {}) {
   const p = (name) => path.join(pgDir, name);
   const before = await ops.summary(ctx.port);
   if ((before.hub_ops || {}).taken) {
-    throw new StandError(`Обновление схемы отложено: операций Hub в состоянии «выдана» – ${before.hub_ops.taken}. В стенде ` +
-      'Hub выключен, выдавать их некому; обратитесь к преподавателю.');
+    throw new StandError(t(`Обновление схемы отложено: операций Hub в состоянии «выдана» – ${before.hub_ops.taken}. В стенде ` +
+      'Hub выключен, выдавать их некому; обратитесь к преподавателю.', `Schema update postponed: Hub operations in the "issued" state – ${before.hub_ops.taken}. Hub is disabled on the ` +
+      'stand, so nobody can issue them; contact your teacher.'));
   }
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 13);
   // в имени – версия пакета npm: её подставляют в npx local-triage@<версия> при ручном возврате (README пакета)
   let shown = ctx.fromVersion;
   try { shown = npmVersionOf(ctx.fromVersion); } catch { /* версия неизвестна – как есть */ }
   const backup = uniqueBackupName(pgDir, `${stamp}-schema${ctx.schema}-v${shown}`);
-  say(`Обновляю схему базы ${ctx.schema} → ${ctx.expected}: сначала копия, оригинал не меняется…`);
+  say(t(`Обновляю схему базы ${ctx.schema} → ${ctx.expected}: сначала копия, оригинал не меняется…`, `Updating the database schema ${ctx.schema} → ${ctx.expected}: copy first, the original stays unchanged…`));
   await ops.stop(p('data'), ctx.port);
   fsx.rmSync(p('next.tmp'), { recursive: true, force: true });
   const files = copyVerified(p('data'), p('next.tmp'));
@@ -317,13 +321,13 @@ async function updateSchema(pgDir, ctx, ops, say = () => {}) {
 async function migrateCopy(ops, port, before) {
   const copied = await ops.summary(port);
   const same = sameCounts(before, copied);
-  if (!same.ok) throw new StandError(`Копия базы не совпала с оригиналом по числу строк (${same.differ.concat(same.lost).join(', ')}).`);
+  if (!same.ok) throw new StandError(t(`Копия базы не совпала с оригиналом по числу строк (${same.differ.concat(same.lost).join(', ')}).`, `The database copy does not match the original by row count (${same.differ.concat(same.lost).join(', ')}).`));
   await ops.migrate(port);
   const status = await ops.status(port);
-  if (status.state !== 'ok') throw new StandError(`После обновления схемы база в состоянии «${status.state}».`);
+  if (status.state !== 'ok') throw new StandError(t(`После обновления схемы база в состоянии «${status.state}».`, `After the schema update the database is in the "${status.state}" state.`));
   const after = await ops.summary(port);
   const kept = sameCounts(before, after);
-  if (!kept.ok) throw new StandError(`После обновления схемы изменилось число строк (${kept.differ.concat(kept.lost).join(', ')}).`);
+  if (!kept.ok) throw new StandError(t(`После обновления схемы изменилось число строк (${kept.differ.concat(kept.lost).join(', ')}).`, `The row count changed after the schema update (${kept.differ.concat(kept.lost).join(', ')}).`));
 }
 
 module.exports = { fsyncFile, fsyncDir, observe, decide, recover, updateSchema, copyVerified, sameCounts, switchOver, uniqueBackupName, writeBackupMeta,

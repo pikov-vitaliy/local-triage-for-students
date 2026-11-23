@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from app import model_traffic
+from app import i18n, model_traffic
 from app.config import DEFAULT_STATUS_MAP, EDITABLE_SETTINGS, MAX_STATUS, ConfigError, Settings, normalize_setting
 from app.db import Database
 from app.llm import LlmError, norm_model_name
@@ -23,12 +23,12 @@ from app.llm_net import in_container
 from app.llm_ollama import OllamaClient
 from app.triage import reorder_project
 
-# Поля статусов Hub в форме: (итог разбора, имя поля, подпись)
+# Поля статусов Hub в форме: (итог разбора, имя поля, подпись – msgid, перевод при выводе)
 STATUS_FIELDS = (
-    ("true_positive", "status_true_positive", "истинная"),
-    ("false_positive", "status_false_positive", "ложная"),
-    ("uncertain", "status_uncertain", "неясно"),
-    ("risk_accepted", "status_risk_accepted", "риск принят"),
+    ("true_positive", "status_true_positive", i18n.N_("истинная")),
+    ("false_positive", "status_false_positive", i18n.N_("ложная")),
+    ("uncertain", "status_uncertain", i18n.N_("неясно")),
+    ("risk_accepted", "status_risk_accepted", i18n.N_("риск принят")),
 )
 FORM_FIELDS = ("ollama_url", "default_model", *(name for _, name, _ in STATUS_FIELDS), "sca_urgent_cvss",
                "team_name", "sca_internal_prefixes", "hub_url", "affiliation_words")
@@ -37,6 +37,8 @@ MAX_WORDS_FIELD = 12000  # поле «Слова принадлежности»:
 MAX_LISTED = 2000  # сколько папок корня считать для сведений на странице
 
 _DRIVE_ONLY = re.compile(r"[A-Za-z]:")
+# где работает модель профиля – подпись для /api/ollama (start.ps1 печатает её как есть)
+WHERE_LABELS = i18n.Labels({"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"})
 
 
 # ============================================================================ форма
@@ -78,7 +80,8 @@ def check_ollama_url(value: str) -> str:
     try:
         OllamaClient(url).check_url()
     except LlmError as e:
-        raise ConfigError(str(e)) from None
+        from app.run_errors import shown_error
+        raise ConfigError(shown_error(str(e))) from None
     return url
 
 
@@ -92,7 +95,8 @@ def read_form(form: Mapping[str, Any]) -> SettingsForm:
     values["affiliation_words"] = words_text[:MAX_WORDS_FIELD]
     result = SettingsForm(values=values)
     if len(words_text) > MAX_WORDS_FIELD:
-        result.errors["affiliation_words"] = f"Слова принадлежности: не больше {MAX_WORDS_FIELD} знаков"
+        result.errors["affiliation_words"] = i18n._("Слова принадлежности: не больше {limit} знаков",
+                                                     limit=MAX_WORDS_FIELD)
     try:
         result.clean["ollama_url"] = check_ollama_url(values["ollama_url"])
     except ConfigError as e:
@@ -100,7 +104,7 @@ def read_form(form: Mapping[str, Any]) -> SettingsForm:
     try:
         model = normalize_setting("default_model", values["default_model"])
         if not model:
-            raise ConfigError("Модель по умолчанию: выберите модель из списка или впишите её имя")
+            raise ConfigError(i18n._("Модель по умолчанию: выберите модель из списка или впишите её имя"))
         result.clean["default_model"] = model
     except ConfigError as e:
         result.errors["default_model"] = str(e)
@@ -108,9 +112,9 @@ def read_form(form: Mapping[str, Any]) -> SettingsForm:
     for verdict, name, label in STATUS_FIELDS:
         text = values[name]
         if not text:
-            result.errors[name] = f"Укажите статус Hub для вердикта «{label}»"
+            result.errors[name] = i18n._("Укажите статус Hub для вердикта «{verdict}»", verdict=i18n._(label))
         elif len(text) > MAX_STATUS:
-            result.errors[name] = f"Статус Hub – до {MAX_STATUS} знаков"
+            result.errors[name] = i18n._("Статус Hub – до {limit} знаков", limit=MAX_STATUS)
         else:
             statuses[verdict] = text
     if len(statuses) == len(STATUS_FIELDS):
@@ -177,7 +181,8 @@ def check_ollama(make_client: Callable[[str], OllamaClient], url: str) -> dict:
         with model_traffic.context(purpose="models"):
             models = client.list_models()
     except LlmError as e:
-        return {"url": url, "version": "", "models": [], "error": str(e)}
+        from app.run_errors import shown_error
+        return {"url": url, "version": "", "models": [], "error": shown_error(str(e))}  # LlmError – русский, показ (ADR-0158)
     return {"url": url, "version": version, "models": models, "error": ""}
 
 
@@ -211,9 +216,9 @@ def ollama_report(settings: Settings, state: Mapping[str, Any], profile: Mapping
     return {"url": url, "version": "" if error else str(state.get("version") or ""),
             "models": [str(m.get("name") or "") for m in models], "default_model": model,
             "default_model_found": False if error else _model_in(model, models, profile), "error": error,
-            "profile": {"name": str((profile or {}).get("name") or "Ollama из «Настроек»"), "trust": trust,
+            "profile": {"name": str((profile or {}).get("name") or i18n._("Ollama из «Настроек»")), "trust": trust,
                         "kind": str((profile or {}).get("kind") or "ollama"),
-                        "where": {"local": "этот компьютер", "external": "интернет"}.get(trust, "сеть организации")}}
+                        "where": WHERE_LABELS.get(trust, WHERE_LABELS["lan"])}}
 
 
 # ============================================================================ что видно приложению

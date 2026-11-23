@@ -14,7 +14,7 @@ import html
 from collections.abc import Callable, Iterable
 from typing import Any
 
-from app import masking
+from app import i18n, masking
 from app.context import build_context
 from app.models import CodeContext, Finding
 
@@ -44,7 +44,7 @@ def plain_context(project: dict | None, repo_dir, f: Finding, why: str) -> CodeC
         return None
     if repo_dir is None:
         return CodeContext(status="no_repo", file=f.file, language=f.language or "", start_line=0, end_line=0,
-                           target_line=None, lines=[], note=why or "клона нет")
+                           target_line=None, lines=[], note=why or i18n._("клона нет"))
     from app.triage import CONTEXT_CHARS
     return build_context(repo_dir, f, max_chars=CONTEXT_CHARS, mask_key=None, no_repo_note=why)
 

@@ -49,6 +49,7 @@ from app.storage import CommitUnknown
 from app.logsafe import failure_text, log_failure
 from app.masking import mask_text
 from app.models import CodeContext, Finding, LlmStats
+from app import i18n
 from app.prompts import (PROMPT_VERSION, VERDICT_ENUMS, VERDICT_FIELDS, VERDICT_REQUIRED, VERDICT_TYPES,
                          build_sast_messages, check_verdict_answer, parse_verdict, request_key, steering_fields,
                          steering_lines)
@@ -62,39 +63,55 @@ FEED_SIZE = 12  # сколько последних находок показы�
 WORKER_POLL_S = 1.0  # как часто поток проверяет очередь, если его не разбудили
 CONTEXT_CHARS = 14000  # срез кода для модели, знаков; не помещается в окно контекста – сокращается
 MIN_CONTEXT_CHARS = 1000  # …но не меньше: дальше промпт отклоняется с понятной ошибкой
-CLONE_GONE_NOTE = ("Код находки в клоне сейчас не прочитать: файл пропал во время разбора или не найден однозначно. "
+CLONE_GONE_NOTE = i18n.N_("Код находки в клоне сейчас не прочитать: файл пропал во время разбора или не найден однозначно. "
                    "Сохранённый срез не изменён. Проверьте клон или удалите его – тогда модель получит срез из базы.")
 FIT_ATTEMPTS = 3  # сколько раз сокращать срез
-CHANGED_NOTE = ("Находка или папка с клоном изменились, пока шёл разбор (новая выгрузка или другое соответствие "
+CHANGED_NOTE = i18n.N_("Находка или папка с клоном изменились, пока шёл разбор (новая выгрузка или другое соответствие "
                 "папок): результат не привязан, запустите прогон для неё заново.")
-CODE_CHANGED_NOTE = ("Код в клоне изменился, пока отвечала модель: ответ относится к прежнему коду и к находке "
+CODE_CHANGED_NOTE = i18n.N_("Код в клоне изменился, пока отвечала модель: ответ относится к прежнему коду и к находке "
                      "не привязан. Запустите разбор этой находки заново.")
-PARTIAL_NOTE = " Замеры скорости по этой находке неполные: ответа модели целиком нет."
+PARTIAL_NOTE = i18n.N_(" Замеры скорости по этой находке неполные: ответа модели целиком нет.")
 # Занятая база или нечитаемый замок папки данных при записи результата находки (Э2): это не ошибка находки –
 # запись повторяется, затем прогон встаёт на паузу, а находка остаётся в очереди
 # Неизвестный исход COMMIT в прогоне – как занятая база: повтор и пауза, находка не считается ошибкой. Все записи под retry_busy
 # безопасно повторить: вердикт с заранее полученным номером, срез, завершение находки только из pending, состояние прогона
 # (ADR-0128, п. 6.4). Прямые записи без повтора при таком исходе дают паузу; «Продолжить» берёт следующую незавершённую находку.
 BUSY_ERRORS = (DatabaseBusy, LockUnsure, CommitUnknown)
-DB_UNKNOWN_PAUSE = ("Связь с базой оборвалась во время подтверждения записи, записалась ли она, неизвестно. Прогон на паузе. "
+DB_UNKNOWN_PAUSE = i18n.N_("Связь с базой оборвалась во время подтверждения записи, записалась ли она, неизвестно. Прогон на паузе. "
                     "Нажмите «Продолжить», когда база снова доступна: завершённые находки повторно не разбираются, а незавершённая "
                     "может быть разобрана заново.")
-DB_RUN_PAUSE = ("База данных занята или недоступна либо не читается файл замка папки данных, и состояние прогона записать не "
+DB_RUN_PAUSE = i18n.N_("База данных занята или недоступна либо не читается файл замка папки данных, и состояние прогона записать не "
                 "удалось. Прогон на паузе, разобранные находки сохранены. Нажмите «Продолжить», когда это пройдёт.")
 DB_WRITE_RETRIES = 3
 DB_RETRY_WAIT_S = 2.0
-DB_BUSY_PAUSE = ("База данных занята (её держит другой запрос) или файл замка папки данных не прочитался: результат "
+DB_BUSY_PAUSE = i18n.N_("База данных занята (её держит другой запрос) или файл замка папки данных не прочитался: результат "
                  "находки не записан. Прогон на паузе, находка осталась в очереди. Нажмите «Продолжить», когда база "
                  "освободится: модель может разобрать эту находку заново.")
 # Прогон без снимка исполнителя (начат до 0.9.12) и прогон с выключенным профилем (ADR-0102): исполнителя не
 # подменяем – «Продолжить» создаёт новый прогон на действующем профиле проекта (TriageRunner.continue_as_new)
-LEGACY_RUN_NOTE = ("Прогон начат до 0.9.12: сервер модели, на котором он шёл, не записан. Нажмите «Продолжить» – "
+LEGACY_RUN_NOTE = i18n.N_("Прогон начат до 0.9.12: сервер модели, на котором он шёл, не записан. Нажмите «Продолжить» – "
                    "неразобранные находки пойдут новым прогоном на профиле модели проекта.")
-DISABLED_PROFILE_NOTE = ("Прогон на паузе. Включите профиль на странице «Настройки» или нажмите «Продолжить» – "
+DISABLED_PROFILE_NOTE = i18n.N_("Прогон на паузе. Включите профиль на странице «Настройки» или нажмите «Продолжить» – "
                          "неразобранные находки пойдут новым прогоном на действующем профиле проекта.")
-PAUSE_OLLAMA_NOTE = "Прогон на паузе: проверьте Ollama и нажмите «Продолжить»."
-PAUSE_PROVIDER_NOTE = "Прогон на паузе: устраните причину у провайдера и нажмите «Продолжить»."
-PAYMENT_NOTE = "Провайдер ответил 402: нужна оплата (пополните баланс в личном кабинете провайдера)."
+PAUSE_OLLAMA_NOTE = i18n.N_("Прогон на паузе: проверьте Ollama и нажмите «Продолжить».")
+PAUSE_PROVIDER_NOTE = i18n.N_("Прогон на паузе: устраните причину у провайдера и нажмите «Продолжить».")
+PAYMENT_NOTE = i18n.N_("Провайдер ответил 402: нужна оплата (пополните баланс в личном кабинете провайдера).")
+
+APP_STOPPED_NOTE = i18n.N_("Приложение остановлено, прогон на паузе.")
+RUN_PROJECT_MISSING = i18n.N_("Проект прогона не найден.")
+PROMPT_CHANGED = i18n.N_("Прогон начат с промптом {old}, а приложение уже работает с {new}: запустите новый прогон.")
+INTERNAL_ERROR = i18n.N_("Внутренняя ошибка {error} (ошибка {eid}). Подробности – в журнале контейнера.")
+MODEL_NOT_LISTED = i18n.N_("Модели «{model}» нет в списке моделей сервера профиля: проверьте имя модели (оно "
+                           "сравнивается точно, с учётом регистра) в профиле или в параметрах проекта.")
+MODEL_NOT_IN_OLLAMA = i18n.N_("Модели «{model}» нет в Ollama. Загрузите её командой: ollama pull {model}")
+NO_SNAPSHOT_NOTE = i18n.N_("У прогона нет снимка исполнителя: запрос к модели не отправлен.")
+FINDING_GONE_NOTE = i18n.N_("Находки нет в текущей выгрузке.")
+NO_CODE_NOTE = i18n.N_("Нет кода для разбора: {reason}.")
+RETRY_NO_ANSWER = i18n.N_(" Автоматический повтор после обрыва не получил ответа модели: {error}")
+RETRY_ALSO_SILENT = i18n.N_(" Автоматический повтор после обрыва тоже остался без ответа.")
+# где работает удалённый исполнитель прогона – подпись на странице прогона
+REMOTE_WHERE = i18n.Labels({"external": "у внешнего провайдера (интернет)", "lan": "на сервере в сети организации",
+                            "": "на сервере провайдера"})
 
 
 def pause_note(execution: Mapping[str, Any] | None) -> str:
@@ -128,10 +145,10 @@ def retry_busy(write: Callable[[], Any]) -> Any:
                 raise unknown from e
             raise
     return None
-PROMPT_DOUBT_NOTE = ("Промпт, по счёту модели, не поместился в окно контекста вместе с ответом: начало могло быть "
+PROMPT_DOUBT_NOTE = i18n.N_("Промпт, по счёту модели, не поместился в окно контекста вместе с ответом: начало могло быть "
                      "обрезано, ответ не принят. Увеличьте окно контекста (MODEL_NUM_CTX) и разберите находку ещё раз.")
 # удалённый API: запрос не поместился в окно профиля даже с наименьшим срезом – совет про профиль, не про Ollama
-REMOTE_WINDOW_NOTE = ("Увеличьте «Окно контекста модели» или уменьшите «Предел ответа» в профиле провайдера и "
+REMOTE_WINDOW_NOTE = i18n.N_("Увеличьте «Окно контекста модели» или уменьшите «Предел ответа» в профиле провайдера и "
                       "разберите находку ещё раз.")
 
 # Медленный режим модели. Причина такого режима не доказана: у процесса модели часть памяти может оказаться
@@ -151,11 +168,34 @@ SLOW_RELOAD_POLL_S = 0.2  # как часто спрашивать /api/ps во 
 
 def slow_model_status_text(tps: float, baseline: float, reloaded: bool) -> str:
     """Строка оператору о медленном режиме. Причина не называется: она не доказана."""
-    measured = f"{_tps_number(tps)} ток/с при обычных {_tps_number(baseline)}"
+    # строка пишется в журнал прогона – русский канонический текст, перевод при показе (run_errors.shown_error)
+    values = {"tps": _tps_number(tps), "baseline": _tps_number(baseline)}
     if reloaded:
-        return f"Модель работала медленно ({measured}) – перезагружена"
-    return (f"Модель работала медленно ({measured}) – перезагрузка не помогла: закройте программы, "
-            "использующие видеокарту, и нажмите «Пауза» → «Продолжить»")
+        return SLOW_RELOADED.format(**values)
+    return SLOW_NOT_HELPED.format(**values)
+
+
+UNLOAD_FORBIDDEN_NOTE = i18n.N_(" Выгрузка модели на этом сервере не разрешена профилем.")
+SLOW_RELOAD_FAILED = i18n.N_("Модель работала медленно – перезагрузить модель не удалось: {error}")
+UNLOAD_INTERRUPTED = i18n.N_("ожидание выгрузки прервано командой управления.")
+UNLOAD_TIMEOUT = i18n.N_("Ollama не подтвердила выгрузку за {seconds} с.")
+SLOW_RELOADED = i18n.N_("Модель работала медленно ({tps} ток/с при обычных {baseline}) – перезагружена")
+SLOW_NOT_HELPED = i18n.N_("Модель работала медленно ({tps} ток/с при обычных {baseline}) – перезагрузка не помогла: "
+                          "закройте программы, использующие видеокарту, и нажмите «Пауза» → «Продолжить»")
+
+# Тексты, которые пишутся в базу (run_items.error, runs.last_error, журнал прогона) – русские канонические: по ним
+# идут классификация ошибок (run_errors.error_group) и отбор «результат неизвестен». Перевод – только при показе
+# (run_errors.shown_error), по этому списку: точный текст, шаблон с подстановками или фраза внутри составного текста.
+FAILURE_TEMPLATE = i18n.N_("{what}: {error} (ошибка {eid})")  # формат logsafe.failure_text
+STORED_TEXTS = (
+    CLONE_GONE_NOTE, CHANGED_NOTE, CODE_CHANGED_NOTE, PARTIAL_NOTE, DB_UNKNOWN_PAUSE, DB_RUN_PAUSE, DB_BUSY_PAUSE,
+    LEGACY_RUN_NOTE, DISABLED_PROFILE_NOTE, PAUSE_OLLAMA_NOTE, PAUSE_PROVIDER_NOTE, PAYMENT_NOTE, PROMPT_DOUBT_NOTE,
+    REMOTE_WINDOW_NOTE, APP_STOPPED_NOTE, RUN_PROJECT_MISSING, PROMPT_CHANGED, INTERNAL_ERROR, MODEL_NOT_LISTED,
+    MODEL_NOT_IN_OLLAMA, NO_SNAPSHOT_NOTE, FINDING_GONE_NOTE, NO_CODE_NOTE, RETRY_NO_ANSWER, RETRY_ALSO_SILENT,
+    UNLOAD_FORBIDDEN_NOTE, SLOW_RELOAD_FAILED, UNLOAD_INTERRUPTED, UNLOAD_TIMEOUT, SLOW_RELOADED, SLOW_NOT_HELPED,
+    FAILURE_TEMPLATE, i18n.N_("Не удалось собрать контекст"), i18n.N_("Не удалось сохранить срез"),
+    i18n.N_("Не удалось собрать промпт"), i18n.N_("Ответ модели не разобран"), i18n.N_("Не удалось сохранить вердикт"),
+)
 
 
 def _tps_number(value: float) -> str:
@@ -251,21 +291,24 @@ def repo_dir_for(settings: Settings, project: dict, codebase_map: dict[str, dict
     читается, даже если папка на месте: код кодовой базы – срезы в базе."""
     entry = codebase_map.get(f.codebase) or {}
     folder = str(entry.get("folder") or "").strip()
+    # причина уходит в заметку среза (промпт и отпечаток case_hash) – русский канонический текст при любом языке
+    # интерфейса (ADR-0158); перевод – при показе (view.context_note)
     if not folder:
-        return None, "кодовая база не сопоставлена с папкой"
+        return None, i18n.N_("кодовая база не сопоставлена с папкой")
     if entry.get("detached"):
-        return None, "клон отвязан: код берётся из срезов в базе"
+        return None, i18n.N_("клон отвязан: код берётся из срезов в базе")
     rel = "/".join(part for part in (str(project.get("repos_dir") or "").strip("/"), folder) if part)
     try:
-        path = resolve_repo(settings.repos_root, rel)
+        with i18n.use("ru"):
+            path = resolve_repo(settings.repos_root, rel)
     except ValueError as e:
         return None, str(e)
     if not path.is_dir():
-        return None, "папка с клоном не найдена"
+        return None, i18n.N_("папка с клоном не найдена")
     if empty_dir(path):
         # Пустая папка на месте удалённого клона – тоже клона нет: иначе сверка ревизий сочла бы её другим
         # кодом и сбросила сохранённые срезы (ADR-0072)
-        return None, "папка с клоном пуста"
+        return None, i18n.N_("папка с клоном пуста")
     return path, ""
 
 
@@ -550,6 +593,9 @@ class TriageRunner:
         self._drops: dict[int, dict[str, int]] = {}
         self._drop_pause: dict[int, str] = {}
         self._wake = threading.Event()
+        # язык прогона (ADR-0158): фиксируется на первой находке прогона в этом процессе – смена языка в «Настройках»
+        # посреди прогона не делает его запросы к модели разноязычными; после перезапуска – язык на момент продолжения
+        self._run_lang: dict[int, str] = {}
         self._halt = threading.Event()
         self._thread: threading.Thread | None = None
 
@@ -594,9 +640,9 @@ class TriageRunner:
         прогоном: окно, предел ответа, срок и режим схемы замораживаются при постановке."""
         model = str(model or "").strip()
         if scope not in SCOPES:
-            raise TriageError("Неизвестный охват прогона.")
+            raise TriageError(i18n._("Неизвестный охват прогона."))
         if not model:
-            raise TriageError("Не выбрана модель.")
+            raise TriageError(i18n._("Не выбрана модель."))
         settings = self.current_settings()
         try:
             profile = choose_profile(self.db, settings, self.db.get_project(project_id), provider_id)
@@ -607,17 +653,18 @@ class TriageRunner:
             active = self.db.active_runs(project_id)
             if active:
                 if origin == "card" and active[0].get("state") != "paused":  # разборы идут по одному, очереди нет – сказать, что делать
-                    raise TriageError(f"Сейчас идёт другой разбор (прогон №{active[0]['id']}). Разборы проекта идут по одному: "
-                                      "дождитесь его конца и нажмите «Разобрать» снова. Ход прогона – на странице проекта.")
-                raise TriageError(f"У проекта есть незавершённый прогон №{active[0]['id']}: продолжите или "
-                                  "остановите его.")
+                    raise TriageError(i18n._("Сейчас идёт другой разбор (прогон №{run}). Разборы проекта идут по одному: "
+                                             "дождитесь его конца и нажмите «Разобрать» снова. Ход прогона – на странице "
+                                             "проекта.", run=active[0]['id']))
+                raise TriageError(i18n._("У проекта есть незавершённый прогон №{run}: продолжите или остановите его.",
+                                         run=active[0]['id']))
             try:  # состав очереди и паспорт – одним чтением в транзакции создания прогона (бэклог 104)
                 run_id = self.db.create_run(project_id, model, scope, PROMPT_VERSION, list(hub_ids), fresh=fresh,
                                             origin=origin, execution=execution, queue_scope=scope)
             except EmptyQueue:
-                raise TriageError("Нет находок SAST для выбранного охвата.") from None
+                raise TriageError(i18n._("Нет находок SAST для выбранного охвата.")) from None
             except ProfileChanged as e:
-                raise TriageError(f"{e} Выберите для проекта действующий профиль.") from None
+                raise TriageError(i18n._("{error} Выберите для проекта действующий профиль.", error=e)) from None
         self._wake.set()
         return run_id
 
@@ -626,7 +673,7 @@ class TriageRunner:
         профиль снимка выключен. Тогда «Продолжить» – новый прогон на действующем профиле проекта (П22)."""
         execution = self.db.get_execution(run.get("execution_id"))
         if execution is None:
-            return "Прогон начат до 0.9.12: адрес исполнителя у него не записан."
+            return i18n._("Прогон начат до 0.9.12: адрес исполнителя у него не записан.")
         profile = self.db.get_provider(execution["provider_id"]) if execution.get("provider_id") else None
         return snapshot_mismatch(profile, execution)
 
@@ -640,13 +687,13 @@ class TriageRunner:
         with self._lock:
             run = self.db.get_run(run_id)
             if run is None:
-                raise TriageError("Прогон не найден.")
+                raise TriageError(i18n._("Прогон не найден."))
             if run["state"] == "running":
-                raise TriageError("Прогон ещё идёт: сначала поставьте его на паузу.")
+                raise TriageError(i18n._("Прогон ещё идёт: сначала поставьте его на паузу."))
             self.db.settle_sending_items(run_id)  # К11: находки с меткой без результата новым прогоном не берутся
             ids = list(hub_ids) if hub_ids is not None else self.db.pending_hub_ids(run_id)
             if not ids:
-                raise TriageError("Продолжать нечего: все находки прогона уже разобраны.")
+                raise TriageError(i18n._("Продолжать нечего: все находки прогона уже разобраны."))
             execution = None
             if execution_id is None:
                 settings = self.current_settings()
@@ -658,17 +705,17 @@ class TriageRunner:
                                              settings.model_json_schema)
             others = [r for r in self.db.active_runs(run["project_id"]) if r["id"] != run_id]
             if others:
-                raise TriageError(f"У проекта есть незавершённый прогон №{others[0]['id']}: продолжите или "
-                                  "остановите его.")
+                raise TriageError(i18n._("У проекта есть незавершённый прогон №{run}: продолжите или остановите его.",
+                                         run=others[0]['id']))
             try:
                 new_id = self.db.create_run(run["project_id"], run["model"], "selected", PROMPT_VERSION, ids,
                                             fresh=bool(run["fresh"]) if fresh is None else fresh,
                                             origin=run.get("origin") or "" if origin is None else origin,
                                             execution=execution, execution_id=execution_id, parent_run_id=run_id)
             except ProfileChanged as e:  # профиль выключили или сменили адрес только что: прежний прогон не тронут
-                raise TriageError(f"{e} Запустите новый прогон на действующем профиле проекта.") from None
+                raise TriageError(i18n._("{error} Запустите новый прогон на действующем профиле проекта.", error=e)) from None
             except RuntimeError:
-                raise TriageError("Прогон успел измениться: обновите страницу.") from None
+                raise TriageError(i18n._("Прогон успел измениться: обновите страницу.")) from None
         self._wake.set()
         return new_id
 
@@ -678,14 +725,15 @@ class TriageRunner:
         прогон без снимка (до 0.9.12) – новый прогон на действующем профиле проекта с собственным снимком."""
         run = self.db.get_run(run_id)
         if run is None:
-            raise TriageError("Прогон не найден.")
+            raise TriageError(i18n._("Прогон не найден."))
         execution = self.db.get_execution(run.get("execution_id"))
         if execution is None:
             return self.continue_as_new(run_id, hub_ids, origin="retry", fresh=True)
         profile = self.db.get_provider(execution["provider_id"]) if execution.get("provider_id") else None
         reason = snapshot_mismatch(profile, execution)
         if reason:
-            raise TriageError(f"{reason} Запустите новый прогон ошибочных находок на действующем профиле проекта.")
+            raise TriageError(i18n._("{reason} Запустите новый прогон ошибочных находок на действующем профиле проекта.",
+                                     reason=reason))
         return self.continue_as_new(run_id, hub_ids, origin="retry", fresh=True, execution_id=int(execution["id"]))
 
     def pause(self, run_id: int) -> bool:
@@ -848,8 +896,9 @@ class TriageRunner:
                          round(run["last_tps"], 1) if run["last_tps"] else None),
             "tps_avg": round(tps_avg, 1) if tps_avg else None,
             "remote_executor": remote,
-            "remote_where": {"external": "у внешнего провайдера (интернет)", "lan": "на сервере в сети организации"}.get(
-                str((execution or {}).get("trust") or ""), "на сервере провайдера") if remote else "",
+            "remote_where": REMOTE_WHERE.get(str((execution or {}).get("trust") or ""), REMOTE_WHERE[""]),
+            "remote_trust": str((execution or {}).get("trust") or "")
+            if remote else "",
             "control": control,
             "current": current,
             "feed": feed,
@@ -884,8 +933,7 @@ class TriageRunner:
                 self._pause_after_db_failure(run_id, DB_UNKNOWN_PAUSE if isinstance(e, CommitUnknown) else DB_RUN_PAUSE)
             except Exception as e:  # прогон не должен оставаться «идёт» после сбоя
                 eid = log_failure(log, "прогон %s прерван внутренней ошибкой", e, run_id)
-                self._mark_error(run_id, f"Внутренняя ошибка {type(e).__name__} (ошибка {eid}). Подробности – "
-                                         "в журнале контейнера.")
+                self._mark_error(run_id, INTERNAL_ERROR.format(error=type(e).__name__, eid=eid))
             finally:
                 with self._lock:
                     # отложенной паузе нужен принятый «Стоп»: он мог остаться только в памяти
@@ -950,11 +998,10 @@ class TriageRunner:
         run = self.db.get_run(run_id)
         project = self.db.get_project(run["project_id"]) if run is not None else None
         if run is None or project is None:
-            self._finish(run_id, "error", "Проект прогона не найден.")
+            self._finish(run_id, "error", RUN_PROJECT_MISSING)
             return
         if run["prompt_version"] != PROMPT_VERSION:
-            self._finish(run_id, "error", f"Прогон начат с промптом {run['prompt_version']}, а приложение уже "
-                                          f"работает с {PROMPT_VERSION}: запустите новый прогон.")
+            self._finish(run_id, "error", PROMPT_CHANGED.format(old=run['prompt_version'], new=PROMPT_VERSION))
             return
         settings = self.current_settings()  # папки клонов; адрес, модель и параметры – из снимка исполнителя
         execution = self.db.get_execution(run.get("execution_id"))
@@ -1005,10 +1052,7 @@ class TriageRunner:
             if refused:
                 self._finish(run_id, "paused", refused)
                 return
-            self._finish(run_id, "error", (
-                f"Модели «{run['model']}» нет в списке моделей сервера профиля: проверьте имя модели (оно "
-                "сравнивается точно, с учётом регистра) в профиле или в параметрах проекта." if remote else
-                f"Модели «{run['model']}» нет в Ollama. Загрузите её командой: ollama pull {run['model']}"))
+            self._finish(run_id, "error", (MODEL_NOT_LISTED if remote else MODEL_NOT_IN_OLLAMA).format(model=run['model']))
             return
         # Паспорт окружения сохраняется при каждом продолжении, без зависимости от браузера.
         from app import __version__
@@ -1051,7 +1095,7 @@ class TriageRunner:
             if self._apply_control(run_id):
                 return
             if halt.is_set():
-                self._finish(run_id, "paused", "Приложение остановлено, прогон на паузе.")
+                self._finish(run_id, "paused", APP_STOPPED_NOTE)
                 return
             item = self.db.next_pending_item(run_id)
             if item is None:
@@ -1063,12 +1107,13 @@ class TriageRunner:
                 if self._apply_control(run_id):
                     return
                 if halt.is_set():
-                    self._finish(run_id, "paused", "Приложение остановлено, прогон на паузе.")
+                    self._finish(run_id, "paused", APP_STOPPED_NOTE)
                     return
                 continue  # команду успели отменить («Продолжить» после «Пауза») – ждать права снова
             refused, busy_note = "", DB_BUSY_PAUSE
             try:
-                problem = self._process_item(run, client, item, settings, execution)
+                with i18n.use(self._lang_of(run_id)):
+                    problem = self._process_item(run, client, item, settings, execution)
             except BUSY_ERRORS as e:
                 if isinstance(e, CommitUnknown):
                     busy_note = DB_UNKNOWN_PAUSE
@@ -1148,6 +1193,32 @@ class TriageRunner:
         except LlmError:
             return ""
 
+    RUN_LANG_KEY = "run_lang:{run_id}"  # ключ таблицы settings: язык прогона (ADR-0158), без новой колонки схемы
+
+    def _lang_of(self, run_id: int) -> str:
+        """Язык запросов прогона: зафиксирован на первой находке и записан в базу – продолжение после паузы и
+        перезапуска приложения идёт на том же языке, даже если язык интерфейса сменили."""
+        lang = self._run_lang.get(run_id)
+        if lang:
+            return lang
+        key = self.RUN_LANG_KEY.format(run_id=run_id)
+        getter, setter = getattr(self.db, "get_settings", None), getattr(self.db, "set_settings", None)
+        if getter is None or setter is None:  # база без настроек (подмена в проверках) – язык только в памяти
+            lang = i18n.current()
+        else:
+            # сбой чтения или записи – как у остальных записей прогона: исключение базы ставит прогон на паузу до запроса
+            # к модели, а не подменяет сохранённый язык текущим (ревью Codex dev38, круг 2)
+            lang = i18n.normalize(getter().get(key))
+            if lang is None:
+                # прогон начат до dev38 и уже разбирал находки (ключа нет, счётчики не нулевые): его запросы шли на
+                # русском – продолжение тоже на русском (ревью Codex dev38, круг 3)
+                run = self.db.get_run(run_id) if hasattr(self.db, "get_run") else None
+                started = bool(run) and any(int(run.get(k) or 0) for k in ("done", "failed", "cached", "skipped"))
+                setter({key: "ru" if started else i18n.current()})
+                lang = i18n.normalize(getter().get(key)) or i18n.current()
+        self._run_lang[run_id] = lang
+        return lang
+
     def _process_item(self, run: dict, client: OllamaClient, item: dict, settings: Settings | None = None,
                       execution: Mapping[str, Any] | None = None) -> str:
         """Одна находка прогона. Возвращает текст ошибки, если Ollama перестала отвечать, иначе "".
@@ -1158,7 +1229,7 @@ class TriageRunner:
         if execution is None:
             execution = self.db.get_execution(run.get("execution_id"))
         if execution is None:
-            raise SendNotAllowed("У прогона нет снимка исполнителя: запрос к модели не отправлен.")
+            raise SendNotAllowed(NO_SNAPSHOT_NOTE)
         run_id, item_id, hub_id = int(run["id"]), int(item["id"]), str(item["hub_id"])
         project_id = int(run["project_id"])
         started = time.monotonic()
@@ -1166,7 +1237,7 @@ class TriageRunner:
         # прогона. Результат привязывается, только если снимок к моменту сохранения не устарел (save_case).
         source = self.db.case_input(project_id, hub_id)
         if source is None or source.get("missing"):
-            self.db.finish_item(run_id, item_id, "skipped", error="Находки нет в текущей выгрузке.")
+            self.db.finish_item(run_id, item_id, "skipped", error=FINDING_GONE_NOTE)
             return ""
         f = Finding.from_dict(source["data"])
         self._set_live(run_id, hub_id=hub_id, finding_id=source["finding_id"], phase="context", since=time.time(),
@@ -1190,7 +1261,7 @@ class TriageRunner:
             raise
         except Exception as e:
             eid = log_failure(log, "контекст находки не собран (прогон %s)", e, run_id)
-            self.db.finish_item(run_id, item_id, "error", error=failure_text("Не удалось собрать контекст", e, eid))
+            self.db.finish_item(run_id, item_id, "error", error=failure_text(i18n.N_("Не удалось собрать контекст"), e, eid))
             return ""
         if snapshot is None and degrades(stored, ctx):
             # Полноценный срез в базе не заменяется строкой выгрузки (ADR-0072): ни срезом, ни кэшем, ни ответом
@@ -1211,7 +1282,7 @@ class TriageRunner:
             except Exception as e:
                 eid = log_failure(log, "срез находки не сохранён (прогон %s)", e, run_id)
                 self.db.finish_item(run_id, item_id, "error", case_hash=chash,
-                                    error=failure_text("Не удалось сохранить срез", e, eid), **measures)
+                                    error=failure_text(i18n.N_("Не удалось сохранить срез"), e, eid), **measures)
                 return None
 
         for attempt in range(FIT_ATTEMPTS + 1):
@@ -1220,7 +1291,7 @@ class TriageRunner:
                 linked = store(chash, None)
                 if linked is not None:
                     self.db.finish_item(run_id, item_id, "skipped", case_hash=chash,
-                                        error=f"Нет кода для разбора: {ctx.note or ctx.status}." if linked
+                                        error=NO_CODE_NOTE.format(reason=ctx.note or ctx.status) if linked
                                         else CHANGED_NOTE)
                 return ""
             current = (stored or {}).get("verdict") or {}
@@ -1244,7 +1315,7 @@ class TriageRunner:
                 # срез всё равно сохраняется: если код изменился, прежний вердикт к нему уже не относится
                 if store(chash, None) is not None:
                     self.db.finish_item(run_id, item_id, "error", case_hash=chash,
-                                        error=failure_text("Не удалось собрать промпт", e, eid))
+                                        error=failure_text(i18n.N_("Не удалось собрать промпт"), e, eid))
                 return ""
             # Кэш по запросу целиком (ADR-0027, ADR-0084): сообщения, параметры генерации, режим схемы и digest
             # весов модели, который сейчас лежит в Ollama под этим именем. Ответ на другой запрос или от других
@@ -1310,7 +1381,7 @@ class TriageRunner:
             except Exception as e:
                 eid = log_failure(log, "контекст находки не собран (прогон %s)", e, run_id)
                 self.db.finish_item(run_id, item_id, "error",
-                                    error=failure_text("Не удалось собрать контекст", e, eid))
+                                    error=failure_text(i18n.N_("Не удалось собрать контекст"), e, eid))
                 return ""
             if degrades(stored, ctx):  # файл пропал, пока срез сокращался
                 self._keep_slice(settings, source, stored, project_id, hub_id)
@@ -1408,9 +1479,8 @@ class TriageRunner:
                 # вместе с записью результата
                 measures = self._measures(e.stats, time.monotonic() - started)
                 retry_error = str(getattr(e, "retry_error", "") or "")
-                again = (f" Автоматический повтор после обрыва не получил ответа модели: {retry_error}" if retry_error
-                         else " Автоматический повтор после обрыва тоже остался без ответа."
-                         if getattr(e, "drop_retries", 0) else "")
+                again = (RETRY_NO_ANSWER.format(error=retry_error) if retry_error
+                         else RETRY_ALSO_SILENT if getattr(e, "drop_retries", 0) else "")
                 self.db.finish_item(run_id, item_id, "error", case_hash=chash,
                                     error=f"{UNKNOWN_RESULT_NOTE} {e}{again}", stats_partial=partial, **measures)
                 self._count_drop(run, True)
@@ -1454,7 +1524,7 @@ class TriageRunner:
         except Exception as e:  # неожиданный сбой разбора ответа – ошибка этой находки, прогон идёт дальше
             eid = log_failure(log, "ответ модели не разобран (прогон %s)", e, run_id)
             self.db.finish_item(run_id, item_id, "error", case_hash=chash,
-                                error=failure_text("Ответ модели не разобран", e, eid), **measures)
+                                error=failure_text(i18n.N_("Ответ модели не разобран"), e, eid), **measures)
             return ""
         # последняя проверка перед сохранением – после всей нормализации вердикта (сервер с ключом мог вернуть его)
         if model_traffic.shows_secret([verdict.to_dict(), stats.to_dict()], getattr(client, "secrets", ())):
@@ -1478,7 +1548,7 @@ class TriageRunner:
         except Exception as e:  # сбой записи – ошибка этой находки, а не всего прогона
             eid = log_failure(log, "вердикт не сохранён (прогон %s)", e, run_id)
             self.db.finish_item(run_id, item_id, "error", case_hash=chash,
-                                error=failure_text("Не удалось сохранить вердикт", e, eid), **measures)
+                                error=failure_text(i18n.N_("Не удалось сохранить вердикт"), e, eid), **measures)
             return ""
         # Пока модель отвечала, код в клоне могли поменять (правки в рабочей копии, git pull): ответ сохранён в кэше
         # для того кода, который она видела, но к находке не привязывается – иначе он выглядел бы действующим.
@@ -1594,7 +1664,7 @@ class TriageRunner:
             state.warning = True
             state.text = slow_model_status_text(tps, baseline, reloaded=False)
             if not state.unload_allowed:  # общий сервер: выгружать модель профиль не разрешает (ADR-0102 п. 9)
-                state.text += " Выгрузка модели на этом сервере не разрешена профилем."
+                state.text += UNLOAD_FORBIDDEN_NOTE
             self._record_slow_event(run, "warning", tps, baseline, state)
             log.info("прогон %s: медленный режим модели не исправлен двумя перезагрузками (%s ток/с при обычных %s)",
                      int(run["id"]), _tps_number(tps), _tps_number(baseline))
@@ -1621,7 +1691,7 @@ class TriageRunner:
                 self._wait_unloaded(client, model, interrupted)
         except LlmError as e:
             state.warning = True
-            state.text = f"Модель работала медленно – перезагрузить модель не удалось: {e}"
+            state.text = SLOW_RELOAD_FAILED.format(error=e)
             self._record_slow_event(run, "warning", tps, baseline, state)
             log_failure(log, "модель не выгружена для перезагрузки (прогон %s)", e, run_id)
             return
@@ -1650,14 +1720,14 @@ class TriageRunner:
         deadline = time.monotonic() + SLOW_RELOAD_WAIT_S
         while True:
             if interrupted():
-                raise LlmError("ожидание выгрузки прервано командой управления.")
+                raise LlmError(UNLOAD_INTERRUPTED)
             if time.monotonic() >= deadline:
-                raise LlmError(f"Ollama не подтвердила выгрузку за {SLOW_RELOAD_WAIT_S:g} с.")
+                raise LlmError(UNLOAD_TIMEOUT.format(seconds=f"{SLOW_RELOAD_WAIT_S:g}"))
             loaded = {norm_model_name(str(entry.get("name") or "")) for entry in client.ps()}
             if interrupted():
-                raise LlmError("ожидание выгрузки прервано командой управления.")
+                raise LlmError(UNLOAD_INTERRUPTED)
             if time.monotonic() >= deadline:
-                raise LlmError(f"Ollama не подтвердила выгрузку за {SLOW_RELOAD_WAIT_S:g} с.")
+                raise LlmError(UNLOAD_TIMEOUT.format(seconds=f"{SLOW_RELOAD_WAIT_S:g}"))
             if wanted not in loaded:
                 return
             time.sleep(min(SLOW_RELOAD_POLL_S, max(0.0, deadline - time.monotonic())))

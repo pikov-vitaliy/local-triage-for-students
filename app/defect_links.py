@@ -9,13 +9,18 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from app import hub_defects
+from app import hub_defects, i18n
 from app.db import Database, loads
 
 HIDDEN_STATES = ("cancelled", "failed")
 # находка привязана к дефекту (POST мог дойти до Hub) – как у карточки (db.hub_defect_bound); заготовка и
 # предпросмотр – подготовка: значок есть, но «в дефекте» версия не считается (ревью dev19, круг 2)
 BOUND_STATES = Database.HUB_DEFECT_BOUND
+
+
+def _word(bound: bool) -> str:
+    """Слово перед text в значке (ревью dev20) – на языке интерфейса."""
+    return i18n._("дефект") if bound else i18n._("подготовка дефекта")
 
 
 def summary(row: dict, project_id: int) -> dict:
@@ -27,13 +32,13 @@ def summary(row: dict, project_id: int) -> dict:
     parts = [f"ID{number}"] if isinstance(number, int) and not isinstance(number, bool) and number > 0 else []
     if row.get("hub_defect_id"):
         parts.append(f"№{row['hub_defect_id']}")
-    text = " · ".join(parts) or f"строка {row['id']}"
+    text = " · ".join(parts) or i18n._("строка {id}", id=row["id"])
     if not done:
         text += f" · {label}"
     bound = state in BOUND_STATES
     return {"id": int(row["id"]), "number": number, "hub_defect_id": str(row.get("hub_defect_id") or ""),
             "state": state, "label": label, "done": done, "bound": bound,
-            "word": "дефект" if bound else "подготовка дефекта",  # слово перед text в значке (ревью dev20)
+            "word": _word(bound),  # слово перед text в значке (ревью dev20)
             "card_url": f"/projects/{project_id}/defects/{row['id']}",
             "kind": str(row.get("kind") or ""), "origin": str(row.get("origin") or ""), "text": text}
 
@@ -71,7 +76,7 @@ def by_hub_id(db: Database, project_id: int, kind: str | None = None) -> dict[st
             if hub_id:
                 bound = hub_id in family["bound"]
                 out.setdefault(hub_id, []).append({**item, "bound": bound,
-                                                   "word": "дефект" if bound else "подготовка дефекта"})
+                                                   "word": _word(bound)})
     return out
 
 
@@ -82,7 +87,7 @@ def merge(groups: Iterable[Iterable[dict]]) -> list[dict]:
         for item in items:
             kept = seen.setdefault(item["id"], dict(item))
             kept["bound"] = bool(kept.get("bound")) or bool(item.get("bound"))
-            kept["word"] = "дефект" if kept["bound"] else "подготовка дефекта"
+            kept["word"] = _word(kept["bound"])
     return [seen[k] for k in sorted(seen)]
 
 

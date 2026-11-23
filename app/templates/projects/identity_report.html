@@ -1,74 +1,74 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, project_tabs %}
-{% block title %}Отчёт перехода идентичности · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Отчёт перехода идентичности") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}identity-report{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Отчёт перехода</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Отчёт перехода") }}</span>{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Отчёт перехода идентичности пакетов</h1>
-    <p class="page-sub">Экосистема и координаты компонентов SCA – по сведениям Hub о библиотеке. Страница только показывает: в Hub она не обращается.</p>
+    <h1>{{ _("Отчёт перехода идентичности пакетов") }}</h1>
+    <p class="page-sub">{{ _("Экосистема и координаты компонентов SCA – по сведениям Hub о библиотеке. Страница только показывает: в Hub она не обращается.") }}</p>
   </div>
-  <div class="page-actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/components">{{ icon("arrow-left") }}К компонентам</a></div>
+  <div class="page-actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/components">{{ icon("arrow-left") }}{{ _("К компонентам") }}</a></div>
 </div>
 <section class="panel" id="identity-report-findings" aria-labelledby="identity-report-findings-title">
-  <h2 id="identity-report-findings-title">Находки SCA</h2>
+  <h2 id="identity-report-findings-title">{{ _("Находки SCA") }}</h2>
   <dl class="terms">
-    <dt>Всего</dt><dd>{{ report.findings }}</dd>
-    <dt>Идентичность по сведениям Hub</dt><dd>{{ report.by_source.get("hub", 0) }}</dd>
-    <dt>По выгрузке</dt><dd>{{ report.findings - report.by_source.get("hub", 0) }}</dd>
-    <dt>Переходов принято</dt><dd>{{ report.identity_rev }}</dd>
+    <dt>{{ _("Всего") }}</dt><dd>{{ report.findings }}</dd>
+    <dt>{{ _("Идентичность по сведениям Hub") }}</dt><dd>{{ report.by_source.get("hub", 0) }}</dd>
+    <dt>{{ _("По выгрузке") }}</dt><dd>{{ report.findings - report.by_source.get("hub", 0) }}</dd>
+    <dt>{{ _("Переходов принято") }}</dt><dd>{{ report.identity_rev }}</dd>
     {% for label, n in report.marks %}<dt>{{ label }}</dt><dd>{{ n }}</dd>{% endfor %}
-    <dt>Мест в наборах выбрать заново</dt><dd>{{ report.pending_places }}</dd>
+    <dt>{{ _("Мест в наборах выбрать заново") }}</dt><dd>{{ report.pending_places }}</dd>
   </dl>
 </section>
 <section class="panel" id="identity-report-groups" aria-labelledby="identity-report-groups-title">
-  <h2 id="identity-report-groups-title">Группы компонентов</h2>
-  <p>Перенесено групп: {{ report.moved|length }}. Расщеплено или слито: {{ report.not_moved|length }}.</p>
+  <h2 id="identity-report-groups-title">{{ _("Группы компонентов") }}</h2>
+  <p>{{ _("Перенесено групп: {moved}. Расщеплено или слито: {not_moved}.", moved=report.moved|length, not_moved=report.not_moved|length) }}</p>
   {% if report.moved or report.not_moved %}
   <div class="table-wrap"><table class="table" id="identity-report-group-table">
-    <thead><tr><th scope="col">Было</th><th scope="col">Стало</th><th scope="col">Когда</th><th scope="col">Причина</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Было") }}</th><th scope="col">{{ _("Стало") }}</th><th scope="col">{{ _("Когда") }}</th><th scope="col">{{ _("Причина") }}</th></tr></thead>
     <tbody>{% for g in (report.moved + report.not_moved)[:200] %}<tr>
       <td class="mono break">{{ g.triple|join(" ") }}</td>
-      <td>{% if g.to_ref %}<a class="mono" href="/projects/{{ project.id }}/components/{{ g.to_ref }}">новая карточка</a>{% elif g.has_archive %}<a class="mono" href="/projects/{{ project.id }}/components/{{ g.from_ref }}">архив</a>{% else %}расщеплена или слита{% endif %}</td>
+      <td>{% if g.to_ref %}<a class="mono" href="/projects/{{ project.id }}/components/{{ g.to_ref }}">{{ _("новая карточка") }}</a>{% elif g.has_archive %}<a class="mono" href="/projects/{{ project.id }}/components/{{ g.from_ref }}">{{ _("архив") }}</a>{% else %}{{ _("расщеплена или слита") }}{% endif %}</td>
       <td><time datetime="{{ g.archived_at }}">{{ g.archived_at|ts }}</time></td>
       <td>{{ g.reason }}</td>
     </tr>{% endfor %}</tbody>
   </table></div>
-  {% if (report.moved + report.not_moved)|length > 200 %}<p class="hint">Показаны первые 200 групп.</p>{% endif %}
+  {% if (report.moved + report.not_moved)|length > 200 %}<p class="hint">{{ _("Показаны первые 200 групп.") }}</p>{% endif %}
   {% endif %}
 </section>
 <section class="panel" id="identity-report-accepts" aria-labelledby="identity-report-accepts-title">
-  <h2 id="identity-report-accepts-title">Принятия с переходом</h2>
-  <p class="hint">Итог каждого «Принять состояние Hub», который менял идентичность пакетов, – как в блоке «Идентичность пакетов» при принятии (последние 20). Разделы выше – текущее состояние проекта.</p>
+  <h2 id="identity-report-accepts-title">{{ _("Принятия с переходом") }}</h2>
+  <p class="hint">{{ _("Итог каждого «Принять состояние Hub», который менял идентичность пакетов, – как в блоке «Идентичность пакетов» при принятии (последние 20). Разделы выше – текущее состояние проекта.") }}</p>
   {% if report.accepts %}
   <div class="table-wrap"><table class="table" id="identity-report-accepts-table">
-    <thead><tr><th scope="col">Когда</th><th scope="col">Находок с другим пакетом</th><th scope="col">Групп (перенос / расщепление / частично / слияние)</th><th scope="col">Снято «Проверено»</th><th scope="col">Подпись переписана</th><th scope="col">По другой версии</th><th scope="col">Согласий без ответа</th><th scope="col">Дефектов без единственного набора</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Когда") }}</th><th scope="col">{{ _("Находок с другим пакетом") }}</th><th scope="col">{{ _("Групп (перенос / расщепление / частично / слияние)") }}</th><th scope="col">{{ _("Снято «Проверено»") }}</th><th scope="col">{{ _("Подпись переписана") }}</th><th scope="col">{{ _("По другой версии") }}</th><th scope="col">{{ _("Согласий без ответа") }}</th><th scope="col">{{ _("Дефектов без единственного набора") }}</th></tr></thead>
     <tbody>{% for a in report.accepts %}{% set i = a.identity %}{% set kinds = (i.groups or [])|map(attribute="kind")|list %}<tr>
       <td><time datetime="{{ a.applied_at }}">{{ a.applied_at|ts }}</time></td>
-      <td>{{ i.findings or 0 }} (уточнение – {{ i.refine or 0 }}, изменение – {{ i.change or 0 }})</td>
+      <td>{{ _("{n} (уточнение – {refine}, изменение – {change})", n=i.findings or 0, refine=i.refine or 0, change=i.change or 0) }}</td>
       <td>{{ kinds|select("equalto", "перенос")|list|length }} / {{ kinds|select("equalto", "расщепление")|list|length }} / {{ kinds|select("equalto", "частичное расщепление")|list|length }} / {{ kinds|select("equalto", "слияние")|list|length }}</td>
       <td>{{ (i.decisions or {}).reviewed_removed or 0 }}</td><td>{{ (i.decisions or {}).sig_rewritten or 0 }}</td>
       <td>{{ (i.decisions or {}).other_version or 0 }}</td><td>{{ (i.decisions or {}).agree_stale or 0 }}</td>
       <td>{{ (i.defects or {}).without_set_key_total or 0 }}</td>
     </tr>{% endfor %}</tbody>
   </table></div>
-  {% else %}<p>Принятий с переходом ещё не было.</p>{% endif %}
+  {% else %}<p>{{ _("Принятий с переходом ещё не было.") }}</p>{% endif %}
 </section>
 <section class="panel" id="identity-report-archive" aria-labelledby="identity-report-archive-title">
-  <h2 id="identity-report-archive-title">Снято в архив</h2>
+  <h2 id="identity-report-archive-title">{{ _("Снято в архив") }}</h2>
   {% if report.archived %}
   <div class="table-wrap"><table class="table" id="identity-report-archive-table">
-    <thead><tr><th scope="col">Что</th><th scope="col">Строк</th><th scope="col">Последнее снятие</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Что") }}</th><th scope="col">{{ _("Строк") }}</th><th scope="col">{{ _("Последнее снятие") }}</th></tr></thead>
     <tbody>{% for a in report.archived %}<tr><td>{{ table_labels.get(a.source_table, a.source_table) }}</td><td>{{ a.n }}</td><td><time datetime="{{ a.last }}">{{ a.last|ts }}</time></td></tr>{% endfor %}</tbody>
   </table></div>
-  {% else %}<p>Ничего не снято.</p>{% endif %}
+  {% else %}<p>{{ _("Ничего не снято.") }}</p>{% endif %}
 </section>
 <section class="panel" id="identity-report-defects" aria-labelledby="identity-report-defects-title">
-  <h2 id="identity-report-defects-title">Дефекты SCA без единственного набора</h2>
+  <h2 id="identity-report-defects-title">{{ _("Дефекты SCA без единственного набора") }}</h2>
   {% if report.defects %}
-  <ul class="item-list">{% for d in report.defects %}<li><a href="/projects/{{ project.id }}/defects/{{ d.id }}">ID{{ d.number if d.number is not none else "–" }}</a>{% for c in d.conflicts %} · <span class="small">{{ c }}</span>{% endfor %}</li>{% endfor %}</ul>
-  {% else %}<p>Нет.</p>{% endif %}
+  <ul class="item-list">{% for d in report.defects %}<li><a href="/projects/{{ project.id }}/defects/{{ d.id }}">ID{{ d.number if d.number is not none else "–" }}</a>{% for c in d.conflicts %} · <span class="small">{{ c|conflict_text }}</span>{% endfor %}</li>{% endfor %}</ul>
+  {% else %}<p>{{ _("Нет.") }}</p>{% endif %}
 </section>
 {% endblock %}

@@ -34,6 +34,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
+from app import i18n
 from app.logsafe import log_failure
 from app.textsafe import FILLER_CHARS, remove_markup, strip_invisible
 
@@ -471,7 +472,7 @@ _failures_lock = threading.Lock()
 # Сбои записи события request с запуска приложения: всего и по прогонам (ADR-0083). Обмен с моделью из-за них
 # не останавливается, оператор видит предупреждение на странице прогона.
 _failures: dict[str, Any] = {"count": 0, "last_at": None, "last_error": "", "runs": {}}
-JOURNAL_FAILURE_ADVICE = "Обратитесь к автору программы."
+JOURNAL_FAILURE_ADVICE = i18n.N_("Обратитесь к автору программы.")
 
 
 def note_failure(error: BaseException) -> None:
@@ -497,8 +498,9 @@ def failure_text(run_id: int | None = None) -> str:
         if not info:
             return ""
         count, error = info["count"], info["last_error"]
-    return (f"Журнал обмена с моделью не записан для {count} обращений к модели (последняя ошибка: {error}). "
-            f"Разбор продолжается, но эти обращения в журнале не сохранены. {JOURNAL_FAILURE_ADVICE}")
+    return i18n._("Журнал обмена с моделью не записан для {count} обращений к модели (последняя ошибка: {error}). "
+                  "Разбор продолжается, но эти обращения в журнале не сохранены. {advice}", count=count, error=error,
+                  advice=i18n._(JOURNAL_FAILURE_ADVICE))
 
 
 def reset_failures() -> None:

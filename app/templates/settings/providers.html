@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, collector_warning %}
-{% block title %}Провайдеры моделей · Локальный триаж{% endblock %}
+{% block title %}{{ _("Провайдеры моделей") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}settings{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a href="/settings">Настройки</a><span aria-hidden="true"> / </span><span aria-current="page">Провайдеры моделей</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a href="/settings">{{ _("Настройки") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Провайдеры моделей") }}</span>{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Провайдеры моделей</h1>
-    <p class="page-sub">Профили серверов, где работает модель: Ollama на этом компьютере, сервер в сети организации или внешний провайдер по API чат-завершений или Anthropic Messages API. Профилей может быть сколько угодно – сохранение одного не трогает другие. Профиль по умолчанию разбирает код во всех проектах, где свой профиль не выбран.</p>
+    <h1 data-section="{{ _("Параметры") }}">{{ _("Провайдеры моделей") }}</h1>
+    <p class="page-sub">{{ _("Профили серверов, где работает модель: Ollama на этом компьютере, сервер в сети организации или внешний провайдер по API чат-завершений или Anthropic Messages API. Профилей может быть сколько угодно – сохранение одного не трогает другие. Профиль по умолчанию разбирает код во всех проектах, где свой профиль не выбран.") }}</p>
   </div>
-  <a class="btn btn-primary" href="/settings/providers/new" id="provider-new">Добавить профиль</a>
+  <a class="btn btn-primary" href="/settings/providers/new" id="provider-new">{{ _("Добавить профиль") }}</a>
 </div>
 
 {% if external_on and collector.expected and not collector.addresses and profiles|selectattr("trust", "equalto", "external")|list %}{{ collector_warning(collector, "external") }}{% endif %}
@@ -17,17 +17,17 @@
 <section class="panel">
   <div class="table-wrap">
   <table class="table" id="providers-table">
-    <thead><tr><th scope="col">Профиль</th><th scope="col">Где модель</th><th scope="col">Адрес</th><th scope="col">Модель</th><th scope="col">Ключ</th><th scope="col">Состояние</th><th scope="col"><span class="visually-hidden">Действия</span></th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Профиль") }}</th><th scope="col">{{ _("Где модель") }}</th><th scope="col">{{ _("Адрес") }}</th><th scope="col">{{ _("Модель") }}</th><th scope="col">{{ _("Ключ") }}</th><th scope="col">{{ _("Состояние") }}</th><th scope="col"><span class="visually-hidden">{{ _("Действия") }}</span></th></tr></thead>
     <tbody>
     {% for p in profiles %}
       <tr id="provider-{{ p.id }}">
-        <td>{{ p.name }}{% if p.default_code %} <span class="badge badge-ok">по умолчанию</span>{% endif %}</td>
-        <td>{{ p.where }}<br><span class="small muted">{{ p.protocol }}</span>{% if p.trust == "lan" %}<br><span class="small muted">{% if p.confirmed %}адреса: <span class="mono">{{ p.confirmed|join(", ") }}</span>{% else %}адреса не подтверждены{% endif %}</span>{% endif %}</td>
+        <td>{{ p.name }}{% if p.default_code %} <span class="badge badge-ok">{{ _("по умолчанию") }}</span>{% endif %}</td>
+        <td>{{ p.where }}<br><span class="small muted">{{ p.protocol }}</span>{% if p.trust == "lan" %}<br><span class="small muted">{% if p.confirmed %}{{ _("адреса:") }} <span class="mono">{{ p.confirmed|join(", ") }}</span>{% else %}{{ _("адреса не подтверждены") }}{% endif %}</span>{% endif %}</td>
         <td class="mono">{{ p.base_url }}</td>
         <td class="mono">{{ p.default_model or "–" }}</td>
-        <td>{{ p.key or ("не задан" if p.trust in ("lan", "external") else "–") }}</td>
-        <td>{% if p.enabled %}включён{% else %}<span class="muted">выключен</span>{% endif %}</td>
-        <td><a href="/settings/providers/{{ p.id }}">Изменить</a></td>
+        <td>{{ p.key or (_("не задан") if p.trust in ("lan", "external") else "–") }}</td>
+        <td>{% if p.enabled %}{{ _("включён") }}{% else %}<span class="muted">{{ _("выключен") }}</span>{% endif %}</td>
+        <td><a href="/settings/providers/{{ p.id }}">{{ _("Изменить") }}</a></td>
       </tr>
     {% endfor %}
     </tbody>

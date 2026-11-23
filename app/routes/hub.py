@@ -28,7 +28,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from app import hub_effects, hub_ops, hub_sync
+from app import hub_effects, hub_ops, hub_sync, i18n
 from app.db import HubResyncRequired, HubUnknownWrites, loads, now_iso
 from app.storage.postgresql import CommitUnknown
 from app.routes.common import db_of, redirect, register_messages, settings_of
@@ -56,7 +56,7 @@ register_messages({
     "hub_no_url": "Сначала укажите адрес Hub и сохраните настройки.",
 }, errors=("hub_no_url",))
 
-DENIED = "Нет ключа исполнителя или ключ неверный: скопируйте его в «Настройках», раздел «AppSec.Hub»."
+DENIED = i18n.N_("Нет ключа исполнителя или ключ неверный: скопируйте его в «Настройках», раздел «AppSec.Hub».")
 
 
 # ============================================================================ ключ и исполнители
@@ -71,7 +71,9 @@ def worker_key(request: Request) -> str:
     исполнителя не ждут соединения с базой."""
     key = getattr(request.app.state, "hub_worker_key", "")
     if not key:
-        raise ValueError(getattr(request.app.state, "hub_worker_key_error", "") or "Ключ исполнителя не загружен: перезапустите приложение.")
+        # причина хранится как есть (msgid или текст исключения) – перевод при выводе
+        error = getattr(request.app.state, "hub_worker_key_error", "")
+        raise ValueError(i18n._(error) if error else i18n._("Ключ исполнителя не загружен: перезапустите приложение."))
     return key
 
 
@@ -82,7 +84,7 @@ def denied(request: Request) -> JSONResponse | None:
     except (OSError, ValueError) as e:
         return JSONResponse({"ok": False, "detail": str(e)}, status_code=503)
     if not hub_ops.key_matches(request.headers.get(hub_ops.WORKER_KEY_HEADER, ""), expected):
-        return JSONResponse({"ok": False, "detail": DENIED}, status_code=403)
+        return JSONResponse({"ok": False, "detail": i18n._(DENIED)}, status_code=403)
     return None
 
 
@@ -132,16 +134,18 @@ async def read_json(request: Request, limit: int) -> tuple[dict | None, JSONResp
     """Тело JSON не длиннее limit байт -> (объект, None) или (None, ответ с ошибкой)."""
     declared = request.headers.get("content-length", "")
     if declared.isdigit() and int(declared) > limit:
-        return None, JSONResponse({"ok": False, "detail": f"Тело запроса длиннее {limit} байт."}, status_code=413)
+        return None, JSONResponse({"ok": False, "detail": i18n._("Тело запроса длиннее {limit} байт.", limit=limit)},
+                                  status_code=413)
     raw = await request.body()
     if len(raw) > limit:
-        return None, JSONResponse({"ok": False, "detail": f"Тело запроса длиннее {limit} байт."}, status_code=413)
+        return None, JSONResponse({"ok": False, "detail": i18n._("Тело запроса длиннее {limit} байт.", limit=limit)},
+                                  status_code=413)
     try:
         data = json.loads(raw.decode("utf-8")) if raw else {}
     except (ValueError, UnicodeDecodeError):
-        return None, JSONResponse({"ok": False, "detail": "Тело запроса – не JSON."}, status_code=400)
+        return None, JSONResponse({"ok": False, "detail": i18n._("Тело запроса – не JSON.")}, status_code=400)
     if not isinstance(data, dict):
-        return None, JSONResponse({"ok": False, "detail": "Тело запроса – не объект JSON."}, status_code=400)
+        return None, JSONResponse({"ok": False, "detail": i18n._("Тело запроса – не объект JSON.")}, status_code=400)
     return data, None
 
 
@@ -159,7 +163,7 @@ async def worker_hello(request: Request):
         return error
     worker_id = worker_id_of(data.get("worker_id"))
     if not worker_id:
-        return JSONResponse({"ok": False, "detail": "worker_id: латиница, цифры и - _ . :, до 80 знаков."},
+        return JSONResponse({"ok": False, "detail": i18n._("worker_id: латиница, цифры и - _ . :, до 80 знаков.")},
                             status_code=400)
     roles = data.get("roles") if isinstance(data.get("roles"), list) else []
     touch_worker(request, worker_id, hub_url=hub_ops.hub_base(clean_text(data.get("hub_url"), 300)),
@@ -178,14 +182,14 @@ async def worker_jobs(request: Request, worker_id: str = "", hub_url: str = "", 
     wid = worker_id_of(worker_id)
     base = hub_ops.hub_base(hub_url)
     if not wid or not base.startswith("https://"):
-        return JSONResponse({"ok": False, "detail": "Нужны worker_id и hub_url (https://…)."}, status_code=400)
+        return JSONResponse({"ok": False, "detail": i18n._("Нужны worker_id и hub_url (https://…).")}, status_code=400)
     try:
         seconds = max(0, min(int(wait), hub_ops.WAIT_MAX_S))
     except ValueError:
         seconds = 0
     state = request.app.state
     if getattr(state, "hub_polls", 0) >= POLLS_MAX:
-        return JSONResponse({"ok": False, "detail": "Слишком много одновременных опросов: повторите позже."},
+        return JSONResponse({"ok": False, "detail": i18n._("Слишком много одновременных опросов: повторите позже.")},
                             status_code=429)
     touch_worker(request, wid, hub_url=base, sync_protocol=SYNC_PROTOCOL if sync_protocol == str(SYNC_PROTOCOL) else 0)
     db = db_of(request)
@@ -203,7 +207,7 @@ async def worker_jobs(request: Request, worker_id: str = "", hub_url: str = "", 
         deadline = _monotonic() + seconds
         while True:
             if await request.is_disconnected():
-                return JSONResponse({"ok": False, "detail": "клиент отключился"}, status_code=499)
+                return JSONResponse({"ok": False, "detail": i18n._("клиент отключился")}, status_code=499)
             refused = denied(request)
             if refused is not None:
                 return refused
@@ -237,7 +241,7 @@ async def worker_result(request: Request, attempt_id: int):
     if data is None:
         return error
     if request.app.state.settings.maintenance:  # результат доставится позже: до записи и последствий (ADR-0128, п. 6.6)
-        return JSONResponse({"ok": False, "detail": "Приложение в режиме обслуживания: результат не принят, повторите позже."},
+        return JSONResponse({"ok": False, "detail": i18n._("Приложение в режиме обслуживания: результат не принят, повторите позже.")},
                             status_code=503, headers={"Retry-After": "30"})
     db = db_of(request)
     # кто в Hub у этого исполнителя (из приветствия) – записывается в дефект, созданный его операцией (ADR-0120)
@@ -256,7 +260,7 @@ async def worker_result(request: Request, attempt_id: int):
     out = await run_in_threadpool(deliver)
     if out["outcome"] == "rejected":
         return JSONResponse({"ok": False, "outcome": "rejected",
-                             "detail": "Аренда не найдена или токен неверный: результат не принят."}, status_code=409)
+                             "detail": i18n._("Аренда не найдена или токен неверный: результат не принят.")}, status_code=409)
     worker = worker_id_of(data.get("worker_id"))
     if worker:
         touch_worker(request, worker)
@@ -270,7 +274,7 @@ def hub_context(request: Request) -> dict:
     """Раздел «AppSec.Hub» страницы настроек: ключ, исполнитель, состояние проверки связи (?probe=N)."""
     if request.app.state.settings.hub_disabled:  # учебный стенд npm (ADR-0155): вместо раздела – объяснение
         from app.db import HUB_DISABLED_TEXT
-        return {"disabled": True, "disabled_text": HUB_DISABLED_TEXT}
+        return {"disabled": True, "disabled_text": i18n._(HUB_DISABLED_TEXT)}
     try:
         key, key_error = worker_key(request), ""
     except (OSError, ValueError) as e:
@@ -313,7 +317,7 @@ async def hub_probe(request: Request):
     if request.app.state.settings.hub_disabled:  # стенд npm: ни прежней проверки, ни новой – исполнителя нет
         from app.db import HUB_DISABLED_TEXT
         if wants_json(request):
-            return JSONResponse({"ok": False, "detail": HUB_DISABLED_TEXT}, status_code=409)
+            return JSONResponse({"ok": False, "detail": i18n._(HUB_DISABLED_TEXT)}, status_code=409)
         return redirect("/settings#hub")
 
     def enqueue():
@@ -323,7 +327,7 @@ async def hub_probe(request: Request):
         db.hub_expire_leases()
         current = open_probe(db)
         if current is not None and current["hub_url"] == hub_ops.hub_base(settings.hub_url):
-            return current, "Проверка связи уже идёт – показываю её состояние."
+            return current, i18n._("Проверка связи уже идёт – показываю её состояние.")
         return db.hub_enqueue(purpose="probe", request=hub_ops.probe_request(), hub_url=settings.hub_url,
                               app_id=None), ""
 
@@ -335,7 +339,7 @@ async def hub_probe(request: Request):
         return redirect("/settings#hub")
     if op is None:
         if wants_json(request):
-            return JSONResponse({"ok": False, "detail": "Сначала укажите адрес Hub и сохраните настройки."},
+            return JSONResponse({"ok": False, "detail": i18n._("Сначала укажите адрес Hub и сохраните настройки.")},
                                 status_code=400)
         return redirect("/settings?ok=hub_no_url#hub")
     if wants_json(request):
@@ -348,12 +352,12 @@ def hub_probe_state(request: Request, op_id: int):
     """Состояние проверки связи для опроса со страницы (раз в 2 с)."""
     if request.app.state.settings.hub_disabled:  # стенд npm: аренды не трогаются, проверок нет
         from app.db import HUB_DISABLED_TEXT
-        return JSONResponse({"ok": False, "detail": HUB_DISABLED_TEXT}, status_code=409)
+        return JSONResponse({"ok": False, "detail": i18n._(HUB_DISABLED_TEXT)}, status_code=409)
     db = db_of(request)
     db.hub_expire_leases()  # исполнитель мог остановиться: зависшая аренда не держит проверку бессрочно
     op = db.hub_op(op_id)
     if op is None or op["purpose"] != "probe":
-        return JSONResponse({"ok": False, "detail": "Проверка не найдена."}, status_code=404)
+        return JSONResponse({"ok": False, "detail": i18n._("Проверка не найдена.")}, status_code=404)
     return {**probe_answer(op), "worker_online": worker_summary(request)["online"]}
 
 
@@ -380,7 +384,7 @@ async def hub_key_rotate(request: Request):
     if state.settings.hub_disabled:  # учебный стенд npm: исполнителя нет – ключ не выпускается
         from app.db import HUB_DISABLED_TEXT
         if wants_json(request):
-            return JSONResponse({"ok": False, "detail": HUB_DISABLED_TEXT}, status_code=409)
+            return JSONResponse({"ok": False, "detail": i18n._(HUB_DISABLED_TEXT)}, status_code=409)
         return redirect("/settings#hub")
 
     def rotate() -> None:
@@ -389,7 +393,8 @@ async def hub_key_rotate(request: Request):
                 state.hub_worker_key = hub_ops.rotate_worker_key(db)
             except CommitUnknown:  # записался ли ключ, неизвестно: действует то, что в базе, прежний ключ из памяти не показывается
                 state.hub_worker_key = ""
-                state.hub_worker_key_error = "Исход замены ключа неизвестен: база не ответила. Перезапустите приложение или выпустите ключ заново."
+                state.hub_worker_key_error = i18n.N_("Исход замены ключа неизвестен: база не ответила. Перезапустите "
+                                                     "приложение или выпустите ключ заново.")
                 try:
                     state.hub_worker_key = hub_ops.load_or_create_worker_key(db)
                     state.hub_worker_key_error = ""

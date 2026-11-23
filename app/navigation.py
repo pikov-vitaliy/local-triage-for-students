@@ -4,6 +4,8 @@ from __future__ import annotations
 import re
 from urllib.parse import parse_qsl, unquote, urlencode, urlsplit, urlunsplit
 
+from app import i18n
+
 PROJECT_PAGE = re.compile(r"/projects/([0-9]+)/(findings|sca/findings|components|sca)(?:/([^/]+))?")
 RUN_PAGE = re.compile(r"/(runs|journal)/([0-9]+)")
 
@@ -53,7 +55,7 @@ def source_context(origin, db):
         if not project:
             return None
         fallback = f"/projects/{pid}/" + ("sca" if kind == "sca/findings" else kind)
-        title = {"findings": "Находки", "sca/findings": "SCA", "sca": "SCA", "components": "Компоненты"}[kind]
+        title = {"findings": i18n._("Находки"), "sca/findings": "SCA", "sca": "SCA", "components": i18n._("Компоненты")}[kind]
         if ident:
             if kind == "components":
                 from app.routes.components import views
@@ -61,16 +63,16 @@ def source_context(origin, db):
                 if not row:
                     return None
                 label = f"{row['name']}@{row['version']}"
-                title = "К компоненту " + label
+                title = i18n._("К компоненту {name}", name=label)
             else:
                 row = db.get_finding(pid, int(ident)) if ident.isascii() and ident.isdigit() else None
                 if not row:
                     return None
                 label = str(row["hub_id"])
-                title = "К находке " + label
+                title = i18n._("К находке {id}", id=label)
         else:
             label = title
-            title = "К списку: " + title
+            title = i18n._("К списку: {title}", title=title)
         back = dict(parse_qsl(p.query)).get("back", "")
         queue = local_url(back)
         if not ident:
@@ -84,9 +86,11 @@ def source_context(origin, db):
         queue = local_url(dict(parse_qsl(p.query)).get("back", ""))
         if not queue or urlsplit(queue).path != "/journal":
             queue = origin if p.path == "/journal" else "/journal"
-        return {"origin": origin, "queue": queue, "label": "Журнал" if p.path == "/journal" else "Прогон №" + p.path.rsplit("/", 1)[-1],
-                "title": "К журналу" if p.path == "/journal" else "К прогону №" + p.path.rsplit("/", 1)[-1],
-                "project": "Локальная модель", "missing": False}
+        number = p.path.rsplit("/", 1)[-1]
+        return {"origin": origin, "queue": queue,
+                "label": i18n._("Журнал") if p.path == "/journal" else i18n._("Прогон №{run}", run=number),
+                "title": i18n._("К журналу") if p.path == "/journal" else i18n._("К прогону №{run}", run=number),
+                "project": i18n._("Локальная модель"), "missing": False}
     return None
 
 

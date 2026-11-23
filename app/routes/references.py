@@ -3,6 +3,7 @@ from urllib.parse import urlencode, urlsplit
 
 from fastapi.responses import JSONResponse
 
+from app import i18n
 from app.navigation import PROJECT_PAGE, clean_url, reference_url
 from app.routes.common import render
 
@@ -11,7 +12,7 @@ def missing_reference(request, kind, value, key, message, meta):
     """404 различает неверный ID, незагруженный фид и отсутствующую в нём запись."""
     reason = "invalid" if not key else "not-loaded" if not meta else "missing"
     if reason == "invalid":
-        message = f"Это не номер записи {kind.upper()}."
+        message = i18n._("Это не номер записи {catalog}.", catalog=kind.upper())
     if "text/html" not in request.headers.get("accept", ""):
         return JSONResponse({"detail": message}, status_code=404)
     number = key.split("-")[-1] if key else ""

@@ -1,35 +1,35 @@
 {% extends "base.html" %}
 {% from "macros.html" import project_tabs, icon %}
-{% block title %}Общее решение по версиям · {{ project.name }}{% endblock %}
+{% block title %}{{ _("Общее решение по версиям") }} · {{ project.name }}{% endblock %}
 {% block page %}components{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>Решение по выбранным версиям</h1><p>Получателей: {{ rows|length }}. Каждая версия сохранит отдельный ID, решение и историю.</p></div><a class="btn" href="{{ back_url }}">Вернуться к выбору</a></div>
+<div class="page-head"><div><h1 data-section="{{ _("Компоненты") }}">{{ _("Решение по выбранным версиям") }}</h1><p>{{ _("Получателей: {n}. Каждая версия сохранит отдельный ID, решение и историю.", n=rows|length) }}</p></div><a class="btn" href="{{ back_url }}">{{ _("Вернуться к выбору") }}</a></div>
 <section class="panel">
-  <h2>Проверьте получателей</h2>
-  <div class="table-wrap"><table class="table table-compact"><thead><tr><th scope="col">Компонент</th><th scope="col">Версия</th><th scope="col">Исследование</th><th scope="col">Прежнее решение</th></tr></thead><tbody>
-  {% for r in rows %}<tr data-input-ref="{{ r.input_ref }}"><td>{{ r.name }}<span class="small muted block">{{ r.ecosystem }}</span></td><td>{{ r.version }}</td><td>{{ r.status_label }}</td><td>{{ r.decision.action_label if r.decision else 'не принято' }}{% if r.decision %}<span class="small block">{{ r.decision.rationale }}</span>{% endif %}</td></tr>{% endfor %}
+  <h2>{{ _("Проверьте получателей") }}</h2>
+  <div class="table-wrap"><table class="table table-compact"><thead><tr><th scope="col">{{ _("Компонент") }}</th><th scope="col">{{ _("Версия") }}</th><th scope="col">{{ _("Исследование") }}</th><th scope="col">{{ _("Прежнее решение") }}</th></tr></thead><tbody>
+  {% for r in rows %}<tr data-input-ref="{{ r.input_ref }}"><td>{{ r.name }}<span class="small muted block">{{ r.ecosystem }}</span></td><td>{{ r.version }}</td><td>{{ r.status_label }}</td><td>{{ r.decision.action_label if r.decision else _('не принято') }}{% if r.decision %}<span class="small block">{{ r.decision.rationale }}</span>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div>
-  <p class="hint">Общее действие относится только к перечисленным версиям. Прежние решения останутся в истории. Обоснование должно подходить каждой версии.</p>
+  <p class="hint">{{ _("Общее действие относится только к перечисленным версиям. Прежние решения останутся в истории. Обоснование должно подходить каждой версии.") }}</p>
 </section>
 <section class="panel">
   <form method="post" action="/projects/{{ project.id }}/components/decisions/apply?back={{ back_url|urlencode }}" class="stack-form" id="batch-decision-form">
     <input type="hidden" name="snapshots" value="{{ snapshots }}">
-    <label class="field"><span class="field-label">Действие</span><select name="action" required><option value="">Выберите действие</option>{% for key in ('keep','update','replace','remove','accept_risk','investigate') %}<option value="{{ key }}"{% if form.action == key %} selected{% endif %}>{{ labels.decision[key] }}</option>{% endfor %}</select></label>
-    {% if research_draft %}<div class="cluster" id="research-draft-box"><button type="button" class="btn" id="fill-from-research" data-draft='{{ research_draft|tojson }}'>{{ icon("check") }}Заполнить по исследованию</button><span class="field-hint">Заполняет только пустые поля: действие по совету исследования, целевую версию, обоснование из фактов{% if research_draft.review_at %} и срок пересмотра{% endif %}.{% if research_draft.note %} {{ research_draft.note }}{% endif %}{% if research_draft.skipped %} Без исследования: {{ research_draft.skipped }} из {{ rows|length }} версий – черновик по остальным.{% endif %} Проверьте и поправьте перед применением.</span></div>
-    <p class="small muted" id="batch-draft-status" role="status" aria-live="polite"></p>{% else %}<p class="field-hint" id="batch-draft-status">Исследования по выбранным версиям нет: черновик по нему не собирается, заполните поля сами.</p>{% endif %}
-    <label class="field"><span class="field-label">Обоснование для всех выбранных версий</span><textarea name="rationale" rows="5" required maxlength="2000">{{ form.rationale }}</textarea></label>
-    <div class="form-grid">{% for key,label in (('target_version','Целевая версия для обновления'),('replacement_name','Компонент для замены'),('replacement_version','Версия замены')) %}<label class="field"><span class="field-label">{{ label }}</span><input name="{{ key }}" value="{{ form[key] }}" maxlength="200"></label>{% endfor %}
+    <label class="field"><span class="field-label">{{ _("Действие") }}</span><select name="action" required><option value="">{{ _("Выберите действие") }}</option>{% for key in ('keep','update','replace','remove','accept_risk','investigate') %}<option value="{{ key }}"{% if form.action == key %} selected{% endif %}>{{ labels.decision[key] }}</option>{% endfor %}</select></label>
+    {% if research_draft %}<div class="cluster" id="research-draft-box"><button type="button" class="btn" id="fill-from-research" data-draft='{{ research_draft|tojson }}'>{{ icon("check") }}{{ _("Заполнить по исследованию") }}</button><span class="field-hint">{{ _("Заполняет только пустые поля: действие по совету исследования, целевую версию, обоснование из фактов") }}{% if research_draft.review_at %} {{ _("и срок пересмотра") }}{% endif %}.{% if research_draft.note %} {{ research_draft.note }}{% endif %}{% if research_draft.skipped %} {{ _("Без исследования: {skipped} из {total} версий – черновик по остальным.", skipped=research_draft.skipped, total=rows|length) }}{% endif %} {{ _("Проверьте и поправьте перед применением.") }}</span></div>
+    <p class="small muted" id="batch-draft-status" role="status" aria-live="polite"></p>{% else %}<p class="field-hint" id="batch-draft-status">{{ _("Исследования по выбранным версиям нет: черновик по нему не собирается, заполните поля сами.") }}</p>{% endif %}
+    <label class="field"><span class="field-label">{{ _("Обоснование для всех выбранных версий") }}</span><textarea name="rationale" rows="5" required maxlength="2000">{{ form.rationale }}</textarea></label>
+    <div class="form-grid">{% for key,label in (('target_version',_('Целевая версия для обновления')),('replacement_name',_('Компонент для замены')),('replacement_version',_('Версия замены'))) %}<label class="field"><span class="field-label">{{ label }}</span><input name="{{ key }}" value="{{ form[key] }}" maxlength="200"></label>{% endfor %}
       <div class="field">
-        <label class="field-label" for="batch-review-at">Дата пересмотра</label>
+        <label class="field-label" for="batch-review-at">{{ _("Дата пересмотра") }}</label>
         {# календарь браузера; без поддержки type="date" поле остаётся текстовым с образцом ГГГГ-ММ-ДД #}
-        <input type="{{ 'text' if review_at_text else 'date' }}" name="review_at" id="batch-review-at" value="{{ form.review_at }}" placeholder="ГГГГ-ММ-ДД" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" aria-describedby="batch-review-hint">
-        <span class="cluster review-presets" role="group" aria-label="Быстрый срок пересмотра">{% for days, value in review_presets %}<button type="button" class="btn btn-ghost btn-small" data-review-date="{{ value }}" title="{{ value }}">+{{ days }} дней</button>{% endfor %}</span>
-        <span class="field-hint" id="batch-review-hint">Необязательна. Наступивший срок попадает в отбор «требующие пересмотра». Дата приложения: {{ review_clock }}; быстрый срок считается от неё.</span>
+        <input type="{{ 'text' if review_at_text else 'date' }}" name="review_at" id="batch-review-at" value="{{ form.review_at }}" placeholder="{{ _("ГГГГ-ММ-ДД") }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" aria-describedby="batch-review-hint">
+        <span class="cluster review-presets" role="group" aria-label="{{ _("Быстрый срок пересмотра") }}">{% for days, value in review_presets %}<button type="button" class="btn btn-ghost btn-small" data-review-date="{{ value }}" title="{{ value }}">{{ _("+{n} дней", n=days) }}</button>{% endfor %}</span>
+        <span class="field-hint" id="batch-review-hint">{{ _("Необязательна. Наступивший срок попадает в отбор «требующие пересмотра». Дата приложения: {date}; быстрый срок считается от неё.", date=review_clock) }}</span>
       </div></div>
-    <label class="check"><input type="checkbox" name="confirm" value="1" required> Подтверждаю решение для всех {{ rows|length }} версий, включая замену их прежних решений</label>
-    <div class="actions"><button class="btn btn-primary" type="submit" data-busy="Сохраняю…">Применить к {{ rows|length }} версиям</button></div>
+    <label class="check"><input type="checkbox" name="confirm" value="1" required> {{ _("Подтверждаю решение для всех {n} версий, включая замену их прежних решений", n=rows|length) }}</label>
+    <div class="actions"><button class="btn btn-primary" type="submit" data-busy="{{ _("Сохраняю…") }}">{{ _("Применить к {n} версиям", n=rows|length) }}</button></div>
   </form>
 </section>
 {% endblock %}

@@ -13,6 +13,8 @@ import os
 import secrets
 import traceback
 
+from app import i18n
+
 MAX_FRAMES = 12  # сколько последних кадров трассировки писать
 MAX_CHAIN = 5  # сколько причин в цепочке исключений называть
 
@@ -51,4 +53,10 @@ def log_failure(logger: logging.Logger, what: str, exc: BaseException, *args: ob
 
 def failure_text(what: str, exc: BaseException, eid: str) -> str:
     """Текст для интерфейса: «Не удалось собрать контекст: OSError (ошибка 1a2b3c4d)»."""
-    return f"{what}: {type(exc).__name__} (ошибка {eid})"
+    # текст хранится в базе (ошибки прогона и вопросов) – русский канонический, перевод при показе (ADR-0158 п. 7:
+    # run_errors.shown_error узнаёт шаблон FAILURE_TEXT и фразу what)
+    with i18n.use("ru"):
+        return i18n._(FAILURE_TEXT, what=what, error=type(exc).__name__, eid=eid)
+
+
+FAILURE_TEXT = i18n.N_("{what}: {error} (ошибка {eid})")

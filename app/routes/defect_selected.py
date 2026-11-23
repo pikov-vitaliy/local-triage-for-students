@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Request
 from starlette.concurrency import run_in_threadpool
 
-from app import defect, defect_where, hub_defects, hub_ops, hub_status, hub_sync
+from app import defect, hub_defects, hub_ops, hub_status, hub_sync, i18n
 from app.db import dumps, loads, source_signature, source_version
 from app.hub_entity_versions import digest
 from app.hub_import import _cwe2
@@ -15,14 +15,15 @@ from app.routes.hub_status_routes import hub_target_check, send_blocker
 
 router = APIRouter()
 CONTRACT = "selected-defect/1"
-STALE = "Состав, данные или решение изменились после показа: проверьте состав и подтвердите подготовку заново."
+STALE = i18n.N_("Состав, данные или решение изменились после показа: проверьте состав и подтвердите подготовку заново.")
 
 
 def selection(values):
     """Сохраняет порядок и уникальность; непригодные ID показываются среди исключений."""
     result = list(dict.fromkeys(str(value).strip() for value in values))
     if len(result) > MAX_SELECTED:
-        raise hub_defects.DefectRefused(f"Выбрано {len(result)} находок; допускается не более {MAX_SELECTED}.")
+        raise hub_defects.DefectRefused(i18n._("Выбрано {count} находок; допускается не более {limit}.", count=len(result),
+                                               limit=MAX_SELECTED))
     return result
 
 
@@ -44,7 +45,7 @@ def target_snapshot(request, c, project_id, hub_id):
     db = db_of(request)
     source = db.case_input(project_id, hub_id)
     if source is None or source.get("missing"):
-        raise hub_defects.DefectRefused("Находка отсутствует: подтвердите состав заново.")
+        raise hub_defects.DefectRefused(i18n._("Находка отсутствует: подтвердите состав заново."))
     case = db.get_case(project_id, hub_id)
     raw = c.execute("SELECT * FROM reviews WHERE project_id=? AND hub_id=?", (project_id, hub_id)).fetchone()
     review = dict(raw) if raw else {}
@@ -53,7 +54,7 @@ def target_snapshot(request, c, project_id, hub_id):
     # сохраняется «Не согласен» со своим вердиктом (sast_choice получает stale_verdict)
     code = card.check_code(request, project_id, f, case, "", None)
     if review.get("finding_sig") and review["finding_sig"] != source_signature(source):
-        raise hub_defects.DefectRefused("источник изменился после решения: проверьте находку в карточке")
+        raise hub_defects.DefectRefused(i18n._("источник изменился после решения: проверьте находку в карточке"))
     return {"hub_id": hub_id, "source": source, "review": review,
             "case": case, "code": code,
             "number": db.defect_number(project_id, defect.defect_key_sast(hub_id))}
@@ -68,8 +69,8 @@ def group_check(db, c, project_id, hub_id, body, targets, hub_url, app_id, own_i
             continue
         row = db.hub_defect_for(project_id, [neighbor])
         if (row and row["id"] != own_id and row["state"] in ("blank", "preview")
-                and flow._same_hub(row, hub_url, app_id) and defect_where.body_of(row["command_text"]) == defect_where.body_of(body)):
-            raise hub_defects.DefectRefused("в группе уже готовится дефект с тем же текстом: завершите его подготовку")
+                and flow._same_hub(row, hub_url, app_id) and defect.body_key(row["command_text"]) == defect.body_key(body)):
+            raise hub_defects.DefectRefused(i18n._("в группе уже готовится дефект с тем же текстом: завершите его подготовку"))
 
 
 def busy_reason(db, c, project_id, hub_id, issue_id, own_id=None):
@@ -80,11 +81,12 @@ def busy_reason(db, c, project_id, hub_id, issue_id, own_id=None):
             continue
         if any(str(t.get("hub_id")) == hub_id or (t.get("issue_id") == issue_id and t.get("issue_type") == "SAST")
                for t in loads(row["targets_json"], [])):
-            return f"занята другим дефектом или подготовкой №{row['id']} ({hub_defects.STATE_LABELS.get(row['state'], row['state'])})"
+            return i18n._("занята другим дефектом или подготовкой №{id} ({state})", id=row['id'],
+                          state=hub_defects.STATE_LABELS.get(row['state'], row['state']))
     for op in c.execute("SELECT id, targets_json FROM hub_ops WHERE project_id=? AND purpose='status'"
                          " AND state IN ('queued','taken','unknown') ORDER BY id", (project_id,)):
         if any(t.get("issue_id") == issue_id and t.get("issue_type") == "SAST" for t in loads(op["targets_json"], [])):
-            return f"незавершённая операция статуса №{op['id']}: дождитесь итога или сверьте результат"
+            return i18n._("незавершённая операция статуса №{id}: дождитесь итога или сверьте результат", id=op['id'])
     return ""
 
 
@@ -112,20 +114,20 @@ def assess(request, c, project, selected, anchor, comment, fix):
         url = flow._card_url_of(db, pid, hub_id) if row else ""
         try:
             if f is None or row.get("missing"):
-                raise hub_defects.DefectRefused("находка отсутствует по принятому состоянию Hub или выгрузке")
+                raise hub_defects.DefectRefused(i18n._("находка отсутствует по принятому состоянию Hub или выгрузке"))
             if f.kind != "SAST":
-                raise hub_defects.DefectRefused("не SAST: для SCA откройте карточку соответствующего набора")
+                raise hub_defects.DefectRefused(i18n._("не SAST: для SCA откройте карточку соответствующего набора"))
             if not f0 or f0.kind != "SAST":
-                raise hub_defects.DefectRefused("выберите опорную находку SAST из исходного выбора")
+                raise hub_defects.DefectRefused(i18n._("выберите опорную находку SAST из исходного выбора"))
             if f.codebase != f0.codebase:
-                raise hub_defects.DefectRefused("другая кодовая база")
+                raise hub_defects.DefectRefused(i18n._("другая кодовая база"))
             if f.rule != f0.rule:
-                raise hub_defects.DefectRefused("другая категория")
+                raise hub_defects.DefectRefused(i18n._("другая категория"))
             if _cwe2(f.cwe) != _cwe2(f0.cwe):
-                raise hub_defects.DefectRefused("другой набор CWE")
+                raise hub_defects.DefectRefused(i18n._("другой набор CWE"))
             ident = hub_status.issue_id(hub_id)
             if len(aliases.get(ident, [])) != 1:
-                raise hub_defects.DefectRefused("неоднозначное сопоставление номера Hub после нормализации")
+                raise hub_defects.DefectRefused(i18n._("неоднозначное сопоставление номера Hub после нормализации"))
             why = busy_reason(db, c, pid, hub_id, ident)
             if why:
                 raise hub_defects.DefectRefused(why)
@@ -144,21 +146,23 @@ def assess(request, c, project, selected, anchor, comment, fix):
     numbers = {r["snapshot"]["number"] for r in ready if r["snapshot"]["number"] is not None}
     problems = []
     if len(numbers) > 1:
-        problems.append("У выбранных находок разные номера ID: автоматическое объединение номеров не выполняется.")
+        problems.append(i18n._("У выбранных находок разные номера ID: автоматическое объединение номеров не выполняется."))
     number = next(iter(numbers)) if len(numbers) == 1 else db.next_defect_number(pid)
     keys = [defect.defect_key_sast(r["hub_id"]) for r in ready]
     if db.hub_defects_with_number(pid, number) or set(db.defect_keys_with_number(pid, number)) - set(keys):
-        problems.append(f"Номер ID{number} удерживают другие находки или подготовка: нужен новый предпросмотр.")
+        problems.append(i18n._("Номер ID{number} удерживают другие находки или подготовка: нужен новый предпросмотр.",
+                               number=number))
     if not ready:
-        problems.append("Нет находок, пригодных для подготовки дефекта.")
+        problems.append(i18n._("Нет находок, пригодных для подготовки дефекта."))
     elif len(",".join(str(r["issue_id"]) for r in ready)) > hub_defects.ISSUE_IDS_MAX:
         size = len(",".join(str(r["issue_id"]) for r in ready))
-        problems.append(f"Состав из {len(ready)} находок: issueIds занимает {size} знаков при пределе "
-                        f"{hub_defects.ISSUE_IDS_MAX}. Выберите меньше находок; решения не сохранены.")
+        problems.append(i18n._("Состав из {count} находок: issueIds занимает {size} знаков при пределе {limit}. Выберите "
+                               "меньше находок; решения не сохранены.", count=len(ready), size=size,
+                               limit=hub_defects.ISSUE_IDS_MAX))
     from app.routes import findings as card
     anchor_ready = next((r for r in ready if r["hub_id"] == anchor), None)
     model = card.model_suggestion(f0, anchor_ready["snapshot"]["case"]) if anchor_ready else {}
-    warnings = ["Выбраны разные файлы одной кодовой базы: проверьте применимость общего решения."] \
+    warnings = [i18n._("Выбраны разные файлы одной кодовой базы: проверьте применимость общего решения.")] \
         if len({r["finding"].file for r in ready}) > 1 else []
     replacements = []
     for r in ready:
@@ -184,16 +188,17 @@ def text_check(request, project_id, view, comment, fix):
     if not defect.reason_text(comment):
         raise hub_defects.DefectRefused(card.SAST_NEED_REASON["true_positive"])
     if not defect.has_recommendation(fix):
-        raise hub_defects.DefectRefused(card.SAST_NEED_FIX)
+        raise hub_defects.DefectRefused(i18n._(card.SAST_NEED_FIX))
     if len(comment) > card.MAX_COMMENT or len(fix) > card.MAX_FIX:
-        raise hub_defects.DefectRefused("Обоснование или рекомендация слишком длинные: сократите текст.")
+        raise hub_defects.DefectRefused(i18n._("Обоснование или рекомендация слишком длинные: сократите текст."))
     db = db_of(request)
     for r in view["ready"]:
         snap = r["snapshot"]
         origin = card.comment_origin(db, snap["case"], snap["review"], comment,
                                      project_id=project_id, hub_id=r["hub_id"])
         if origin and origin != "true_positive":
-            raise hub_defects.DefectRefused(f"{r['hub_id']}: обоснование написано моделью к другому исходу; поправьте текст.")
+            raise hub_defects.DefectRefused(i18n._("{id}: обоснование написано моделью к другому исходу; поправьте текст.",
+                                                   id=r['hub_id']))
     problems = flow.sast_text_problems(db, settings_of(request), project_id, view["body"])
     if problems:
         from app import defect_check
@@ -210,11 +215,11 @@ def prepare(request, project_id, selected, anchor, comment, fix, shown, confirme
         settings = settings_of(request)
         view = assess(request, c, project, selected, anchor, comment, fix)
         if not shown or shown != view["snapshot"]:
-            raise hub_defects.DefectRefused(STALE)
+            raise hub_defects.DefectRefused(i18n._(STALE))
         if not confirmed:
-            raise hub_defects.DefectRefused("Подтвердите показанное решение и запросы подготовки.")
+            raise hub_defects.DefectRefused(i18n._("Подтвердите показанное решение и запросы подготовки."))
         if view["replacements"] and not overwrite:
-            raise hub_defects.DefectRefused("Подтвердите перезапись перечисленных решений.")
+            raise hub_defects.DefectRefused(i18n._("Подтвердите перезапись перечисленных решений."))
         blocker = send_blocker(settings, project) or hub_sync.resync_blocker(db_of(request), project_id)
         if blocker or view["problems"]:
             raise hub_defects.DefectRefused(blocker or " ".join(view["problems"]))
@@ -246,7 +251,7 @@ def prepare(request, project_id, selected, anchor, comment, fix, shown, confirme
             current = target_snapshot(request, c, project_id, r["hub_id"])
             confirmed_code = r["snapshot"]["code"]
             if any(current["code"][key] != confirmed_code[key] for key in ("hash", "chars")):
-                raise hub_defects.DefectRefused(STALE)
+                raise hub_defects.DefectRefused(i18n._(STALE))
             snapshots.append({"hub_id": r["hub_id"], "fingerprint": digest(current)})
         saved_attempt = {"contract": CONTRACT, "selected": selected, "anchor": view["anchor"],
                          "confirmation": shown, "bases": view["state"]["bases"],
@@ -276,15 +281,15 @@ def create_check(request, c, row):
     targets = loads(row["targets_json"], [])
     ids = [t["hub_id"] for t in targets]
     if ids != [s["hub_id"] for s in saved["snapshots"]]:
-        raise hub_defects.DefectRefused(STALE)
+        raise hub_defects.DefectRefused(i18n._(STALE))
     if saved["bases"] != bases(c, pid, row["hub_url"], row["app_id"]):
-        raise hub_defects.DefectRefused("Принятая база Hub изменилась: отмените предпросмотр и подготовьте заново.")
+        raise hub_defects.DefectRefused(i18n._("Принятая база Hub изменилась: отмените предпросмотр и подготовьте заново."))
     if (db.hub_defects_with_number(pid, row["number"], exclude_id=row["id"])
             or set(db.defect_keys_with_number(pid, row["number"])) - set(loads(row["number_keys_json"], []))):
-        raise hub_defects.DefectRefused("Номер дефекта занят другой находкой: отмените предпросмотр и подготовьте заново.")
+        raise hub_defects.DefectRefused(i18n._("Номер дефекта занят другой находкой: отмените предпросмотр и подготовьте заново."))
     for target, snapshot in zip(targets, saved["snapshots"], strict=True):
         if digest(target_snapshot(request, c, pid, target["hub_id"])) != snapshot["fingerprint"]:
-            raise hub_defects.DefectRefused(STALE)
+            raise hub_defects.DefectRefused(i18n._(STALE))
         why = busy_reason(db, c, pid, target["hub_id"], target["issue_id"], row["id"])
         if why:
             raise hub_defects.DefectRefused(why)

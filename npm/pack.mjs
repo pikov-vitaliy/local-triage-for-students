@@ -21,7 +21,7 @@ const MANIFEST = path.join(ROOT, 'npm', 'files.manifest');
 const FIXED = new Set(['package.json', 'npm-shrinkwrap.json', 'LICENSE', 'THIRD-PARTY-NOTICES.md', 'npm/cli.js', 'npm/requirements.txt',
   'npm/files.manifest', 'examples/demo/demo-hub-report.xlsx', 'examples/demo/demo-hub-report-v2.xlsx']);
 // пути пакета, которых нет в дереве git как есть: README – из npm/README.md, сведения о сборке – пишутся при сборке
-const GENERATED = { 'README.md': 'npm/README.md', 'npm/build.json': null };
+const GENERATED = { 'README.md': 'npm/README.md', 'README.ru.md': 'npm/README.ru.md', 'npm/build.json': null };
 const RULES = [
   /^npm\/lib\/[^/]+\.js$/,
   /^app\/(?:[^/]+\/)*[^/]+\.py$/,
@@ -29,6 +29,7 @@ const RULES = [
   /^app\/static\/(?:[^/]+\/)*[^/]+\.(?:css|js|svg)$/,
   /^app\/static\/fonts\/[^/]+\.woff2$/,
   /^app\/storage\/migrations\/postgresql\/[^/]+\.sql$/,
+  /^app\/locales\/[a-z]{2}\/[a-z0-9_]+\.json$/,  // каталог переводов интерфейса (ADR-0158)
   /^app\/static\/fonts\/OFL\.txt$/,
   /^app\/static\/capec-license\.txt$/,
   /^examples\/demo\/repos\/(?:billing-core|catalog-api)\//,
@@ -149,6 +150,7 @@ function pack(argv) {
   };
   prune('');
   fs.renameSync(path.join(pkgDir, 'npm', 'README.md'), path.join(pkgDir, 'README.md'));
+  fs.renameSync(path.join(pkgDir, 'npm', 'README.ru.md'), path.join(pkgDir, 'README.ru.md'));  // русский README (ADR-0158)
   fs.writeFileSync(path.join(pkgDir, 'npm', 'build.json'), `${JSON.stringify({ commit: head, dirty, time: buildTime() }, null, 1)}\n`);
   const staging = path.join(work, 'out');
   fs.mkdirSync(staging);

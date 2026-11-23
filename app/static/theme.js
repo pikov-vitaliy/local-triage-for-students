@@ -48,8 +48,8 @@
     var dark = current() === "dark";
     button.setAttribute("data-mode", dark ? "dark" : "light");
     if (!button.querySelector("svg")) button.textContent = dark ? "☀" : "☾";
-    button.setAttribute("aria-label", dark ? "Включить светлую тему" : "Включить тёмную тему");
-    button.setAttribute("title", dark ? "Светлая тема" : "Тёмная тема");
+    button.setAttribute("aria-label", dark ? ltT("Включить светлую тему") : ltT("Включить тёмную тему"));
+    button.setAttribute("title", dark ? ltT("Светлая тема") : ltT("Тёмная тема"));
   }
 
   root.setAttribute("data-theme", load() || byClock(new Date()));
@@ -79,4 +79,45 @@
       paint(button);
     });
   });
+})();
+
+/* Язык интерфейса (ADR-0158): ltT("русская строка", {name: значение}) – перевод строки сценария. Переводы лежат в
+   атрибуте data-i18n у <html> (JSON, только при английском языке); без них – сама строка.
+   Подстановки – {name}, как в app/i18n.py. ltPlural(n, one, few, many) – форма слова для числа. */
+(function () {
+  "use strict";
+  var table = null;
+  function load() {
+    if (table) return table;
+    table = {};
+    var raw = document.documentElement.getAttribute("data-i18n");
+    if (raw) {
+      try { table = JSON.parse(raw) || {}; } catch (e) { table = {}; }
+    }
+    return table;
+  }
+  function fill(text, vars) {
+    if (!vars) return text;
+    return text.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g, function (m, name) {
+      return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : m;
+    });
+  }
+  window.ltLang = function () { return document.documentElement.getAttribute("lang") || "en"; };
+  window.ltT = function (text, vars) {
+    var t = load();
+    var s = Object.prototype.hasOwnProperty.call(t, text) ? t[text] : text;
+    return fill(s, vars);
+  };
+  window.ltPlural = function (count, one, few, many) {
+    var n = Math.abs(parseInt(count, 10) || 0);
+    var forms = load()[one + "|" + few + "|" + many];
+    if (window.ltLang() !== "ru" && forms && forms.indexOf("|") > 0) {
+      var p = forms.split("|");
+      return n === 1 ? p[0] : p[1];
+    }
+    if (n % 10 === 1 && n % 100 !== 11) return one;
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) return few;
+    return many;
+  };
+  window.ltLocale = function () { return window.ltLang() === "ru" ? "ru-RU" : "en-US"; };
 })();

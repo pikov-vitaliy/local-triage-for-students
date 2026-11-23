@@ -28,6 +28,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import NamedTuple
 
+from app import i18n
 from app.masking import (PLACEHOLDER_RE, count_placeholders, is_credential_finding, mask_all_literals,
                          mask_literal_token, mask_text, recording_active, secret_assignment_before)
 from app.models import CodeContext, Finding
@@ -40,7 +41,8 @@ MASK_CACHE_FILES = 16              # маскированный текст ст�
 MASK_CACHE_CHARS = 40_000_000      # …но не больше стольких знаков вместе
 HEADER_LIMIT = 2000                # заголовок блока длиннее не разбирается как сигнатура
 SIGNATURE_LIMIT = 300              # предел длины сигнатуры объемлющего метода
-CUT_MARK = " …[обрезано]"
+CUT_MARK = " …[обрезано]"  # часть строки кода в промпте и в отпечатке случая – не переводится (ADR-0158)
+SECRET_NOTE = i18n.N_("находка о секрете в коде: строки в кавычках заменены метками")
 MAX_INDEX_FILES = 300_000          # поиск файла по окончанию пути: файлов в индексе репозитория не больше
 MAX_INDEX_DIRS = 100_000           # …папок не больше
 INDEX_SECONDS = 20.0               # …и не дольше стольких секунд
@@ -92,19 +94,19 @@ def resolve_repo(repos_root: Path, folder: str) -> Path:
     """
     text = str(folder or "").strip()
     if any(ord(ch) < 32 for ch in text):
-        raise ValueError("В пути к папке недопустимые символы.")
+        raise ValueError(i18n._("В пути к папке недопустимые символы."))
     norm = text.replace("\\", "/")
     if norm.startswith("/") or _DRIVE.match(norm):
-        raise ValueError("Путь к папке должен быть относительным – от корня папки с репозиториями.")
+        raise ValueError(i18n._("Путь к папке должен быть относительным – от корня папки с репозиториями."))
     parts = [p for p in norm.split("/") if p not in ("", ".")]
     if any(p == ".." for p in parts):
-        raise ValueError("Путь к папке не должен выходить за пределы корня папки с репозиториями («..»).")
+        raise ValueError(i18n._("Путь к папке не должен выходить за пределы корня папки с репозиториями («..»)."))
     if any(":" in p for p in parts):
-        raise ValueError("В пути к папке не должно быть двоеточия.")
+        raise ValueError(i18n._("В пути к папке не должно быть двоеточия."))
     root = os.path.realpath(str(repos_root))
     target = os.path.realpath(os.path.join(root, *parts)) if parts else root
     if not _is_inside(target, root):
-        raise ValueError("Папка ведёт за пределы корня папки с репозиториями (символическая ссылка?).")
+        raise ValueError(i18n._("Папка ведёт за пределы корня папки с репозиториями (символическая ссылка?)."))
     return Path(target)
 
 
@@ -391,7 +393,7 @@ def _read_inside(root: str, path: str, limit: int) -> tuple[bytes, os.stat_resul
     try:
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode):
-            raise _ReadRefused("file_missing", "это не обычный файл – не читается")
+            raise _ReadRefused("file_missing", i18n.N_("это не обычный файл – не читается"))
         real = _opened_path(fd)
         if real is not None:
             inside = _is_inside(real, root)
@@ -399,13 +401,13 @@ def _read_inside(root: str, path: str, limit: int) -> tuple[bytes, os.stat_resul
             real = os.path.realpath(path)
             inside = _is_inside(real, root) and os.path.samestat(st, os.stat(real))
         if not inside:
-            raise _ReadRefused("file_missing", "файл ведёт за пределы репозитория или подменён во время чтения – "
-                                               "не читается")
+            raise _ReadRefused("file_missing", i18n.N_("файл ведёт за пределы репозитория или подменён во время "
+                                                       "чтения – не читается"))
         if st.st_size > limit:
-            raise _ReadRefused("too_large", "файл больше предела размера")
+            raise _ReadRefused("too_large", i18n.N_("файл больше предела размера"))
         raw = _read_at_most(fd, limit)
         if len(raw) > limit:
-            raise _ReadRefused("too_large", "файл вырос во время чтения и стал больше предела размера")
+            raise _ReadRefused("too_large", i18n.N_("файл вырос во время чтения и стал больше предела размера"))
         after = os.fstat(fd)
         stable = (after.st_size, after.st_mtime_ns) == (st.st_size, st.st_mtime_ns) and len(raw) == st.st_size
         return raw, st, stable, real
@@ -787,10 +789,10 @@ def _window(lines: list[str], line: int, before: int, after: int, max_chars: int
             end -= 1
     notes = []
     if (start, end) != window:
-        notes.append(f"срез сокращён до {max_chars} знаков: строки {start}–{end}")
+        notes.append(i18n.N_("срез сокращён до {chars} знаков: строки {start}–{end}").format(chars=max_chars, start=start, end=end))
     cut = sum(1 for k in range(start, end + 1) if rendered[k].endswith(CUT_MARK))
     if cut:
-        notes.append(f"длинные строки обрезаны: {cut}")
+        notes.append(i18n.N_("длинные строки обрезаны: {count}").format(count=cut))
     return start, end, [rendered[k] for k in range(start, end + 1)], notes
 
 
@@ -1271,7 +1273,7 @@ def _export_only(f: Finding, status: str, reason: str, file: str, language: str,
     if not snippet.strip():
         return CodeContext(status=status, file=file, language=language, start_line=0, end_line=0,
                            target_line=line, lines=[], enclosing="", export_line_check="n/a", masked={},
-                           note="; ".join(notes + [f"{reason}; строки кода в выгрузке тоже нет"]))
+                           note="; ".join(notes + [reason, i18n.N_("строки кода в выгрузке тоже нет")]))
     if _ENTITY.search(snippet):
         snippet = html.unescape(snippet)
     parts = snippet.split("\n")
@@ -1289,11 +1291,11 @@ def _export_only(f: Finding, status: str, reason: str, file: str, language: str,
         kept.append(part)
     start = line or 0
     end = start + len(kept) - 1 if start else 0
-    note = f"{reason}: видна только строка кода из выгрузки, без окружения"
+    note = i18n.N_("{reason}: видна только строка кода из выгрузки, без окружения").format(reason=reason)
     if len(kept) < len(parts):
-        note += f"; строка из выгрузки сокращена до {max_chars} знаков"
+        note += "; " + i18n.N_("строка из выгрузки сокращена до {chars} знаков").format(chars=max_chars)
     if credential and key is not None:
-        note += "; находка о секрете в коде: строки в кавычках заменены метками"
+        note += "; " + SECRET_NOTE
     return CodeContext(status="export_line_only", file=file, language=language, start_line=start, end_line=end,
                        target_line=line, lines=kept, enclosing="", export_line_check="n/a",
                        masked=count_placeholders("\n".join(kept)) if key is not None else {},
@@ -1421,22 +1423,23 @@ def build_context(repo_dir: Path | None, f: Finding, before: int = 40, after: in
         return ctx
 
     if repo_dir is None:
-        return fallback("no_repo", "no_repo", no_repo_note or "папка репозитория для кодовой базы не задана")
+        return fallback("no_repo", "no_repo", no_repo_note or i18n.N_("папка репозитория для кодовой базы не задана"))
     root = os.path.realpath(str(repo_dir))
     if not os.path.isdir(root):
-        return fallback("no_repo", "no_repo", "папка репозитория не найдена")
+        return fallback("no_repo", "no_repo", i18n.N_("папка репозитория не найдена"))
     if not rel:
-        return fallback("file_missing", "missing", "в находке не указан файл")
+        return fallback("file_missing", "missing", i18n.N_("в находке не указан файл"))
     path = find_file(Path(root), rel)
     if path is None:
         if file_presence(Path(root), rel) == "missing":
-            return fallback("file_missing", "missing", "файла нет в клоне")
-        return fallback("file_missing", "ambiguous", "файл найден в клоне не однозначно "
-                        "(несколько подходящих файлов или обход клона не завершён)")
+            return fallback("file_missing", "missing", i18n.N_("файла нет в клоне"))
+        return fallback("file_missing", "ambiguous", i18n.N_("файл найден в клоне не однозначно "
+                                                             "(несколько подходящих файлов или обход клона не "
+                                                             "завершён)"))
     found = os.path.relpath(str(path), root).replace(os.sep, "/")
     language = language_of(found) or language
     if found != rel:
-        notes.append(f"файл найден по пути {found}")
+        notes.append(i18n.N_("файл найден по пути {path}").format(path=found))
     try:
         # открытый файл проверяется до чтения, читается не больше предела; по сведениям о нём кэшируется
         # маскированный текст
@@ -1444,13 +1447,14 @@ def build_context(repo_dir: Path | None, f: Finding, before: int = 40, after: in
     except _ReadRefused as e:
         if e.status == "too_large":
             return fallback("too_large", "too_large",
-                            f"файл больше {MAX_FILE_BYTES // (1024 * 1024)} МБ – не читается", found)
+                            i18n.N_("файл больше {size} МБ – не читается").format(size=MAX_FILE_BYTES // (1024 * 1024)),
+                            found)
         return fallback("file_missing", "unreadable", e.reason, found)
     except OSError:
-        return fallback("file_missing", "unreadable", "файл не прочитан (нет доступа?)", found)
+        return fallback("file_missing", "unreadable", i18n.N_("файл не прочитан (нет доступа?)"), found)
     plain = decode_source(raw)
     if plain is None:
-        return fallback("binary", "binary", "двоичный файл – не читается", found)
+        return fallback("binary", "binary", i18n.N_("двоичный файл – не читается"), found)
     # Весь файл маскируется до вырезания среза: иначе ключ на границе среза или обрезанный токен не узнать.
     # У находки о секрете сама строка – секрет: значения всех литералов скрываются первыми, по разметке языка
     # (до общих правил, которые могли бы разрезать сырую строку R"(…)" или r#"…"#), и до обрезки длинных строк.
@@ -1461,15 +1465,15 @@ def build_context(repo_dir: Path | None, f: Finding, before: int = 40, after: in
     lines = _split_lines(text)
     line = _line_of(f)
     if not lines:
-        return fallback("file_missing", "empty", "файл пуст", found)
+        return fallback("file_missing", "empty", i18n.N_("файл пуст"), found)
     if line is not None and line > len(lines):
         return fallback("file_missing", "line_out_of_range",
-                        f"строка {line} за пределами файла (в файле {len(lines)} строк): репозиторий, "
-                        "похоже, не на коммите скана", found)
+                        i18n.N_("строка {line} за пределами файла (в файле {count} строк): репозиторий, похоже, "
+                                "не на коммите скана").format(line=line, count=len(lines)), found)
     check = hash_check = "n/a"
     export_line_at = hash_check_at = None
     if line is None:
-        notes.append("в находке нет номера строки: показано начало файла")
+        notes.append(i18n.N_("в находке нет номера строки: показано начало файла"))
         signature, sig_line = "", None
         start, end, window, cut = _window(lines, 1, 0, before + after, max_chars, None)
     else:
@@ -1484,10 +1488,33 @@ def build_context(repo_dir: Path | None, f: Finding, before: int = 40, after: in
         start, end, window, cut = _window(lines, line, before, after, max_chars, sig_line)
     notes.extend(cut)
     if hide:
-        notes.append("находка о секрете в коде: строки в кавычках заменены метками")
+        notes.append(SECRET_NOTE)
     masked = count_placeholders("\n".join(window + [signature])) if mask_key is not None else {}
     return CodeContext(status="ok", file=found, language=language, start_line=start, end_line=end,
                        target_line=line if line is not None and start <= line <= end else None, lines=window,
                        enclosing=signature, export_line_check=check, masked=masked, note="; ".join(notes),
                        export_line_at=export_line_at, export_line_check_version=EXPORT_LINE_CHECK_VERSION,
                        hash_check=hash_check, hash_check_at=hash_check_at)
+
+
+# Заметки среза (CodeContext.note) уходят в промпт и в отпечаток случая (triage.case_hash): пишутся русским
+# каноническим текстом при любом языке интерфейса (ADR-0158), перевод – только при показе (view.context_note).
+NOTE_TEXTS = (
+    SECRET_NOTE, i18n.N_("это не обычный файл – не читается"),
+    i18n.N_("файл ведёт за пределы репозитория или подменён во время чтения – не читается"),
+    i18n.N_("файл больше предела размера"), i18n.N_("файл вырос во время чтения и стал больше предела размера"),
+    i18n.N_("срез сокращён до {chars} знаков: строки {start}–{end}"), i18n.N_("длинные строки обрезаны: {count}"),
+    i18n.N_("строки кода в выгрузке тоже нет"),
+    i18n.N_("{reason}: видна только строка кода из выгрузки, без окружения"),
+    i18n.N_("строка из выгрузки сокращена до {chars} знаков"),
+    i18n.N_("папка репозитория для кодовой базы не задана"), i18n.N_("папка репозитория не найдена"),
+    i18n.N_("в находке не указан файл"), i18n.N_("файла нет в клоне"),
+    i18n.N_("файл найден в клоне не однозначно (несколько подходящих файлов или обход клона не завершён)"),
+    i18n.N_("файл найден по пути {path}"), i18n.N_("файл больше {size} МБ – не читается"),
+    i18n.N_("файл не прочитан (нет доступа?)"), i18n.N_("двоичный файл – не читается"), i18n.N_("файл пуст"),
+    i18n.N_("строка {line} за пределами файла (в файле {count} строк): репозиторий, похоже, не на коммите скана"),
+    i18n.N_("в находке нет номера строки: показано начало файла"),
+    # причины из triage.repo_dir_for (no_repo_note)
+    i18n.N_("кодовая база не сопоставлена с папкой"), i18n.N_("клон отвязан: код берётся из срезов в базе"),
+    i18n.N_("папка с клоном не найдена"), i18n.N_("папка с клоном пуста"),
+)

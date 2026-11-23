@@ -22,10 +22,14 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
-from app import sca, sca_contract as contract
+from app import i18n, sca, sca_contract as contract
 from app.sca_contract import (ANSWER_CONTRACT, FUTURE_TOLERANCE_DAYS, LIMITS, TASK_CONTRACT, VALIDATOR_VERSION,
                               canonical, input_ref, schema, sha256,
                               template as answer_template, validate_answer)
+
+# Сообщения общего валидатора – на языке интерфейса (ADR-0158). В комплекте задания validate.py работает без
+# приложения и остаётся на русском.
+contract.set_translator(i18n.translate)
 
 # Задание /3 (план 0.9.13, К8): в строках – публичные идентификаторы уязвимостей из выгрузки (vulnerability_ids).
 # Контракт ответа /2 и валидатор прежние: комплект несёт тот же sca_contract.py побайтно
@@ -46,37 +50,37 @@ DECISION_NEEDS = {"update": ("target_version",), "replace": ("replacement_name",
 RATIONALE_CHARS = 2000
 VERSION_CHARS = 200
 
-STATUS_LABELS = {"vulnerable": "уязвим", "no_known_vulnerabilities": "уязвимостей не найдено",
+STATUS_LABELS = i18n.Labels({"vulnerable": "уязвим", "no_known_vulnerabilities": "уязвимостей не найдено",
                  "incomplete": "исследование неполное", "identity_unresolved": "идентичность не подтверждена",
-                 "": "не исследован"}
-IDENTITY_LABELS = {"resolved": "подтверждена", "ambiguous": "неоднозначна", "unresolved": "не разрешена",
-                   "unknown": "не определялась"}
-IDENTITY_KIND_LABELS = {"coordinates": "координаты", "short_name": "краткое имя", "registry_name": "имя реестра"}
-UPDATE_LABELS = {"up_to_date": "актуальная", "update_available": "доступно обновление", "unknown": "неизвестно"}
-SUPPORT_LABELS = {"supported": "поддерживается", "maintenance": "только исправления",
+                 "": "не исследован"})
+IDENTITY_LABELS = i18n.Labels({"resolved": "подтверждена", "ambiguous": "неоднозначна", "unresolved": "не разрешена",
+                   "unknown": "не определялась"})
+IDENTITY_KIND_LABELS = i18n.Labels({"coordinates": "координаты", "short_name": "краткое имя", "registry_name": "имя реестра"})
+UPDATE_LABELS = i18n.Labels({"up_to_date": "актуальная", "update_available": "доступно обновление", "unknown": "неизвестно"})
+SUPPORT_LABELS = i18n.Labels({"supported": "поддерживается", "maintenance": "только исправления",
                   "eol": "поддержка закончилась", "deprecated": "объявлен устаревшим",
-                  "archived": "проект архивирован", "unknown": "неизвестно"}
-SCOPE_LABELS = {"oss": "открытая поддержка", "commercial": "платная поддержка", "unknown": "неизвестно"}
-COVERAGE_LABELS = {"ok": "проверен", "partial": "проверен частично", "error": "не проверен"}
-ADVICE_LABELS = {"update": "обновить", "replace": "заменить", "remove": "вывести из зависимостей",
+                  "archived": "проект архивирован", "unknown": "неизвестно"})
+SCOPE_LABELS = i18n.Labels({"oss": "открытая поддержка", "commercial": "платная поддержка", "unknown": "неизвестно"})
+COVERAGE_LABELS = i18n.Labels({"ok": "проверен", "partial": "проверен частично", "error": "не проверен"})
+ADVICE_LABELS = i18n.Labels({"update": "обновить", "replace": "заменить", "remove": "вывести из зависимостей",
                  "keep": "оставить", "accept_risk": "рассмотреть принятие риска", "needs_identity": "сначала идентификация",
-                 "no_action": "без действий", "insufficient_data": "данных недостаточно"}
-DECISION_LABELS = {"update": "обновить", "replace": "заменить", "remove": "вывести из зависимостей",
-                   "keep": "оставить", "accept_risk": "риск принят", "investigate": "исследовать позже"}
-APPLIES_LABELS = {"yes": "относится к этой версии", "no": "не относится", "unknown": "неясно"}
-LEVEL_LABELS = {"primary": "первоисточник", "corroborated": "подтверждено несколькими источниками",
-                "single_source": "один источник", "unconfirmed": "не подтверждено"}
-EVIDENCE_LABELS = {"registry": "реестр пакетов", "advisory": "бюллетень", "release_notes": "изменения релиза",
+                 "no_action": "без действий", "insufficient_data": "данных недостаточно"})
+DECISION_LABELS = i18n.Labels({"update": "обновить", "replace": "заменить", "remove": "вывести из зависимостей",
+                   "keep": "оставить", "accept_risk": "риск принят", "investigate": "исследовать позже"})
+APPLIES_LABELS = i18n.Labels({"yes": "относится к этой версии", "no": "не относится", "unknown": "неясно"})
+LEVEL_LABELS = i18n.Labels({"primary": "первоисточник", "corroborated": "подтверждено несколькими источниками",
+                "single_source": "один источник", "unconfirmed": "не подтверждено"})
+EVIDENCE_LABELS = i18n.Labels({"registry": "реестр пакетов", "advisory": "бюллетень", "release_notes": "изменения релиза",
                    "policy": "политика поддержки", "aggregator": "агрегатор уязвимостей",
-                   "issue_tracker": "трекер задач", "other": "прочее"}
-GAP_LABELS = {"IDENTITY_AMBIGUOUS": "идентичность неоднозначна", "IDENTITY_UNRESOLVED": "идентичность не разрешена",
+                   "issue_tracker": "трекер задач", "other": "прочее"})
+GAP_LABELS = i18n.Labels({"IDENTITY_AMBIGUOUS": "идентичность неоднозначна", "IDENTITY_UNRESOLVED": "идентичность не разрешена",
               "VERSION_UNKNOWN": "версия неизвестна", "RELEASE_UNKNOWN": "последний релиз неизвестен",
               "COVERAGE_INCOMPLETE": "охват источников неполный", "SOURCE_UNAVAILABLE": "источник недоступен",
               "SOURCE_BLOCKED": "источник не отвечает", "NO_PUBLIC_FIX": "публичного исправления нет",
               "FIX_UNCONFIRMED": "исправление не подтверждено", "APPLICABILITY_UNCLEAR": "применимость неясна",
               "LICENSE_UNKNOWN": "условия лицензии неизвестны", "SUPPORT_UNKNOWN": "поддержка неизвестна",
-              "NOT_RESEARCHED": "не исследовано", "OTHER": "прочее"}
-TASK_STATE_LABELS = {"current": "актуальное задание", "superseded": "задание устарело"}
+              "NOT_RESEARCHED": "не исследовано", "OTHER": "прочее"})
+TASK_STATE_LABELS = i18n.Labels({"current": "актуальное задание", "superseded": "задание устарело"})
 
 # Подписи отдаются шаблонам только для чтения и не словарём dict: в шаблонах к ним обращаются как
 # `labels.update.get(...)`, а у обычного словаря на этом месте получается метод обновления, а не набор подписей.
@@ -94,8 +98,8 @@ LABELS: Mapping[str, Mapping[str, str]] = MappingProxyType({
 STATUS_FILTERS = ("vulnerable", "no_known_vulnerabilities", "incomplete", "identity_unresolved", "unresearched")
 # ADR-0096: версии шкалы CVSS, виды строк без балла, значения отборов поддержки, совета агента и действия оператора
 CVSS_VERSIONS = ("2.0", "3.0", "3.1", "4.0")
-SCORE_KINDS = {"unresearched": "не исследован", "applies_unknown": "применимость не установлена",
-               "none_applicable": "применимых не найдено", "score_unknown": "балл неизвестен"}
+SCORE_KINDS = i18n.Labels({"unresearched": "не исследован", "applies_unknown": "применимость не установлена",
+               "none_applicable": "применимых не найдено", "score_unknown": "балл неизвестен"})
 SUPPORT_FILTERS = ("supported", "maintenance", "eol", "deprecated", "archived", "unknown")
 ACTION_FILTERS = ("update", "replace", "remove", "keep", "accept_risk", "investigate", "none")
 AGE_FILTERS = ("30", "90")
@@ -229,10 +233,27 @@ def validator_sha256() -> str:
     return sha256(validator_source())
 
 
+# Язык ответа (ADR-0158, решение владельца 23.11.2026): текст задания не меняется; при английском интерфейсе –
+# отдельная строка о языке ответа (по образцу app/prompts.py ANSWER_LANGUAGE_EN). Она стоит вне разделов, которые
+# сетевой режим берёт из task.md (SHARED_SECTIONS в app/sca_research_net.py): в файловом задании – перед первым
+# разделом, в сетевых инструкциях – своей строкой в конце. При русском строки нет: задание байт в байт прежнее.
+ANSWER_LANGUAGE_EN = ("Answer language: English. Write every free-text field of the answer in English (note, basis, "
+                      "description, conditions, justification, gaps[].text, compatibility_notes, remaining_risks); "
+                      "this overrides the language of the instructions. Keep the enumerated values, field names, "
+                      "identifiers, versions, coordinates and URLs exactly as the contract and the sources give them, "
+                      "and keep quote verbatim in the language of the source.")
+
+
+def answer_language_lines() -> list[str]:
+    """Строка о языке ответа исследования для текущего языка интерфейса: [] при русском."""
+    return [] if i18n.current() == "ru" else [ANSWER_LANGUAGE_EN]
+
+
 def task_text(task: Mapping[str, Any], rows: Sequence[Mapping[str, Any]]) -> str:
     """Самодостаточное задание, контракт, протокол источников и самопроверка до передачи оператору."""
     header = (f"# Исследование компонентов программного обеспечения\n\nДата среза: {date.today().isoformat()}. "
               f"Строк в задании: {len(rows)}. Идентификатор задания: {task['task_id']}.\n\n")
+    header += "".join(line + "\n\n" for line in answer_language_lines())
     return header + """## Результат и файлы
 
 Исследуйте каждую строку components.json по открытым источникам. Заполните answer.template.json и верните
@@ -462,27 +483,29 @@ def status_note(payload: Mapping[str, Any], status: str) -> str:
         return ""
     if status == "identity_unresolved":
         note = _text(_obj(payload.get("identity_resolution")).get("note"))
-        return note or "идентичность пакета не подтверждена источником"
+        return note or i18n._("идентичность пакета не подтверждена источником")
     coverage = _items(payload.get("research_coverage"))
     failed = sum(1 for item in coverage if _obj(item).get("status") != "ok" or not _obj(item).get("complete"))
     if status == "vulnerable":
         applicable = sum(1 for item in _items(payload.get("public_findings"))
                          if _obj(item).get("applies") == "yes")
-        tail = f", охват неполный: источников с ошибкой {failed}" if failed else ""
-        return f"применимых уязвимостей: {applicable}{tail}"
+        if failed:
+            return i18n._("применимых уязвимостей: {applicable}, охват неполный: источников с ошибкой {failed}",
+                          applicable=applicable, failed=failed)
+        return i18n._("применимых уязвимостей: {applicable}", applicable=applicable)
     if status == "incomplete":
         parts = []
         if not coverage:
-            parts.append("источники не проверялись")
+            parts.append(i18n._("источники не проверялись"))
         elif failed:
-            parts.append(f"источников с ошибкой или неполным ответом: {failed}")
+            parts.append(i18n._("источников с ошибкой или неполным ответом: {failed}", failed=failed))
         if not _text(_obj(payload.get("latest_stable_release")).get("version")):
-            parts.append("последний релиз неизвестен")
+            parts.append(i18n._("последний релиз неизвестен"))
         if _text(payload.get("update_status")) not in ("up_to_date", "update_available"):
-            parts.append("неизвестно, есть ли обновление")
-        return "; ".join(parts) or "исследование неполное"
+            parts.append(i18n._("неизвестно, есть ли обновление"))
+        return "; ".join(parts) or i18n._("исследование неполное")
     if status == "no_known_vulnerabilities":
-        return f"проверенных источников: {len(coverage)}, применимых уязвимостей не найдено"
+        return i18n._("проверенных источников: {count}, применимых уязвимостей не найдено", count=len(coverage))
     return ""
 
 
@@ -525,7 +548,7 @@ def row_view(source: Mapping[str, Any], research: Mapping[str, Any] | None,
         "input_ref": source.get("input_ref", ""), "ecosystem": source.get("ecosystem", ""),
         "name": source.get("name", ""), "version": source.get("version", ""),
         "identity_kind": source.get("identity_kind", ""),
-        "identity_kind_label": IDENTITY_KIND_LABELS.get(source.get("identity_kind", ""), "неизвестно"),
+        "identity_kind_label": IDENTITY_KIND_LABELS.get(source.get("identity_kind", ""), i18n._("неизвестно")),
         "input_sig": source.get("input_sig", ""), "task_id": source.get("task_id", ""),
         "task_state": task_state, "task_current": task_state == "current", "task_stale": task_state != "current",
         "hub_fix_candidate": source.get("hub_fix_candidate", ""),
@@ -600,7 +623,7 @@ def decision_view(row: Mapping[str, Any] | None) -> dict | None:
     if not row:
         return None
     return {**row, **decision_values(row), "action_label": DECISION_LABELS.get(_text(row.get("action")), _text(row.get("action"))),
-            "state_label": "" if _text(row.get("state")) == "current" else "прежнее решение"}
+            "state_label": "" if _text(row.get("state")) == "current" else i18n._("прежнее решение")}
 
 
 DEFECT_FILTERS = ("in", "none")  # отбор «Дефект»: компонент входит в дефект приложения / не входит
@@ -837,37 +860,41 @@ def decision_draft(view: Mapping[str, Any], today: date) -> dict:
 
     def named(items: list[dict]) -> str:
         ids = [_text(item.get("id")) for item in items if _text(item.get("id"))]
-        return ", ".join(ids[:DRAFT_IDS]) + (f" и ещё {len(ids) - DRAFT_IDS}" if len(ids) > DRAFT_IDS else "")
+        shown = ", ".join(ids[:DRAFT_IDS])
+        return i18n._("{ids} и ещё {more}", ids=shown, more=len(ids) - DRAFT_IDS) if len(ids) > DRAFT_IDS else shown
     applies = [item for item in findings if item.get("applies") == "yes"]
     unclear = [item for item in findings if item.get("applies") == "unknown"]
     when = _text(view.get("fresh_at"))[:10]
-    parts = [f"По исследованию компонента ({'от ' + when + ', ' if when else ''}ревизия {int(view.get('revision') or 0)})."]
+    revision = int(view.get("revision") or 0)
+    parts = [i18n._("По исследованию компонента (от {date}, ревизия {revision}).", date=when, revision=revision)
+             if when else i18n._("По исследованию компонента (ревизия {revision}).", revision=revision)]
     if applies:
-        parts.append(f"К версии {version} применимы уязвимости ({len(applies)} из {len(findings)}): {named(applies)}.")
+        parts.append(i18n._("К версии {version} применимы уязвимости ({applicable} из {total}): {ids}.", version=version, applicable=len(applies), total=len(findings), ids=named(applies)))
     elif findings:
-        parts.append(f"Применимых к версии {version} уязвимостей не найдено (проверено {len(findings)}).")
+        parts.append(i18n._("Применимых к версии {version} уязвимостей не найдено (проверено {total}).", version=version, total=len(findings)))
     else:
-        parts.append(f"Публичных уязвимостей версии {version} не найдено.")
+        parts.append(i18n._("Публичных уязвимостей версии {version} не найдено.", version=version))
     if unclear:
-        parts.append(f"Применимость не установлена: {named(unclear)}.")
+        parts.append(i18n._("Применимость не установлена: {ids}.", ids=named(unclear)))
     label = ADVICE_LABELS.get(_text(advice.get("action")), "")
     target = _text(advice.get("target_version"))
     if label:
-        parts.append(f"Совет исследования: {label}" + (f" до {target}" if target and action == "update" else "") + ".")
+        parts.append(i18n._("Совет исследования: {advice} до {target}.", advice=label, target=target)
+                     if target and action == "update" else i18n._("Совет исследования: {advice}.", advice=label))
     if _text(view.get("latest_stable")):
-        parts.append(f"Последний стабильный релиз – {_text(view.get('latest_stable'))}.")
+        parts.append(i18n._("Последний стабильный релиз – {version}.", version=_text(view.get('latest_stable'))))
     if _text(view.get("support_label")) and _text(view.get("support_state")) != "unknown":
-        parts.append(f"Поддержка: {_text(view.get('support_label'))}.")
+        parts.append(i18n._("Поддержка: {support}.", support=_text(view.get('support_label'))))
     if _text(advice.get("compatibility_notes")):
         note = _text(advice.get("compatibility_notes"))
-        parts.append(f"Совместимость: {note}" + ("" if note.endswith((".", "!", "?", "…")) else "."))
+        parts.append(i18n._("Совместимость: {note}", note=note) + ("" if note.endswith((".", "!", "?", "…")) else "."))
     risks = [_text(x) for x in _items(advice.get("remaining_risks")) if _text(x)]
     if risks:
-        parts.append("Остаточные риски: " + "; ".join(risks) + ".")
+        parts.append(i18n._("Остаточные риски: {risks}.", risks="; ".join(risks)))
     gaps = list(dict.fromkeys(_text(_obj(g).get("code_label")) for g in _items(view.get("gaps_items"))
                               if _text(_obj(g).get("code_label"))))
     if gaps:
-        parts.append("Пробелы исследования: " + ", ".join(gaps) + ".")
+        parts.append(i18n._("Пробелы исследования: {gaps}.", gaps=", ".join(gaps)))
     rationale = " ".join(parts)
     if len(rationale) > RATIONALE_CHARS:
         rationale = rationale[:RATIONALE_CHARS - 1].rstrip() + "…"
@@ -892,16 +919,16 @@ def batch_decision_draft(views: list, today: date) -> dict:
     if len(drafts) == 1:
         rationale = drafts[0][1]["rationale"]
     else:
-        rationale = " ".join(f"Версия {version}: {d['rationale']}" for version, d in drafts)
+        rationale = " ".join(i18n._("Версия {version}: {rationale}", version=version, rationale=d['rationale']) for version, d in drafts)
         if len(rationale) > RATIONALE_CHARS:
             rationale = rationale[:RATIONALE_CHARS - 1].rstrip() + "…"
     review = sorted(d["review_at"] for _, d in drafts if d["review_at"])
     note = ""
     if not same:
         labels = ", ".join(f"{version} – {LABELS['decision'].get(d['action'], d['action'])}" for version, d in drafts)
-        note = f"Совет исследования у версий разный ({labels}): действие и целевую версию выберите сами."
+        note = i18n._("Совет исследования у версий разный ({labels}): действие и целевую версию выберите сами.", labels=labels)
     elif len(targets) > 1:
-        note = "Целевая версия в советах разная: укажите её сами."
+        note = i18n._("Целевая версия в советах разная: укажите её сами.")
     return {"action": next(iter(actions)) if same else "", "rationale": rationale,
             "target_version": next(iter(targets)) if same and len(targets) == 1 else "",
             "review_at": review[0] if review else "", "note": note,
@@ -928,28 +955,28 @@ def decision_problem(form: Mapping[str, Any]) -> tuple[str, str]:
     form = {**form, **decision_values(form)}
     action = _text(form.get("action"))
     if action not in DECISIONS:
-        return "action", "Выберите, что делать с компонентом."
+        return "action", i18n._("Выберите, что делать с компонентом.")
     rationale = _text(form.get("rationale"))
     if not rationale:
-        return "rationale", "Напишите причину решения: по ней видно, на чём оно основано."
+        return "rationale", i18n._("Напишите причину решения: по ней видно, на чём оно основано.")
     if len(rationale) > RATIONALE_CHARS:
-        return "rationale", f"Причина решения длиннее {RATIONALE_CHARS} знаков."
+        return "rationale", i18n._("Причина решения длиннее {limit} знаков.", limit=RATIONALE_CHARS)
     for field in DECISION_NEEDS.get(action, ()):  # бессмысленное решение не сохраняем
         if not _text(form.get(field)):
-            names = {"target_version": "версию, на которую переходим",
-                     "replacement_name": "имя заменяющего пакета",
-                     "replacement_version": "версию заменяющего пакета"}
-            return field, f"Для действия «{DECISION_LABELS[action]}» укажите {names.get(field, field)}."
+            names = {"target_version": i18n._("версию, на которую переходим"),
+                     "replacement_name": i18n._("имя заменяющего пакета"),
+                     "replacement_version": i18n._("версию заменяющего пакета")}
+            return field, i18n._("Для действия «{action}» укажите {what}.", action=DECISION_LABELS[action], what=names.get(field, field))
     for field in ("target_version", "replacement_version"):
         value = _text(form.get(field))
         if value and len(value) > VERSION_CHARS:
-            return field, f"Значение слишком длинное ({len(value)} знаков при пределе {VERSION_CHARS})."
+            return field, i18n._("Значение слишком длинное ({length} знаков при пределе {limit}).", length=len(value), limit=VERSION_CHARS)
     review = _text(form.get("review_at"))
     if review:
         try:
             date.fromisoformat(review)
         except ValueError:
-            return "review_at", "Дата пересмотра должна быть в формате ГГГГ-ММ-ДД."
+            return "review_at", i18n._("Дата пересмотра должна быть в формате ГГГГ-ММ-ДД.")
     return "", ""
 
 
@@ -1031,56 +1058,72 @@ def report_text(document: Mapping[str, Any]) -> str:
     project = document["project"]
     scope = document["scope"]
     summary = document["summary"]
-    lines = [f"Исследование компонентов SCA: {project['name']}",
-             f"Отчёт от {document['generated_at']}, строк в отчёте: {len(document['components'])}, "
-             f"исследовано: {scope['researched']}",
-             f"Задание: {scope['task_id'] or 'нет'} ({scope['task_state'] or 'нет'}), "
-             f"отпечаток состава: {scope['manifest_sha256'] or 'нет'}",
-             f"Состояния: уязвим {summary['vulnerable']}, уязвимостей не найдено "
-             f"{summary['no_known_vulnerabilities']}, неполно {summary['incomplete']}, "
-             f"идентичность не подтверждена {summary['identity_unresolved']}",
-             "", "Состав:", ""]
+    none = i18n._("нет")
+    unknown = i18n._("неизвестно")
+    lines = [i18n._("Исследование компонентов SCA: {project}", project=project["name"]),
+             i18n._("Отчёт от {date}, строк в отчёте: {rows}, исследовано: {researched}",
+                    date=document["generated_at"], rows=len(document["components"]), researched=scope["researched"]),
+             i18n._("Задание: {task} ({state}), отпечаток состава: {digest}", task=scope["task_id"] or none,
+                    state=scope["task_state"] or none, digest=scope["manifest_sha256"] or none),
+             i18n._("Состояния: уязвим {vulnerable}, уязвимостей не найдено {clean}, неполно {incomplete}, "
+                    "идентичность не подтверждена {unresolved}", vulnerable=summary["vulnerable"],
+                    clean=summary["no_known_vulnerabilities"], incomplete=summary["incomplete"],
+                    unresolved=summary["identity_unresolved"]),
+             "", i18n._("Состав:"), ""]
     for index, item in enumerate(document["components"], 1):
+        identity = item["identity"]
+        latest = item["latest_stable_release"]
+        support = item["support_status"]
         lines += [f"{index}. {item['ecosystem']} {item['name']} {item['version']}",
-                  f"   Состояние: {item['status_label']}" + (f" ({item['status_note']})" if item["status_note"] else ""),
-                  f"   Идентичность: {item['identity']['state'] or 'не определялась'}"
-                  + (f", {item['identity']['coordinates']}" if item["identity"]["coordinates"] else "")
-                  + (f", кандидаты: {', '.join(item['identity']['candidates'])}"
-                     if item["identity"]["candidates"] else ""),
-                  f"   Последний релиз: {item['latest_stable_release']['version'] or 'неизвестен'}"
-                  + (f" ({item['latest_stable_release']['released_at']})" if item["latest_stable_release"]["released_at"] else ""),
-                  f"   Обновление: {item['update_status'] or 'неизвестно'}; поддержка: "
-                  f"{item['support_status']['state'] or 'неизвестно'} ({item['support_status']['scope'] or 'неизвестно'})"
-                  + (f"; на {item['support_status']['as_of']}" if item["support_status"]["as_of"] else ""),
-                  f"   Находки: {len(item['public_findings'])}, применимых "
-                  f"{sum(1 for entry in item['public_findings'] if entry['applies'] == 'yes')}"]
+                  "   " + i18n._("Состояние: {status}", status=item["status_label"])
+                  + (f" ({item['status_note']})" if item["status_note"] else ""),
+                  "   " + i18n._("Идентичность: {state}", state=identity["state"] or i18n._("не определялась"))
+                  + (f", {identity['coordinates']}" if identity["coordinates"] else "")
+                  + (", " + i18n._("кандидаты: {candidates}", candidates=", ".join(identity["candidates"]))
+                     if identity["candidates"] else ""),
+                  "   " + i18n._("Последний релиз: {version}", version=latest["version"] or i18n._("неизвестен"))
+                  + (f" ({latest['released_at']})" if latest["released_at"] else ""),
+                  "   " + i18n._("Обновление: {update}; поддержка: {support} ({scope})",
+                                 update=item["update_status"] or unknown, support=support["state"] or unknown,
+                                 scope=support["scope"] or unknown)
+                  + ("; " + i18n._("на {date}", date=support["as_of"]) if support["as_of"] else ""),
+                  "   " + i18n._("Находки: {total}, применимых {applicable}", total=len(item["public_findings"]),
+                                 applicable=sum(1 for entry in item["public_findings"] if entry["applies"] == "yes"))]
         for finding in item["public_findings"]:
-            lines.append(f"     - {finding['id']} ({finding['applies'] or 'неясно'})"
+            lines.append(f"     - {finding['id']} ({finding['applies'] or i18n._('неясно')})"
                          + (f": {finding['description']}" if finding["description"] else ""))
             for source in finding["sources"]:
                 lines.append(f"       {source['url']} [{source['source_type']}, {source['checked_at']}]")
-        lines.append("   Охват: " + ("; ".join(f"{entry['source']} – {entry['status']}" for entry in
-                                                item["research_coverage"]) or "не проверялся"))
+        lines.append("   " + i18n._("Охват: {coverage}", coverage="; ".join(
+            f"{entry['source']} – {entry['status']}" for entry in item["research_coverage"])
+            or i18n._("не проверялся")))
         advice = item["advice"]
-        lines.append(f"   Совет: {advice['action_label'] or advice['action'] or 'нет'}"
-                     + (f" на {advice['target_version']}" if advice["target_version"] else "")
+        lines.append("   " + i18n._("Совет: {advice}", advice=advice["action_label"] or advice["action"] or none)
+                     + (" " + i18n._("на {version}", version=advice["target_version"]) if advice["target_version"] else "")
                      + (f"; {advice['compatibility_notes']}" if advice["compatibility_notes"] else ""))
         for gap in item["gaps"]:
-            lines.append(f"   Пробел: {gap['code']} – {gap['text']}")
+            lines.append("   " + i18n._("Пробел: {code} – {text}", code=gap["code"], text=gap["text"]))
         decision = item["decision"]
-        lines.append("   Решение человека: " + (f"{decision['action']} – {decision['rationale']}"
-                                                f" (от {decision['decided_at']})" if decision else "не принято")
-                     + (" [требует пересмотра]" if item["decision_stale"] else ""))
+        lines.append("   " + (i18n._("Решение человека: {action} – {rationale} (от {date})", action=decision["action"],
+                                     rationale=decision["rationale"], date=decision["decided_at"]) if decision
+                              else i18n._("Решение человека: не принято"))
+                     + (" " + i18n._("[требует пересмотра]") if item["decision_stale"] else ""))
         lines.append("")
     archive = document.get("identity_archive") or []
     if archive:
         # тот же факт снятия, что в JSON (ревью Codex, круг 2): в действующий состав выше не входит
-        labels = {"sca2_research": "исследование", "sca2_decisions": "решение человека"}
-        lines += ["Снято переходом идентичности пакетов (сведения Hub о библиотеке) – в состав выше не входит:", ""]
+        labels = {"sca2_research": i18n._("исследование"), "sca2_decisions": i18n._("решение человека")}
+        lines += [i18n._("Снято переходом идентичности пакетов (сведения Hub о библиотеке) – в состав выше не входит:"),
+                  ""]
         for entry in archive:
-            lines.append(f"- {labels.get(entry['table'], entry['table'])} строки {entry['input_ref']}"
-                         f" (ревизия {entry.get('revision') or '–'}), снято {str(entry['archived_at'])[:10]}"
-                         + (f": {entry['reason']}" if entry.get('reason') else ""))
+            what = labels.get(entry["table"], entry["table"])
+            date_text = str(entry["archived_at"])[:10]
+            revision = entry.get("revision") or "–"
+            lines.append("- " + (i18n._("{what} строки {ref} (ревизия {revision}), снято {date}: {reason}", what=what,
+                                        ref=entry["input_ref"], revision=revision, date=date_text,
+                                        reason=entry["reason"]) if entry.get("reason")
+                                 else i18n._("{what} строки {ref} (ревизия {revision}), снято {date}", what=what,
+                                             ref=entry["input_ref"], revision=revision, date=date_text)))
         lines.append("")
     return "\n".join(lines) + "\n"
 

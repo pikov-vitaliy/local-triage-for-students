@@ -27,7 +27,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app import sca_text
+from app import i18n, sca_text
 from app import worklists, cvss, defect, hub_defects, hub_state, mask_display, sca
 from app import package_transition
 from app.config import VERDICTS
@@ -55,8 +55,8 @@ MAX_DRAFT = 200_000  # сколько вставленного текста ве
 LIST_LIMIT = 100_000
 MARKS_LIMIT = 10_000_000
 
-# Почему решение не сохранено – текст для человека
-STALE_MESSAGES = {
+# Почему решение не сохранено – текст для человека (перевод при чтении)
+STALE_MESSAGES = i18n.Labels({
     "source": "Находка изменилась, пока карточка была открыта (новая выгрузка). Решение не сохранено: проверьте "
               "карточку ещё раз.",
     "answer": "Пришёл новый ответ внешнего агента, пока карточка была открыта. Решение не сохранено: посмотрите "
@@ -70,36 +70,37 @@ STALE_MESSAGES = {
               "карточку и проверьте номер.",
     "package": "Пока карточка была открыта, изменились находки этой версии компонента, их решения или набор дефекта. "
                "Решение не сохранено ни для одной находки: сверьте карточку и сохраните ещё раз.",
-}
-PACKAGE_MOVED_CONFIRM = ("Пока форма была открыта, данные пакета изменились: текст сохранён, а отметки «Версию проверил "
+})
+# ниже – msgid: перевод там, где текст выводится (i18n._)
+PACKAGE_MOVED_CONFIRM = i18n.N_("Пока форма была открыта, данные пакета изменились: текст сохранён, а отметки «Версию проверил "
                          "сам», «Остаточный риск проверил» и «Текст проверен» не поставлены – проверьте новый текст и "
                          "отметьте заново.")
-CHECK_CHANGED_CONFIRM = ("Проверка целевой версии изменилась после открытия карточки (другая версия, её проверка или "
+CHECK_CHANGED_CONFIRM = i18n.N_("Проверка целевой версии изменилась после открытия карточки (другая версия, её проверка или "
                          "остаточные уязвимости): текст сохранён, отметки «Версию проверил сам» и «Остаточный риск "
                          "проверил» не поставлены – посмотрите новую проверку и отметьте заново.")
-APPLICABILITY_STALE = ("Пока карточка была открыта, изменились данные пакета, исследование компонента или решение о "
+APPLICABILITY_STALE = i18n.N_("Пока карточка была открыта, изменились данные пакета, исследование компонента или решение о "
                        "применимости: решение не сохранено. Сверьте карточку и сохраните ещё раз.")
 MAX_APPLICABILITY_REASON = 2000
-PACKAGE_MISMATCH = ("«Согласен с агентом» не применяется к находкам {ids}: вывод агента по ним другой или его нет. "
+PACKAGE_MISMATCH = i18n.N_("«Согласен с агентом» не применяется к находкам {ids}: вывод агента по ним другой или его нет. "
                     "Снимите их галочки или примите своё решение. Ничего не сохранено.")
-ENTERED_STALE = ("Решение по находке изменили в другой вкладке или окне: отметка «Статус и комментарий внесены в Hub» не поставлена. "
+ENTERED_STALE = i18n.N_("Решение по находке изменили в другой вкладке или окне: отметка «Статус и комментарий внесены в Hub» не поставлена. "
                  "Обновите карточку и отметьте ещё раз.")
-ENTERED_NO_DECISION = ("Сначала сохраните решение по находке или нажмите «Скопировать короткий текст для Hub»: отметка "
+ENTERED_NO_DECISION = i18n.N_("Сначала сохраните решение по находке или нажмите «Скопировать короткий текст для Hub»: отметка "
                        "«Статус и комментарий внесены в Hub» – о тексте этого решения.")
-NO_PUBLIC_IDS = ("У уязвимостей набора нет публичного идентификатора (CVE, GHSA, БДУ ФСТЭК России): внутренние "
+NO_PUBLIC_IDS = i18n.N_("У уязвимостей набора нет публичного идентификатора (CVE, GHSA, БДУ ФСТЭК России): внутренние "
                  "номера в текст для Hub не входят, дефект по шаблону не готовится. Найдите публичный идентификатор "
                  "в исследовании компонента или примите другое решение (например, «без дефекта» с обоснованием).")
-FP_NEEDS_REASON = ("«Ложное срабатывание» сохраняется только с обоснованием: напишите в комментарии для Hub одной-двумя "
+FP_NEEDS_REASON = i18n.N_("«Ложное срабатывание» сохраняется только с обоснованием: напишите в комментарии для Hub одной-двумя "
                    "фразами, почему уязвимость к продукту не относится.")
-SCA_NO_SHORT = ("У «Обновить» короткого текста для Hub нет: статус находок в Hub не меняется, дефект создаётся из "
+SCA_NO_SHORT = i18n.N_("У «Обновить» короткого текста для Hub нет: статус находок в Hub не меняется, дефект создаётся из "
                 "отмеченных находок (раздел «Дефект для Hub»). У «Отложить» текста тоже нет.")
-ENTERED_NO_DEFECT = ("Дефект набора ещё не готов: отметка «Дефект создан в Hub» ставится, когда текст дефекта собран и "
+ENTERED_NO_DEFECT = i18n.N_("Дефект набора ещё не готов: отметка «Дефект создан в Hub» ставится, когда текст дефекта собран и "
                      "скопирован.")
-ENTERED_NO_TEXT = ("Для этого решения текста для Hub нет («Отложить», «неясно» или пустое обоснование): отметка "
+ENTERED_NO_TEXT = i18n.N_("Для этого решения текста для Hub нет («Отложить», «неясно» или пустое обоснование): отметка "
                    "не ставится.")
-ENTERED_DEFECT_CHANGED = ("Текст дефекта изменился с тех пор, как карточка была открыта: отметка не поставлена. "
+ENTERED_DEFECT_CHANGED = i18n.N_("Текст дефекта изменился с тех пор, как карточка была открыта: отметка не поставлена. "
                           "Обновите карточку, скопируйте текст ещё раз и отметьте снова.")
-RISK_NEEDS_REASON = ("«Риск принят» сохраняется только с обоснованием: напишите в комментарии для Hub, почему риск "
+RISK_NEEDS_REASON = i18n.N_("«Риск принят» сохраняется только с обоснованием: напишите в комментарии для Hub, почему риск "
                      "принимается и при каком условии решение пересматривается (например, срок или событие).")
 
 
@@ -196,7 +197,7 @@ def _sca_row(db: Database, project_id: int, finding_id: int) -> dict:
     """Находка SCA проекта; другой вид или нет такой – 404."""
     row = db.get_finding(project_id, finding_id)
     if row is None or row["kind"] not in SCA_KINDS:
-        raise HTTPException(status_code=404, detail="Находка SCA не найдена: возможно, её нет в новой выгрузке.")
+        raise HTTPException(status_code=404, detail=i18n._("Находка SCA не найдена: возможно, её нет в новой выгрузке."))
     return row
 
 
@@ -284,7 +285,7 @@ def _ordered_cwe(store: FeedStore, ids: list) -> dict[str, dict]:
 
 
 def _answer_view(answer: dict, hub_safe: list[str]) -> dict:
-    return {**answer, "label": sca.CONCLUSION_LABELS.get(answer.get("conclusion") or "", "вывод не указан"),
+    return {**answer, "label": sca.CONCLUSION_LABELS.get(answer.get("conclusion") or "", i18n._("вывод не указан")),
             "verdict": sca.CONCLUSION_VERDICT.get(answer.get("conclusion") or "", ""),
             "link_items": _links(answer.get("links")),
             "notes": sca.answer_notes(answer.get("version") or "", answer, hub_safe)}
@@ -319,14 +320,14 @@ async def _form_text(form, text_field: str, file_field: str, limit: int) -> tupl
     if isinstance(upload, UploadFile) and upload.filename:
         raw = await upload.read(limit + 1)
         if len(raw) > limit:
-            raise sca.ScaInputError(f"Файл больше {limit // (1024 * 1024)} МБ.")
+            raise sca.ScaInputError(i18n._("Файл больше {n} МБ.", n=limit // (1024 * 1024)))
         return sca.decode_text(raw), sca.one_line(upload.filename.replace("\\", "/").rsplit("/", 1)[-1], 200)
     text = str(form.get(text_field) or "")
     # предел вставленного текста – тот же, что у файла, при любом способе отправки формы: у формы без файлов
     # (application/x-www-form-urlencoded) предел части max_part_size не действует
     if len(text.encode("utf-8", "replace")) > limit:
-        raise sca.ScaInputError(f"Вставленный текст больше {limit // (1024 * 1024)} МБ – загрузите его файлом или "
-                                "частями.")
+        raise sca.ScaInputError(i18n._("Вставленный текст больше {n} МБ – загрузите его файлом или частями.",
+                                       n=limit // (1024 * 1024)))
     return text, ""
 
 
@@ -370,26 +371,28 @@ def _cvss_selection(views: list[dict], selection: dict, show: str, page: str) ->
     sample = cvss.select(ready, version, None)  # при выбранной версии – только пакеты с её оценками
     picked = cvss.select(views, version, item)  # после отбора по оценке: числа готовых отборов считаются по нему
     shown = cvss.sort_views(cvss.select(ready, version, item), version, selection["sort"])
-    filters = [{"key": key, "label": label, "count": len(sca.filter_views(picked, key)), "active": key == show,
+    filters = [{"key": key, "label": sca.filter_label(key, label), "count": len(sca.filter_views(picked, key)), "active": key == show,
                 "href": link(show=key)} for key, label in sca.FILTERS]
-    chips = [{"label": "Все", "href": link(cvss="", cvss_min="", cvss_max=""), "active": not selection["preset"]
+    chips = [{"label": i18n._("Все"), "href": link(cvss="", cvss_min="", cvss_max=""), "active": not selection["preset"]
               and not bounds, "count": len(sample)}]
     for band in cvss.presets(version):
         chips.append({"label": band["label"], "href": link(cvss=band["key"], cvss_min="", cvss_max=""),
                       "active": selection["preset"] == band["key"] and not bounds,
                       "count": len(cvss.select(ready, version, band))})
-    chips.append({"label": "Свой диапазон", "href": link(cvss="", cvss_min="", cvss_max=""), "active": bounds,
+    chips.append({"label": i18n._("Свой диапазон"), "href": link(cvss="", cvss_min="", cvss_max=""), "active": bounds,
                   "count": len(cvss.select(ready, version, item)) if bounds else None})
     scale = ", ".join(f"{band['label'].lower()} {band['title']}" for band in cvss.bands(version))
-    scale_name = "CVSS 2.0" if version == "2.0" else "CVSS 3.x и 4.0"  # какая шкала стоит за чипами
-    score_note = (f"В строке – наибольший балл среди находок библиотеки{': ' + cvss.version_title(version) if version else ''}. "
-                  "Без выбора версии берётся максимум всех импортированных баллов.")
+    scale_name = "CVSS 2.0" if version == "2.0" else i18n._("CVSS 3.x и 4.0")  # какая шкала стоит за чипами
+    score_note = (i18n._("В строке – наибольший балл среди находок библиотеки: {version}. Без выбора версии берётся "
+                         "максимум всех импортированных баллов.", version=cvss.version_title(version)) if version
+                  else i18n._("В строке – наибольший балл среди находок библиотеки. Без выбора версии берётся максимум "
+                              "всех импортированных баллов."))
     return {
         "shown": shown,
         "filters": filters,
         "context": {
             "cvss_chips": chips, "cvss_versions": sca.cvss_versions(views), "cvss_version": version,
-            "cvss_scale": f"Диапазоны шкалы – {scale_name}: {scale}.",
+            "cvss_scale": i18n._("Диапазоны шкалы – {name}: {scale}.", name=scale_name, scale=scale),
             "cvss_score_note": score_note,
             "cvss_version_title": cvss.version_title(version),
             "cvss_min_raw": cvss.field_number(selection["raw"]["cvss_min"]),
@@ -400,12 +403,13 @@ def _cvss_selection(views: list[dict], selection: dict, show: str, page: str) ->
                            for key, label in cvss.SORT_LABELS.items()],
             "sort": selection["sort"],
             "sort_href": link(sort="cvss_asc" if selection["sort"] == "cvss_desc" else "cvss_desc"),
-            "sort_note": "Сортировка числовая, пакеты без оценки – в конце; без выбора порядок отчёта: срочные, "
-                         "затем по убыванию балла.",
+            "sort_note": i18n._("Сортировка числовая, пакеты без оценки – в конце; без выбора порядок отчёта: срочные, "
+                                "затем по убыванию балла."),
             "cvss_errors": selection["errors"], "cvss_active": selection["active"],
             "cvss_chosen": sum(1 for key in ("cvss", "cvss_min", "cvss_max", "cvss_version") if clean[key]),
             "cvss_filters_open": selection["active"] or bool(selection["errors"]),
-            "cvss_count": f"Отобрано {len(shown)} из {len(ready) if item and item.get('key') == 'no_score' else len(sample)}",
+            "cvss_count": i18n._("Отобрано {shown} из {total}", shown=len(shown),
+                                 total=len(ready) if item and item.get("key") == "no_score" else len(sample)),
             "cvss_reset": link(cvss="", cvss_min="", cvss_max="", cvss_version="", sort=""),
         },
     }
@@ -477,7 +481,7 @@ def sca_context(request: Request, project: dict) -> dict:
             ref = research_ref_of((sca.group_ecosystem(v), v["component"], v["version"]))
             conflict = _research_conflict(v["answer"], researched.get(ref), ref)
             if conflict:
-                v["notes"] = [*v["notes"], {"tone": "warn", "text": "расходится: " + conflict}]
+                v["notes"] = [*v["notes"], {"tone": "warn", "text": i18n._("расходится: {conflict}", conflict=conflict)}]
             v["advice_conflict"] = conflict
             v["answer_view"] = _answer_view(v["answer"], v["fixed_versions"])
             v["answer_view"]["notes"] = v["notes"]  # с замечанием об уязвимостях вне охвата ответа
@@ -500,8 +504,9 @@ def sca_context(request: Request, project: dict) -> dict:
                         reverse=presentation["sort"] == "name_desc")
     params = {"show": show, "cvss": selection["preset"], "cvss_min": _url_number(selection["min"]),
               "cvss_max": _url_number(selection["max"]), "cvss_version": selection["version"], **presentation}
-    w = worklists.table(scored, params, path=page, kind="sca", sorts={"": "Как в отчёте",
-                         "name_asc": "Имя ↑", "name_desc": "Имя ↓", **{k:v for k,v in cvss.SORT_LABELS.items() if k}})
+    w = worklists.table(scored, params, path=page, kind="sca", sorts={"": i18n._("Как в отчёте"),
+                         "name_asc": i18n._("Имя ↑"), "name_desc": i18n._("Имя ↓"),
+                         **{k: v for k, v in cvss.SORT_LABELS.items() if k}})
     known_ast = [i for i in ids if i.upper().startswith("AST-")]  # внутренние номера анализатора
     context = {
         "project": project, "imp": db.latest_import(pid), "views": views,
@@ -525,12 +530,13 @@ def sca_context(request: Request, project: dict) -> dict:
     if ok in ("sca_answers", "sca_map", "sca_doubtful") and COUNT.fullmatch(n):
         count = int(n)
         if ok == "sca_doubtful":
-            context["ok_message"] = (f"Список сомнительных имён сохранён: агенту уйдут подтверждённые – {count}.")
+            context["ok_message"] = i18n._("Список сомнительных имён сохранён: агенту уйдут подтверждённые – {n}.",
+                                           n=count)
         elif ok == "sca_answers":
-            context["ok_message"] = (f"Ответы сохранены: {count} "
-                                     f"{sca.plural(count, 'библиотека', 'библиотеки', 'библиотек')}.")
+            context["ok_message"] = i18n._("Ответы сохранены: {n} {word}.", n=count,
+                                           word=sca.plural(count, "библиотека", "библиотеки", "библиотек"))
         else:
-            context["ok_message"] = f"Соответствие AST → CVE загружено: новых пар – {count}."
+            context["ok_message"] = i18n._("Соответствие AST → CVE загружено: новых пар – {n}.", n=count)
     return context
 
 
@@ -610,8 +616,8 @@ def _retired_package(request: Request, project_id: int) -> Response:
     """Не выдавать старое задание с внутренними номерами даже по сохранённой ссылке."""
     project_or_404(request, project_id)
     return Response(
-        "Старый формат задания больше не выдаётся. Создайте задание исследования компонентов: "
-        f"/projects/{project_id}/components\n",
+        i18n._("Старый формат задания больше не выдаётся. Создайте задание исследования компонентов: {path}",
+               path=f"/projects/{project_id}/components") + "\n",
         status_code=410, media_type="text/plain",
     )
 
@@ -632,8 +638,8 @@ async def upload_answers(request: Request, project_id: int):
         form = await request.form(max_files=1, max_fields=10, max_part_size=sca.MAX_ANSWER_BYTES)
     except StarletteHTTPException:
         return await run_in_threadpool(sca_response, request, project_id, {
-            "error": f"Ответ не прочитан: вставленный текст больше {sca.MAX_ANSWER_BYTES // (1024 * 1024)} МБ – "
-                     "загрузите его файлом или частями."}, 400)
+            "error": i18n._("Ответ не прочитан: вставленный текст больше {n} МБ – загрузите его файлом или частями.",
+                            n=sca.MAX_ANSWER_BYTES // (1024 * 1024))}, 400)
     text = ""
     try:
         text, _ = await _form_text(form, "answers", "file", sca.MAX_ANSWER_BYTES)
@@ -646,12 +652,13 @@ async def upload_answers(request: Request, project_id: int):
             result = (db.save_sca_answers(project_id, report.source, report.answers) if report.answers
                       else {"saved": 0, "kept": [], "reopened": 0})
             for label in result["kept"]:
-                report.warnings.append(f"{label}: ответ неполный (нет вывода, пояснения или версии) – прежний полный "
-                                       "ответ этого источника оставлен.")
+                report.warnings.append(i18n._("{name}: ответ неполный (нет вывода, пояснения или версии) – прежний "
+                                              "полный ответ этого источника оставлен.", name=label))
             if result["reopened"]:
-                report.warnings.append(f"Ответ агента изменился: у {result['reopened']} "
-                                       f"{sca.plural(result['reopened'], 'находки', 'находок', 'находок')} с решением "
-                                       "«Согласен с агентом» снята отметка «Проверено» – сверьте их с новым ответом.")
+                report.warnings.append(i18n._(
+                    "Ответ агента изменился: у {n} {word} с решением «Согласен с агентом» снята отметка «Проверено» – "
+                    "сверьте их с новым ответом.", n=result["reopened"],
+                    word=sca.plural(result["reopened"], "находки", "находок", "находок")))
             return report, result["saved"], len(result["kept"])
 
         report, saved, kept = await run_in_threadpool(apply)
@@ -661,13 +668,14 @@ async def upload_answers(request: Request, project_id: int):
     except Exception as e:
         eid = log_failure(log, "ответ агента не прочитан", e)
         return await run_in_threadpool(sca_response, request, project_id, {
-            "error": f"Ответ не прочитан: внутренняя ошибка (номер в журнале {eid}).", "open_answers": True}, 500)
+            "error": i18n._("Ответ не прочитан: внутренняя ошибка (номер в журнале {eid}).", eid=eid),
+            "open_answers": True}, 500)
     finally:
         await form.close()
     if report.unknown or report.warnings or not saved:
         extra = {"answers_report": _answers_report_view(report, saved)}
         if not saved and not kept:
-            extra["error"] = "Ни одного ответа не сохранено: в ответе нет библиотек этого проекта."
+            extra["error"] = i18n._("Ни одного ответа не сохранено: в ответе нет библиотек этого проекта.")
         return await run_in_threadpool(sca_response, request, project_id, extra, 200 if saved or kept else 400)
     return redirect(f"/projects/{project_id}/sca?ok=sca_answers&n={saved}#components")
 
@@ -681,7 +689,7 @@ async def upload_ast_map(request: Request, project_id: int):
         form = await request.form(max_files=1, max_fields=10, max_part_size=sca.MAX_MAP_BYTES)
     except StarletteHTTPException:
         return await run_in_threadpool(sca_response, request, project_id, {
-            "error": "Соответствие не прочитано: вставленный текст слишком большой – загрузите его файлом.",
+            "error": i18n._("Соответствие не прочитано: вставленный текст слишком большой – загрузите его файлом."),
             "open_map": True}, 400)
     text = ""
     try:
@@ -694,7 +702,8 @@ async def upload_ast_map(request: Request, project_id: int):
     except Exception as e:
         eid = log_failure(log, "соответствие AST → CVE не прочитано", e)
         return await run_in_threadpool(sca_response, request, project_id, {
-            "error": f"Соответствие не прочитано: внутренняя ошибка (номер в журнале {eid}).", "open_map": True}, 500)
+            "error": i18n._("Соответствие не прочитано: внутренняя ошибка (номер в журнале {eid}).", eid=eid),
+            "open_map": True}, 500)
     finally:
         await form.close()
     if report.skipped:
@@ -759,9 +768,9 @@ def saved_hub_text_v1(db: Database, settings, project_id: int, f: Finding, revie
                            settings.hub_status_map, aliases)
 
 
-KAPO_NEEDS_CHOICE = ("Для «Риск принят» уточните по ГОСТ Р КАПО: уязвимость неактуальна для продукта или "
+KAPO_NEEDS_CHOICE = i18n.N_("Для «Риск принят» уточните по ГОСТ Р КАПО: уязвимость неактуальна для продукта или "
                      "нейтрализована принятыми мерами.")
-NEED_VERDICT = "Выберите вывод"
+NEED_VERDICT = i18n.N_("Выберите вывод")
 
 
 def normalized_kapo(outcome: str, value: str) -> str:
@@ -775,9 +784,9 @@ def normalized_kapo(outcome: str, value: str) -> str:
     if value in allowed:
         return value
     if outcome == "risk_accepted":
-        raise ReviewRejected(KAPO_NEEDS_CHOICE)
+        raise ReviewRejected(i18n._(KAPO_NEEDS_CHOICE))
     if value:
-        raise HTTPException(status_code=400, detail="Уточнение по ГОСТ Р КАПО не подходит к выбранному выводу.")
+        raise HTTPException(status_code=400, detail=i18n._("Уточнение по ГОСТ Р КАПО не подходит к выбранному выводу."))
     return allowed[0]
 
 
@@ -791,8 +800,8 @@ def known_cves(f: Finding, aliases: dict) -> list[str]:
     return result
 
 
-OUTCOME_LABELS = {"true_positive": "обновить", "false_positive": "не применимо", "uncertain": "неясно",
-                  "risk_accepted": "риск принят"}
+OUTCOME_LABELS = i18n.Labels({"true_positive": "обновить", "false_positive": "не применимо", "uncertain": "неясно",
+                              "risk_accepted": "риск принят"})
 
 
 def decision_state(f: Finding, review: dict | None, latest: dict | None,
@@ -821,11 +830,13 @@ def decision_state(f: Finding, review: dict | None, latest: dict | None,
 
 
 def state_text(state: str, outcome: str) -> str:
-    return {"none": "решения нет", "later": "отложено",
-            "missing": "нет в текущей выгрузке",
-            "changed": "решение принято по прежней версии находки (сменились уязвимости или путь зависимости)",
-            "stale": "«Согласен с агентом» – по прежнему ответу агента или ответ не про эту уязвимость",
-            "not_ready": f"итог «{OUTCOME_LABELS.get(outcome, outcome)}»"}.get(state, state)
+    if state == "not_ready":
+        return i18n._("итог «{outcome}»", outcome=OUTCOME_LABELS.get(outcome, outcome))
+    return {"none": i18n._("решения нет"), "later": i18n._("отложено"),
+            "missing": i18n._("нет в текущей выгрузке"),
+            "changed": i18n._("решение принято по прежней версии находки (сменились уязвимости или путь зависимости)"),
+            "stale": i18n._("«Согласен с агентом» – по прежнему ответу агента или ответ не про эту уязвимость"),
+            }.get(state, state)
 
 
 def defect_ready(review: dict | None, f: Finding | None = None, latest: dict | None = None,
@@ -846,14 +857,14 @@ def title_warnings(component: str, version: str, ecosystem: str = "") -> list[st
     выгрузки) – такой заголовок уходит в Hub только после подтверждения."""
     name, ver = sca.one_line(component, sca.MAX_COMPONENT), sca.one_line(version, sca.MAX_VERSION)
     reason = sca.package_exclusion(name, ver) or sca.package_doubt(name, ver, [ecosystem] if ecosystem else [])
-    return [f"Заголовок дефекта: {reason} – «{sca.one_line(component, 120)}». Проверьте, что в Hub уйдёт имя "
-            "библиотеки, а не путь или внутреннее название."] if reason else []
+    return [i18n._("Заголовок дефекта: {reason} – «{name}». Проверьте, что в Hub уйдёт имя библиотеки, а не путь или "
+                   "внутреннее название.", reason=reason, name=sca.one_line(component, 120))] if reason else []
 
 
-KAPO_CONFLICT_HINT = ("По этой библиотеке и версии у действующих решений разные уточнения по ГОСТ Р КАПО: {groups}. "
+KAPO_CONFLICT_HINT = i18n.N_("По этой библиотеке и версии у действующих решений разные уточнения по ГОСТ Р КАПО: {groups}. "
                       "Заключение дефекта одно на библиотеку и версию, поэтому он не готовится, пока уточнения не "
                       "совпадут: сверьте решения по этим находкам.")
-CONFLICT_HINT = ("По этой библиотеке и версии есть действующие решения с разными итогами: {groups}. Один дефект "
+CONFLICT_HINT = i18n.N_("По этой библиотеке и версии есть действующие решения с разными итогами: {groups}. Один дефект "
                  "на библиотеку не может означать разные наборы находок, поэтому общий дефект не готовится, пока "
                  "итоги не совпадут: сверьте решения по этим находкам.")
 
@@ -869,13 +880,14 @@ def _sig(*parts: Any) -> str:
     return text_hash("\x1f".join(str(x) for x in parts))
 
 
-SCA_FP_HINT = ("«Ложное срабатывание» и «Риск принят» закрываются коротким комментарием в Hub, дефект не создаётся "
-               "(ADR-0091).")
-SCA_NO_DEFECT_HINT = "Находка помечена «без дефекта»: {reason}"
+SCA_FP_HINT = i18n.N_("«Ложное срабатывание» и «Риск принят» закрываются коротким комментарием в Hub, дефект не "
+                      "создаётся (ADR-0091).")
+SCA_NO_DEFECT_HINT = i18n.N_("Находка помечена «без дефекта»: {reason}")
 
 
 def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f: Finding, review: dict | None,
-               number: int | None = None, today: str = "", override: dict | None = None) -> dict:
+               number: int | None = None, today: str = "", override: dict | None = None, *,
+               alt_language: bool = False) -> dict:
     """Дефект SCA по набору находки и шаблону команды (ADR-0091): {ready, number, stored, title, body, hint, subject,
     note, warnings, excluded, state, ...данные карточки}.
 
@@ -884,7 +896,11 @@ def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f:
     проверил сам») и Объяснение не пусто. Замечания к оформлению Объяснения (нет строки по уязвимости, текст не на
     русском) – предупреждения в cautions, готовности они не мешают (ADR-0152).
     В набор входят находки пакета из текущей выгрузки с действующим решением «Обновить» и тем же местом в наборах;
-    остальные перечислены в note и excluded и выдаче не мешают."""
+    остальные перечислены в note и excluded и выдаче не мешают.
+
+    Тексты – на языке интерфейса. Подписи оператора («Версию проверил сам», «Текст проверен», «Остаточный риск
+    проверил») могли быть поставлены на другом языке: при несовпадении сверяются и подписи текста, собранного на
+    втором языке (sig_sets; alt_language=True – это и есть такой расчёт, без дальнейшей сверки, ADR-0158)."""
     snap = db if isinstance(db, ScaSnapshot) else db.sca_snapshot(project_id, f.hub_id)
     today = today or now_iso()[:10]
     placed = snap.placed if snap.row is not None else {}
@@ -897,7 +913,7 @@ def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f:
     own_row = snap.row
     state, outcome = decision_state(f, review, latest, own_row)
     result = {"ready": state == "ok", "number": number, "stored": stored is not None, "title": "",
-              "body": "", "needs_team": False, "subject": "библиотеки и версии", "note": "", "warnings": [],
+              "body": "", "needs_team": False, "subject": i18n._("библиотеки и версии"), "note": "", "warnings": [],
               "excluded": [], "state": state, "set_no": set_no, "sets": snap.sets if snap.row is not None else {},
               # пакет и ревизия идентичности, которые видит оператор, – для формы выбора набора (план dev17, п. 4.3)
               "input_ref": snap.input_ref, "shown_pkg_rev": int((own_row or {}).get("pkg_rev") or 0),
@@ -906,34 +922,35 @@ def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f:
               "residual": [], "residual_outside": [], "recommendation_note": "", "residual_confirm_sig": "",
               "residual_shown_sig": "", "residual_unsourced": [], "applicability": [], "research_revision": 0,
               "version_sig": "", "excluded_vulns": [], "set_revision": 0,
-              "hint": "Один дефект на набор находок версии компонента: в Hub создайте его из отмеченных находок набора."}
+              "hint": i18n._("Один дефект на набор находок версии компонента: в Hub создайте его из отмеченных "
+                             "находок набора.")}
     if state == "missing":
-        result["hint"] = "Находки нет в текущей выгрузке: дефект по ней не готовится."
+        result["hint"] = i18n._("Находки нет в текущей выгрузке: дефект по ней не готовится.")
     elif state == "changed":
-        result["hint"] = ("Решение принято по прежней версии находки: после него в выгрузке сменились уязвимости, "
-                          "путь зависимости или другие сведения. Сверьте решение и сохраните ещё раз – тогда дефект "
-                          "станет доступен.")
+        result["hint"] = i18n._("Решение принято по прежней версии находки: после него в выгрузке сменились уязвимости, "
+                                "путь зависимости или другие сведения. Сверьте решение и сохраните ещё раз – тогда "
+                                "дефект станет доступен.")
     elif state == "stale" and not (review or {}).get("answer_sig"):
-        result["hint"] = ("Решение «Согласен с агентом» принято до обновления приложения, и неизвестно, по какому "
-                          "ответу агента и каким соответствиям AST → CVE: сверьте решение с текущим ответом "
-                          "и сохраните ещё раз – тогда дефект станет доступен.")
+        result["hint"] = i18n._("Решение «Согласен с агентом» принято до обновления приложения, и неизвестно, по какому "
+                                "ответу агента и каким соответствиям AST → CVE: сверьте решение с текущим ответом "
+                                "и сохраните ещё раз – тогда дефект станет доступен.")
     elif state == "stale" and scope_unknown(latest):
-        result["hint"] = ("Охват ответа агента неизвестен (ответ загружен до обновления приложения): загрузите новый "
-                          "ответ или примите своё решение – тогда дефект станет доступен.")
+        result["hint"] = i18n._("Охват ответа агента неизвестен (ответ загружен до обновления приложения): загрузите "
+                                "новый ответ или примите своё решение – тогда дефект станет доступен.")
     elif state == "stale":
-        result["hint"] = ("Решение «Согласен с агентом» принято по прежнему ответу агента: сверьте решение с новым "
-                          "ответом и сохраните ещё раз – тогда дефект станет доступен.")
+        result["hint"] = i18n._("Решение «Согласен с агентом» принято по прежнему ответу агента: сверьте решение с "
+                                "новым ответом и сохраните ещё раз – тогда дефект станет доступен.")
     elif state == "none":
-        result["hint"] = "сначала сохраните решение «Обновить» по находке набора: дефект готовится по нему."
+        result["hint"] = i18n._("сначала сохраните решение «Обновить» по находке набора: дефект готовится по нему.")
     elif state == "later":
-        result["hint"] = "решение отложено: дефект готовится после решения «Обновить»."
+        result["hint"] = i18n._("решение отложено: дефект готовится после решения «Обновить».")
     elif state == "not_ready":
-        result["hint"] = "итог решения не «Обновить» (неясно или риск принят): дефект по нему не готовится."
+        result["hint"] = i18n._("итог решения не «Обновить» (неясно или риск принят): дефект по нему не готовится.")
     if result["ready"] and outcome != "true_positive":
-        result.update(ready=False, state="short_only", hint=SCA_FP_HINT)
+        result.update(ready=False, state="short_only", hint=i18n._(SCA_FP_HINT))
     if result["ready"] and place is not None and place.get("set_no") is None:
-        result.update(ready=False, state="no_defect", hint=SCA_NO_DEFECT_HINT.format(
-            reason=place.get("no_defect_reason") or "обоснование не указано"))
+        result.update(ready=False, state="no_defect", hint=i18n._(
+            SCA_NO_DEFECT_HINT, reason=place.get("no_defect_reason") or i18n._("обоснование не указано")))
     if not result["ready"]:
         return result
     # участники набора: находки пакета из текущей выгрузки с действующим «Обновить» и тем же местом
@@ -977,16 +994,18 @@ def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f:
         others[item.hub_id] = ids
         reason = (state_text(item_state, item_outcome) if item_state != "ok"
                   else OUTCOME_LABELS.get(item_outcome, item_outcome) if item_outcome != "true_positive"
-                  else "без дефекта" if item_set is None else f"отдельный набор {item_set}")
+                  else i18n._("без дефекта") if item_set is None else i18n._("отдельный набор {n}", n=item_set))
         excluded.append({"hub_id": item.hub_id, "reason": reason})
     if f.hub_id not in members:
-        result.update(ready=False, state="missing", hint="Находки нет в текущей выгрузке: дефект по ней не готовится.")
+        result.update(ready=False, state="missing",
+                      hint=i18n._("Находки нет в текущей выгрузке: дефект по ней не готовится."))
         return result
     result["excluded"] = excluded
     if excluded:
         shown = "; ".join(f"{x['hub_id']} – {x['reason']}" for x in excluded[:10])
-        more = f" и ещё {len(excluded) - 10}" if len(excluded) > 10 else ""
-        result["note"] = f"В этот дефект не входят находки версии ({len(excluded)}): {shown}{more}."
+        more = " " + i18n._("и ещё {n}", n=len(excluded) - 10) if len(excluded) > 10 else ""
+        result["note"] = i18n._("В этот дефект не входят находки версии ({n}): {items}.", n=len(excluded),
+                                items=shown + more)
     research = snap.research
     payload = (research or {}).get("payload") or None
     research_date = str((research or {}).get("observed_at") or (research or {}).get("imported_at") or "")[:10]
@@ -1109,65 +1128,90 @@ def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f:
     version_ok = {version_confirm} | ({_sig(version_sig, body_sig_v4)} if body_sig_v4 else set())
     text_ok = {text_confirm} | ({_sig(_sig(explanation_v4), body_sig_v4)} if body_sig_v4 else set())
     residual_ok = {residual_confirm} | ({_sig(body_sig_v4, residual_shown)} if body_sig_v4 else set())
+    result["sig_sets"] = {"version": sorted(version_ok), "text": sorted(text_ok), "residual": sorted(residual_ok),
+                          "entered": [text_sig], "legacy": [legacy_text_sig] if legacy_text_sig else [],
+                          "legacy_v4": [legacy_text_sig_v4] if legacy_text_sig_v4 else []}
+    other_sets: dict[str, list[str]] = {}
+
+    def signed(kind: str, own: set, stored: Any) -> bool:
+        """Подпись оператора относится к этому тексту – на текущем языке интерфейса или на втором (ADR-0158)."""
+        if not stored or stored in own:
+            return bool(stored) and stored in own
+        if alt_language:
+            return False
+        if not other_sets:
+            other_sets.update(other_language_sigs(snap, store, project_id, f, review, number, today, override) or
+                              {"none": []})
+        return stored in set(other_sets.get(kind) or [])
+
     problems = []
     cautions = []  # показываются рядом с «Перед выдачей дефекта», но утверждению текста не мешают
     if not public:
-        problems.append(NO_PUBLIC_IDS)
+        problems.append(i18n._(NO_PUBLIC_IDS))
     if target.problem:
         problems.append(target.problem)
     if check and check.state == "not_newer":  # запрет: отметка его не снимает (ADR-0094 Р1.3)
-        problems.append(f"Целевая версия {target.version} не новее текущей {f.version}: обновлять нечего. Укажите "
-                        "другую версию или примите решение по компоненту.")
+        problems.append(i18n._("Целевая версия {target} не новее текущей {current}: обновлять нечего. Укажите другую "
+                               "версию или примите решение по компоненту.", target=target.version, current=f.version))
     if no_fix:
         problems += nofix.problems  # нет исследования, нет сведений об уязвимости, статус не установлен – запрет
         # исправление, найденное исследованием, – предупреждение без отдельной отметки (ADR-0145,
         # ADR-0153, бэклог 126): оно бывает выпущено под другими координатами (продолжение
         # закрытого проекта, новая группа Maven) – под текущими обновлять некуда, замену оператор описывает в
         # «Добавлении к «Рекомендациям»»
-        cautions += [f"{p} Дефект с «Исправленной версии нет» можно утвердить и так. Если под текущими координатами "
-                     "обновить можно – укажите целевую версию; если исправление вышло под другими координатами – "
-                     "опишите замену в «Добавлении к «Рекомендациям»»." for p in nofix.fixed]
+        cautions += [p + " " + i18n._("Дефект с «Исправленной версии нет» можно утвердить и так. Если под текущими "
+                                      "координатами обновить можно – укажите целевую версию; если исправление вышло "
+                                      "под другими координатами – опишите замену в «Добавлении к «Рекомендациям»».")
+                     for p in nofix.fixed]
         if not measures:
-            problems.append("«Исправленной версии нет»: меры обязательны – опишите их в «Добавлении к «Рекомендациям»» "
-                            "(например, замена компонента, отключение уязвимой функции, ограничение входных данных).")
-    if residual and record.get("residual_checked_sig") not in residual_ok:
-        problems.append(("Исправленной версии нет для " if no_fix else "Обновление не закрывает ")
-                        + ", ".join(r["id"] for r in residual)
-                        + ": исправления нет или оно не установлено. Проверьте и отметьте «Остаточный риск проверил».")
+            problems.append(i18n._("«Исправленной версии нет»: меры обязательны – опишите их в «Добавлении к "
+                                   "«Рекомендациям»» (например, замена компонента, отключение уязвимой функции, "
+                                   "ограничение входных данных)."))
+    if residual and not signed("residual", residual_ok, record.get("residual_checked_sig")):
+        ids_text = ", ".join(r["id"] for r in residual)
+        problems.append(i18n._("Исправленной версии нет для {ids}: исправления нет или оно не установлено. Проверьте и "
+                               "отметьте «Остаточный риск проверил».", ids=ids_text) if no_fix
+                        else i18n._("Обновление не закрывает {ids}: исправления нет или оно не установлено. Проверьте "
+                                    "и отметьте «Остаточный риск проверил».", ids=ids_text))
     if check and check.state == "affected":
         # предупреждение, не запрет (оператор выбрал своё решение и должен иметь возможность создать
         # дефект): версия в тексте остаётся той, что указал оператор; альтернативы названы рядом
-        cautions.append(f"Целевая версия {target.version} затронута: {', '.join(check.affected)} – по исследованию компонента "
-                        "она сама уязвима. Дефект можно утвердить и с ней (решение оператора); иначе укажите другую версию или, "
-                        "если уязвимость к продукту не применима, примите решение в разделе «Применимость уязвимостей».")
-    elif check and check.state == "unverified" and record.get("version_checked_sig") not in version_ok:
-        problems.append(f"Целевая версия {target.version} не проверена ({check.detail}): проверьте её и отметьте "
-                        "«Версию проверил сам».")
+        cautions.append(i18n._("Целевая версия {target} затронута: {ids} – по исследованию компонента она сама уязвима. "
+                               "Дефект можно утвердить и с ней (решение оператора); иначе укажите другую версию или, "
+                               "если уязвимость к продукту не применима, примите решение в разделе «Применимость "
+                               "уязвимостей».", target=target.version, ids=", ".join(check.affected)))
+    elif check and check.state == "unverified" and not signed("version", version_ok, record.get("version_checked_sig")):
+        problems.append(i18n._("Целевая версия {target} не проверена ({detail}): проверьте её и отметьте «Версию "
+                               "проверил сам».", target=target.version, detail=check.detail))
     if not str(record.get("explanation") or "").strip() and draft:  # заготовка – не решение оператора (ADR-0088)
-        problems.append("Объяснение подставлено из исследования компонента, БДУ ФСТЭК России или ответа агента: "
-                        "проверьте его, поправьте при необходимости и утвердите текст дефекта.")
+        problems.append(i18n._("Объяснение подставлено из исследования компонента, БДУ ФСТЭК России или ответа агента: "
+                               "проверьте его, поправьте при необходимости и утвердите текст дефекта."))
     elif not str(explanation or "").strip() and public:
         # пусто и то, что останется после удаления внутренних номеров AST: в Hub уходит именно этот текст
         # (ревью dev26: одно «AST-…» в поле – не объяснение)
-        problems.append("Объяснение пустое: напишите, что это за уязвимости и при каких условиях они срабатывают, "
-                        "и утвердите текст дефекта. Внутренние номера AST в текст для Hub не входят.")
+        problems.append(i18n._("Объяснение пустое: напишите, что это за уязвимости и при каких условиях они "
+                               "срабатывают, и утвердите текст дефекта. Внутренние номера AST в текст для Hub не "
+                               "входят."))
     # замечания к оформлению Объяснения – предупреждения: оператор решает сам, каким текст уйдёт в Hub (ADR-0145 – проверки предупреждают, ADR-0152)
     missing = sca_text.explanation_problems(explanation, vulns)
     if missing and str(record.get("explanation") or "").strip() and str(explanation or "").strip():
         # о строках пустого текста и неутверждённой заготовки не говорим – там свой запрет выше
-        cautions.append("В Объяснении нет отдельной строки или она слишком короткая для: " + ", ".join(missing)
-                        + ". Дефект можно утвердить и так. Чтобы объяснение по каждой уязвимости было видно "
-                        "получателю дефекта, начните строку с её идентификатора и опишите уязвимость хотя бы одной фразой, "
-                        f"например: «{missing[0]}: что это и при каких условиях срабатывает».")
+        cautions.append(i18n._("В Объяснении нет отдельной строки или она слишком короткая для: {ids}. Дефект можно "
+                               "утвердить и так. Чтобы объяснение по каждой уязвимости было видно получателю дефекта, "
+                               "начните строку с её идентификатора и опишите уязвимость хотя бы одной фразой, например: "
+                               "«{first}: что это и при каких условиях срабатывает».", ids=", ".join(missing),
+                               first=missing[0]))
+    # язык Объяснения сверяется с языком интерфейса – языком текста дефекта (ADR-0158): при русском – прежняя проверка
+    # «не на русском», при английском английский текст замечанием не считается
     foreign = sca_text.non_russian_lines(explanation, vulns)  # по каждой строке уязвимости (Г12)
     free = sca_text.free_text(explanation, vulns)  # свободный текст: у набора только с AST – всё Объяснение
     # каждая содержательная строка отдельно: длинный русский абзац не прячет английскую строку
-    free_foreign = any(sca_text._LETTER.search(line) and sca_text.cyrillic_share(line) < 1 / 3
+    free_foreign = any(sca_text._LETTER.search(line) and sca_text.foreign_line(line)
                        for line in free.split("\n"))
-    if (foreign or free_foreign) and record.get("text_checked_sig") not in text_ok:
-        where = ", ".join(foreign + (["текст без идентификатора"] if free_foreign else []))
-        cautions.append(f"Объяснение не на русском ({where}). Дефект можно утвердить и так; переведите текст или "
-                        "отметьте «Текст проверен» – предупреждение уйдёт.")
+    if (foreign or free_foreign) and not signed("text", text_ok, record.get("text_checked_sig")):
+        where = ", ".join(foreign + ([i18n._("текст без идентификатора")] if free_foreign else []))
+        cautions.append(i18n._("Объяснение не на русском ({where}). Дефект можно утвердить и так; переведите текст или "
+                               "отметьте «Текст проверен» – предупреждение уйдёт.", where=where))
     # строки «Описания» этого снимка – ожидания проверки текста перед Hub (ADR-0123 п. 4.2): то же представление, что
     # у тела, sca_text.description_lines
     hub_lines, research_lines = sca_text.description_lines(vulns)
@@ -1206,6 +1250,20 @@ def sca_defect(db: Database | ScaSnapshot, store: FeedStore, project_id: int, f:
     return result
 
 
+def other_language(lang: str | None = None) -> str:
+    """Второй язык интерфейса: подписи и отметки могли быть поставлены на нём (ADR-0158)."""
+    return "en" if (lang or i18n.current()) == "ru" else "ru"
+
+
+def other_language_sigs(snap: ScaSnapshot, store: FeedStore, project_id: int, f: Finding, review: dict | None,
+                        number: int | None = None, today: str = "", override: dict | None = None) -> dict:
+    """Подписи текста набора, собранного на втором языке интерфейса (sig_sets sca_defect): подписи оператора и
+    отметки «Дефект создан в Hub», поставленные на нём, относятся к тому же тексту (ADR-0158)."""
+    with i18n.use(other_language()):
+        view = sca_defect(snap, store, project_id, f, review, number, today, override, alt_language=True)
+    return view.get("sig_sets") or {}
+
+
 def applicability_view(rep: dict, decided: dict, payload: dict | None, members: dict,
                        vulns: list[sca_text.Vuln], stored: dict | None = None) -> list[dict]:
     """Уязвимости исследования пакета для раздела «Применимость уязвимостей» (ADR-0094 Р3): класс, вывод агента,
@@ -1220,18 +1278,19 @@ def applicability_view(rep: dict, decided: dict, payload: dict | None, members: 
             order.append(root)
     member_roots = {sca_text.class_root(rep, i) for ids in members.values() for i in ids}
     set_roots = {sca_text.class_root(rep, v.ids[0]) for v in vulns if v.ids}
-    applies_labels = {"yes": "применима", "no": "не применима", "unknown": "неясно"}
+    applies_labels = {"yes": i18n._("применима"), "no": i18n._("не применима"), "unknown": i18n._("неясно")}
     out = []
     for root in order:
         ids = sca_text.class_ids(rep, root)
         main = sca_text.Vuln(ids=ids).main
         public = [r for r in (payload or {}).get("public_findings") or []
                   if isinstance(r, dict) and sca_text.class_root(rep, r.get("id")) == root]
-        where = ["текущая версия"] if public else []
+        where = [i18n._("текущая версия")] if public else []
         for c in (payload or {}).get("version_checks") or []:
             if isinstance(c, dict) and any(sca_text.class_root(rep, x.get("id")) == root for x in c.get("findings") or []
                                            if isinstance(x, dict)):
-                where.append(f"{'цель' if c.get('role') == 'target' else 'версия Hub'} {c.get('version')}")
+                where.append(i18n._("цель {version}", version=c.get("version")) if c.get("role") == "target"
+                             else i18n._("версия Hub {version}", version=c.get("version")))
         disputed = next((r["disputed"] for r in public if isinstance(r.get("disputed"), dict)), None)
         info = decided.get(root) or {}
         rows = info.get("rows") or []
@@ -1240,7 +1299,7 @@ def applicability_view(rep: dict, decided: dict, payload: dict | None, members: 
             "key": main, "ids": ids, "where": where,
             "applies": ", ".join(applies_labels.get(a, a) for a in dict.fromkeys(str(r.get("applies") or "")
                                                                                 for r in public) if a),
-            "disputed": {"by": "производитель" if disputed.get("by") == "vendor" else "другой источник",
+            "disputed": {"by": i18n._("производитель") if disputed.get("by") == "vendor" else i18n._("другой источник"),
                          "note": str(disputed.get("note") or "")} if disputed else None,
             "positions": [{"source": str(p.get("source") or ""),
                            "affects": applies_labels.get(str(p.get("affects") or ""), str(p.get("affects") or ""))}
@@ -1270,7 +1329,8 @@ def _comment_target(snap: ScaSnapshot, f: Finding, agent_version: str = "") -> s
 
 
 DEFECT_BLOCKED_STATES = ("conflict", "changed", "missing", "short_only", "no_defect")  # плашка «Дефект для Hub не готовится» карточки
-TARGET_NOTE_BASIS = {"research": "исследование", "component": "решение по компоненту", "manual": "указана оператором"}
+TARGET_NOTE_BASIS = i18n.Labels({"research": "исследование", "component": "решение по компоненту",
+                                 "manual": "указана оператором"})
 
 
 def _target_note(agent_version: str, target: sca_text.Target, decision: str = "", defect_target: str = "", defect_state: str = "ok") -> str:
@@ -1280,12 +1340,13 @@ def _target_note(agent_version: str, target: sca_text.Target, decision: str = ""
     причину называет сам блок дефекта."""
     if (target.basis == "legacy" and target.version and decision in ("agree", "disagree") and defect_state in ("ok", "text")
             and defect_target != target.version):
-        return (f"Совет агента – {target.version}: в дефект версия сейчас не уйдёт. Нужны «Согласен» в наборе и ответ агента по всем его находкам, "
-                "иначе укажите версию сами")
+        return i18n._("Совет агента – {version}: в дефект версия сейчас не уйдёт. Нужны «Согласен» в наборе и ответ "
+                      "агента по всем его находкам, иначе укажите версию сами", version=target.version)
     word = TARGET_NOTE_BASIS.get(target.basis, "")
     if not word or not agent_version or not target.version or agent_version == target.version:
         return ""
-    return f"Совет агента – {agent_version}, {word} – {target.version}: в дефект уйдёт {target.version}"
+    return i18n._("Совет агента – {agent}, {basis} – {target}: в дефект уйдёт {target}", agent=agent_version,
+                  basis=word, target=target.version)
 
 
 def _update_comment(snap: ScaSnapshot, project_id: int, f: Finding) -> str:
@@ -1347,17 +1408,20 @@ def comment_origin(db: Database, project_id: int, finding: Finding, comment: str
         return ''
     ids = sca.finding_ids(finding)
     mapping = db.ast_map(ids) if ids else {}
-    for answer in _agent_answers(db, project_id, finding):
-        if not answer_usable(finding, answer):
-            continue
-        for aliases in (sca.aliases_for(ids, mapping, answer), sca.aliases_for(ids, {}, answer)):
-            if text == sca.suggested_comment(finding, answer, aliases).strip():
-                return answer_verdict(finding, answer)
+    # заготовка могла быть подставлена на любом из языков интерфейса (ADR-0158): сначала текущий, затем второй
+    for lang in (i18n.current(), other_language()):
+        with i18n.use(lang):
+            for answer in _agent_answers(db, project_id, finding):
+                if not answer_usable(finding, answer):
+                    continue
+                for aliases in (sca.aliases_for(ids, mapping, answer), sca.aliases_for(ids, {}, answer)):
+                    if text == sca.suggested_comment(finding, answer, aliases).strip():
+                        return answer_verdict(finding, answer)
     # Заготовки (агента и прежние по данным Hub) узнаются по началу текста: перечень уязвимостей в них меняется с загрузкой
     # соответствий AST → CVE, а начало – нет. Свой текст с таким же началом под другим выводом один раз попросит
-    # «Текст проверен» – осознанно: лучше лишняя отметка, чем текст агента в Hub под противоположным выводом
-    for prefix, conclusion in (("Обновить ", "true_positive"), ("Не применимо: ", "false_positive"),
-                               ("Требуется проверка: ", "uncertain")):
+    # «Текст проверен» – осознанно: лучше лишняя отметка, чем текст агента в Hub под противоположным выводом. Начала –
+    # на обоих языках («Обновить », «Не применимо: », «Требуется проверка: » и их переводы)
+    for prefix, conclusion in sca.suggestion_prefixes():
         if text.startswith(prefix):
             return conclusion
     return ''
@@ -1444,16 +1508,17 @@ def card_view(request: Request, project: dict, row: dict, draft: dict | None = N
     # Предпросмотр – только текст, который можно нести в Hub (ADR-0088), иначе – пояснение
     preview_note = ""
     if draft is not None:
-        preview_note = "Решение не сохранено: текст появится после сохранения."
+        preview_note = i18n._("Решение не сохранено: текст появится после сохранения.")
     elif not decision:
-        preview_note = "Текст появится после выбора и сохранения решения: без решения ответ агента в Hub не уходит."
+        preview_note = i18n._("Текст появится после выбора и сохранения решения: без решения ответ агента в Hub не "
+                              "уходит.")
     elif hub_verdict(decision, final_verdict) not in sca.SHORT_OUTCOMES:
-        preview_note = ("У «Обновить» короткого текста нет: статус находок в Hub не меняется, дефект создаётся из "
-                        "отмеченных находок." if hub_verdict(decision, final_verdict) == "true_positive"
-                        else "У «Отложить» и «неясно» короткого текста нет.")
+        preview_note = (i18n._("У «Обновить» короткого текста нет: статус находок в Hub не меняется, дефект создаётся "
+                               "из отмеченных находок.") if hub_verdict(decision, final_verdict) == "true_positive"
+                        else i18n._("У «Отложить» и «неясно» короткого текста нет."))
     elif saved_stale:
-        preview_note = ("Текст не показан: обоснование – текст агента к другому выводу. Поправьте комментарий и "
-                        "сохраните решение или отметьте «Текст проверен» и скопируйте текст.")
+        preview_note = i18n._("Текст не показан: обоснование – текст агента к другому выводу. Поправьте комментарий и "
+                              "сохраните решение или отметьте «Текст проверен» и скопируйте текст.")
     hub_safe = [f.fixed_version] if f.fixed_version else []
     mask_key = mask_key_of(request)
     group = next((c for c in db.sca_components(pid, include_missing=True)
@@ -1471,10 +1536,28 @@ def card_view(request: Request, project: dict, row: dict, draft: dict | None = N
     tp_saved = bool(review) and hub_verdict(review["decision"] or "", review["final_verdict"] or "") == "true_positive"
     entered_now = (str(defect_view.get("text_sig") or "") if defect_view.get("ready") else "-") if tp_saved else (
         text_hash(saved_hub_text(db, settings, pid, f, review)) if review else "")
-    legacy_hashes = {text_hash(saved_hub_text_v1(db, settings, pid, f, review)),
-                     text_hash(saved_hub_text_v2(db, settings, pid, f, review)),
-                     text_hash(saved_hub_text_v3(review, f)),
-                     text_hash(saved_hub_text_v4(db, settings, pid, f, review))} if review else set()
+    # отметка могла быть поставлена на другом языке интерфейса: совпадение засчитывается, если совпал текст, собранный
+    # на любом из двух языков (ADR-0158); второй язык считается только при несовпадении с текущим
+    entered_all = {entered_now}
+    defect_legacy = {defect_view.get("legacy_text_sig") or ""}
+    defect_legacy_v4 = {defect_view.get("legacy_text_sig_v4") or ""}
+    if entered_hash and entered_hash != entered_now:
+        if tp_saved and defect_view.get("ready"):
+            other_sets = other_language_sigs(snap, store_of(request), pid, f, snap.review, defect_view.get("number"))
+            entered_all |= set(other_sets.get("entered") or [])
+            defect_legacy |= set(other_sets.get("legacy") or [])
+            defect_legacy_v4 |= set(other_sets.get("legacy_v4") or [])
+        elif not tp_saved and review:
+            with i18n.use(other_language()):
+                entered_all.add(text_hash(saved_hub_text(db, settings, pid, f, review)))
+    defect_legacy.discard("")
+    defect_legacy_v4.discard("")
+    # прежние форматы существовали только по-русски: их тексты собираются по-русски при любом языке интерфейса
+    with i18n.use("ru"):
+        legacy_hashes = {text_hash(saved_hub_text_v1(db, settings, pid, f, review)),
+                         text_hash(saved_hub_text_v2(db, settings, pid, f, review)),
+                         text_hash(saved_hub_text_v3(review, f)),
+                         text_hash(saved_hub_text_v4(db, settings, pid, f, review))} if review else set()
     legacy_hashes.discard(text_hash(""))  # у «Обновить» и «Отложить» прежних коротких текстов нет
     chosen_rows = set(draft.get("apply_to") or []) if draft is not None and "apply_to" in draft else None
     package_rows = []
@@ -1510,20 +1593,21 @@ def card_view(request: Request, project: dict, row: dict, draft: dict | None = N
         "entered": bool(review and review["entered_hub"]),
         # отметка полного дефекта по тексту правил до 0.10.0.dev21 (добавление без пустых строк) – «формат обновился»,
         # а не «текст изменился» (ADR-0149 п. 6, ревью Codex)
-        "entered_changed": bool(entered_hash and entered_hash != entered_now and entered_hash not in legacy_hashes
-                                and not (tp_saved and entered_hash == defect_view.get("legacy_text_sig_v4"))),
+        "entered_changed": bool(entered_hash and entered_hash not in entered_all and entered_hash not in legacy_hashes
+                                and not (tp_saved and entered_hash in defect_legacy_v4)),
         # отметка поставлена по тексту прежнего формата, решение прежнее: «формат обновился», а не «текст изменился»
-        "entered_format_updated": bool(entered_hash and entered_hash != entered_now and entered_hash in legacy_hashes),
+        "entered_format_updated": bool(entered_hash and entered_hash not in entered_all
+                                       and entered_hash in legacy_hashes),
         # отметка «Дефект создан в Hub» по тексту формата 0.9.8–0.9.10: текст изменился из-за формата 0.9.11 (ADR-0101)
-        "entered_defect_format": bool(tp_saved and entered_hash and entered_hash != entered_now
-                                      and entered_hash == defect_view.get("legacy_text_sig")),
+        "entered_defect_format": bool(tp_saved and entered_hash and entered_hash not in entered_all
+                                      and entered_hash in defect_legacy),
         # отметка по тексту правил до 0.10.0.dev21: добавление оператора уходило без пустых строк
-        "entered_defect_format_v4": bool(tp_saved and entered_hash and entered_hash != entered_now
-                                         and entered_hash == defect_view.get("legacy_text_sig_v4")),
+        "entered_defect_format_v4": bool(tp_saved and entered_hash and entered_hash not in entered_all
+                                         and entered_hash in defect_legacy_v4),
         # «Дефект создан в Hub» – только если отметка поставлена по текущему тексту набора (К10, ADR-0091 п. 7)
         # отметка по подтверждённому составу (0.9.26.dev23: Push текста как есть при неготовой заготовке, «Проверить в
         # Hub») отпечатка решения не имеет – сверять нечего, дефект в Hub подтверждён чтением: «Дефект создан в Hub»
-        "entered_defect_current": bool(tp_saved and ((entered_hash and entered_hash == entered_now) or (
+        "entered_defect_current": bool(tp_saved and ((entered_hash and entered_hash in entered_all) or (
             review and review["entered_hub"] and review.get("entered_origin") == "defect" and not entered_hash))),
         "short_outcome": hub_verdict(review["decision"] or "", review["final_verdict"] or "") in sca.SHORT_OUTCOMES
                          if review and (review["decision"] or review["final_verdict"]) else None,
@@ -1539,7 +1623,7 @@ def card_view(request: Request, project: dict, row: dict, draft: dict | None = N
         "comment_prefix_len": max(0, len(sca.hub_text(f, "false_positive", "x", settings.hub_status_map, aliases)) - 1),
         # комментарий, начинающийся с публичного номера находки, приставки не получает – скрипт это учитывает
         "comment_prefix_ids": sca.public_ids_text(sca.finding_ids(f), aliases),
-        "kapo_state": kapo_state, "kapo_labels": defect.KAPO_LABELS, "kapo_default": kapo_default,
+        "kapo_state": kapo_state, "kapo_labels": defect.KAPO_UI_LABELS, "kapo_default": kapo_default,
         # ответ исследования – вывод, пояснение и источники по уязвимостям этой находки (ADR-0108)
         "latest": _answer_view(sca.answer_for(f, latest), hub_safe) if latest else None,
         "other_answers": [_answer_view(sca.answer_for(f, a), hub_safe) for a in answers[1:]],
@@ -1600,7 +1684,8 @@ def card_view(request: Request, project: dict, row: dict, draft: dict | None = N
                      "research_conflict": unconfirmed_conflict(db, pid, f, review)},
         # «Создать дефект в Hub» (ADR-0120): дефект набора запросом через исполнителя
         "hub_defect": hub_defect_routes.card_context(request, project, f.hub_id),
-        "need_texts": {"reason": RISK_NEEDS_REASON, "verdict": NEED_VERDICT, "kapo": KAPO_NEEDS_CHOICE},
+        "need_texts": {"reason": i18n._(RISK_NEEDS_REASON), "verdict": i18n._(NEED_VERDICT),
+                       "kapo": i18n._(KAPO_NEEDS_CHOICE)},
         "finding_version": db.review_version(pid, f.hub_id),
         "answer_id": str(latest["id"]) if latest else "",
         "review_revision": int(review["revision"]) if review else 0,
@@ -1614,10 +1699,11 @@ def card_view(request: Request, project: dict, row: dict, draft: dict | None = N
 def summary_decision(review: dict | None) -> str:
     """Решение в строке «итог разбора» под заголовком карточки – только по сохранённой записи (ревью dev28)."""
     if not review or not (review.get("decision") or review.get("final_verdict")):
-        return "не принято"
+        return i18n._("не принято")
     if review.get("decision") == "later":
-        return "отложено"
-    return OUTCOME_LABELS.get(hub_verdict(review.get("decision") or "", review.get("final_verdict") or ""), "неясно")
+        return i18n._("отложено")
+    return OUTCOME_LABELS.get(hub_verdict(review.get("decision") or "", review.get("final_verdict") or ""),
+                              i18n._("неясно"))
 
 
 def back_hub_ids(request, project: dict):
@@ -1689,11 +1775,11 @@ def redirect_with_back(request, url):
 def _package_row_state(review: dict | None) -> str:
     """Подпись решения находки в списке пакетного решения."""
     if not review or not (review.get("decision") or review.get("final_verdict")):
-        return "решения нет"
+        return i18n._("решения нет")
     if review.get("decision") == "later":
-        return "отложено"
+        return i18n._("отложено")
     label = OUTCOME_LABELS.get(hub_verdict(review["decision"], review["final_verdict"]), "")
-    return f"{label}{', проверено' if review.get('reviewed') else ''}"
+    return i18n._("{label}, проверено", label=label) if review.get("reviewed") else label
 
 
 def card_response(request: Request, project_id: int, finding_id: int, error: str = "", status_code: int = 200,
@@ -1716,7 +1802,8 @@ def card_response(request: Request, project_id: int, finding_id: int, error: str
         view["package_fp"] = ""
         # и отправка в Hub: карточка собрана из несогласованных чтений – отпечатка текста нет, отправка откажет
         view["hub_send"].update(text_hash="", note=hub_status_routes.UNSETTLED_NOTE)
-        error = error or "Данные этой версии компонента меняются (идёт загрузка): обновите карточку через минуту."
+        error = error or i18n._("Данные этой версии компонента меняются (идёт загрузка): обновите карточку через "
+                                "минуту.")
     from app.routes.capec import related_context, cwe_values
     capec_context = related_context(request, cwe_values(row['data'].get('cwe',[])), project_id)
     fallback = back_fallback(request, project_id)
@@ -1739,16 +1826,17 @@ def finding_page(request: Request, project_id: int, finding_id: int):
 def _normalized_decision(decision: str, final_verdict: str, agent_verdict: str) -> tuple[str, str]:
     """«Согласен» – вывод агента; «Своё решение» всегда хранится как disagree."""
     if not decision:
-        raise ReviewRejected("Выберите решение в нижней панели: «Согласен с агентом», «Своё решение», «Отложить» или «Риск принят».")
+        raise ReviewRejected(i18n._("Выберите решение в нижней панели: «Согласен с агентом», «Своё решение», «Отложить» "
+                                    "или «Риск принят»."))
     if decision == "disagree" and not final_verdict:
-        raise ReviewRejected(NEED_VERDICT)
+        raise ReviewRejected(i18n._(NEED_VERDICT))
     if decision == "agree":
         if not agent_verdict:
-            raise HTTPException(status_code=400, detail="«Согласен с агентом» можно выбрать, только когда есть ответ "
-                                                        "агента с выводом.")
+            raise HTTPException(status_code=400, detail=i18n._("«Согласен с агентом» можно выбрать, только когда есть "
+                                                               "ответ агента с выводом."))
         if final_verdict and final_verdict != agent_verdict:
-            raise HTTPException(status_code=400, detail="«Согласен с агентом» означает вывод агента. Чтобы выбрать "
-                                                        "другой вывод, отметьте «Своё решение».")
+            raise HTTPException(status_code=400, detail=i18n._("«Согласен с агентом» означает вывод агента. Чтобы "
+                                                               "выбрать другой вывод, отметьте «Своё решение»."))
         return decision, agent_verdict
     return decision, final_verdict
 
@@ -1774,8 +1862,9 @@ def _save_package(db: Database, project_id: int, f: Finding, latest: dict | None
             revisions.get(h) is not None
             and int((now.get_review(project_id, h) or {}).get("revision") or 0) != int(revisions[h])) or (
             versions.get(h) is not None and db.review_version(project_id, h) != versions[h]))
-        return STALE_MESSAGES["package"] + (f" Изменились находки: {', '.join(names)}." if names else
-                                            " Изменились исследование компонента, текст или набор дефекта.")
+        return STALE_MESSAGES["package"] + " " + (
+            i18n._("Изменились находки: {names}.", names=", ".join(names)) if names
+            else i18n._("Изменились исследование компонента, текст или набор дефекта."))
 
     if not package_fp or snap.fingerprint != package_fp or any(h not in current for h in others):
         raise StaleReview(changed_message(), "package")
@@ -1801,11 +1890,11 @@ def _save_package(db: Database, project_id: int, f: Finding, latest: dict | None
                       "answer_sig": answer_signature(latest), "require_present": True, "kapo_state": kapo,
                       "recheck": not require_present})
     if odd:
-        raise ReviewRejected(PACKAGE_MISMATCH.format(ids=", ".join(odd)))
+        raise ReviewRejected(i18n._(PACKAGE_MISMATCH, ids=", ".join(odd)))
 
     def check(c) -> None:
         if db._sca_defect_fingerprint(c, project_id, f.hub_id) != package_fp:
-            raise StaleReview("пакет изменился", "package")
+            raise StaleReview(i18n._("пакет изменился"), "package")
 
     after_fp: dict[str, str] = {}
 
@@ -1849,35 +1938,36 @@ async def save_review(request: Request, project_id: int, finding_id: int):
         settings = settings_of(request)
         row = _sca_row(db, project_id, finding_id)
         if decision not in ("", *DECISIONS) or final_verdict not in ("", *VERDICTS):
-            raise HTTPException(status_code=400, detail="Неверное решение или вывод.")
+            raise HTTPException(status_code=400, detail=i18n._("Неверное решение или вывод."))
         f = Finding.from_dict(row["data"])
         # раньше проверок решения: что видел человек (находка, ответ агента, решение)
         if db.review_version(project_id, f.hub_id) != shown_version:
-            raise StaleReview("страница устарела", "source")
+            raise StaleReview(i18n._("страница устарела"), "source")
         latest = _latest_answer(db, project_id, f)
         if shown_answer is not None and shown_answer != (str(latest["id"]) if latest else ""):
-            raise StaleReview("страница устарела", "answer")
+            raise StaleReview(i18n._("страница устарела"), "answer")
         old = db.get_review(project_id, f.hub_id)
         if shown_revision is not None and (int(old["revision"]) if old else 0) != shown_revision:
-            raise StaleReview("страница устарела", "revision")
+            raise StaleReview(i18n._("страница устарела"), "revision")
         agent_verdict = answer_verdict(f, latest)
         kept, chosen = _normalized_decision(decision, final_verdict, agent_verdict)
         # совет принимается по исследованию, которое видел оператор: пришло новое – страница устарела, подтверждение к нему не относится
         if kept == "agree" and form.get("research_shown") is not None and str(form.get("research_shown")) != _research_revision(db, project_id, f):
-            raise StaleReview("страница устарела", "answer")
+            raise StaleReview(i18n._("страница устарела"), "answer")
         if kept == "agree" and str(form.get("confirm_conflict") or "") != "1":
             conflict = _finding_conflict(db, project_id, f, latest)
             if conflict:
-                raise ReviewRejected(f"Совет агента «не применимо» расходится с исследованием ({conflict}). Сверьте исследование; "
-                                     "чтобы всё же принять совет, отметьте подтверждение рядом с решением.")
+                raise ReviewRejected(i18n._("Совет агента «не применимо» расходится с исследованием ({conflict}). "
+                                            "Сверьте исследование; чтобы всё же принять совет, отметьте подтверждение "
+                                            "рядом с решением.", conflict=conflict))
         # обоснование обязательно: вводное «Ложное срабатывание:» и подобное (К8) и внутренние номера AST (ADR-0101) его
         # не заменяют; в Hub комментарий уходит как написан, без AST (ADR-0149), вводное слово снимается только здесь
         if kept == "risk_accepted" and not sca.short_reason(comment):
-            raise ReviewRejected(RISK_NEEDS_REASON)
+            raise ReviewRejected(i18n._(RISK_NEEDS_REASON))
         if hub_verdict(kept, chosen) == "false_positive" and not sca.short_reason(comment):
-            raise ReviewRejected(FP_NEEDS_REASON)
+            raise ReviewRejected(i18n._(FP_NEEDS_REASON))
         if action == "copy" and hub_verdict(kept, chosen) not in sca.SHORT_OUTCOMES:
-            raise ReviewRejected(SCA_NO_SHORT)
+            raise ReviewRejected(i18n._(SCA_NO_SHORT))
         origin = comment_origin(db, project_id, f, comment)
         # «Текст проверен» – только с редакцией решения, которую видел человек (BUG-01, одно правило с SAST)
         if (action == 'copy' or kept == 'risk_accepted') and origin and origin != hub_verdict(kept, chosen):
@@ -1920,7 +2010,7 @@ async def save_review(request: Request, project_id: int, finding_id: int):
         review_package_after = review.pop("_package_after", "") if isinstance(review, dict) else ""
         snap = db.sca_snapshot(project_id, f.hub_id)
         if snap.row is None or snap.review is None:
-            raise StaleReview("Проект или находка исчезли, пока решение сохранялось.", "deleted")
+            raise StaleReview(i18n._("Проект или находка исчезли, пока решение сохранялось."), "deleted")
         f_now = Finding.from_dict(snap.row["data"])
         review = snap.review
         # после записи решение сохранили ещё раз (другая вкладка): текст по чужой редакции не выдаётся (R092-02)
@@ -1939,20 +2029,20 @@ async def save_review(request: Request, project_id: int, finding_id: int):
         moved = (str(latest_now["id"]) if latest_now else "") != str(expect["answer_id"])
         notices = []
         if moved:
-            notices.append("Пока решение сохранялось, пришёл новый ответ агента: отметка «Проверено» снята. Обновите "
-                           "карточку, посмотрите новый ответ и сохраните решение ещё раз.")
+            notices.append(i18n._("Пока решение сохранялось, пришёл новый ответ агента: отметка «Проверено» снята. "
+                                  "Обновите карточку, посмотрите новый ответ и сохраните решение ещё раз."))
         if foreign:
-            notices.append("Пока решение сохранялось, его изменили в другой вкладке: текст для Hub не скопирован. "
-                           "Обновите карточку и проверьте решение.")
+            notices.append(i18n._("Пока решение сохранялось, его изменили в другой вкладке: текст для Hub не "
+                                  "скопирован. Обновите карточку и проверьте решение."))
         # «сохранено и для находок …» – не предупреждение: браузер дописывает его к подтверждению по полю applied
         if package_mode and not package_fresh:
-            notices.append("Пока решение сохранялось, другие находки этой версии или набор дефекта изменились: "
-                           "обновите карточку, прежде чем сохранять дальше.")
+            notices.append(i18n._("Пока решение сохранялось, другие находки этой версии или набор дефекта изменились: "
+                                  "обновите карточку, прежде чем сохранять дальше."))
         if snap.row["missing"]:
-            notices.append("Пока решение сохранялось, находка пропала из выгрузки: текст для Hub не копируется.")
+            notices.append(i18n._("Пока решение сохранялось, находка пропала из выгрузки: текст для Hub не копируется."))
         elif snap.row["data"] != row["data"]:
-            notices.append("Пока решение сохранялось, данные находки изменились (новая выгрузка): текст для Hub собран "
-                           "по новым данным – сверьте решение.")
+            notices.append(i18n._("Пока решение сохранялось, данные находки изменились (новая выгрузка): текст для Hub "
+                                  "собран по новым данным – сверьте решение."))
         return {"review": review, "text": text if text_ok and not foreign else "", "next_id": snap.next_id,
                 "ready": ready,
                 # режим панели «Отправить в Hub» после сохранения (dev29)
@@ -2000,8 +2090,9 @@ async def save_review(request: Request, project_id: int, finding_id: int):
                  "final_verdict": final_verdict if final_verdict in VERDICTS else "", "comment": comment,
                  "reviewed": False, "kapo_state": kapo_form, **({"apply_to": apply_to} if package_mode else {})}
         return await run_in_threadpool(card_response, request, project_id, finding_id,
-                                       message + " Ваш вариант решения подставлен в форму – сверьте его и сохраните "
-                                       "ещё раз. Отметка «Проверено» снята: после сверки установите её заново.",
+                                       message + " " + i18n._("Ваш вариант решения подставлен в форму – сверьте его "
+                                                              "и сохраните ещё раз. Отметка «Проверено» снята: после "
+                                                              "сверки установите её заново."),
                                        409, draft)
     if wants_json:
         return JSONResponse({"ok": True, "hub_text": text, "copy_allowed": done["copy_allowed"],
@@ -2065,7 +2156,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
         # Цикл A → B → A между чтениями невозможен: чтения в одном захвате замка, записи в них не вклиниваются
         snap = db.sca_snapshot(project_id, hub_id)
         if snap.row is None:
-            raise StaleReview("Проект или находка исчезли.", "deleted")
+            raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
         f = Finding.from_dict(snap.row["data"])
         view = sca_defect(snap, store_of(request), project_id, f, snap.review, number)
         if number_shown_changed(form, snap.defect_number(project_id, set_key(f, view["set_no"]))):
@@ -2077,10 +2168,10 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
         stale = view.get("comment_stale") or []
         others = [x for x in stale if x != f.hub_id]
         if others:  # подтвердить чужую карточку отсюда нельзя: комментарий правится в ней самой
-            raise CommentNeedsCheck(
-                "В дефект входят находки, где комментарий – текст агента к другому выводу: " + ", ".join(others[:10])
-                + (f" и ещё {len(others) - 10}" if len(others) > 10 else "")
-                + ". Откройте их карточки, поправьте комментарий и сохраните – затем скопируйте ещё раз.")
+            raise CommentNeedsCheck(i18n._(
+                "В дефект входят находки, где комментарий – текст агента к другому выводу: {ids}. Откройте их карточки, "
+                "поправьте комментарий и сохраните – затем скопируйте ещё раз.", ids=", ".join(others[:10])
+                + (" " + i18n._("и ещё {n}", n=len(others) - 10) if len(others) > 10 else "")))
         if f.hub_id in stale:
             own = snap.review or {}
             # отметка «Текст проверен» – к той редакции решения, которую человек видел
@@ -2116,7 +2207,7 @@ async def copy_defect(request: Request, project_id: int, finding_id: int):
             return JSONResponse({"ok": False, "detail": str(e), "reason": "comment"}, status_code=409)
         return await run_in_threadpool(card_response, request, project_id, finding_id, str(e), 409)
     except StaleReview as e:  # пока готовился текст, изменились группа, решения, ответ агента или соответствия
-        message = "Дефект не выдан: пока готовился текст, данные изменились. " + STALE_MESSAGES.get(
+        message = i18n._("Дефект не выдан: пока готовился текст, данные изменились.") + " " + STALE_MESSAGES.get(
             e.reason, STALE_MESSAGES["source"])
         if _wants_json(request):
             return JSONResponse({"ok": False, "detail": message, "reason": e.reason}, status_code=409)
@@ -2157,30 +2248,31 @@ async def save_exclusion(request: Request, project_id: int, finding_id: int):
         project_or_404(request, project_id)
         db = db_of(request)
         if action not in ("exclude", "include"):
-            raise ReviewRejected("Неизвестное действие с текстом дефекта.")
+            raise ReviewRejected(i18n._("Неизвестное действие с текстом дефекта."))
         if action == "exclude" and not reason:
-            raise ReviewRejected("Исключение из текста сохраняется только с обоснованием: напишите, почему.")
+            raise ReviewRejected(i18n._("Исключение из текста сохраняется только с обоснованием: напишите, почему."))
         if len(reason) > MAX_APPLICABILITY_REASON:
-            raise ReviewRejected(f"Обоснование длиннее {MAX_APPLICABILITY_REASON} знаков: сократите его.")
+            raise ReviewRejected(i18n._("Обоснование длиннее {limit} знаков: сократите его.",
+                                        limit=MAX_APPLICABILITY_REASON))
         hub_id = _sca_row(db, project_id, finding_id)["hub_id"]
         snap = db.sca_snapshot(project_id, hub_id)
         if snap.row is None:
-            raise StaleReview("Проект или находка исчезли.", "deleted")
+            raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
         f = Finding.from_dict(snap.row["data"])
         view = sca_defect(snap, store_of(request), project_id, f, snap.review)
         if int(view.get("set_no") or 0) != shown_set:
-            raise StaleReview("Находку перенесли в другой набор дефекта.", "set")
+            raise StaleReview(i18n._("Находку перенесли в другой набор дефекта."), "set")
         pool = view.get("vulns") if action == "exclude" else view.get("excluded_vulns")
         item = next((v for v in pool or [] if (v.get("main") or v.get("id")) == vuln), None)
         if item is None:
-            raise StaleReview("Уязвимости уже нет в этом списке.", "package")
+            raise StaleReview(i18n._("Уязвимости уже нет в этом списке."), "package")
         db.save_sca_exclusion(project_id, hub_id, shown_set, vuln, item["ids"], reason, action == "exclude",
                               expect_set_revision=set_revision, expect_fp=shown_fp)
 
     try:
         await run_in_threadpool(apply)
     except StaleReview as e:
-        message = STALE_MESSAGES["deleted"] if e.reason == "deleted" else (
+        message = STALE_MESSAGES["deleted"] if e.reason == "deleted" else i18n._(
             "Пока карточка была открыта, изменились данные пакета или набор дефекта: состав текста не изменён. "
             "Сверьте карточку и повторите.")
         if _wants_json(request):
@@ -2214,20 +2306,21 @@ async def save_applicability(request: Request, project_id: int, finding_id: int)
         project_or_404(request, project_id)
         db = db_of(request)
         if decision and decision not in sca_text.APPLICABILITY_LABELS:
-            raise ReviewRejected("Неизвестное решение о применимости.")
+            raise ReviewRejected(i18n._("Неизвестное решение о применимости."))
         if decision and not reason:
-            raise ReviewRejected("Решение о применимости сохраняется только с обоснованием: напишите, почему.")
+            raise ReviewRejected(i18n._("Решение о применимости сохраняется только с обоснованием: напишите, почему."))
         if len(reason) > MAX_APPLICABILITY_REASON:
-            raise ReviewRejected(f"Обоснование длиннее {MAX_APPLICABILITY_REASON} знаков: сократите его.")
+            raise ReviewRejected(i18n._("Обоснование длиннее {limit} знаков: сократите его.",
+                                        limit=MAX_APPLICABILITY_REASON))
         hub_id = _sca_row(db, project_id, finding_id)["hub_id"]
         snap = db.sca_snapshot(project_id, hub_id)
         if snap.row is None:
-            raise StaleReview("Проект или находка исчезли.", "deleted")
+            raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
         f = Finding.from_dict(snap.row["data"])
         view = sca_defect(snap, store_of(request), project_id, f, snap.review)
         item = next((x for x in view.get("applicability") or [] if x["key"] == vuln), None)
         if item is None:
-            raise StaleReview("Уязвимости нет среди уязвимостей исследования пакета.", "package")
+            raise StaleReview(i18n._("Уязвимости нет среди уязвимостей исследования пакета."), "package")
         db.save_sca_applicability(project_id, hub_id, item["key"], item["ids"], decision, reason,
                                   expect_revision=revision, expect_research_revision=research_revision,
                                   expect_fp=shown_fp)
@@ -2235,7 +2328,7 @@ async def save_applicability(request: Request, project_id: int, finding_id: int)
     try:
         await run_in_threadpool(apply)
     except StaleReview as e:
-        message = STALE_MESSAGES["deleted"] if e.reason == "deleted" else APPLICABILITY_STALE
+        message = STALE_MESSAGES["deleted"] if e.reason == "deleted" else i18n._(APPLICABILITY_STALE)
         if _wants_json(request):
             return JSONResponse({"ok": False, "detail": message, "reason": e.reason, "reload": True}, status_code=409)
         return await run_in_threadpool(card_response, request, project_id, finding_id, message, 409)
@@ -2279,17 +2372,18 @@ async def save_package_text(request: Request, project_id: int, finding_id: int):
         project_or_404(request, project_id)
         db = db_of(request)
         if len(explanation) > MAX_EXPLANATION:
-            raise ReviewRejected(f"Объяснение длиннее {MAX_EXPLANATION} знаков: сократите его.")
+            raise ReviewRejected(i18n._("Объяснение длиннее {limit} знаков: сократите его.", limit=MAX_EXPLANATION))
         hub_id = _sca_row(db, project_id, finding_id)["hub_id"]
         snap = db.sca_snapshot(project_id, hub_id)
         if snap.row is None:
-            raise StaleReview("Проект или находка исчезли.", "deleted")
+            raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
         f = Finding.from_dict(snap.row["data"])
         ast: dict = {}  # выбор «не указывать AST» больше не нужен: AST в текст не входит никогда (ADR-0101)
         if len(recommendation_note) > MAX_EXPLANATION:
-            raise ReviewRejected(f"Добавление к рекомендациям длиннее {MAX_EXPLANATION} знаков: сократите его.")
+            raise ReviewRejected(i18n._("Добавление к рекомендациям длиннее {limit} знаков: сократите его.",
+                                        limit=MAX_EXPLANATION))
         if no_fix and manual:
-            raise ReviewRejected("Укажите целевую версию или отметьте «Исправленной версии нет» – одно из двух.")
+            raise ReviewRejected(i18n._("Укажите целевую версию или отметьте «Исправленной версии нет» – одно из двух."))
         basis = "no_fix" if no_fix else ("manual" if manual else "")
         assert basis in sca_text.TARGET_BASES
         draft = {"explanation": explanation, "target_version": manual, "target_basis": basis,
@@ -2297,7 +2391,7 @@ async def save_package_text(request: Request, project_id: int, finding_id: int):
         view = sca_defect(snap, store_of(request), project_id, f, snap.review, override=draft)
         set_no = int(view.get("set_no") or 0)
         if shown_ref is not None and (shown_ref != snap.input_ref or (shown_set or 0) != set_no):
-            raise StaleReview("Находку перенесли в другой набор дефекта.", "text")
+            raise StaleReview(i18n._("Находку перенесли в другой набор дефекта."), "text")
         # пакет изменился после открытия формы (исследование, решение компонента, состав, номер) или отпечатка нет:
         # отметки относились к прежнему тексту – не применяются, текст сохраняется (К4). Проверка цели или остаточные
         # уязвимости, насчитанные для присланной цели, – не те, что видел человек: их отметки тоже не ставятся
@@ -2317,7 +2411,7 @@ async def save_package_text(request: Request, project_id: int, finding_id: int):
         fresh = db.sca_snapshot(project_id, hub_id)
         result = sca_defect(fresh, store_of(request), project_id, f, fresh.review)
         if dropped:
-            result["hint"] = ((PACKAGE_MOVED_CONFIRM if moved else CHECK_CHANGED_CONFIRM) + " "
+            result["hint"] = (i18n._(PACKAGE_MOVED_CONFIRM if moved else CHECK_CHANGED_CONFIRM) + " "
                               + result.get("hint", "")).strip()
         return {"text_revision": int(saved.get("revision") or 0), "ready": result["ready"], "hint": result["hint"],
                 "problems": result.get("problems") or [], "cautions": result.get("cautions") or [],
@@ -2328,16 +2422,17 @@ async def save_package_text(request: Request, project_id: int, finding_id: int):
     try:
         done = await run_in_threadpool(apply)
     except StaleReview as e:
-        message = ("Текст дефекта изменили в другой вкладке: обновите карточку. Ваш текст не сохранён – скопируйте "
-                   "его, если он нужен." if e.reason == "text" else
-                   "Пока текст сохранялся, изменились данные пакета: текст не сохранён – обновите карточку и сохраните "
-                   "его ещё раз." if e.reason == "package" else STALE_MESSAGES.get(e.reason, STALE_MESSAGES["source"]))
+        message = (i18n._("Текст дефекта изменили в другой вкладке: обновите карточку. Ваш текст не сохранён – "
+                          "скопируйте его, если он нужен.") if e.reason == "text" else
+                   i18n._("Пока текст сохранялся, изменились данные пакета: текст не сохранён – обновите карточку и "
+                          "сохраните его ещё раз.") if e.reason == "package"
+                   else STALE_MESSAGES.get(e.reason, STALE_MESSAGES["source"]))
         if _wants_json(request):
             return JSONResponse({"ok": False, "detail": message, "reason": e.reason, "reload": True}, status_code=409)
         # без скрипта (К11): введённое Объяснение и версия возвращаются в форму, но не записываются; отметки –
         # заново, после сверки с текущим текстом
-        html_message = ("Текст дефекта изменили в другой вкладке. Ваш текст не сохранён, он подставлен в форму: сверьте "
-                        "его с текущим и сохраните ещё раз." if e.reason == "text" else message)
+        html_message = (i18n._("Текст дефекта изменили в другой вкладке. Ваш текст не сохранён, он подставлен в форму: "
+                               "сверьте его с текущим и сохраните ещё раз.") if e.reason == "text" else message)
         return await run_in_threadpool(card_response, request, project_id, finding_id, html_message, 409, None, None,
                                        text_draft)
     except ReviewRejected as e:
@@ -2348,7 +2443,8 @@ async def save_package_text(request: Request, project_id: int, finding_id: int):
     if _wants_json(request):
         return {"ok": True, **done}
     if done["confirm_dropped"]:  # без скрипта: причина, почему отметки не поставлены, – на карточке
-        return await run_in_threadpool(card_response, request, project_id, finding_id, PACKAGE_MOVED_CONFIRM, 409)
+        return await run_in_threadpool(card_response, request, project_id, finding_id, i18n._(PACKAGE_MOVED_CONFIRM),
+                                       409)
     # текст утверждён – следующий шаг «Создать дефект в Hub»; остались условия – к их перечню
     anchor = "#hub-defect-section" if done["ready"] else ("#sca-set-problems" if done["problems"] else "#sca-set")
     return redirect_with_back(request, f"/projects/{project_id}/sca/findings/{finding_id}?ok=sca_text_saved{anchor}")
@@ -2376,7 +2472,7 @@ async def move_to_set(request: Request, project_id: int, finding_id: int):
         hub_id = _sca_row(db, project_id, finding_id)["hub_id"]
         snap = db.sca_snapshot(project_id, hub_id)
         if snap.row is None:
-            raise StaleReview("Проект или находка исчезли.", "deleted")
+            raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
         if target == "none":
             number = None
         elif target == "new":
@@ -2384,7 +2480,7 @@ async def move_to_set(request: Request, project_id: int, finding_id: int):
         elif target.isdigit():
             number = int(target)
         else:
-            raise ReviewRejected("Неверный набор.")
+            raise ReviewRejected(i18n._("Неверный набор."))
         try:
             return db.move_sca_member(project_id, snap.input_ref, hub_id, number, reason, expect,
                                       expect_input_ref=shown_ref, expect_pkg_rev=shown_pkg_rev)
@@ -2413,7 +2509,7 @@ async def mark_copied(request: Request, project_id: int, finding_id: int):
     form = await request.form()
     revision = _form_int(form.get("revision"))
     if not revision:
-        raise HTTPException(status_code=400, detail="Не указана редакция решения.")
+        raise HTTPException(status_code=400, detail=i18n._("Не указана редакция решения."))
 
     def apply():
         project_or_404(request, project_id)
@@ -2422,8 +2518,8 @@ async def mark_copied(request: Request, project_id: int, finding_id: int):
 
     copied_at = await run_in_threadpool(apply)
     if copied_at is None:
-        raise HTTPException(status_code=409, detail="Решение не сохранено или изменилось после копирования: "
-                                                    "скопируйте текст ещё раз.")
+        raise HTTPException(status_code=409, detail=i18n._("Решение не сохранено или изменилось после копирования: "
+                                                           "скопируйте текст ещё раз."))
     return {"ok": True, "copied_at": copied_at}
 
 
@@ -2444,7 +2540,7 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
         row = _sca_row(db, project_id, finding_id)
         review = db.get_review(project_id, row["hub_id"])
         if entered and not (review and (review["decision"] or review["final_verdict"])):
-            raise ValueError(ENTERED_NO_DECISION)
+            raise ValueError(i18n._(ENTERED_NO_DECISION))
         if entered and revision is None:  # страница до обновления приложения: без редакции отметка не ставится
             return None
         f = Finding.from_dict(row["data"])
@@ -2460,19 +2556,19 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
             snap = db.sca_snapshot(project_id, row["hub_id"])
             view = sca_defect(snap, store_of(request), project_id, f, snap.review)
             if not view["ready"]:
-                raise ValueError(ENTERED_NO_DEFECT)
+                raise ValueError(i18n._(ENTERED_NO_DEFECT))
             if str(form.get("defect_sig") or "") != view["text_sig"]:
-                raise ValueError(ENTERED_DEFECT_CHANGED)
+                raise ValueError(i18n._(ENTERED_DEFECT_CHANGED))
 
             def same_snapshot(c) -> None:
                 if db._sca_defect_fingerprint(c, project_id, row["hub_id"]) != snap.fingerprint:
-                    raise ValueError(ENTERED_DEFECT_CHANGED)
+                    raise ValueError(i18n._(ENTERED_DEFECT_CHANGED))
 
             return db.mark_entered(project_id, row["hub_id"], entered, revision=revision, entered_hash=view["text_sig"],
                                    check=same_snapshot)
         text = saved_hub_text(db, settings_of(request), project_id, f, review)
         if entered and not text.strip():  # «Отложить», «неясно», пустое обоснование: текста для Hub нет (К9)
-            raise ValueError(ENTERED_NO_TEXT)
+            raise ValueError(i18n._(ENTERED_NO_TEXT))
         # снять отметку у находки в дефекте, созданном в Hub, – только с подтверждением; Hub не трогается (ADR-0121 п. 4)
         check = None if entered or defect_confirmed else hub_defects.unenter_check(project_id, row["hub_id"])
         return db.mark_entered(project_id, row["hub_id"], entered, revision=revision, entered_hash=text_hash(text),
@@ -2494,8 +2590,8 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
         return await run_in_threadpool(card_response, request, project_id, finding_id, str(e), 400)
     if review is None:
         if wants_json:
-            return JSONResponse({"ok": False, "detail": ENTERED_STALE, "reason": "revision"}, status_code=409)
-        return await run_in_threadpool(card_response, request, project_id, finding_id, ENTERED_STALE, 409)
+            return JSONResponse({"ok": False, "detail": i18n._(ENTERED_STALE), "reason": "revision"}, status_code=409)
+        return await run_in_threadpool(card_response, request, project_id, finding_id, i18n._(ENTERED_STALE), 409)
     tp = hub_verdict(review.get("decision") or "", review.get("final_verdict") or "") == "true_positive"
     show_mark = ["mark-entered"]
     if wants_json and tp and not entered:
@@ -2514,9 +2610,10 @@ async def mark_entered(request: Request, project_id: int, finding_id: int):
         marks.pop("revision")
         shown, hidden = ["entered-badge", "entered-note"], ["mark-entered", "entered-changed", "entered-unconfirmed", "entered-format-updated",
                                                             "entered-defect-format-updated"]
-        done = "Дефект создан в Hub" if tp else "Статус и комментарий внесены в Hub"
+        done = i18n._("Дефект создан в Hub") if tp else i18n._("Статус и комментарий внесены в Hub")
         return {"ok": True, **marks, "text": {"entered-note-text": f"{done}."},
-                "message": f"Отмечено: {done[0].lower()}{done[1:]}." if entered else f"Отметка «{done}» снята.",
+                "message": i18n._("Отмечено: {mark}.", mark=f"{done[0].lower()}{done[1:]}") if entered
+                else i18n._("Отметка «{mark}» снята.", mark=done),
                 "times": {"entered-at": {"prefix": f"{done} " if entered else "",
                                            "datetime": marks['entered_at'] if entered else "", "suffix": "."}},
                 "show": shown if entered else show_mark,
@@ -2563,8 +2660,8 @@ async def mark_reviewed(request: Request, project_id: int, finding_id: int):
         left = max(0, progress["total"] - progress["reviewed"])
         return {"ok": True, **marks, "progress": progress, "checked": {"reviewed-box": marks["reviewed"]},
                 "show" if marks["reviewed"] else "hide": ["reviewed-badge"],
-                "text": {"progress-label": f"Проверено {progress['reviewed']} из {progress['total']} · "
-                                           f"осталось {left}"}}
+                "text": {"progress-label": i18n._("Проверено {reviewed} из {total} · осталось {left}",
+                                                  reviewed=progress["reviewed"], total=progress["total"], left=left)}}
     return redirect_with_back(request, f"/projects/{project_id}/sca/findings/{finding_id}?ok=sca_reviewed")
 
 
@@ -2618,12 +2715,12 @@ def component_apply_view(db: Database, project_id: int, input_ref: str, decision
     recipients, token = _apply_state(db, project_id, input_ref, usages, research)
     decided = sum(1 for r in recipients if r["review"] and r["review"].get("decision") not in ("", "later", None))
     if not recipients:
-        why = "В текущей выгрузке находок этой версии нет: записывать решение некому."
+        why = i18n._("В текущей выгрузке находок этой версии нет: записывать решение некому.")
     elif not current:
-        why = "Сначала сохраните решение по компоненту – оно запишется находкам этой версии."
+        why = i18n._("Сначала сохраните решение по компоненту – оно запишется находкам этой версии.")
     elif action not in COMPONENT_APPLY_ACTIONS:
-        why = ("Находкам записывается только решение «обновить». Для другого решения откройте находку и сохраните "
-               "решение в её карточке.")
+        why = i18n._("Находкам записывается только решение «обновить». Для другого решения откройте находку и "
+                     "сохраните решение в её карточке.")
     else:
         why = ""
     return {"can": not why, "why": why, "count": len(recipients), "decided": decided,
@@ -2679,11 +2776,11 @@ def apply_component_decision(db: Database, project_id: int, input_ref: str, *, d
         try:
             again = current_decision()
         except ComponentApplyRefused as e:
-            raise StaleReview("решение компонента изменилось", "package") from e
+            raise StaleReview(i18n._("решение компонента изменилось"), "package") from e
         if str(again.get("rationale") or "") != str(decision.get("rationale") or ""):
-            raise StaleReview("решение компонента изменилось", "package")
+            raise StaleReview(i18n._("решение компонента изменилось"), "package")
         if _apply_state(db, project_id, input_ref)[1] != token:
-            raise StaleReview("находки версии изменились", "package")
+            raise StaleReview(i18n._("находки версии изменились"), "package")
 
     try:
         db.save_reviews(project_id, items, check=check)

@@ -16,6 +16,8 @@ from urllib.parse import quote
 
 import psycopg
 
+from app import i18n
+
 MARKER = "local_state_imported"
 MASK_SECRET = "mask_key"
 WORKER_SECRET = "hub_worker_key"
@@ -57,11 +59,11 @@ def require_imported(db: Any, data_dir: Path) -> None:
     files = legacy_files(data_dir)
     if files:
         from app.config import stand_mode
-        how = (" Это служебная папка другой установки: запустите стенд с новой служебной папкой (ключ --home)."
+        how = (i18n._("Это служебная папка другой установки: запустите стенд с новой служебной папкой (ключ --home).")
                if stand_mode() == "npm" else
-               " Выполните .\\start.ps1 -Migrate или python -m app.storage.tools local-state-import.")
-        raise RuntimeError("В папке данных есть файлы состояния, а в базу они не перенесены: " + ", ".join(files)
-                           + "." + how)
+               i18n._("Выполните .\\start.ps1 -Migrate или python -m app.storage.tools local-state-import."))
+        raise RuntimeError(i18n._("В папке данных есть файлы состояния, а в базу они не перенесены: {files}.",
+                                  files=", ".join(files)) + " " + how)
 
 
 def _file_keys(data_dir: Path) -> dict[str, str]:
@@ -72,20 +74,20 @@ def _file_keys(data_dir: Path) -> dict[str, str]:
     if mask.is_file():
         raw = mask.read_bytes()
         if len(raw) != 32:
-            raise LocalStateError(f"Файл {MASK_FILE} повреждён: длина не 32 байта. База не менялась.")
+            raise LocalStateError(i18n._("Файл {name} повреждён: длина не 32 байта. База не менялась.", name=MASK_FILE))
         keys[MASK_SECRET] = raw.hex()
     worker = root / WORKER_FILE
     if worker.is_file():
         value = worker.read_text(encoding="ascii", errors="replace").strip()
         if len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
-            raise LocalStateError(f"Файл {WORKER_FILE} повреждён. База не менялась.")
+            raise LocalStateError(i18n._("Файл {name} повреждён. База не менялась.", name=WORKER_FILE))
         keys[WORKER_SECRET] = value
     for path in sorted((root / PROVIDERS_DIR).glob("*.key")):
         if not path.stem.isdigit():
-            raise LocalStateError(f"Неожиданный файл ключа: {path.name}. База не менялась.")
+            raise LocalStateError(i18n._("Неожиданный файл ключа: {name}. База не менялась.", name=path.name))
         entry = parse_entry(path.read_bytes())
         if entry is None:
-            raise LocalStateError(f"Файл ключа профиля {path.name} повреждён. База не менялась.")
+            raise LocalStateError(i18n._("Файл ключа профиля {name} повреждён. База не менялась.", name=path.name))
         keys[PROVIDER_SECRET.format(int(path.stem))] = json.dumps(entry, ensure_ascii=True, sort_keys=True)
     return keys
 
@@ -140,13 +142,15 @@ def _copy_feeds(conn: psycopg.Connection, source: sqlite3.Connection) -> dict[st
             "SELECT column_name FROM information_schema.columns WHERE table_schema = 'feeds' AND table_name = %s", (table,))}
         extra = sorted(set(columns) - known)
         if extra:
-            raise LocalStateError(f"В {FEEDS_FILE}, таблица {table}, есть неизвестные столбцы: {extra}. База не менялась.")
+            raise LocalStateError(i18n._("В {file}, таблица {table}, есть неизвестные столбцы: {columns}. База не менялась.",
+                                          file=FEEDS_FILE, table=table, columns=extra))
         count = 0
         with conn.cursor() as cursor, cursor.copy(f"COPY feeds.{table} ({', '.join(columns)}) FROM STDIN") as copy:
             for row in source.execute(f"SELECT {', '.join(columns)} FROM {table}"):
                 for column, value in zip(columns, row, strict=True):
                     if isinstance(value, str) and "\x00" in value:  # в PostgreSQL такого значения нет, изменить его молча нельзя
-                        raise LocalStateError(f"В {FEEDS_FILE}, таблица {table}, столбец {column}, есть знак NUL. База не менялась.")
+                        raise LocalStateError(i18n._("В {file}, таблица {table}, столбец {column}, есть знак NUL. База не менялась.",
+                                                      file=FEEDS_FILE, table=table, column=column))
                 copy.write_row(row)
                 count += 1
         copied[table] = count
@@ -191,7 +195,7 @@ def import_all(data_dir: Path, conninfo: str = "") -> dict:
             from app.db import Database
             Database(conninfo or None).close()
         if not conn.execute("SELECT pg_try_advisory_lock(%s)", (_LOCK,)).fetchone()[0]:
-            raise LocalStateError("Идёт загрузка справочников: остановите приложение и повторите перенос.")
+            raise LocalStateError(i18n._("Идёт загрузка справочников: остановите приложение и повторите перенос."))
         done = conn.execute("SELECT value FROM app_state.secrets WHERE name = %s", (MARKER,)).fetchone()
         if done:
             return {"imported": False, "already": done[0]}
@@ -199,11 +203,12 @@ def import_all(data_dir: Path, conninfo: str = "") -> dict:
         stored = {row[0]: row[1] for row in conn.execute("SELECT name, value FROM app_state.secrets")}
         different = sorted(name for name, value in keys.items() if name in stored and stored[name] != value)
         if different:
-            raise LocalStateError(f"Ключи в файлах и в базе различаются: {different}. Значения не показаны. База не менялась.")
+            raise LocalStateError(i18n._("Ключи в файлах и в базе различаются: {names}. Значения не показаны. База не менялась.",
+                                          names=different))
         source = _open_source(data_dir)
         try:
             if source is not None and conn.execute("SELECT 1 FROM feeds.feed_meta LIMIT 1").fetchone():
-                raise LocalStateError("В базе уже есть справочники, а отметки переноса нет: перезаписывать их нельзя. База не менялась.")
+                raise LocalStateError(i18n._("В базе уже есть справочники, а отметки переноса нет: перезаписывать их нельзя. База не менялась."))
             now = datetime.now(UTC).isoformat(timespec="seconds")
             report: dict[str, dict] = {}
             with conn.transaction():
@@ -216,7 +221,8 @@ def import_all(data_dir: Path, conninfo: str = "") -> dict:
                     report = _compare_feeds(conn, source)
                     wrong = sorted(table for table, item in report.items() if not item["same"])
                     if wrong:
-                        raise LocalStateError(f"После переноса не совпали таблицы: {wrong}. Перенос отменён, база не менялась.")
+                        raise LocalStateError(i18n._("После переноса не совпали таблицы: {tables}. Перенос отменён, база не менялась.",
+                                                  tables=wrong))
                 conn.execute("INSERT INTO app_state.secrets(name, value, updated_at) VALUES (%s, %s, %s)", (MARKER, now, now))
         finally:
             if source is not None:

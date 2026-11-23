@@ -25,7 +25,7 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-from app import model_traffic
+from app import i18n, model_traffic
 from app.llm import (RAW_KEEP, LlmError, PromptOverflowError, ResolveError, _one_line, _seconds, answer_schema, check_answer,
                      estimate_tokens, extract_answer, retry_message)
 from app.llm_http import ServerClient, _scrub_error, _scrub_value, track_sent, tracked
@@ -276,7 +276,7 @@ class ChatCompletionsClient(ServerClient):
     @tracked
     def version(self) -> str:
         """Сервер жив: /models отвечает. Генерацию выбранной моделью это не доказывает – это «Пробный ответ»."""
-        return f"API чат-завершений, моделей: {len(self._models_once())}"
+        return i18n._("API чат-завершений, моделей: {n}", n=len(self._models_once()))
 
     @tracked
     def list_models(self) -> list[dict[str, Any]]:

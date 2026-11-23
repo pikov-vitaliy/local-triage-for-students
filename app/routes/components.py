@@ -25,7 +25,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from app import sca_research as research, worklists
+from app import i18n, sca_research as research, worklists
 from app import osv
 from app.config import Settings
 from app.db import SAVED_FILTERS_MAX, Database, DecisionStale, SelectionChanged, TaskSuperseded
@@ -40,8 +40,8 @@ router = APIRouter()
 INPUT_REF = re.compile(r"^[a-z][a-z0-9]*:[0-9a-f]{16}$")
 PAGE_SIZE = research.PAGE_SIZE
 
-#: сообщения после действия: код в адресе – текст на странице
-NOTICES = {
+#: сообщения после действия: код в адресе – текст на странице (перевод при чтении, i18n.Labels)
+NOTICES = i18n.Labels({
     "task": "Задание собрано: строк {n}.",
     "task_same": "Состав не изменился: задание прежнее, строк {n}.",
     "answers": "Ответ сохранён: строк {n} с новой ревизией.",
@@ -55,8 +55,8 @@ NOTICES = {
     "filter_saved": "Отбор сохранён.",
     "filter_updated": "Отбор с этим именем обновлён: условия заменены.",
     "filter_deleted": "Сохранённый отбор удалён.",
-}
-PROBLEMS = {
+})
+PROBLEMS = i18n.Labels({
     "task_empty": "В выгрузке нет находок SCA Security: собирать задание не из чего.",
     "task_gone": "Задание устарело: состав проекта изменился, соберите задание заново.",
     "research_profile": "Исследование провайдером недоступно: выберите для проекта или приложения включённый профиль "
@@ -77,13 +77,16 @@ PROBLEMS = {
     "research_empty": "Для выбранного отбора строк нет.",
     "research_confirm": "Подтвердите предпросмотр: без отметки согласия исследование не запускается.",
     "research_changed": "Состав, профиль или инструкции изменились после предпросмотра: откройте предпросмотр заново.",
+    "research_language": "Язык интерфейса сменился после согласия: инструкции прежнего получения написаны для другого "
+                         "языка ответа. Откройте предпросмотр исследования заново – оставшиеся строки получат "
+                         "инструкции на новом языке.",
     "research_resume": "Продолжить не удалось.",
     "research_nothing": "Строк для доисследования нет: не получившихся строк нет, строки с неизвестным результатом "
                         "берутся только по отметке, а строки, исследованные более поздним получением, не предлагаются.",
     "answers_no_task": "Сначала соберите задание: без него ответ некуда положить.",
     "decision_stale": "Страница устарела: решение не сохранено, проверьте данные и подтвердите снова.",
     "decision_unbound": "Страница не показывает, какое исследование человек видел",
-}
+})
 
 
 def _wants_json(request: Request) -> bool:
@@ -369,8 +372,9 @@ def list_context(request: Request, project: dict, *, error_report: dict | None =
     filters = _filters(_query_request(shown_query) if shown_query is not None else request)
     filtered = selected_rows(rows, filters)
     w = worklists.table(filtered, filters, path=f"/projects/{pid}/components", kind="components", default_size=PAGE_SIZE,
-                        sorts={"": "По приоритету", "name_asc": "Имя ↑", "name_desc": "Имя ↓",
-                               "applicable_desc": "Уязвимости ↓", "support_asc": "Поддержка", "decision_asc": "Сначала без решения"})
+                        sorts={"": i18n._("По приоритету"), "name_asc": i18n._("Имя ↑"), "name_desc": i18n._("Имя ↓"),
+                               "applicable_desc": i18n._("Уязвимости ↓"), "support_asc": i18n._("Поддержка"),
+                               "decision_asc": i18n._("Сначала без решения")})
     page, pages, total, shown = w["page"], w["pages"], w["total"], w["rows"]
     # балл CVSS строки по выбранной версии шкалы (ADR-0096 пп. 3–6) – для столбца «Публичные уязвимости»
     shown = [{**r, "score_view": research.row_score(r, filters["cvss_ver"])} for r in shown]
@@ -404,7 +408,7 @@ def _revision_source(db: Database, project_id: int, input_ref: str) -> dict:
     from app.executors import executor_info
     row = db.research_row(project_id, input_ref)
     if not row or not row.get("execution_id"):
-        return {"kind": "file", "label": "ответ внешнего агента (файл)"}
+        return {"kind": "file", "label": i18n._("ответ внешнего агента (файл)")}
     execution = db.get_execution(row["execution_id"])
     info = executor_info(db, execution)
     available = False
@@ -418,19 +422,24 @@ def _revision_source(db: Database, project_id: int, input_ref: str) -> dict:
     pages = sum(1 for t in tools if t.get("tool") == "fetch" and t.get("status") == "ok")
     failed = sum(1 for t in tools if t.get("tool") in ("search", "fetch") and t.get("status") not in ("ok", "empty"))
     if searches or pages:
-        search = f"поиск по источникам: запросов {searches}, страниц {pages}" + (f", сбоев {failed}" if failed else "")
+        search = (i18n._("поиск по источникам: запросов {searches}, страниц {pages}, сбоев {failed}", searches=searches,
+                         pages=pages, failed=failed) if failed
+                  else i18n._("поиск по источникам: запросов {searches}, страниц {pages}", searches=searches,
+                              pages=pages))
     elif failed:
-        search = f"без результатов поиска: вызовов со сбоем {failed} – модель отвечала по своим знаниям"
+        search = i18n._("без результатов поиска: вызовов со сбоем {failed} – модель отвечала по своим знаниям",
+                        failed=failed)
     elif available:
-        search = "без поиска по источникам: поиск был доступен, модель им не воспользовалась"
+        search = i18n._("без поиска по источникам: поиск был доступен, модель им не воспользовалась")
     else:
-        search = "без поиска по источникам: поиск в профиле не настроен"
-    return {"kind": "provider", "label": f"провайдер «{info['name']}»" + (f" ({info['where']})" if info["where"] else ""),
+        search = i18n._("без поиска по источникам: поиск в профиле не настроен")
+    return {"kind": "provider", "label": i18n._("провайдер «{name}»", name=info["name"])
+            + (f" ({info['where']})" if info["where"] else ""),
             "model": str((execution or {}).get("model") or ""), "date": str(row.get("imported_at") or "")[:10],
             "search": search}
 
 
-ARCHIVE_WHAT = {"sca2_research": "исследование", "sca2_decisions": "решение человека"}
+ARCHIVE_WHAT = i18n.Labels({"sca2_research": "исследование", "sca2_decisions": "решение человека"})
 
 
 def _ref_label(db: Database, project_id: int, ref: str, triples: Mapping[str, list]) -> str:
@@ -460,21 +469,23 @@ def archive_view(db: Database, project_id: int, input_ref: str) -> list[dict]:
             text = " – ".join(x for x in (str(view.get("action_label") or ""), str(row.get("rationale") or "")) if x)
             # поля решения – как в обычной истории (decision_details; ревью Codex, круг 2)
             if view.get("target_version"):
-                fields.append(f"целевая версия: {view['target_version']}")
+                fields.append(i18n._("целевая версия: {version}", version=view["target_version"]))
             if view.get("replacement_name"):
-                fields.append("замена: " + str(view["replacement_name"]) + (f"@{view['replacement_version']}"
-                                                                    if view.get("replacement_version") else ""))
+                fields.append(i18n._("замена: {name}", name=str(view["replacement_name"])
+                                     + (f"@{view['replacement_version']}" if view.get("replacement_version") else "")))
             if row.get("review_at"):
-                fields.append(f"пересмотр: {row['review_at']}")
+                fields.append(i18n._("пересмотр: {date}", date=row["review_at"]))
             if row.get("decided_at"):
-                fields.append(f"принято: {str(row['decided_at'])[:10]}")
+                fields.append(i18n._("принято: {date}", date=str(row["decided_at"])[:10]))
         else:
-            parts = [f"ревизия {row.get('revision', '')}", str(row.get("status") or ""),
-                     f"загружено {str(row.get('imported_at') or '')[:10]}" if row.get("imported_at") else ""]
+            parts = [i18n._("ревизия {n}", n=row.get("revision", "")), str(row.get("status") or ""),
+                     i18n._("загружено {date}", date=str(row.get("imported_at") or "")[:10])
+                     if row.get("imported_at") else ""]
             text = " · ".join(x for x in parts if x)
         out.append({"what": ARCHIVE_WHAT.get(a["table"], a["table"]), "old_ref": a["input_ref"],
                     "old_label": _ref_label(db, project_id, a["input_ref"], triples),
-                    "archived_at": a["archived_at"], "reason": a["reason"], "text": text, "fields": fields})
+                    # причина хранится по-русски (package_transition): перевод – при показе
+                    "archived_at": a["archived_at"], "reason": i18n._(a["reason"]), "text": text, "fields": fields})
     return out
 
 
@@ -487,7 +498,7 @@ def detail_context(request: Request, project: dict, input_ref: str, *, form: dic
     rows, task = views(db, pid, settings_of(request).sca_internal_prefixes)
     row = next((item for item in rows if item["input_ref"] == input_ref), None)
     if row is None:
-        raise HTTPException(status_code=404, detail="Строка не найдена.")
+        raise HTTPException(status_code=404, detail=i18n._("Строка не найдена."))
     history = db.decision_history(pid, input_ref)
     from app.routes.capec import component_context
     capec_context = component_context(request,pid,row)
@@ -501,12 +512,13 @@ def detail_context(request: Request, project: dict, input_ref: str, *, form: dic
     if row["decision_stale"]:
         parts = []
         if "research_changed" in row["decision_reasons"]:
-            parts.append("исследование обновилось после решения: факты изменились")
+            parts.append(i18n._("исследование обновилось после решения: факты изменились"))
         if "review_date" in row["decision_reasons"]:
-            parts.append("наступил срок пересмотра " + str((decision or {}).get("review_at", "")))
-        stale_note = "; ".join(parts) + ". Решение человека остаётся в истории; подтвердите его заново после проверки."
+            parts.append(i18n._("наступил срок пересмотра {date}", date=str((decision or {}).get("review_at", ""))))
+        stale_note = i18n._("{reasons}. Решение человека остаётся в истории; подтвердите его заново после проверки.",
+                            reasons="; ".join(parts))
     elif decision and not row["researched"]:
-        stale_note = "исследования по строке ещё нет: решение принято без ответа агента"
+        stale_note = i18n._("исследования по строке ещё нет: решение принято без ответа агента")
     return {"project": project, "imp": db.latest_import(pid), "counts": db.count_findings(pid),
             "stats": db.review_stats(pid), "row": row, "capec_context": capec_context,
             "back_url": worklists.return_url(request, f"/projects/{pid}/components"),
@@ -572,14 +584,15 @@ def _seen_stale(form: Mapping[str, Any], row: dict | None, research_row: dict | 
     if research_row is None:
         return ""
     if not seen_sig or not seen_revision:
-        return (PROBLEMS["decision_unbound"]
-                + ": решение сохраняется только по ответу агента, который человек видел на этой странице")
+        return i18n._("{problem}: решение сохраняется только по ответу агента, который человек видел на этой странице",
+                      problem=PROBLEMS["decision_unbound"])
     if seen_sig != research_row.get("answer_sig", "") or seen_revision != int(research_row.get("revision") or 0):
-        return (PROBLEMS["decision_stale"]
-                + ": ответ агента изменился после того, как страницу открыли")
+        return i18n._("{problem}: ответ агента изменился после того, как страницу открыли",
+                      problem=PROBLEMS["decision_stale"])
     seen_input = str(form.get("expected_input_sig") or "").strip()
     if row is not None and seen_input and seen_input != row.get("input_sig", ""):
-        return PROBLEMS["decision_stale"] + ": строка задания изменилась после того, как страницу открыли"
+        return i18n._("{problem}: строка задания изменилась после того, как страницу открыли",
+                      problem=PROBLEMS["decision_stale"])
     return ""
 
 
@@ -610,15 +623,16 @@ async def save_component_filter(request: Request, project_id: int):
     canonical, active = saved_query(shown)
     problem = ""
     if not name:
-        problem = "Назовите отбор: имя видно в списке сохранённых."
+        problem = i18n._("Назовите отбор: имя видно в списке сохранённых.")
     elif len(name) > SAVED_NAME_CHARS:
-        problem = f"Имя отбора длиннее {SAVED_NAME_CHARS} знаков."
+        problem = i18n._("Имя отбора длиннее {limit} знаков.", limit=SAVED_NAME_CHARS)
     elif not active:
-        problem = "В отборе нет условий – это весь список, сохранять его не нужно."
+        problem = i18n._("В отборе нет условий – это весь список, сохранять его не нужно.")
     if not problem:
         saved = await run_in_threadpool(db_of(request).save_component_filter, project_id, name, canonical)
         if saved["state"] == "limit":
-            problem = f"Сохранено уже {SAVED_FILTERS_MAX} отборов: удалите ненужный и сохраните снова."
+            problem = i18n._("Сохранено уже {limit} отборов: удалите ненужный и сохраните снова.",
+                             limit=SAVED_FILTERS_MAX)
         else:
             code = "filter_saved" if saved["state"] == "created" else "filter_updated"
             return redirect(f"/projects/{project_id}/components?"
@@ -634,7 +648,7 @@ async def delete_component_filter(request: Request, project_id: int, filter_id: 
     form = await request.form()
     canonical, _ = saved_query(str(form.get("query") or ""))
     if not await run_in_threadpool(db_of(request).delete_component_filter, project_id, filter_id):
-        raise HTTPException(status_code=404, detail="Сохранённый отбор не найден.")
+        raise HTTPException(status_code=404, detail=i18n._("Сохранённый отбор не найден."))
     return redirect(f"/projects/{project_id}/components?"
                     + "&".join(x for x in (_with_page(canonical, form.get("page")), "ok=filter_deleted") if x))
 
@@ -705,13 +719,16 @@ def research_options(db: Database, project: dict) -> list[dict]:
     """Варианты профиля исследования проекта: «как в настройках» и включённые совместимые профили; несовместимые –
     неактивные с причиной."""
     current = project.get("research_provider_id")
-    options = [{"value": "", "label": "Как в настройках приложения", "selected": not current}]
+    options = [{"value": "", "label": i18n._("Как в настройках приложения"), "selected": not current}]
     for p in db.list_providers():
         if not p["enabled"] and p["id"] != current:
             continue
         ok = research_profile_ok(p)
-        where = {"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"}.get(str(p["trust"]), "")
-        label = f"{p['name']} ({where})" + ("" if ok else " – исследование только профилем удалённого API")
+        where = {"local": i18n._("этот компьютер"), "lan": i18n._("сеть организации"),
+                 "external": i18n._("интернет")}.get(str(p["trust"]), "")
+        label = (f"{p['name']} ({where})" if ok
+                 else i18n._("{name} ({where}) – исследование только профилем удалённого API", name=p["name"],
+                             where=where))
         options.append({"value": str(p["id"]), "label": label, "selected": p["id"] == current, "disabled": not ok})
     return options
 
@@ -766,10 +783,14 @@ def _apply_failure_page(card_url: str, revision: int, message: str) -> str:
     """Ответ обычной формы «Сохранить и применить», когда запись находкам сорвалась: оба итога на странице, которая
     не обращается к базе (она может быть ещё недоступна)."""
     from html import escape
-    return ('<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Решение сохранено</title></head>'
-            f'<body><main><h1>Решение компонента сохранено</h1><p>Редакция решения: {int(revision)}.</p>'
+    # страница собирается здесь, а не в шаблоне: язык страницы и тексты – на языке интерфейса (ADR-0158)
+    return (f'<!doctype html><html lang="{escape(i18n.current(), quote=True)}"><head><meta charset="utf-8">'
+            f'<title>{escape(i18n._("Решение сохранено"))}</title></head>'
+            f'<body><main><h1>{escape(i18n._("Решение компонента сохранено"))}</h1>'
+            f'<p>{escape(i18n._("Редакция решения: {n}.", n=int(revision)))}</p>'
             f'<p role="alert">{escape(message)}</p>'
-            f'<p><a href="{escape(card_url, quote=True)}">Вернуться к карточке компонента</a></p></main></body></html>')
+            f'<p><a href="{escape(card_url, quote=True)}">{escape(i18n._("Вернуться к карточке компонента"))}</a></p>'
+            '</main></body></html>')
 
 
 def research_one_view(request: Request, project: dict, row: Mapping[str, Any], task: dict | None) -> dict:
@@ -781,18 +802,18 @@ def research_one_view(request: Request, project: dict, row: Mapping[str, Any], t
     profile = research_profile(db, settings, project)
     run = db.active_research_run(project["id"])
     if not row.get("live"):
-        why = "Компонента нет в текущей выгрузке: исследовать его провайдером нельзя."
+        why = i18n._("Компонента нет в текущей выгрузке: исследовать его провайдером нельзя.")
     elif task is None or not row.get("in_task"):
-        why = "Строки нет в текущем задании: обновите задание на вкладке «Компоненты», затем вернитесь сюда."
+        why = i18n._("Строки нет в текущем задании: обновите задание на вкладке «Компоненты», затем вернитесь сюда.")
     elif not db.task_composition_current(project["id"], task["id"]):
         # состав проекта изменился после сборки задания: запуск всё равно отклонит согласие (ревью dev26)
-        why = ("Состав проекта изменился после сборки задания: обновите задание на вкладке «Компоненты», затем "
-               "вернитесь сюда.")
+        why = i18n._("Состав проекта изменился после сборки задания: обновите задание на вкладке «Компоненты», затем "
+                     "вернитесь сюда.")
     elif profile is None:
-        why = ("Профиль исследования не выбран или не годится: выберите его на вкладке «Компоненты», блок "
-               "«Исследование провайдером».")
+        why = i18n._("Профиль исследования не выбран или не годится: выберите его на вкладке «Компоненты», блок "
+                     "«Исследование провайдером».")
     elif run is not None:
-        why = f"По проекту идёт получение №{run['id']}: дождитесь его конца."
+        why = i18n._("По проекту идёт получение №{id}: дождитесь его конца.", id=run["id"])
     else:
         why = ""
     return {"can": not why, "why": why, "profile": profile, "run": run}
@@ -815,12 +836,14 @@ def research_view(request: Request, project: dict, task: dict | None, component_
             "state_labels": RUN_STATE_LABELS, "row_labels": ROW_STATE_LABELS}
 
 
-RUN_STATE_LABELS = {"running": "идёт", "done": "завершено", "stopped": "остановлено", "interrupted": "прервано"}
-ROW_STATE_LABELS = {"queued": "в очереди", "sending": "отправлено", "saved": "сохранена", "unchanged": "без изменений",
-                    "failed": "не получена", "unknown": "результат неизвестен"}
-SELECTION_LABELS = {"all": "все строки задания", "unresearched": "без исследования",
-                    "review_due": "требующие пересмотра", "no_defect": "без дефекта",
-                    "picked": "отмеченные в таблице", "followup": "доисследование оставшихся"}
+RUN_STATE_LABELS = i18n.Labels({"running": "идёт", "done": "завершено", "stopped": "остановлено",
+                                "interrupted": "прервано"})
+ROW_STATE_LABELS = i18n.Labels({"queued": "в очереди", "sending": "отправлено", "saved": "сохранена",
+                                "unchanged": "без изменений", "failed": "не получена",
+                                "unknown": "результат неизвестен"})
+SELECTION_LABELS = i18n.Labels({"all": "все строки задания", "unresearched": "без исследования",
+                                "review_due": "требующие пересмотра", "no_defect": "без дефекта",
+                                "picked": "отмеченные в таблице", "followup": "доисследование оставшихся"})
 PICKED_MAX = 1000  # отмеченных строк в одной форме: страница таблицы показывает не больше 200
 
 
@@ -985,7 +1008,7 @@ def research_run_page(request: Request, project_id: int, run_id: int):
     db = db_of(request)
     run = db.research_run(run_id)
     if run is None or run["project_id"] != project_id:
-        raise HTTPException(status_code=404, detail="Получение не найдено.")
+        raise HTTPException(status_code=404, detail=i18n._("Получение не найдено."))
     consent = db.research_consent(run["consent_id"])
     execution = db.get_execution(run["execution_id"])
     from app.executors import executor_label
@@ -1023,31 +1046,35 @@ def research_run_status(request: Request, project_id: int, run_id: int):
     db = db_of(request)
     run = db.research_run(run_id)
     if run is None or run["project_id"] != project_id:
-        raise HTTPException(status_code=404, detail="Получение не найдено.")
+        raise HTTPException(status_code=404, detail=i18n._("Получение не найдено."))
     rows = db.research_run_rows(run_id)
     live = request.app.state.research.live(run_id)
-    return JSONResponse({"run": {**run, "state_label": RUN_STATE_LABELS.get(run["state"], run["state"])},
+    from app.sca_research_net import reason_text  # причины хранятся по-русски – показ на языке интерфейса (ADR-0158)
+    return JSONResponse({"run": {**run, "state_label": RUN_STATE_LABELS.get(run["state"], run["state"]),
+                                 "reason": reason_text(run.get("reason"))},
                          "alive": request.app.state.research.running(run_id),
                          "live": {**live, "text": tools_text(live["tools"], live["sends"])} if live else None,
                          "rows": [{"input_ref": r["input_ref"], "state": r["state"], "later_saved": bool(r.get("later_saved")),
-                                   "state_label": ROW_STATE_LABELS.get(r["state"], r["state"]), "reason": r["reason"],
+                                   "state_label": ROW_STATE_LABELS.get(r["state"], r["state"]), "reason": reason_text(r["reason"]),
                                    "revision": r["revision"], "tools": len(r["tools"]),
                                    "tools_text": tools_text(r["tools"], int((r.get("usage") or {}).get("sends") or 0)),
                                    "sending_at": r["sending_at"]} for r in rows]})
 
 
-TOOL_STATUS = {"ok": "выполнен", "error": "ошибка", "unknown": "результат неизвестен", "empty": "пусто",
-               "unavailable": "недоступен", "unsupported": "экосистема не поддерживается", "partial": "неполный ответ"}
+TOOL_STATUS = i18n.Labels({"ok": "выполнен", "error": "ошибка", "unknown": "результат неизвестен", "empty": "пусто",
+                           "unavailable": "недоступен", "unsupported": "экосистема не поддерживается",
+                           "partial": "неполный ответ"})
+TOOL_NAMES = i18n.Labels({"search": "поиск", "fetch": "страница", "osv": "запрос OSV"})
 
 
 def tools_text(tools: list, sends: int = 0) -> str:
     """Ход строки словами: обращений к модели, вызовов поиска и страниц с исходом каждого шага."""
-    parts = [f"обращений к модели {sends}"] if sends else []
+    parts = [i18n._("обращений к модели {n}", n=sends)] if sends else []
     for t in tools:
-        name = {"search": "поиск", "fetch": "страница", "osv": "запрос OSV"}.get(str(t.get("tool")), str(t.get("tool")))
+        name = TOOL_NAMES.get(str(t.get("tool")), str(t.get("tool")))
         status = TOOL_STATUS.get(str(t.get("status") or ""), str(t.get("status") or "…"))
         extra = f" ({t['results']})" if t.get("tool") in ("search", "osv") and t.get("status") == "ok" else ""
-        parts.append(f"шаг {t.get('step')}: {name} – {status}{extra}")
+        parts.append(i18n._("шаг {step}: {name} – {status}", step=t.get("step"), name=name, status=status) + extra)
     return "; ".join(parts)
 
 
@@ -1058,13 +1085,24 @@ async def research_stop(request: Request, project_id: int, run_id: int):
         db = db_of(request)
         run = db.research_run(run_id)
         if run is None or run["project_id"] != project_id:
-            raise HTTPException(status_code=404, detail="Получение не найдено.")
+            raise HTTPException(status_code=404, detail=i18n._("Получение не найдено."))
         request.app.state.research.stop(run_id)
         if not request.app.state.research.running(run_id):  # исполнителя нет (перезапуск): состояние – в базе
             db.finish_research_run(run_id, "stopped", "остановлено оператором")
         return redirect(f"/projects/{project_id}/components/research/{run_id}?ok=research_stopping")
 
     return await run_in_threadpool(apply)
+
+
+def consent_language_changed(db, run: dict) -> bool:
+    """Инструкции согласия получения написаны для другого языка ответа, чем язык интерфейса сейчас (ADR-0158): строка
+    языка входит в инструкции и в согласие – продолжение и доисследование тогда идут через новый предпросмотр."""
+    consent = db._one("SELECT instructions FROM sca_research_consents WHERE id = ?", (int(run.get("consent_id") or 0),))
+    if consent is None:
+        return False
+    from app.sca_research import ANSWER_LANGUAGE_EN
+    consent_lang = "en" if ANSWER_LANGUAGE_EN in str(consent.get("instructions") or "") else "ru"
+    return consent_lang != i18n.current()
 
 
 @router.post("/projects/{project_id}/components/research/{run_id}/resume")
@@ -1076,10 +1114,12 @@ async def research_resume(request: Request, project_id: int, run_id: int):
         db = db_of(request)
         run = db.research_run(run_id)
         if run is None or run["project_id"] != project_id:
-            raise HTTPException(status_code=404, detail="Получение не найдено.")
+            raise HTTPException(status_code=404, detail=i18n._("Получение не найдено."))
         task = db.current_task(project_id)
         if task is None or task["id"] != run["task_id"]:
             return redirect(f"/projects/{project_id}/components/research/{run_id}?err=task_gone")
+        if consent_language_changed(db, run):
+            return redirect(f"/projects/{project_id}/components/research/{run_id}?err=research_language")
         try:
             db.resume_research_run(run_id)
         except RuntimeError as e:
@@ -1112,7 +1152,7 @@ async def research_requeue(request: Request, project_id: int, run_id: int):
         db = db_of(request)
         run = db.research_run(run_id)
         if run is None or run["project_id"] != project_id:
-            raise HTTPException(status_code=404, detail="Получение не найдено.")
+            raise HTTPException(status_code=404, detail=i18n._("Получение не найдено."))
         if run["state"] == "running":
             return redirect(f"/projects/{project_id}/components/research/{run_id}?err=research_running")
         # метка страницы хода: доисследование – только с неё; та же форма повторно – прежнее согласие и получение
@@ -1120,6 +1160,10 @@ async def research_requeue(request: Request, project_id: int, run_id: int):
                                      nonce) if nonce else ""
         if not token or not expected or not hmac.compare_digest(expected, token):
             return redirect(f"/projects/{project_id}/components/research/{run_id}?err=research_changed")
+        # доисследование копирует инструкции прежнего согласия: при другом языке интерфейса – новый предпросмотр
+        # (ADR-0158: язык ответа входит в инструкции и в согласие)
+        if consent_language_changed(db, run):
+            return redirect(f"/projects/{project_id}/components/research/{run_id}?err=research_language")
         try:  # отбор строк и запуск – одной транзакцией (ревью Codex, круг 30)
             pair = db.start_followup_research(run_id, include_unknown=include_unknown,
                                               consent_key=f"{token}:{int(include_unknown)}")
@@ -1181,11 +1225,11 @@ async def download_kit(request: Request, project_id: int, task_id: str):
     """Комплект задания для агента: задание, манифест, таблица строк, заготовка, схема и валидатор."""
     project_or_404(request, project_id)
     if not _task_id_ok(task_id):
-        raise HTTPException(status_code=404, detail="Задание не найдено.")
+        raise HTTPException(status_code=404, detail=i18n._("Задание не найдено."))
     db = db_of(request)
     task = db.task(project_id, task_id)
     if task is None:
-        raise HTTPException(status_code=404, detail="Задание не найдено.")
+        raise HTTPException(status_code=404, detail=i18n._("Задание не найдено."))
     if task["state"] != "current":
         raise HTTPException(status_code=409, detail=PROBLEMS["task_gone"])
     rows = db.task_rows(task["id"])
@@ -1219,7 +1263,7 @@ async def import_answers(request: Request, project_id: int):
         log.info("component research answer rejected for project %d: %d errors", project_id, len(report.errors))
         if _wants_json(request):
             return JSONResponse(report.as_dict(), status_code=422)
-        return list_response(request, project, error_report=report.as_dict(), error="Ответ не принят.",
+        return list_response(request, project, error_report=report.as_dict(), error=i18n._("Ответ не принят."),
                              status_code=422)
     results = await run_in_threadpool(research.research_results, report.answer, rows)
     try:
@@ -1248,7 +1292,7 @@ async def save_decision(request: Request, project_id: int, input_ref: str):
     """Решение человека по строке. Не меняет факты ответа агента и не пишется по устаревшей странице."""
     project = project_or_404(request, project_id)
     if not INPUT_REF.match(input_ref):
-        raise HTTPException(status_code=404, detail="Строка не найдена.")
+        raise HTTPException(status_code=404, detail=i18n._("Строка не найдена."))
     db = db_of(request)
     prefixes = settings_of(request).sca_internal_prefixes
     form = await request.form()
@@ -1268,7 +1312,7 @@ async def save_decision(request: Request, project_id: int, input_ref: str):
         return detail_response(request, project, input_ref, form=values, error=error, status_code=422)
     if row is None and research_row is None:
         # строки нет ни в действующем, ни в прежнем составе и по ней не было ответа: сохранять нечего
-        raise HTTPException(status_code=404, detail="Строка не найдена.")
+        raise HTTPException(status_code=404, detail=i18n._("Строка не найдена."))
     stale = _seen_stale(form, row, research_row)
     if stale:
         if _wants_json(request):
@@ -1329,14 +1373,14 @@ def _batch_context(request, project, rows, entries, values=None, error=""):
 
 def _batch_rows(request, project, refs):
     if not refs or len(refs) > 200 or len(set(refs)) != len(refs):
-        raise HTTPException(422, "Выберите от 1 до 200 разных версий на этой странице.")
+        raise HTTPException(422, i18n._("Выберите от 1 до 200 разных версий на этой странице."))
     rows, _ = views(db_of(request), project["id"], settings_of(request).sca_internal_prefixes)
     lookup = {r["input_ref"]: r for r in rows if r["live"]}
     picked = [lookup[ref] for ref in refs if ref in lookup]
     if len(picked) != len(refs):
-        raise HTTPException(409, "Состав изменился. Обновите список и выберите версии снова.")
+        raise HTTPException(409, i18n._("Состав изменился. Обновите список и выберите версии снова."))
     if len({worklists.family(r, "components")[0] for r in picked}) != 1:
-        raise HTTPException(422, "Для общего решения выберите версии одного компонента и экосистемы.")
+        raise HTTPException(422, i18n._("Для общего решения выберите версии одного компонента и экосистемы."))
     return picked
 
 
@@ -1365,19 +1409,20 @@ async def apply_decisions(request: Request, project_id: int):
                 not e["expected_input_sig"] for e in raw)):
             raise ValueError
     except (ValueError, TypeError, RecursionError):
-        raise HTTPException(422, "Предпросмотр отсутствует или повреждён. Выберите версии снова.") from None
+        raise HTTPException(422, i18n._("Предпросмотр отсутствует или повреждён. Выберите версии снова.")) from None
     rows = _batch_rows(request, project, [e["input_ref"] for e in raw])
     values = research.decision_form(form, 0)
     error = research.check_decision(values)
     if form.get("confirm") != "1":
-        error = "Подтвердите применение решения ко всем перечисленным версиям."
+        error = i18n._("Подтвердите применение решения ко всем перечисленным версиям.")
     if error:
         return render(request, "components/batch.html", _batch_context(request, project, rows, raw, values, error), 422)
     try:
         await run_in_threadpool(db_of(request).save_decisions, project_id, raw, values)
     except DecisionStale:
         return render(request, "components/batch.html", _batch_context(request, project, rows, raw, values,
-                      "Одна из версий изменилась. Ни одно решение не сохранено. Вернитесь в список и повторите выбор."), 409)
+                      i18n._("Одна из версий изменилась. Ни одно решение не сохранено. Вернитесь в список и "
+                             "повторите выбор.")), 409)
     return redirect(worklists.return_url(request, f"/projects/{project_id}/components") + "#component-list")
 
 
@@ -1415,13 +1460,13 @@ async def component_report(request: Request, project_id: int, input_ref: str):
     """Отчёт по одной строке в том же виде, что и отчёт по проекту."""
     project = project_or_404(request, project_id)
     if not INPUT_REF.match(input_ref):
-        raise HTTPException(status_code=404, detail="Строка не найдена.")
+        raise HTTPException(status_code=404, detail=i18n._("Строка не найдена."))
     db = db_of(request)
     rows, task = _report_rows(db, project, settings_of(request).sca_internal_prefixes)
     picked = [item for item in rows if item["input_ref"] == input_ref]
     archive = db.identity_archive(project_id, [input_ref, *db.moved_from(project_id, input_ref)])
     if not picked and not archive:  # пустой отчёт не выдаётся; факт снятия – не пустой (ревью Codex, круг 2)
-        raise HTTPException(status_code=404, detail="По строке нет исследования: отчёт пустым не выдаётся.")
+        raise HTTPException(status_code=404, detail=i18n._("По строке нет исследования: отчёт пустым не выдаётся."))
     document = await run_in_threadpool(research.report, project=project, task=task, rows=picked, archive=archive)
     return _report_response(request, document)
 
@@ -1431,7 +1476,7 @@ def component_page(request: Request, project_id: int, input_ref: str):
     """Карточка строки: принятые факты, доказательства, охват и решение человека."""
     project = project_or_404(request, project_id)
     if not INPUT_REF.match(input_ref):
-        raise HTTPException(status_code=404, detail="Строка не найдена.")
+        raise HTTPException(status_code=404, detail=i18n._("Строка не найдена."))
     db = db_of(request)
     # группа перенесена переходом идентичности пакетов и сейчас не живая – прежний адрес ведёт на новую карточку
     # (план dev17, п. 4.6); живую группу с тем же адресом открывает её собственная карточка
@@ -1466,14 +1511,15 @@ def _serialisable(value: Any) -> bool:
         return False
 
 
-def _unsupported(value: Any, path: str = "отчёт") -> str:
+def _unsupported(value: Any, path: str | None = None) -> str:
     """Путь до первого значения, которое нельзя положить в JSON: "" – всё годится."""
+    path = i18n._("отчёт") if path is None else path
     if _serialisable(value):
         return ""
     if isinstance(value, dict):
         for key, item in value.items():
             if not isinstance(key, str):
-                return f"{path}: ключ {key!r} не строка"
+                return i18n._("{path}: ключ {key} не строка", path=path, key=repr(key))
             found = _unsupported(item, f"{path}.{key}")
             if found:
                 return found
@@ -1482,7 +1528,7 @@ def _unsupported(value: Any, path: str = "отчёт") -> str:
             found = _unsupported(item, f"{path}[{index}]")
             if found:
                 return found
-    return f"{path}: значение типа {type(value).__name__} не годится для JSON"
+    return i18n._("{path}: значение типа {type} не годится для JSON", path=path, type=type(value).__name__)
 
 
 def _report_response(request: Request, document: dict) -> Response:
@@ -1494,6 +1540,7 @@ def _report_response(request: Request, document: dict) -> Response:
     except (TypeError, ValueError) as exc:
         place = _unsupported(document)
         log.info("отчёт по проекту %s не собран в JSON: %s (%s)", request.url.path, exc, place)
-        return JSONResponse({"detail": "отчёт не удалось привести к JSON", "поле": place}, status_code=500)
+        # ключ «поле» – часть прежнего ответа, не переводится
+        return JSONResponse({"detail": i18n._("отчёт не удалось привести к JSON"), "поле": place}, status_code=500)
     return Response(body, media_type="application/json",
                     headers={"Content-Disposition": 'inline; filename="sca-components-report.json"'})

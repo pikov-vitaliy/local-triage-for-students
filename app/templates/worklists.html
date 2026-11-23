@@ -1,48 +1,48 @@
 {% macro pager(w, position="top") %}
-<nav class="worklist-pager" aria-label="Страницы таблицы: {{ 'сверху' if position == 'top' else 'снизу' }}">
+<nav class="worklist-pager" aria-label="{{ _('Страницы таблицы: сверху') if position == 'top' else _('Страницы таблицы: снизу') }}">
   <div class="cluster">
-    <strong>{{ 'Группы' if w.overview else 'Записи' }} {{ w.start }}–{{ w.end }} из {{ w.total }}</strong>
-    <span>Страница {{ w.page }} из {{ w.pages }}</span>
-    {% if w.overview %}<span class="muted">Записей в выборке: {{ w.all_total }}</span>{% endif %}
+    <strong>{{ _('Группы {start}–{end} из {total}', start=w.start, end=w.end, total=w.total) if w.overview else _('Записи {start}–{end} из {total}', start=w.start, end=w.end, total=w.total) }}</strong>
+    <span>{{ _("Страница {page} из {pages}", page=w.page, pages=w.pages) }}</span>
+    {% if w.overview %}<span class="muted">{{ _("Записей в выборке: {n}", n=w.all_total) }}</span>{% endif %}
   </div>
   <div class="worklist-navigation">
-    {% if w.prev %}<a class="btn btn-small" rel="prev" href="{{ work_link(w.prev) if work_link is defined else (w.prev) }}">← Назад</a>{% endif %}
-    {% for link in w.links %}{% if link.gap %}<span aria-hidden="true">…</span>{% else %}<a class="btn btn-small{% if link.number == w.page %} btn-primary{% endif %}" href="{{ work_link(link.url) if work_link is defined else (link.url) }}" aria-label="Страница {{ link.number }}"{% if link.number == w.page %} aria-current="page"{% endif %}>{{ link.number }}</a>{% endif %}{% endfor %}
-    {% if w.next %}<a class="btn btn-small" rel="next" href="{{ work_link(w.next) if work_link is defined else (w.next) }}">Дальше →</a>{% endif %}
+    {% if w.prev %}<a class="btn btn-small" rel="prev" href="{{ work_link(w.prev) if work_link is defined else (w.prev) }}">← {{ _("Назад") }}</a>{% endif %}
+    {% for link in w.links %}{% if link.gap %}<span aria-hidden="true">…</span>{% else %}<a class="btn btn-small{% if link.number == w.page %} btn-primary{% endif %}" href="{{ work_link(link.url) if work_link is defined else (link.url) }}" aria-label="{{ _("Страница {n}", n=link.number) }}"{% if link.number == w.page %} aria-current="page"{% endif %}>{{ link.number }}</a>{% endif %}{% endfor %}
+    {% if w.next %}<a class="btn btn-small" rel="next" href="{{ work_link(w.next) if work_link is defined else (w.next) }}">{{ _("Дальше") }} →</a>{% endif %}
   </div>
   <form method="get" action="{{ w.path }}" class="worklist-navigation">{% if task_context and task_context.visible %}{% include 'navigation-fields.html' %}{% endif %}
     {% for k,v in w.hidden %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
     <input type="hidden" name="page" value="1">
-    <label>На странице <select name="page_size" aria-label="Записей или групп на странице">{% for size in w.sizes %}<option value="{{ size }}"{% if size == w.size %} selected{% endif %}>{{ size }}</option>{% endfor %}</select></label>
-    <button type="submit" class="btn btn-small">Применить размер</button>
+    <label>{{ _("На странице") }} <select name="page_size" aria-label="{{ _("Записей или групп на странице") }}">{% for size in w.sizes %}<option value="{{ size }}"{% if size == w.size %} selected{% endif %}>{{ size }}</option>{% endfor %}</select></label>
+    <button type="submit" class="btn btn-small">{{ _("Применить размер") }}</button>
   </form>
   <form method="get" action="{{ w.path }}" class="worklist-navigation">{% if task_context and task_context.visible %}{% include 'navigation-fields.html' %}{% endif %}
     {% for k,v in w.hidden %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
     <input type="hidden" name="page_size" value="{{ w.size }}">
-    <label>Страница <input name="page" type="number" min="1" max="{{ w.pages }}" value="{{ w.page }}" aria-label="Номер страницы"></label>
-    <button type="submit" class="btn btn-small">Перейти</button>
+    <label>{{ _("Страница") }} <input name="page" type="number" min="1" max="{{ w.pages }}" value="{{ w.page }}" aria-label="{{ _("Номер страницы") }}"></label>
+    <button type="submit" class="btn btn-small">{{ _("Перейти") }}</button>
   </form>
 </nav>
 {% endmacro %}
 
 {% macro controls(w) %}
 <div class="worklist-controls">
-  {% if w.can_group %}<nav class="chips" aria-label="Представление таблицы">
-    <a class="btn btn-small{% if not w.grouped and not w.family_selected %} btn-primary{% endif %}" href="{{ work_link(w.flat_url) if work_link is defined else (w.flat_url) }}">Отдельные записи</a>
-    <a class="btn btn-small{% if w.grouped %} btn-primary{% endif %}" href="{{ work_link(w.group_url) if work_link is defined else (w.group_url) }}">Группы ({{ w.group_total }})</a>
+  {% if w.can_group %}<nav class="chips" aria-label="{{ _("Представление таблицы") }}">
+    <a class="btn btn-small{% if not w.grouped and not w.family_selected %} btn-primary{% endif %}" href="{{ work_link(w.flat_url) if work_link is defined else (w.flat_url) }}">{{ _("Отдельные записи") }}</a>
+    <a class="btn btn-small{% if w.grouped %} btn-primary{% endif %}" href="{{ work_link(w.group_url) if work_link is defined else (w.group_url) }}">{{ _("Группы ({n})", n=w.group_total) }}</a>
   </nav>{% endif %}
-  {% if w.sorts %}<nav class="chips" aria-label="Сортировка таблицы">{% for sort in w.sorts %}<a href="{{ work_link(sort.url) if work_link is defined else (sort.url) }}" class="btn btn-small{% if w.sort == sort.key %} btn-primary{% endif %}">{{ sort.label }}</a>{% endfor %}</nav>{% endif %}
-  {% if w.family_selected %}<div class="callout callout-info"><strong>{{ w.active.name if w.active else 'Группа не найдена в текущей выборке' }}</strong>{% if w.active %} · {{ w.active.scope }} · записей: {{ w.active.count }} · версий: {{ w.active.version_count }}{% endif %}. <a href="{{ work_link(w.group_url) if work_link is defined else (w.group_url) }}">К группам</a></div>{% endif %}
+  {% if w.sorts %}<nav class="chips" aria-label="{{ _("Сортировка таблицы") }}">{% for sort in w.sorts %}<a href="{{ work_link(sort.url) if work_link is defined else (sort.url) }}" class="btn btn-small{% if w.sort == sort.key %} btn-primary{% endif %}">{{ sort.label }}</a>{% endfor %}</nav>{% endif %}
+  {% if w.family_selected %}<div class="callout callout-info"><strong>{{ w.active.name|rule_text if w.active else _('Группа не найдена в текущей выборке') }}</strong>{% if w.active %} · {{ w.active.scope }} · {{ _("записей: {n}", n=w.active.count) }} · {{ _("версий: {n}", n=w.active.version_count) }}{% endif %}. <a href="{{ work_link(w.group_url) if work_link is defined else (w.group_url) }}">{{ _("К группам") }}</a></div>{% endif %}
 </div>
 {% endmacro %}
 
 {% macro groups(w, sticky=False) %}
 <div class="table-wrap"><table class="table table-compact worklist-groups{% if sticky %} table-sticky-head{% endif %}">
-  <caption class="visually-hidden">Обзор групп. Каждая исходная запись сохраняет свой ID и решение.</caption>
-  <thead><tr><th scope="col">Правило или компонент</th><th scope="col">Записей</th><th scope="col">Версий</th><th scope="col">Находок</th>{% if w.groups and w.groups[0].buckets %}{% for key, label, hint in w.buckets %}<th scope="col" class="group-count" title="{{ hint }}">{{ label }}</th>{% endfor %}<th scope="col" class="group-count" title="Отдельный счётчик, в сумму не входит: решение или текст находки внесены в Hub">Внесено в Hub</th>{% else %}<th scope="col">С решением</th>{% endif %}<th scope="col">Дефекты</th><th scope="col">Приоритет / макс. CVSS</th></tr></thead>
+  <caption class="visually-hidden">{{ _("Обзор групп. Каждая исходная запись сохраняет свой ID и решение.") }}</caption>
+  <thead><tr><th scope="col">{{ _("Правило или компонент") }}</th><th scope="col">{{ _("Записей") }}</th><th scope="col">{{ _("Версий") }}</th><th scope="col">{{ _("Находок") }}</th>{% if w.groups and w.groups[0].buckets %}{% for key, label, hint in w.buckets %}<th scope="col" class="group-count" title="{{ hint }}">{{ label }}</th>{% endfor %}<th scope="col" class="group-count" title="{{ _("Отдельный счётчик, в сумму не входит: решение или текст находки внесены в Hub") }}">{{ _("Внесено в Hub") }}</th>{% else %}<th scope="col">{{ _("С решением") }}</th>{% endif %}<th scope="col">{{ _("Дефекты") }}</th><th scope="col">{{ _("Приоритет / макс. CVSS") }}</th></tr></thead>
   <tbody>{% for g in w.groups %}<tr>
-    <td><a class="rule-link break" href="{{ work_link(g.url) if work_link is defined else (g.url) }}"><strong class="group-name">{{ g.name }}</strong></a><span class="small muted block">{{ g.scope }}</span>{% if g.versions_preview %}<span class="small mono break">{{ g.versions_preview|join(', ') }}{% if g.version_count > 5 %} …{% endif %}</span>{% endif %}</td>
-    <td><a href="{{ work_link(g.url) if work_link is defined else (g.url) }}">Открыть {{ g.count }}</a></td><td>{{ g.version_count or '–' }}</td><td>{{ g.findings }}</td>{% if g.buckets %}{% for key, label, hint in w.buckets %}<td class="group-count" data-bucket="{{ key }}">{{ g.buckets[key] or '–' }}</td>{% endfor %}<td class="group-count" data-bucket="entered">{{ g.entered or '–' }}</td>{% else %}<td>{{ g.decided }}</td>{% endif %}<td class="group-defects">{% for d in g.defects %}<a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="Карточка дефекта: {{ d.label }}">{{ d.word }} {{ d.text }}</a> {% endfor %}{% if g.versions_closed %}<span class="small muted block" title="Все находки версии закрыты в Hub статусом «Ложное срабатывание» или «Риск принят»: дефект не нужен">закрыто без дефекта: <span class="mono">{{ g.versions_closed|join(', ') }}</span></span>{% endif %}{% if g.versions_without_defect %}<span class="small muted block">без дефекта: <span class="mono">{{ g.versions_without_defect|join(', ') }}</span></span>{% endif %}{% if g.all_closed %}<span class="badge badge-ok block" title="У каждой версии есть дефект в Hub или все её находки закрыты статусом: заходить не нужно">все версии закрыты</span>{% endif %}{% if not g.defects and not g.versions_closed %}<span class="muted">–</span>{% endif %}</td><td>{{ g.score if g.score is not none else g.severity_label }}</td>
+    <td><a class="rule-link break" href="{{ work_link(g.url) if work_link is defined else (g.url) }}"><strong class="group-name">{{ g.name|rule_text }}</strong></a><span class="small muted block">{{ g.scope }}</span>{% if g.versions_preview %}<span class="small mono break">{{ g.versions_preview|join(', ') }}{% if g.version_count > 5 %} …{% endif %}</span>{% endif %}</td>
+    <td><a href="{{ work_link(g.url) if work_link is defined else (g.url) }}">{{ _("Открыть {n}", n=g.count) }}</a></td><td>{{ g.version_count or '–' }}</td><td>{{ g.findings }}</td>{% if g.buckets %}{% for key, label, hint in w.buckets %}<td class="group-count" data-bucket="{{ key }}">{{ g.buckets[key] or '–' }}</td>{% endfor %}<td class="group-count" data-bucket="entered">{{ g.entered or '–' }}</td>{% else %}<td>{{ g.decided }}</td>{% endif %}<td class="group-defects">{% for d in g.defects %}<a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="{{ _("Карточка дефекта: {label}", label=d.label) }}">{{ d.word }} {{ d.text }}</a> {% endfor %}{% if g.versions_closed %}<span class="small muted block" title="{{ _("Все находки версии закрыты в Hub статусом «Ложное срабатывание» или «Риск принят»: дефект не нужен") }}">{{ _("закрыто без дефекта:") }} <span class="mono">{{ g.versions_closed|join(', ') }}</span></span>{% endif %}{% if g.versions_without_defect %}<span class="small muted block">{{ _("без дефекта:") }} <span class="mono">{{ g.versions_without_defect|join(', ') }}</span></span>{% endif %}{% if g.all_closed %}<span class="badge badge-ok block" title="{{ _("У каждой версии есть дефект в Hub или все её находки закрыты статусом: заходить не нужно") }}">{{ _("все версии закрыты") }}</span>{% endif %}{% if not g.defects and not g.versions_closed %}<span class="muted">–</span>{% endif %}</td><td>{{ g.score if g.score is not none else g.severity_label }}</td>
   </tr>{% endfor %}</tbody>
 </table></div>
 {% endmacro %}

@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 from urllib.parse import unquote
 
+from app import i18n
 from app.ecosystem import canon_ecosystem
 
 SOURCES = ("", "file", "hub")
@@ -107,10 +108,10 @@ def marks(data: Mapping[str, Any] | None) -> list[str]:
     return [part for part in note.split(";") if part]
 
 
-MARK_LABELS = {"ecosystem": "экосистема уточнена по Hub", "coordinates": "координаты дополнены по Hub",
-               "name": "имя по Hub", "conflict": "область (группа) не совпадает с groupId Hub",
-               "rule_missing": "правило для экосистемы не задано", "no_name": "нет имени библиотеки",
-               "version": "версия по Hub другая"}
+MARK_LABELS = i18n.Labels({"ecosystem": "экосистема уточнена по Hub", "coordinates": "координаты дополнены по Hub",
+                           "name": "имя по Hub", "conflict": "область (группа) не совпадает с groupId Hub",
+                           "rule_missing": "правило для экосистемы не задано", "no_name": "нет имени библиотеки",
+                           "version": "версия по Hub другая"})
 
 
 def mark_items(data: Mapping[str, Any] | None) -> list[tuple[str, str]]:
@@ -124,26 +125,28 @@ def mark_items(data: Mapping[str, Any] | None) -> list[tuple[str, str]]:
         exported_eco, exported = canon_ecosystem(data.get("build_type")), _text(data.get("component"))
         eco, name = _text(pkg.get("ecosystem")), _text(pkg.get("name"))
         if eco != exported_eco:
-            out.append(("ecosystem", f"экосистема уточнена по Hub: в выгрузке – {exported_eco or 'не указана'}"))
+            out.append(("ecosystem", i18n._("экосистема уточнена по Hub: в выгрузке – {value}",
+                                            value=exported_eco or i18n._("не указана"))))
         replaced = any(code.startswith("name_replaced:") for code in codes)
         if name != exported and not replaced:
             if exported and name.endswith((f":{exported}", f"/{exported}")):
-                out.append(("coordinates", f"координаты дополнены по Hub: в выгрузке – {exported}"))
+                out.append(("coordinates", i18n._("координаты дополнены по Hub: в выгрузке – {value}", value=exported)))
             else:  # имя по Hub другое и при непустом groupId (ревью Codex, круг 3)
-                out.append(("name", f"имя по Hub: в выгрузке – {exported or 'не указано'}"))
+                out.append(("name", i18n._("имя по Hub: в выгрузке – {value}", value=exported or i18n._("не указано"))))
     for code in codes:
         kind, _, rest = code.partition(":")
         if kind == "name_replaced":
-            out.append(("name", f"имя по Hub: в выгрузке – {rest}"))
+            out.append(("name", i18n._("имя по Hub: в выгрузке – {value}", value=rest)))
         elif kind in ("scope_conflict", "group_conflict"):
-            out.append(("conflict", f"область (группа) в имени не совпадает с groupId Hub ({rest})"))
+            out.append(("conflict", i18n._("область (группа) в имени не совпадает с groupId Hub ({value})", value=rest)))
         elif kind == "rule_missing":
             eco, _, group = rest.partition(":")
-            out.append(("rule_missing", f"у Hub есть groupId ({group}), правило для {eco} не задано"))
+            out.append(("rule_missing", i18n._("у Hub есть groupId ({group}), правило для {ecosystem} не задано",
+                                               group=group, ecosystem=eco)))
         elif kind == "no_name":
-            out.append(("no_name", "в сведениях Hub нет имени библиотеки"))
+            out.append(("no_name", i18n._("в сведениях Hub нет имени библиотеки")))
         elif kind == "version_mismatch":
-            out.append(("version", f"версия по Hub – {rest}"))
+            out.append(("version", i18n._("версия по Hub – {value}", value=rest)))
     return out
 
 

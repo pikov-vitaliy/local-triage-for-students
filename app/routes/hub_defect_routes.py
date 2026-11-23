@@ -42,7 +42,7 @@ import json
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-from app import defect, defect_check, defect_drafts, defect_where, hub_defects, hub_onboarding, hub_ops, hub_status, hub_sync
+from app import defect, defect_check, defect_drafts, hub_defects, hub_onboarding, hub_ops, hub_status, hub_sync, i18n
 from app.db import Database, finding_data_sig, hub_verdict, loads, text_hash
 from app.models import Finding
 from app.routes.common import db_of, project_or_404, redirect, register_messages, render, settings_of, web_of
@@ -64,11 +64,11 @@ from app.routes.hub_status_routes import (
 
 router = APIRouter()
 
-PREVIEW_OPEN = ("Предпросмотр дефекта уже открыт: создайте дефект кнопкой «Создать» или нажмите «Отменить "
+PREVIEW_OPEN = i18n.N_("Предпросмотр дефекта уже открыт: создайте дефект кнопкой «Создать» или нажмите «Отменить "
                 "предпросмотр» и запросите заготовку заново.")
 # предпросмотр собран для прежних приложения или адреса Hub (KIMI-12): дефект туда не создаётся, обновление карточки
 # предпросмотр не пересобирает – нужна новая заготовка
-PREVIEW_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились после предпросмотра («Параметры проекта» или "
+PREVIEW_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились после предпросмотра («Параметры проекта» или "
                           "«Настройки»): дефект не создаётся – обновите карточку, нажмите «Отменить предпросмотр» и "
                           "запросите заготовку заново.")
 
@@ -92,17 +92,17 @@ register_messages({
 })
 
 # занесение и сверка читают дефект из приложения и адреса Hub строки (KIMI-12): их сменили – отказ до записи
-IMPORT_START_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились, пока собирался запрос (в другой вкладке – "
+IMPORT_START_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились, пока собирался запрос (в другой вкладке – "
                                "«Параметры проекта» или «Настройки»): чтение не поставлено – обновите вкладку и повторите.")
-IMPORT_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились после чтения («Параметры проекта» или «Настройки»): "
+IMPORT_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились после чтения («Параметры проекта» или «Настройки»): "
                          "дефект не заносится – нажмите «Отменить», затем «Синхронизировать» на вкладке «Дефекты» и «Принять состояние Hub».")
-IMPORT_RETRY_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились после первого чтения («Параметры проекта» или "
+IMPORT_RETRY_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились после первого чтения («Параметры проекта» или "
                                "«Настройки»): повторное чтение не ставится – дефект занесёт «Синхронизировать» на вкладке «Дефекты» и «Принять состояние Hub».")
-SYNC_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились после занесения («Параметры проекта» или «Настройки»): "
+SYNC_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились после занесения («Параметры проекта» или «Настройки»): "
                        "сверка с Hub этого дефекта не ставится и не применяется.")
 
-TEXT_SHOWN_HINT = "Карточка не показала текст дефекта (решение не сохранено или не готово): сохраните решение и обновите карточку."
-SCA_CHANGED = ("Набор SCA изменился после предпросмотра (текст, исследование или состав): нажмите «Отменить "
+TEXT_SHOWN_HINT = i18n.N_("Карточка не показала текст дефекта (решение не сохранено или не готово): сохраните решение и обновите карточку.")
+SCA_CHANGED = i18n.N_("Набор SCA изменился после предпросмотра (текст, исследование или состав): нажмите «Отменить "
                "предпросмотр» и запросите заготовку заново.")
 
 
@@ -194,7 +194,7 @@ def _context(db: Database, settings, project: dict, row: dict | None) -> dict:
             "poll_url": f"/projects/{pid}/hub/defects/{row['id']}" if row and not view["final"] else ""}
 
 
-def card_context(request: Request, project: dict, hub_id: str, current_hash: str = "") -> dict:
+def card_context(request: Request, project: dict, hub_id: str, current_hash: str | tuple[str, ...] = "") -> dict:
     """Блок «Создать дефект в Hub» карточки: доступна ли отправка, последняя строка дефекта по этой находке (в том числе
     созданного из карточки соседа по группе), её состояние и предпросмотр. С 0.9.23 (ADR-0121): дефект, к которому
     привязана находка (bound, bound_label), текст подтверждения снятия отметки (unenter), пометка «решение изменено
@@ -225,7 +225,8 @@ def card_context(request: Request, project: dict, hub_id: str, current_hash: str
     return context
 
 
-def decision_changed(db: Database, project_id: int, hub_id: str, bound: dict | None, current_hash: str) -> bool:
+def decision_changed(db: Database, project_id: int, hub_id: str, bound: dict | None,
+                     current_hash: str | tuple[str, ...]) -> bool:
     """Решение изменено после создания дефекта (ADR-0121 п. 2): редакция решения новее редакции этой находки в строке
     дефекта, и текст по сохранённому решению (current_hash) другой, чем у цели: повторное сохранение того же и отметка
     «Проверено» (редакция растёт, текст тот же) пометку не ставят."""
@@ -237,8 +238,11 @@ def decision_changed(db: Database, project_id: int, hub_id: str, bound: dict | N
     if target is None or not review:
         return False
     expected = str(target.get("decision_hash", target.get("entered_hash")) or "")
+    # current_hash – отпечаток или отпечатки текста на обоих языках интерфейса (ADR-0158): тот же текст на другом
+    # языке – не изменение решения
+    hashes = {current_hash} if isinstance(current_hash, str) else set(current_hash)
     return (bool(expected) and int(review.get("revision") or 0) > int(target.get("revision") or 0)
-            and current_hash != expected)
+            and expected not in hashes)
 
 
 DEFECT_PAGE_SIZES = (25, 50, 100, 200)  # как у таблицы находок (worklists.SIZES), по умолчанию 200
@@ -293,11 +297,12 @@ def defects_page(request: Request, project_id: int, page: int = 1, q: str = "", 
             for value, text in values]}
 
     filter_groups = [
-        chips("kind", "Вид", [("", "все")] + [(k, k) for k in sorted(facets["kind"]) if k]),
-        chips("state", "Состояние", [("", "все")] + [(k, hub_defects.STATE_LABELS.get(k, k))
-                                                      for k in sorted(facets["state"],
-                                                                      key=lambda k: hub_defects.STATE_LABELS.get(k, k))]),
-        chips("origin", "Происхождение", [("", "все"), ("app", "создан в приложении"), ("import", "занесён из Hub")]),
+        chips("kind", i18n._("Вид"), [("", i18n._("все"))] + [(k, k) for k in sorted(facets["kind"]) if k]),
+        chips("state", i18n._("Состояние"), [("", i18n._("все"))] + [(k, hub_defects.STATE_LABELS.get(k, k))
+                                                                      for k in sorted(facets["state"],
+                                                                                      key=lambda k: hub_defects.STATE_LABELS.get(k, k))]),
+        chips("origin", i18n._("Происхождение"), [("", i18n._("все")), ("app", i18n._("создан в приложении")),
+                                                  ("import", i18n._("занесён из Hub"))]),
     ]
     active_filters = sum(1 for v in (kind, state, origin) if v)
     pagination = {"page": page, "last": last, "total": total, "attempts": attempts,
@@ -329,7 +334,7 @@ def defects_page(request: Request, project_id: int, page: int = 1, q: str = "", 
                       # строка привязки – история дефекта: действия у владельца (ADR-0136)
                       "owner_url": (f"/projects/{project_id}/defects/{row['draft_owner_id']}"
                                     if row.get("draft_owner_id") and int(row["draft_owner_id"]) != int(row["id"]) else ""),
-                      "label": ("заменена" if retry and retry.get("superseded")
+                      "label": (i18n._("заменена") if retry and retry.get("superseded")
                                 else hub_defects.STATE_LABELS.get(row["state"], row["state"])),
                       "anchor_url": card_url(str(row.get("anchor_hub_id") or "")),
                       "targets": [{"hub_id": str(t.get("hub_id") or ""),
@@ -363,7 +368,7 @@ def import_form_problems(db: Database, settings, project_id: int, kind: str, tex
     if kind == "SCA":
         problems = defect_check.sca_problems(text, expected_hub=[], expected_research=[], component="", target="",
                                              no_fix=False, finding_ids=_finding_ids(db, project_id, text))
-        return [p for p in problems if p.split(":", 1)[0] in ("A1", "A4", "A8") or "внутренний номер уязвимости" in p]
+        return [p for p in problems if p.split(":", 1)[0] in ("A1", "A4", "A8") or defect_check.is_internal_id_problem(p)]
     return []
 
 
@@ -476,14 +481,14 @@ def _pull_row(request: Request, project_id: int, defect_id: int) -> tuple[dict, 
     строка-владелец «создан» с номером в Hub (dev34)."""
     project, row = _project_row(request, project_id, defect_id)
     if not hub_defects.pull_allowed(row):
-        raise LookupError(hub_defects.PULL_ONLY)
+        raise LookupError(i18n._(hub_defects.PULL_ONLY))
     return project, row
 
 
 def _import_row(request: Request, project_id: int, defect_id: int) -> tuple[dict, dict]:
     project, row = _project_row(request, project_id, defect_id)
     if row.get("origin") != "import":
-        raise LookupError("Дефект, занесённый из Hub, не найден.")
+        raise LookupError(i18n._("Дефект, занесённый из Hub, не найден."))
     return project, row
 
 
@@ -561,7 +566,7 @@ async def import_start(request: Request, project_id: int):
             label_of=hub_defects.STATE_LABELS.get)
 
     return await _tab_action(request, project_id, apply, "hub_import_queued",
-                             "Поставлено в очередь исполнителю: чтение дефектов из Hub.")
+                             i18n._("Поставлено в очередь исполнителю: чтение дефектов из Hub."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/import")
@@ -573,14 +578,14 @@ async def import_accept(request: Request, project_id: int, defect_id: int):
     def apply():
         project, row = _import_row(request, project_id, defect_id)
         if not shown_op.isdigit():
-            raise DefectRefused("Предпросмотр не передал операцию чтения: обновите страницу.")
+            raise DefectRefused(i18n._("Предпросмотр не передал операцию чтения: обновите страницу."))
         if not _same_hub(row, settings_of(request).hub_url, project.get("hub_app_id")):
-            raise StaleTarget(IMPORT_TARGET_CHANGED)
+            raise StaleTarget(i18n._(IMPORT_TARGET_CHANGED))
         return hub_defects.accept_import(db_of(request), row, op_id=int(shown_op), shown=shown,
                                          target_check=hub_target_check(request, project_id, str(row.get("hub_url") or ""),
                                                                        row.get("app_id"), IMPORT_TARGET_CHANGED))
 
-    return await _tab_action(request, project_id, apply, "hub_import_done", "Дефект занесён из Hub.")
+    return await _tab_action(request, project_id, apply, "hub_import_done", i18n._("Дефект занесён из Hub."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/import-cancel")
@@ -590,7 +595,7 @@ async def import_cancel(request: Request, project_id: int, defect_id: int):
         _, row = _import_row(request, project_id, defect_id)
         return hub_defects.cancel_import(db_of(request), row)
 
-    return await _tab_action(request, project_id, apply, "hub_import_cancelled", "Предпросмотр занесения отменён.")
+    return await _tab_action(request, project_id, apply, "hub_import_cancelled", i18n._("Предпросмотр занесения отменён."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/import-retry")
@@ -602,11 +607,11 @@ async def import_retry(request: Request, project_id: int, defect_id: int):
         if blocker:
             raise DefectRefused(blocker)
         if not _same_hub(row, settings_of(request).hub_url, project.get("hub_app_id")):
-            raise StaleTarget(IMPORT_RETRY_TARGET_CHANGED)
+            raise StaleTarget(i18n._(IMPORT_RETRY_TARGET_CHANGED))
         return hub_defects.retry_import(db_of(request), row, hub_target_check(
             request, project_id, str(row.get("hub_url") or ""), row.get("app_id"), IMPORT_RETRY_TARGET_CHANGED))
 
-    return await _tab_action(request, project_id, apply, "hub_import_retry", "Чтение поставлено в очередь заново.")
+    return await _tab_action(request, project_id, apply, "hub_import_retry", i18n._("Чтение поставлено в очередь заново."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/sync")
@@ -619,11 +624,11 @@ async def import_sync(request: Request, project_id: int, defect_id: int):
         if blocker:
             raise DefectRefused(blocker)
         if not _same_hub(row, settings_of(request).hub_url, project.get("hub_app_id")):
-            raise StaleTarget(SYNC_TARGET_CHANGED)
+            raise StaleTarget(i18n._(SYNC_TARGET_CHANGED))
         return hub_defects.start_import_sync(db_of(request), row, hub_target_check(
             request, project_id, str(row.get("hub_url") or ""), row.get("app_id"), SYNC_TARGET_CHANGED))
 
-    return await _tab_action(request, project_id, apply, "hub_sync_queued", "Сверка с Hub поставлена в очередь.")
+    return await _tab_action(request, project_id, apply, "hub_sync_queued", i18n._("Сверка с Hub поставлена в очередь."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/sync-apply")
@@ -635,11 +640,11 @@ async def import_sync_apply(request: Request, project_id: int, defect_id: int):
     def apply():
         project, row = _pull_row(request, project_id, defect_id)
         if not _same_hub(row, settings_of(request).hub_url, project.get("hub_app_id")):
-            raise StaleTarget(SYNC_TARGET_CHANGED)
+            raise StaleTarget(i18n._(SYNC_TARGET_CHANGED))
         return hub_defects.apply_import_sync(db_of(request), row, shown=shown, target_check=hub_target_check(
             request, project_id, str(row.get("hub_url") or ""), row.get("app_id"), SYNC_TARGET_CHANGED))
 
-    return await _tab_action(request, project_id, apply, "hub_sync_applied", "Сверка применена.")
+    return await _tab_action(request, project_id, apply, "hub_sync_applied", i18n._("Сверка применена."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/sync-cancel")
@@ -653,14 +658,14 @@ async def import_sync_cancel(request: Request, project_id: int, defect_id: int):
         _, row = _pull_row(request, project_id, defect_id)
         return hub_defects.cancel_import_sync(db_of(request), row, shown=shown)
 
-    return await _tab_action(request, project_id, apply, "hub_sync_cancelled", "Предпросмотр сверки отменён.")
+    return await _tab_action(request, project_id, apply, "hub_sync_cancelled", i18n._("Предпросмотр сверки отменён."))
 
 
 # ============================================================================ «Push в Hub» (ADR-0125)
 
-UPDATE_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились после занесения («Параметры проекта» или «Настройки»): "
+UPDATE_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились после занесения («Параметры проекта» или «Настройки»): "
                          "обновление этого дефекта не ставится.")
-SCA_UPDATE_CHANGED = ("Набор SCA изменился после подготовки обновления (текст, исследование или состав): снова "
+SCA_UPDATE_CHANGED = i18n.N_("Набор SCA изменился после подготовки обновления (текст, исследование или состав): снова "
                       "нажмите «Push в Hub».")
 
 register_messages({
@@ -697,21 +702,22 @@ def _update_sast(request: Request, db: Database, settings, project_id: int, row:
         hub_id = str(target.get("hub_id") or "")
         source = db.case_input(project_id, hub_id)
         if source is None or source.get("missing"):
-            refusals.append(f"находки {hub_id} нет в текущей выгрузке")
+            refusals.append(i18n._("находки {hub_id} нет в текущей выгрузке", hub_id=hub_id))
             continue
         sig = db.finding_sig(project_id, hub_id)  # до чтения данных: обновление выгрузки поймает транзакция
         f = Finding.from_dict(source["data"])
         review = db.get_review(project_id, hub_id)
         if (not review or not review.get("decision")
                 or hub_verdict(review["decision"], review.get("final_verdict") or "") != "true_positive"):
-            refusals.append(f"у находки {hub_id} нет решения «Подтверждаю дефект»")
+            refusals.append(i18n._("у находки {hub_id} нет решения «Подтверждаю дефект»", hub_id=hub_id))
             continue
         if str(review.get("decision") or "") == defect_drafts.HUB_DECISION:
             # решение «из Hub»: без «Проверено» и сверки кода – «Push в Hub» отправляет текст
             # черновика как есть; «Текст из решений» по нему не собрать – обоснования и рекомендации оператора нет
             if same_text:
-                refusals.append(f"у находки {hub_id} решение принято из Hub, обоснования и рекомендации оператора нет – "
-                                "сохраните решение в карточке или отправьте текст как есть («Push в Hub»)")
+                refusals.append(i18n._("у находки {hub_id} решение принято из Hub, обоснования и рекомендации "
+                                       "оператора нет – сохраните решение в карточке или отправьте текст как есть "
+                                       "(«Push в Hub»)", hub_id=hub_id))
                 continue
             hub_targets.append({"hub_id": hub_id, "issue_id": hub_status.issue_id(hub_id),
                                 "issue_type": hub_status.issue_type(f.kind), "revision": int(review.get("revision") or 0),
@@ -719,34 +725,34 @@ def _update_sast(request: Request, db: Database, settings, project_id: int, row:
                                 "sig": sig})
             continue
         if not review.get("reviewed"):
-            refusals.append(f"у находки {hub_id} нет отметки «Проверено»")
+            refusals.append(i18n._("у находки {hub_id} нет отметки «Проверено»", hub_id=hub_id))
             continue
         case = db.get_case(project_id, hub_id)
         assessment = card.sast_assess(request, project_id, review, case, source)
         if assessment["state"] != "ok":
-            refusals.append(f"находка {hub_id}: "
-                            + card.sast_state_hint(assessment["state"], review, card.SAST_DEFECT_NOT_READY))
+            refusals.append(i18n._("находка {hub_id}: {problem}", hub_id=hub_id,
+                                   problem=card.sast_state_hint(assessment["state"], review, card.SAST_DEFECT_NOT_READY)))
             continue
         if "all" not in defect_lines:
             defect_lines["all"] = card.defect_shown_lines(request, project_id, f, case, also=[str(t.get("hub_id") or "") for t in targets])
         view = card.sast_defect(db, settings, store_of(request), project_id, f, review, None, number=number,
                                 shown=defect_lines["all"], state="ok", source=source)
         if not view["ready"]:
-            refusals.append(f"находка {hub_id}: {view['hint']}")
+            refusals.append(i18n._("находка {hub_id}: {problem}", hub_id=hub_id, problem=view['hint']))
             continue
         origin = card.comment_origin(db, case, review, review.get("final_comment") or "", project_id=project_id,
                                      hub_id=hub_id)
         if origin and origin != "true_positive":
-            refusals.append(f"находка {hub_id}: обоснование – текст модели к другому вердикту (поправьте комментарий в "
-                            "карточке и сохраните решение)")
+            refusals.append(i18n._("находка {hub_id}: обоснование – текст модели к другому вердикту (поправьте "
+                                   "комментарий в карточке и сохраните решение)", hub_id=hub_id))
             continue
-        warnings += [f"находка {hub_id}: {w}" for w in view.get("warnings") or []]
+        warnings += [i18n._("находка {hub_id}: {problem}", hub_id=hub_id, problem=w) for w in view.get("warnings") or []]
         ready.append((f, review, view, sig))
     if refusals:
         return {"refusals": refusals}
     if same_text and len({text_hash(view["body"]) for _, _, view, _ in ready}) > 1:
-        return {"refusals": ["у находок дефекта разный текст решения (обоснование или рекомендация): "
-                             + ", ".join(f.hub_id for f, _, _, _ in ready) + " – сделайте решения одинаковыми"]}
+        return {"refusals": [i18n._("у находок дефекта разный текст решения (обоснование или рекомендация): {ids} – "
+                                    "сделайте решения одинаковыми", ids=", ".join(f.hub_id for f, _, _, _ in ready))]}
     new_targets = [_defect_target(f, review, view["body"], defect_parts(settings, review), sig) for f, review, view, sig in ready]
     if ready:
         anchor = next((x for x in ready if x[0].hub_id == str(row.get("anchor_hub_id") or "")), ready[0])
@@ -768,19 +774,19 @@ def _update_sca(request: Request, db: Database, project_id: int, row: dict, targ
     found = db.import_findings(project_id, hub_ids)
     gone = [h for h in hub_ids if h not in found or found[h]["missing"]]
     if gone:
-        return {"refusals": ["находок " + ", ".join(gone) + " нет в текущей выгрузке"]}
+        return {"refusals": [i18n._("находок {ids} нет в текущей выгрузке", ids=", ".join(gone))]}
     versions = list(dict.fromkeys(f"{found[h]['component']} {found[h]['version']}".strip() for h in hub_ids))
     if len(versions) > 1:
-        return {"refusals": ["находки разных версий: " + ", ".join(versions) + " – решение по такому дефекту – за "
-                             "владельцем после синхронизации (бэклог 49)"]}
+        return {"refusals": [i18n._("находки разных версий: {versions} – решение по такому дефекту – за владельцем "
+                                    "после синхронизации (бэклог 49)", versions=", ".join(versions))]}
     anchor = str(row.get("anchor_hub_id") or "") if str(row.get("anchor_hub_id") or "") in hub_ids else hub_ids[0]
     snap = db.sca_snapshot(project_id, anchor)
     if snap.row is None:
-        return {"refusals": [f"находки {anchor} нет в текущей выгрузке"]}
+        return {"refusals": [i18n._("находки {hub_id} нет в текущей выгрузке", hub_id=anchor)]}
     f = Finding.from_dict(snap.row["data"])
     review = snap.review
     if not review or not (review.get("decision") or review.get("final_verdict")):
-        return {"refusals": [f"у находки {anchor} нет решения «Обновить»"]}
+        return {"refusals": [i18n._("у находки {hub_id} нет решения «Обновить»", hub_id=anchor)]}
     number = row.get("number") if isinstance(row.get("number"), int) and not isinstance(row.get("number"), bool) else None
     view = sca_card.sca_defect(snap, store_of(request), project_id, f, review, number=number)
     warnings: list[str] = []
@@ -790,30 +796,32 @@ def _update_sca(request: Request, db: Database, project_id: int, row: dict, targ
     from_hub = (str(review.get("decision") or "") == defect_drafts.HUB_DECISION
                 and hub_verdict(review.get("decision") or "", review.get("final_verdict") or "") == "true_positive")
     if from_hub and strict:
-        return {"refusals": [f"у находки {anchor} решение принято из Hub, обоснования оператора нет – сохраните "
-                             "решение в карточке или отправьте текст как есть («Push в Hub»)"]}
+        return {"refusals": [i18n._("у находки {hub_id} решение принято из Hub, обоснования оператора нет – сохраните "
+                                    "решение в карточке или отправьте текст как есть («Push в Hub»)", hub_id=anchor)]}
     # «Push в Hub» отправляет текст дефекта, который сейчас в приложении, как есть (если
     # ничего не меняли – никаких разниц): заготовка набора, не доведённая до шаблона (Объяснение не сохранено,
     # остаточный риск не отмечен), и комментарии находок к другому выводу – предупреждение; отказ – только при
     # «Тексте из решений» (strict) и если набор не собран вовсе
     lenient = not strict and (view.get("state") == "text" or from_hub)
     if not view["ready"] and not lenient:
-        return {"refusals": [f"дефект набора не готов: {view['hint'] or 'набор SCA не готов'}"]}
+        return {"refusals": [i18n._("дефект набора не готов: {problem}",
+                                    problem=view['hint'] or i18n._("набор SCA не готов"))]}
     if not view["ready"]:
-        warnings.append(f"заготовка набора не готова, уйдёт текст дефекта как есть: {view['hint']}")
+        warnings.append(i18n._("заготовка набора не готова, уйдёт текст дефекта как есть: {problem}",
+                               problem=view['hint']))
     if view.get("comment_stale") and strict:
-        return {"refusals": ["в наборе находки, где комментарий – текст агента к другому выводу: "
-                             + ", ".join(str(x) for x in view["comment_stale"][:10])
-                             + " (поправьте комментарий в их карточках и сохраните)"]}
+        return {"refusals": [i18n._("в наборе находки, где комментарий – текст агента к другому выводу: {ids} "
+                                    "(поправьте комментарий в их карточках и сохраните)",
+                                    ids=", ".join(str(x) for x in view["comment_stale"][:10]))]}
     members = [str(x) for x in view.get("members") or []]
     by_row = not members or (from_hub and not view["ready"])
     if by_row:
         members = hub_ids  # заготовка не собрана: состав – цели строки, как в Hub; решение каждой проверяется ниже
     extra, lacking = sorted(set(hub_ids) - set(members)), sorted(set(members) - set(hub_ids))
     if extra or lacking:
-        parts = ([f"в дефекте, но не в наборе: {', '.join(extra)}"] if extra else []) + (
-            [f"в наборе, но не в дефекте: {', '.join(lacking)}"] if lacking else [])
-        return {"refusals": ["состав набора не равен находкам дефекта (" + "; ".join(parts) + ")"]}
+        parts = ([i18n._("в дефекте, но не в наборе: {ids}", ids=', '.join(extra))] if extra else []) + (
+            [i18n._("в наборе, но не в дефекте: {ids}", ids=', '.join(lacking))] if lacking else [])
+        return {"refusals": [i18n._("состав набора не равен находкам дефекта ({parts})", parts="; ".join(parts))]}
     new_targets = []
     # заготовка не готова – отметки находок не переписываются отпечатком неготовой заготовки: прежний отпечаток цели
     old_hash = {str(t.get("hub_id") or ""): str(t.get("decision_hash", t.get("entered_hash")) or "") for t in targets}
@@ -822,11 +830,11 @@ def _update_sca(request: Request, db: Database, project_id: int, row: dict, targ
         member_sig = db.finding_sig(project_id, hub_id)
         member = _finding_of(db, project_id, hub_id)
         if member is None or not member_review:
-            return {"refusals": [f"находка {hub_id} набора изменилась: обновите вкладку"]}
+            return {"refusals": [i18n._("находка {hub_id} набора изменилась: обновите вкладку", hub_id=hub_id)]}
         if by_row and hub_verdict(member_review.get("decision") or "", member_review.get("final_verdict") or "") != "true_positive":
             # состав взят из строки, а не из готового набора: отложенное, ложное срабатывание и принятый риск в дефект
             # не уходят (ревью dev23, круг 1)
-            return {"refusals": [f"у находки {hub_id} решение не «Обновить»"]}
+            return {"refusals": [i18n._("у находки {hub_id} решение не «Обновить»", hub_id=hub_id)]}
         new_targets.append({"hub_id": hub_id, "issue_id": hub_status.issue_id(hub_id),
                             "issue_type": hub_status.issue_type(member.kind),
                             "revision": int(member_review.get("revision") or 0),
@@ -851,14 +859,14 @@ def prepare_update(request: Request, row: dict, *, from_decisions: bool = False)
     project_id = int(row["project_id"])
     targets = loads(row.get("targets_json"), [])
     if not targets:
-        return {"refusals": ["в дефекте нет находок – обновлять нечего"]}
+        return {"refusals": [i18n._("в дефекте нет находок – обновлять нечего")]}
     kind = str(row.get("kind") or "")
     if kind == "SAST":
         prep = _update_sast(request, db, settings, project_id, row, targets, same_text=from_decisions)
     elif kind == "SCA":
         prep = _update_sca(request, db, project_id, row, targets, strict=from_decisions)
     else:
-        return {"refusals": [f"вид дефекта «{kind or '–'}» не поддерживается"]}
+        return {"refusals": [i18n._("вид дефекта «{kind}» не поддерживается", kind=kind or '–')]}
     if prep.get("refusals"):
         return prep
     owner = db.on_connection(lambda c: defect_drafts.owner_in(c, row))
@@ -868,24 +876,27 @@ def prepare_update(request: Request, row: dict, *, from_decisions: bool = False)
         prep.update(summary=owner["draft_summary"], command_text=owner["draft_command_text"])
         number, why = hub_defects.title_number(prep["summary"])
         if not str(prep["summary"] or "").strip():
-            return {**prep, "refusals": ["Заголовок черновика пуст: заполните его."]}
+            return {**prep, "refusals": [i18n._("Заголовок черновика пуст: заполните его.")]}
         # номера в заголовке нет – его вернёт подготовка Push (ADR-0138)
         if why != hub_defects.NO_NUMBER and (why or number != row.get("number")):
-            return {**prep, "refusals": ["Заголовок черновика должен содержать ровно один ID, равный резерву дефекта."]}
+            return {**prep, "refusals": [i18n._("Заголовок черновика должен содержать ровно один ID, равный резерву "
+                                                "дефекта.")]}
     prep.update(**draft_state, members_snapshot=members)
     # собрать текст из решений («Текст из решений») – строго по требованиям команды; «Push в Hub» отправляет текст,
     # который сейчас в приложении, как есть, формат – предупреждение (всё взято из Hub,
     # изменённое сохраняется обратно в Hub)
     strict = from_decisions
     if not str(prep.get("command_text") or "").strip():  # пустое описание запись в Hub не подтвердит – отказ сразу
-        return {**prep, "refusals": ["текст дефекта пуст – заполните его или соберите «Текст из решений»"]}
+        return {**prep, "refusals": [i18n._("текст дефекта пуст – заполните его или соберите «Текст из решений»")]}
     problems = text_problems(db, settings, project_id, kind, prep["command_text"], prep.get("expect"))
-    listed = ("; ".join(problems[:3]) + (f"; и ещё {len(problems) - 3}" if len(problems) > 3 else "")) if problems else ""
+    listed = ("; ".join(problems[:3]) + (i18n._("; и ещё {n}", n=len(problems) - 3) if len(problems) > 3 else "")
+              ) if problems else ""
     if problems and strict:
-        return {**prep, "refusals": ["текст не по требованиям команды (ADR-0123): " + listed]}
+        return {**prep, "refusals": [i18n._("текст не по требованиям команды (ADR-0123): {problems}", problems=listed)]}
     if problems:
-        prep["warnings"] = [*(prep.get("warnings") or []), "текст не по шаблону команды (ADR-0123), отправится как есть: "
-                            + listed]
+        prep["warnings"] = [*(prep.get("warnings") or []),
+                            i18n._("текст не по шаблону команды (ADR-0123), отправится как есть: {problems}",
+                                   problems=listed)]
     hub_target = _update_target(request, project_id, row)
     fresh_targets = _fresh_check(project_id, prep["targets"], prep["require_reviewed"])
     text_ok = (_text_check(request, db, settings, project_id, kind, prep["command_text"], prep.get("expect"))
@@ -896,13 +907,13 @@ def prepare_update(request: Request, row: dict, *, from_decisions: bool = False)
         current = defect_drafts.owner_in(c, row)
         if (any(current[k] != v for k, v in draft_state.items())
                 or defect_drafts.members_in(c, row) != members):
-            raise StaleTarget("Черновик, конфликты или состав дефекта изменились: обновите страницу.")
+            raise StaleTarget(i18n._("Черновик, конфликты или состав дефекта изменились: обновите страницу."))
         from app import defect_fields, defect_references
         defect_references.check_selected(c, current, defect_fields.basis_of(current)["references"])
         hub_target(c)
         fresh_targets(c)
         if kind == "SCA" and db._sca_defect_fingerprint(c, project_id, anchor) != fingerprint:
-            raise StaleTarget(SCA_UPDATE_CHANGED)
+            raise StaleTarget(i18n._(SCA_UPDATE_CHANGED))
         text_ok(c)
 
     return {**prep, "tx_check": tx_check}
@@ -919,7 +930,7 @@ def _update_row(request: Request, project_id: int, defect_id: int) -> tuple[dict
     if blocker:
         raise DefectRefused(blocker)
     if not _same_hub(row, settings_of(request).hub_url, project.get("hub_app_id")):
-        raise StaleTarget(UPDATE_TARGET_CHANGED)
+        raise StaleTarget(i18n._(UPDATE_TARGET_CHANGED))
     return project, row
 
 
@@ -932,7 +943,7 @@ async def update_start(request: Request, project_id: int, defect_id: int):
         return hub_defects.start_update(db_of(request), row, _update_target(request, project_id, row))
 
     return await _tab_action(request, project_id, apply, "hub_update_queued",
-                             "Поставлено в очередь исполнителю: чтение дефекта для обновления.")
+                             i18n._("Поставлено в очередь исполнителю: чтение дефекта для обновления."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/update-put")
@@ -952,7 +963,7 @@ async def update_put(request: Request, project_id: int, defect_id: int):
                                        target_check=_update_target(request, project_id, row))
 
     return await _tab_action(request, project_id, apply, "hub_update_put_queued",
-                             "Поставлено в очередь исполнителю: проверка дефекта и запись в Hub.")
+                             i18n._("Поставлено в очередь исполнителю: проверка дефекта и запись в Hub."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/update-cancel")
@@ -965,7 +976,7 @@ async def update_cancel(request: Request, project_id: int, defect_id: int):
         _, row = _project_row(request, project_id, defect_id)
         return hub_defects.cancel_update(db_of(request), row, generation=generation, shown=shown)
 
-    return await _tab_action(request, project_id, apply, "hub_update_cancelled", "Подготовка обновления отменена.")
+    return await _tab_action(request, project_id, apply, "hub_update_cancelled", i18n._("Подготовка обновления отменена."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/update-verify")
@@ -975,7 +986,7 @@ async def update_verify(request: Request, project_id: int, defect_id: int):
         _, row = _update_row(request, project_id, defect_id)
         return hub_defects.verify_update(db_of(request), row, _update_target(request, project_id, row))
 
-    return await _tab_action(request, project_id, apply, "hub_update_verify_queued", "Сверка поставлена в очередь.")
+    return await _tab_action(request, project_id, apply, "hub_update_verify_queued", i18n._("Сверка поставлена в очередь."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/update-reread")
@@ -986,7 +997,7 @@ async def update_reread(request: Request, project_id: int, defect_id: int):
         return hub_defects.reread_update(db_of(request), row, _update_target(request, project_id, row))
 
     return await _tab_action(request, project_id, apply, "hub_update_reread_queued",
-                             "Подтверждающее чтение поставлено в очередь.")
+                             i18n._("Подтверждающее чтение поставлено в очередь."))
 
 
 # ============================================================================ состав дефекта
@@ -1012,9 +1023,10 @@ def _busy_reason(db: Database, project_id: int, hub_id: str, own_row_id: int | N
     if other is None or (own_row_id is not None and int(other["id"]) == own_row_id):
         return ""
     if other["state"] == "done":
-        return f"дефект уже создан в Hub (№{other['hub_defect_id']})"
+        return i18n._("дефект уже создан в Hub (№{number})", number=other['hub_defect_id'])
     if other["state"] in hub_defects.BUSY_STATES:
-        return f"уже в другом дефекте из карточки ({hub_defects.STATE_LABELS.get(other['state'], other['state'])})"
+        return i18n._("уже в другом дефекте из карточки ({state})",
+                      state=hub_defects.STATE_LABELS.get(other['state'], other['state']))
     return ""
 
 
@@ -1028,34 +1040,37 @@ def sast_defect_targets(db: Database, settings, project_id: int, f: Finding, rev
     targets = [_defect_target(f, review, body, defect_parts(settings, review), sig)]
     left_out: list[dict] = []
     mine_cmp = card.own_code_cmp(db, project_id, f.hub_id)
+    # отметка соседа могла быть поставлена на другом языке интерфейса (ADR-0158): тот же текст – на любом из двух
+    body_hashes = {text_hash(body)} | {text_hash(b) for b in card.both_languages(
+        lambda: card.sast_entered_text(db, settings, project_id, f, review)) if b}
     for row in card.same_code(db.group_rows(project_id, card.group_key(f), f.hub_id), mine_cmp):
         hub_id = str(row["hub_id"])
         if row.get("missing"):
-            left_out.append({"hub_id": hub_id, "why": "нет в текущей выгрузке"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("нет в текущей выгрузке")})
             continue
         other_review = db.get_review(project_id, hub_id)
         if not other_review or other_review.get("decision") not in ("agree", "disagree"):
-            left_out.append({"hub_id": hub_id, "why": "решения нет"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("решения нет")})
             continue
         if hub_verdict(other_review["decision"], other_review.get("final_verdict") or "") != "true_positive":
-            left_out.append({"hub_id": hub_id, "why": "решение – не «Подтверждаю дефект»"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("решение – не «Подтверждаю дефект»")})
             continue
         if not other_review.get("reviewed"):
-            left_out.append({"hub_id": hub_id, "why": "нет отметки «Проверено»"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("нет отметки «Проверено»")})
             continue
         # то же правило, что у опорной находки и Push: иначе дефект создастся, а Push откажет из-за этого соседа
         origin = card.comment_origin(db, db.get_case(project_id, hub_id), other_review, other_review.get("final_comment") or "",
                                      project_id=project_id, hub_id=hub_id)
         if origin and origin != "true_positive":
-            left_out.append({"hub_id": hub_id, "why": "обоснование – текст модели к другому вердикту"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("обоснование – текст модели к другому вердикту")})
             continue
         theirs = defect.sast_effective("true_positive", other_review.get("final_comment") or "",
                                        str(other_review.get("final_fix") or ""))
         if theirs != mine:
-            left_out.append({"hub_id": hub_id, "why": "другой текст решения (обоснование или рекомендация)"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("другой текст решения (обоснование или рекомендация)")})
             continue
-        if other_review.get("entered_hub") and other_review.get("entered_text_hash") == text_hash(body):
-            left_out.append({"hub_id": hub_id, "why": "дефект с этим текстом уже внесён в Hub (отметка стоит)"})
+        if other_review.get("entered_hub") and other_review.get("entered_text_hash") in body_hashes:
+            left_out.append({"hub_id": hub_id, "why": i18n._("дефект с этим текстом уже внесён в Hub (отметка стоит)")})
             continue
         busy = _busy_reason(db, project_id, hub_id)
         if busy:
@@ -1064,7 +1079,7 @@ def sast_defect_targets(db: Database, settings, project_id: int, f: Finding, rev
         other_sig = db.finding_sig(project_id, hub_id)  # до чтения данных: обновление выгрузки поймает транзакция
         other = _finding_of(db, project_id, hub_id)
         if other is None:
-            left_out.append({"hub_id": hub_id, "why": "нет в текущей выгрузке"})
+            left_out.append({"hub_id": hub_id, "why": i18n._("нет в текущей выгрузке")})
             continue
         targets.append(_defect_target(other, other_review, body, defect_parts(settings, other_review), other_sig))
     return targets, left_out
@@ -1123,7 +1138,7 @@ def link_parent(db: Database, settings, project_id: int, f: Finding, review: dic
     (origin 'import', ADR-0124 п. 7), не выбирается никогда, и после «Push в Hub» тоже (ADR-0125 п. 4, вариант
     A): находки к нему привязывают в Hub и добавляют «Pull из Hub»."""
     from app.routes import findings as card
-    mine = text_hash(defect_where.body_of(card.sast_entered_text(db, settings, project_id, f, review)))
+    mine = text_hash(defect.body_key(card.sast_entered_text(db, settings, project_id, f, review)))
     found = None
     for row in card.same_code(db.group_rows(project_id, card.group_key(f), f.hub_id),
                               card.own_code_cmp(db, project_id, f.hub_id)):
@@ -1135,7 +1150,7 @@ def link_parent(db: Database, settings, project_id: int, f: Finding, review: dic
                 or bound["state"] not in ("done", "mismatch")
                 or bound["kind"] != "SAST"
                 or not bound.get("hub_defect_id") or not _same_hub(bound, settings.hub_url, app_id)
-                or text_hash(defect_where.body_of(bound.get("command_text"))) != mine):
+                or text_hash(defect.body_key(bound.get("command_text"))) != mine):
             continue
         if found is None or int(bound["id"]) < int(found["id"]):
             found = bound
@@ -1159,7 +1174,7 @@ def group_defect_check(db: Database, project_id: int, hub_id: str, body: str, ex
     ждёт подтверждения, отказ называет сначала его итог: «Pull из Hub» в это время сама отказывает. selected_owner –
     оператор сам выбрал дефект («Добавить в дефект», ADR-0136): сосед в этой семье не мешает и текст с ним не
     сравнивается, сосед в другом дефекте – отказ с названием этого дефекта."""
-    expected = text_hash(defect_where.body_of(body))  # раздел «Где исправлять» – не текст решения
+    expected = text_hash(defect.body_key(body))  # раздел «Где исправлять» – не текст решения; язык – не важен
     skip = {str(h or "") for h in exclude}
 
     def check(c) -> None:
@@ -1171,57 +1186,65 @@ def group_defect_check(db: Database, project_id: int, hub_id: str, body: str, ex
                 continue
             if selected_owner is not None:
                 if int(row.get("draft_owner_id") or row["id"]) != int(selected_owner):
-                    raise DefectRefused(f"Находка {neighbor} той же строки и категории уже в дефекте "
-                                        f"{hub_defects.bound_label(row) or 'из карточки'}: добавьте находку в него.")
+                    raise DefectRefused(i18n._("Находка {hub_id} той же строки и категории уже в дефекте {defect}: "
+                                               "добавьте находку в него.", hub_id=neighbor,
+                                               defect=hub_defects.bound_label(row) or i18n._("из карточки")))
                 continue
             if (row.get("origin") != "import" and not Database.imported_defect_in(c, project_id, row)
                     and (hub_defects.update_unconfirmed(row) or hub_defects.update_busy(row))):
-                raise DefectRefused("В группе есть дефект: обновление не подтверждено или ещё выполняется. "
-                                    "Сначала завершите его; второй дефект по группе не создаётся.")
+                raise DefectRefused(i18n._("В группе есть дефект: обновление не подтверждено или ещё выполняется. "
+                                           "Сначала завершите его; второй дефект по группе не создаётся."))
             if row.get("origin") == "import" or Database.imported_defect_in(c, project_id, row):
-                name = hub_defects.bound_label(row) or "из Hub"
+                name = hub_defects.bound_label(row) or i18n._("из Hub")
                 # «Pull из Hub» сама отказывает, пока идёт обновление или запись ждёт подтверждения (ADR-0125 п. 2)
                 if hub_defects.update_unconfirmed(row):
-                    raise DefectRefused(f"В группе есть дефект {name} (занесён из Hub), запись в Hub по нему принята, "
-                                        "но не подтверждена: во вкладке «Дефекты» сначала «Повторить чтение» или "
-                                        "заново «Push в Hub»; второй дефект по группе не создаётся.")
+                    raise DefectRefused(i18n._("В группе есть дефект {name} (занесён из Hub), запись в Hub по нему "
+                                               "принята, но не подтверждена: во вкладке «Дефекты» сначала «Повторить "
+                                               "чтение» или заново «Push в Hub»; второй дефект по группе не создаётся.",
+                                               name=name))
                 if (not row.get("update_op_id")
                         and hub_defects.update_state(row).get("phase") == "unknown"):  # ждать нечего – нужна сверка
-                    raise DefectRefused(f"В группе есть дефект {name} (занесён из Hub), результат «Push в Hub» по "
-                                        "нему неизвестен: во вкладке «Дефекты» нажмите «Сверить» в его строке; второй "
-                                        "дефект по группе не создаётся.")
+                    raise DefectRefused(i18n._("В группе есть дефект {name} (занесён из Hub), результат «Push в Hub» "
+                                               "по нему неизвестен: во вкладке «Дефекты» нажмите «Сверить» в его строке; "
+                                               "второй дефект по группе не создаётся.", name=name))
                 if hub_defects.update_busy(row):
-                    raise DefectRefused(f"В группе есть дефект {name} (занесён из Hub), по нему идёт «Push в Hub»: "
-                                        "дождитесь его итога во вкладке «Дефекты»; второй дефект по группе не "
-                                        "создаётся.")
-                first = "нажмите «Отменить предпросмотр», затем привяжите" if in_preview else "привяжите"
-                raise DefectRefused(f"В группе есть дефект {name} (занесён из Hub): "
-                                    f"{first} находку к нему в Hub и нажмите «Pull из Hub» во вкладке «Дефекты» – "
-                                    "находка добавится; второй дефект по группе не создаётся.")
-            if text_hash(defect_where.body_of(row.get("command_text"))) != expected:
+                    raise DefectRefused(i18n._("В группе есть дефект {name} (занесён из Hub), по нему идёт «Push в "
+                                               "Hub»: дождитесь его итога во вкладке «Дефекты»; второй дефект по группе "
+                                               "не создаётся.", name=name))
+                raise DefectRefused(
+                    i18n._("В группе есть дефект {name} (занесён из Hub): нажмите «Отменить предпросмотр», затем "
+                           "привяжите находку к нему в Hub и нажмите «Pull из Hub» во вкладке «Дефекты» – находка "
+                           "добавится; второй дефект по группе не создаётся.", name=name) if in_preview else
+                    i18n._("В группе есть дефект {name} (занесён из Hub): привяжите находку к нему в Hub и нажмите "
+                           "«Pull из Hub» во вкладке «Дефекты» – находка добавится; второй дефект по группе не "
+                           "создаётся.", name=name))
+            if text_hash(defect.body_key(row.get("command_text"))) != expected:
                 continue
-            name = hub_defects.bound_label(row) or "из карточки"
+            name = hub_defects.bound_label(row) or i18n._("из карточки")
             if row["state"] in ("done", "mismatch") and row.get("hub_defect_id"):
-                how = ("нажмите «Отменить предпросмотр», затем «Привязать к дефекту»" if in_preview
-                       else "кнопка «Привязать к дефекту»")
-                raise DefectRefused(f"В группе уже есть дефект {name} с тем же текстом решения: привяжите к дефекту "
-                                    f"{name} ({how}) – второй дефект не создаётся. Если дефект {name} удалён в Hub "
-                                    "(проверьте его в Hub или «Синхронизировать» во вкладке «Дефекты»), привязка не пройдёт: создайте дефект вручную по "
-                                    "панели «Дефект для Hub» и нажмите «Отметить: дефект создан в Hub».")
+                how = (i18n._("нажмите «Отменить предпросмотр», затем «Привязать к дефекту»") if in_preview
+                       else i18n._("кнопка «Привязать к дефекту»"))
+                raise DefectRefused(i18n._("В группе уже есть дефект {name} с тем же текстом решения: привяжите к "
+                                           "дефекту {name} ({how}) – второй дефект не создаётся. Если дефект {name} "
+                                           "удалён в Hub (проверьте его в Hub или «Синхронизировать» во вкладке "
+                                           "«Дефекты»), привязка не пройдёт: создайте дефект вручную по панели «Дефект "
+                                           "для Hub» и нажмите «Отметить: дефект создан в Hub».", name=name, how=how))
             if row["state"] in ("unknown", "unconfirmed"):
                 # без номера в Hub «Сверить» может не найти дефект – строка остаётся «результат неизвестен», кнопки
                 # привязки не будет (бэклог 41): называется ручной путь, который есть в карточке
                 manual = ("" if row.get("hub_defect_id") else
-                          " Если «Сверить» дефект в Hub не нашла, исход остаётся неизвестным и привязки в приложении "
-                          "не будет: проверьте дефект в Hub сами, привяжите к нему находку там или создайте дефект "
-                          "вручную по панели «Дефект для Hub» и нажмите «Отметить: дефект создан в Hub» – отметка этот "
-                          "запрет не снимает.")
-                raise DefectRefused(f"В группе есть дефект {name} с тем же текстом решения и неясным исходом: сверьте "
-                                    f"дефект {name} в карточке находки {row.get('anchor_hub_id')} («Сверить»), затем "
-                                    "привяжите к нему находку – второй дефект не создаётся." + manual)
-            raise DefectRefused(f"В группе уже идёт дефект {name} с тем же текстом решения (состояние «"
-                                f"{hub_defects.STATE_LABELS.get(row['state'], row['state'])}»): дождитесь итога "
-                                f"дефекта {name} и привяжите к нему находку – второй дефект не создаётся.")
+                          i18n._(" Если «Сверить» дефект в Hub не нашла, исход остаётся неизвестным и привязки в "
+                                 "приложении не будет: проверьте дефект в Hub сами, привяжите к нему находку там или "
+                                 "создайте дефект вручную по панели «Дефект для Hub» и нажмите «Отметить: дефект создан "
+                                 "в Hub» – отметка этот запрет не снимает."))
+                raise DefectRefused(i18n._("В группе есть дефект {name} с тем же текстом решения и неясным исходом: "
+                                           "сверьте дефект {name} в карточке находки {hub_id} («Сверить»), затем "
+                                           "привяжите к нему находку – второй дефект не создаётся.", name=name,
+                                           hub_id=row.get('anchor_hub_id')) + manual)
+            raise DefectRefused(i18n._("В группе уже идёт дефект {name} с тем же текстом решения (состояние «{state}»): "
+                                       "дождитесь итога дефекта {name} и привяжите к нему находку – второй дефект не "
+                                       "создаётся.", name=name,
+                                       state=hub_defects.STATE_LABELS.get(row['state'], row['state'])))
     return check
 
 
@@ -1232,8 +1255,8 @@ def link_group_check(db: Database, project_id: int, hub_id: str, parent_id: int)
         row = c.execute("SELECT targets_json FROM hub_defects WHERE id = ?", (int(parent_id),)).fetchone()
         own = {str(t.get("hub_id") or "") for t in loads(row["targets_json"] if row else "", [])}
         if not own & set(db._group_neighbor_ids(c, project_id, hub_id)):
-            raise StaleTarget("Состав группы изменился, пока карточка была открыта: готовый дефект уже не дефект группы "
-                              "этой находки – обновите карточку.")
+            raise StaleTarget(i18n._("Состав группы изменился, пока карточка была открыта: готовый дефект уже не "
+                                     "дефект группы этой находки – обновите карточку."))
     return check
 
 
@@ -1285,7 +1308,7 @@ def _fresh_check(project_id: int, targets: list[dict], require_reviewed: bool, r
         if row_id is not None:
             state = c.execute("SELECT state FROM hub_defects WHERE id = ?", (row_id,)).fetchone()
             if state is None or state["state"] != expect_state:
-                raise StaleTarget("Состояние дефекта изменилось в другой вкладке: обновите карточку.")
+                raise StaleTarget(i18n._("Состояние дефекта изменилось в другой вкладке: обновите карточку."))
         for target in targets:
             review = c.execute("SELECT revision, reviewed, decision FROM reviews WHERE project_id = ? AND hub_id = ?",
                                (project_id, str(target["hub_id"]))).fetchone()
@@ -1297,8 +1320,8 @@ def _fresh_check(project_id: int, targets: list[dict], require_reviewed: bool, r
                      and data is not None and not data["missing"]
                      and finding_data_sig(data["data_json"]) == target.get("sig"))
             if not fresh:
-                raise StaleTarget(f"Решение или данные находки {target['hub_id']} изменились, пока собирался запрос: "
-                                  "обновите карточку и повторите.")
+                raise StaleTarget(i18n._("Решение или данные находки {hub_id} изменились, пока собирался запрос: "
+                                         "обновите карточку и повторите.", hub_id=target['hub_id']))
     return check
 
 
@@ -1326,19 +1349,19 @@ def _prepare_sast(request: Request, project: dict, finding_id: int, shown_revisi
     db, settings, pid = db_of(request), settings_of(request), int(project["id"])
     row = db.get_finding(pid, finding_id)
     if row is None or row["kind"] != "SAST":
-        raise LookupError("Находка не найдена.")
+        raise LookupError(i18n._("Находка не найдена."))
     source = db.case_input(pid, row["hub_id"])
     if source is None or source.get("missing"):
-        raise DefectRefused("Находки нет в текущей выгрузке: дефект по ней не готовится.")
+        raise DefectRefused(i18n._("Находки нет в текущей выгрузке: дефект по ней не готовится."))
     sig = db.finding_sig(pid, row["hub_id"])
     f = Finding.from_dict(source["data"])
     review = db.get_review(pid, f.hub_id)
     if not review or not review.get("decision"):
-        raise DefectRefused("Сначала сохраните решение «Подтверждаю дефект» с обоснованием и рекомендацией.")
+        raise DefectRefused(i18n._("Сначала сохраните решение «Подтверждаю дефект» с обоснованием и рекомендацией."))
     if not shown_revision.isdigit() or int(shown_revision) != int(review.get("revision") or 0):
-        raise DefectRefused(STALE_REVISION)
+        raise DefectRefused(i18n._(STALE_REVISION))
     if not review.get("reviewed"):
-        raise DefectRefused(NOT_REVIEWED)
+        raise DefectRefused(i18n._(NOT_REVIEWED))
     case = db.get_case(pid, f.hub_id)
     assessment = card.sast_assess(request, pid, review, case, source)
     if assessment["state"] != "ok":
@@ -1348,13 +1371,13 @@ def _prepare_sast(request: Request, project: dict, finding_id: int, shown_revisi
     if not view["ready"]:
         raise DefectRefused(view["hint"])
     if not shown_hash:
-        raise DefectRefused(TEXT_NOT_SHOWN)
+        raise DefectRefused(i18n._(TEXT_NOT_SHOWN))
     if shown_hash != text_hash(view["body"]):
-        raise DefectRefused(TEXT_CHANGED)
+        raise DefectRefused(i18n._(TEXT_CHANGED))
     origin = card.comment_origin(db, case, review, review.get("final_comment") or "", project_id=pid, hub_id=f.hub_id)
     if origin and origin != "true_positive":
-        raise DefectRefused("Обоснование – текст модели к другому вердикту: поправьте комментарий в карточке, "
-                            "сохраните решение и создавайте дефект.")
+        raise DefectRefused(i18n._("Обоснование – текст модели к другому вердикту: поправьте комментарий в карточке, "
+                                   "сохраните решение и создавайте дефект."))
     targets, left_out = sast_defect_targets(db, settings, pid, f, review, sig, view["body"])
     return {"kind": "SAST", "f": f, "number": int(view["number"]), "summary": view["title"], "body": view["body"],
             "targets": targets, "left_out": left_out, "warnings": list(view.get("warnings") or []),
@@ -1367,46 +1390,48 @@ def _prepare_sca(request: Request, project: dict, finding_id: int, shown_revisio
     db, pid = db_of(request), int(project["id"])
     row = db.get_finding(pid, finding_id)
     if row is None or row["kind"] != "SCA":
-        raise LookupError("Находка не найдена.")
+        raise LookupError(i18n._("Находка не найдена."))
     snap = db.sca_snapshot(pid, row["hub_id"])
     if snap.row is None:
-        raise DefectRefused("Находки нет в текущей выгрузке: дефект по ней не готовится.")
+        raise DefectRefused(i18n._("Находки нет в текущей выгрузке: дефект по ней не готовится."))
     f = Finding.from_dict(snap.row["data"])
     review = snap.review
     if not review or not (review.get("decision") or review.get("final_verdict")):
-        raise DefectRefused("Сначала сохраните решение «Обновить» по находке набора.")
+        raise DefectRefused(i18n._("Сначала сохраните решение «Обновить» по находке набора."))
     if not shown_revision.isdigit() or int(shown_revision) != int(review.get("revision") or 0):
-        raise DefectRefused(STALE_REVISION)
+        raise DefectRefused(i18n._(STALE_REVISION))
     view = sca_card.sca_defect(snap, store_of(request), pid, f, review)
     if not view["ready"]:
-        raise DefectRefused(view["hint"] or "Дефект SCA не готов.")
+        raise DefectRefused(view["hint"] or i18n._("Дефект SCA не готов."))
     if view.get("comment_stale"):
-        raise DefectRefused("В дефект входят находки, где комментарий – текст агента к другому выводу: "
-                            + ", ".join(str(x) for x in view["comment_stale"][:10])
-                            + ". Поправьте комментарий в их карточках и сохраните.")
+        raise DefectRefused(i18n._("В дефект входят находки, где комментарий – текст агента к другому выводу: {ids}. "
+                                   "Поправьте комментарий в их карточках и сохраните.",
+                                   ids=", ".join(str(x) for x in view["comment_stale"][:10])))
     if not shown_hash:
-        raise DefectRefused(TEXT_NOT_SHOWN)
+        raise DefectRefused(i18n._(TEXT_NOT_SHOWN))
     if shown_hash != str(view.get("text_sig") or ""):
-        raise DefectRefused(TEXT_CHANGED)
+        raise DefectRefused(i18n._(TEXT_CHANGED))
     targets: list[dict] = []
     for hub_id in view.get("members") or []:
         member_review = review if hub_id == f.hub_id else db.get_review(pid, hub_id)
         member_sig = db.finding_sig(pid, hub_id)
         member = _finding_of(db, pid, hub_id)
         if member is None or not member_review:
-            raise DefectRefused(f"Находка {hub_id} набора изменилась: обновите карточку и повторите.")
+            raise DefectRefused(i18n._("Находка {hub_id} набора изменилась: обновите карточку и повторите.",
+                                       hub_id=hub_id))
         targets.append({"hub_id": hub_id, "issue_id": hub_status.issue_id(hub_id),
                         "issue_type": hub_status.issue_type(member.kind),
                         "revision": int(member_review.get("revision") or 0),
                         "decision_hash": str(view["text_sig"]), "entered_hash": "", "entered_parts": "", "sig": member_sig})
     if not any(t["hub_id"] == f.hub_id for t in targets):
-        raise DefectRefused("Находки нет в наборе дефекта: обновите карточку.")
+        raise DefectRefused(i18n._("Находки нет в наборе дефекта: обновите карточку."))
     left_out = [{"hub_id": str(x.get("hub_id") or ""), "why": str(x.get("reason") or "")}
                 for x in view.get("excluded") or []]
     for t in targets:
         busy = _busy_reason(db, pid, str(t["hub_id"]))
         if busy and t["hub_id"] != f.hub_id:
-            raise DefectRefused(f"Находка {t['hub_id']} набора {busy}: сначала закройте тот дефект.")
+            raise DefectRefused(i18n._("Находка {hub_id} набора {busy}: сначала закройте тот дефект.",
+                                       hub_id=t['hub_id'], busy=busy))
     return {"kind": "SCA", "f": f, "number": int(view["number"]), "summary": view["title"], "body": view["body"],
             "targets": targets, "left_out": left_out, "warnings": list(view.get("warnings") or []),
             "number_keys": [sca_card.set_key(f, view["set_no"])], "require_reviewed": False,
@@ -1441,21 +1466,21 @@ async def _blank(request: Request, project_id: int, finding_id: int, kind: str):
         db.hub_expire_leases()
         found = db.get_finding(project_id, finding_id)
         if found is None:
-            raise LookupError("Находка не найдена.")
+            raise LookupError(i18n._("Находка не найдена."))
         # прежний дефект находки – до сборки состава: открытый предпросмотр не заменяется (отказ раньше подготовки),
         # дефект в работе или созданный – отказ
         current = db.hub_defect_for(project_id, [str(found["hub_id"])])
         if current is not None:
             current = hub_defects.sync(db, current, update_preparer(request))
             if current["state"] == "done":
-                raise DefectRefused(f"Дефект по этой находке уже создан в Hub (№{current['hub_defect_id']}): "
-                                    "см. вкладку «Дефекты».")
+                raise DefectRefused(i18n._("Дефект по этой находке уже создан в Hub (№{number}): см. вкладку "
+                                           "«Дефекты».", number=current['hub_defect_id']))
             if current["state"] in hub_defects.OPEN_STATES:
-                raise ValueError("Операция по этому дефекту уже идёт: дождитесь её итога.")
+                raise ValueError(i18n._("Операция по этому дефекту уже идёт: дождитесь её итога."))
             if current["state"] in ("unknown", "mismatch"):
-                raise ValueError("У этой находки есть дефект с неясным исходом: сверьте его или проверьте в Hub.")
+                raise ValueError(i18n._("У этой находки есть дефект с неясным исходом: сверьте его или проверьте в Hub."))
             if current["state"] == "preview":  # открытый предпросмотр не заменяется
-                raise ValueError(PREVIEW_OPEN)
+                raise ValueError(i18n._(PREVIEW_OPEN))
         prepared = (_prepare_sast if kind == "SAST" else _prepare_sca)(request, project, finding_id, shown_revision,
                                                                        shown_hash)
         f = prepared["f"]
@@ -1515,7 +1540,8 @@ async def _blank(request: Request, project_id: int, finding_id: int, kind: str):
     if not as_json:
         return redirect(card)
     count = len(loads(row.get("targets_json"), []))
-    return {**_answer(project_id, row, f"Поставлено в очередь исполнителю: заготовка дефекта по находкам – {count}."),
+    return {**_answer(project_id, row, i18n._("Поставлено в очередь исполнителю: заготовка дефекта по находкам – "
+                                              "{count}.", count=count)),
             "redirect": card}
 
 
@@ -1555,24 +1581,25 @@ async def link_sast(request: Request, project_id: int, finding_id: int):
         db.hub_expire_leases()
         found = db.get_finding(project_id, finding_id)
         if found is None or found["kind"] != "SAST":
-            raise LookupError("Находка не найдена.")
+            raise LookupError(i18n._("Находка не найдена."))
         current = db.hub_defect_for(project_id, [str(found["hub_id"])])
         if current is not None and hub_defects.sync(db, current, update_preparer(request))["state"] != "failed":
-            raise ValueError("У этой находки уже есть дефект из карточки: обновите карточку.")
+            raise ValueError(i18n._("У этой находки уже есть дефект из карточки: обновите карточку."))
         prepared = _prepare_sast(request, project, finding_id, shown_revision, shown_hash)
         f = prepared["f"]
         app_id = int(project["hub_app_id"])
         # готовый дефект – только того же Hub и приложения Hub (link_parent)
         parent = link_parent(db, settings, project_id, f, db.get_review(project_id, f.hub_id) or {}, app_id)
         if parent is None or str(parent["id"]) != shown_parent:
-            raise StaleTarget("Дефект группы изменился, пока карточка была открыта (решения соседей другие или "
-                              "дефект ещё не подтверждён): обновите карточку.")
+            raise StaleTarget(i18n._("Дефект группы изменился, пока карточка была открыта (решения соседей другие или "
+                                     "дефект ещё не подтверждён): обновите карточку."))
         defect_id, targets = str(parent["hub_defect_id"]), prepared["targets"]
         # состав – тот, что видел оператор: сосед получил или потерял «Проверено» в другой вкладке – отказ, ничего не
         # ставится (свежесть каждой цели проверяет транзакция)
         if shown_targets(targets) != shown_composition:
-            raise StaleTarget("Состав привязки изменился, пока карточка была открыта (у соседа по группе сменились "
-                              "решение или отметка «Проверено»): обновите карточку – она покажет, кто привяжется.")
+            raise StaleTarget(i18n._("Состав привязки изменился, пока карточка была открыта (у соседа по группе "
+                                     "сменились решение или отметка «Проверено»): обновите карточку – она покажет, кто "
+                                     "привяжется."))
         blank_body = loads(parent.get("blank_json"), {}) or {}
         item = dict(purpose="defect_link",
                     request=hub_defects.link_request(defect_id, targets, blank_body.get("groupId")),
@@ -1590,7 +1617,7 @@ async def link_sast(request: Request, project_id: int, finding_id: int):
 
         # строка «привязываю», проверка свежести целей, свободы, текста и состава группы, привязка – одной транзакцией
         return db.hub_defect_link_start(
-            project_id, int(parent["id"]), defect_id, item=item, body_hash=text_hash(defect_where.body_of(prepared["body"])),
+            project_id, int(parent["id"]), defect_id, item=item, body_hash=text_hash(defect.body_key(prepared["body"])),
             hub_link=str(parent.get("hub_link") or ""), check=check, kind="SAST", number=parent.get("number"),
             summary=str(parent.get("summary") or ""), anchor_hub_id=f.hub_id, targets=targets,
             number_keys=prepared["number_keys"], command_text=str(parent.get("command_text") or ""),
@@ -1612,8 +1639,8 @@ async def link_sast(request: Request, project_id: int, finding_id: int):
     if not as_json:
         return redirect(_back(request, "/hub-defect-link", "hub_defect_link_queued"))
     count = len(loads(row.get("targets_json"), []))
-    return _answer(project_id, row, f"Поставлено в очередь исполнителю: привязка к дефекту "
-                                    f"{hub_defects.bound_label(row)} – находок {count}.")
+    return _answer(project_id, row, i18n._("Поставлено в очередь исполнителю: привязка к дефекту {defect} – находок "
+                                           "{count}.", defect=hub_defects.bound_label(row), count=count))
 
 
 # ============================================================================ создание, состояние, сверка
@@ -1625,7 +1652,7 @@ def _project_row(request: Request, project_id: int, defect_id: int) -> tuple[dic
     db.hub_expire_leases()
     row = db.hub_defect(defect_id)
     if row is None or int(row["project_id"]) != project_id:
-        raise LookupError("Дефект не найден.")
+        raise LookupError(i18n._("Дефект не найден."))
     return project, hub_defects.sync(db, row, update_preparer(request))
 
 
@@ -1640,16 +1667,24 @@ def _sca_expect_at_create(request: Request, project_id: int, row: dict) -> dict:
     db = db_of(request)
     snap = db.sca_snapshot(project_id, str(row.get("anchor_hub_id") or ""))
     if snap.row is None or (row.get("source_fingerprint") and snap.fingerprint != row["source_fingerprint"]):
-        raise StaleTarget(SCA_CHANGED)
+        raise StaleTarget(i18n._(SCA_CHANGED))
     f = Finding.from_dict(snap.row["data"])
-    view = sca_card.sca_defect(snap, store_of(request), project_id, f, snap.review)
+    store = store_of(request)
+    # предпросмотр мог быть собран на другом языке интерфейса (ADR-0158): тело сверяется с обеими сборками, ожидания
+    # проверки – от сборки на языке предпросмотра (сначала – на действующем языке)
+    want = text_hash(defect.body_key(row.get("command_text")))
+    both = defect.in_both_languages(lambda: sca_card.sca_defect(snap, store, project_id, f, snap.review))
+    first = 0 if i18n.current() == "ru" else 1
+    views = [both[first], both[1 - first]]
+    view = views[0]
     if not view.get("description") or not view.get("ready") or not (view.get("target") or view.get("no_fix")):
-        raise StaleTarget(SCA_CHANGED)
+        raise StaleTarget(i18n._(SCA_CHANGED))
     # тело по снимку другое (например, истёк срок пересмотра решения по компоненту и цель взята из исследования):
     # текст предпросмотра собран по другой цели – «набор изменился», а не нарушение строки обновления
-    if text_hash(defect_where.body_of(view.get("body"))) != text_hash(defect_where.body_of(row.get("command_text"))):
-        raise StaleTarget(SCA_CHANGED)
-    return sca_expect(view, f.package_display_name)
+    same = [v for v in views if text_hash(defect.body_key(v.get("body"))) == want]
+    if not same:
+        raise StaleTarget(i18n._(SCA_CHANGED))
+    return sca_expect(same[0], f.package_display_name)
 
 
 def _anchor_url(db: Database, row: dict) -> str:
@@ -1672,15 +1707,15 @@ async def create_defect(request: Request, project_id: int, defect_id: int):
         if blocker:
             raise DefectRefused(blocker)
         if row["state"] != "preview":
-            raise ValueError("Предпросмотра нет: дефект уже создаётся, создан или заготовка не получена.")
+            raise ValueError(i18n._("Предпросмотра нет: дефект уже создаётся, создан или заготовка не получена."))
         from app.routes import defect_selected
         signature = hub_defects.creation_signature(row)
         if (shown_create or defect_selected.attempt(row)) and shown_create != signature:
-            raise DefectRefused("Предпросмотр создания изменился: обновите карточку дефекта.")
+            raise DefectRefused(i18n._("Предпросмотр создания изменился: обновите карточку дефекта."))
         # POST уходит по приложению и адресу Hub предпросмотра (строка дефекта): их сменили после предпросмотра – отказ
         # здесь и ещё раз в транзакции постановки (KIMI-12)
         if not _same_hub(row, settings.hub_url, project.get("hub_app_id")):
-            raise StaleTarget(PREVIEW_TARGET_CHANGED)
+            raise StaleTarget(i18n._(PREVIEW_TARGET_CHANGED))
         hub_target = hub_target_check(request, project_id, str(row.get("hub_url") or ""), row.get("app_id"),
                                   PREVIEW_TARGET_CHANGED)
         # сохранённый текст команды, из которого собирается запрос, – по требованиям команды (ADR-0123 п. 5): отказ
@@ -1724,10 +1759,11 @@ async def create_defect(request: Request, project_id: int, defect_id: int):
         def check(c) -> None:
             current = dict(c.execute("SELECT * FROM hub_defects WHERE id=?", (row["id"],)).fetchone())
             if hub_defects.creation_signature(current) != signature:
-                raise DefectRefused("Предпросмотр создания изменился: обновите карточку дефекта.")
+                raise DefectRefused(i18n._("Предпросмотр создания изменился: обновите карточку дефекта."))
             hub_defects.create_composition_check(body, loads(current["targets_json"], []))
             if hub_defects.level_codes_changed(used_codes, level_codes(c)):
-                raise DefectRefused("Соответствие кодов приоритета и серьёзности в Hub изменилось: обновите карточку.")
+                raise DefectRefused(i18n._("Соответствие кодов приоритета и серьёзности в Hub изменилось: обновите "
+                                           "карточку."))
             hub_target(c)
             fresh_targets(c)
             defect_selected.create_check(request, c, current)
@@ -1736,7 +1772,7 @@ async def create_defect(request: Request, project_id: int, defect_id: int):
             # набор SCA: текст набора, исследование, состав – тот же снимок, по которому собран предпросмотр (находка 4)
             if row["kind"] == "SCA" and row.get("source_fingerprint") and db._sca_defect_fingerprint(
                     c, project_id, str(row["anchor_hub_id"])) != row["source_fingerprint"]:
-                raise StaleTarget(SCA_CHANGED)
+                raise StaleTarget(i18n._(SCA_CHANGED))
             text_ok(c)
 
         # проверка строки, постановка POST и переход в «создаётся» – одной транзакцией (находка 1): вторая вкладка
@@ -1749,7 +1785,7 @@ async def create_defect(request: Request, project_id: int, defect_id: int):
             state="creating", body_html=description, priority=hub_defects.level_name(priority),
             severity=hub_defects.level_name(severity), error="")
         if fresh is None:
-            raise ValueError("Состояние дефекта изменилось в другой вкладке: обновите карточку.")
+            raise ValueError(i18n._("Состояние дефекта изменилось в другой вкладке: обновите карточку."))
         return fresh
 
     as_json = wants_json(request)
@@ -1773,7 +1809,7 @@ async def create_defect(request: Request, project_id: int, defect_id: int):
             return redirect(_card_url(project_id, row["id"], form))
         url = await run_in_threadpool(lambda: _anchor_url(db_of(request), row))
         return redirect(url + "?ok=hub_defect_create_queued#hub-defect")
-    return _answer(project_id, row, "Поставлено в очередь исполнителю: создание дефекта.")
+    return _answer(project_id, row, i18n._("Поставлено в очередь исполнителю: создание дефекта."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/cancel")
@@ -1786,8 +1822,8 @@ async def cancel_preview(request: Request, project_id: int, defect_id: int):
         _, row = _project_row(request, project_id, defect_id)
         fresh = db_of(request).hub_defect_update(int(row["id"]), expect_state="preview", state="cancelled")
         if fresh is None:
-            raise ValueError("Предпросмотра уже нет: дефект создаётся, создан или заготовка отменена – обновите "
-                             "карточку.")
+            raise ValueError(i18n._("Предпросмотра уже нет: дефект создаётся, создан или заготовка отменена – обновите "
+                                    "карточку."))
         return fresh
 
     as_json = wants_json(request)
@@ -1805,7 +1841,7 @@ async def cancel_preview(request: Request, project_id: int, defect_id: int):
         url = await run_in_threadpool(lambda: _anchor_url(db_of(request), row))
         return redirect(url + "?ok=hub_defect_cancelled#hub-defect")
     return {"ok": True, "defect_id": row["id"], "done": True, "reload": True,
-            "message": "Предпросмотр отменён: заготовку можно запросить заново."}
+            "message": i18n._("Предпросмотр отменён: заготовку можно запросить заново.")}
 
 
 @router.get("/projects/{project_id}/hub/defects/{defect_id}")
@@ -1833,11 +1869,12 @@ async def verify_defect(request: Request, project_id: int, defect_id: int):
         _, row = _project_row(request, project_id, defect_id)
         db = db_of(request)
         if row["state"] not in ("unknown", "unconfirmed") and not hub_defects.link_rereadable(row):
-            raise DefectRefused("Сверка нужна только при результате «неизвестен» или неподтверждённом содержимом.")
+            raise DefectRefused(i18n._("Сверка нужна только при результате «неизвестен» или неподтверждённом "
+                                       "содержимом."))
         if row.get("hub_defect_id"):
             fresh = hub_defects.restart_read(db, row)  # отказ очереди – ValueError с её причиной
             if fresh is None:
-                raise ValueError("Состояние дефекта изменилось: обновите карточку.")
+                raise ValueError(i18n._("Состояние дефекта изменилось: обновите карточку."))
             return fresh
         login = str(worker_summary(request).get("hub_login") or "")
         hub_defects.start_verify(db, row, login)  # идущая сверка или отказ очереди – ValueError с причиной
@@ -1860,7 +1897,7 @@ async def verify_defect(request: Request, project_id: int, defect_id: int):
             return redirect(_card_url(project_id, owner_id, form, ok="hub_defect_verify_queued"))
         url = await run_in_threadpool(lambda: _anchor_url(db_of(request), row))
         return redirect(url + "?ok=hub_defect_verify_queued#hub-defect")
-    return _answer(project_id, row, "Сверка поставлена в очередь исполнителю.")
+    return _answer(project_id, row, i18n._("Сверка поставлена в очередь исполнителю."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/recheck")
@@ -1895,7 +1932,7 @@ async def recheck_defect(request: Request, project_id: int, defect_id: int):
             return redirect(f"/projects/{project_id}/defects?ok=hub_defect_recheck_queued")
         url = await run_in_threadpool(lambda: _anchor_url(db_of(request), row))
         return redirect(url + "?ok=hub_defect_recheck_queued#hub-defect")
-    return _answer(project_id, row, "Проверка поставлена в очередь исполнителю: чтение дефекта из Hub.")
+    return _answer(project_id, row, i18n._("Проверка поставлена в очередь исполнителю: чтение дефекта из Hub."))
 
 
 @router.post("/projects/{project_id}/hub/defects/{defect_id}/template-model")
@@ -1904,7 +1941,7 @@ async def template_model_read(request: Request, project_id: int, defect_id: int)
     from app import hub_template_model
     form = await request.form(max_fields=3, max_files=0)
     if form.get("confirm") != "1":
-        raise HTTPException(400, "Подтвердите чтение модели шаблона Hub.")
+        raise HTTPException(400, i18n._("Подтвердите чтение модели шаблона Hub."))
     issue_id = str(form.get("issue_id") or "")
 
     def apply():
@@ -1914,7 +1951,7 @@ async def template_model_read(request: Request, project_id: int, defect_id: int)
         if blocker:
             raise HTTPException(400, blocker)
         if not _same_hub(row, settings.hub_url, project.get("hub_app_id")):
-            raise HTTPException(409, UPDATE_TARGET_CHANGED)
+            raise HTTPException(409, i18n._(UPDATE_TARGET_CHANGED))
         try:
             op = hub_template_model.enqueue(db_of(request), row, issue_id,
                                              _update_target(request, project_id, row))
@@ -1941,5 +1978,5 @@ def _template_model_row(request: Request, project_id: int, defect_id: int) -> tu
     project = project_or_404(request, project_id)
     row = db_of(request).hub_defect(defect_id)
     if row is None or row["project_id"] != project_id:
-        raise HTTPException(404, "Дефект не найден.")
+        raise HTTPException(404, i18n._("Дефект не найден."))
     return project, row

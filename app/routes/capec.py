@@ -4,14 +4,14 @@ import re
 from urllib.parse import urlencode, urlsplit
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from app import capec, worklists
+from app import capec, i18n, worklists
 from app.routes.common import render
 from app.routes.references import missing_reference
 
 PROJECT_FILTERS = ('finding_kind','codebase','finding_severity','reviewed','cvss_min','cvss_max','cvss_version')
 
 router=APIRouter()
-LABELS={'pattern':'Attack Pattern','category':'Category','view':'View','all':'Все записи'}
+LABELS=i18n.Labels({'pattern':'Attack Pattern','category':'Category','view':'View','all':'Все записи'})
 SCORES={'Very Low':1,'Low':2,'Medium':3,'High':4,'Very High':5}
 SORTS={f'{k}_{d}' for k in ('id','name','abstraction','severity','likelihood') for d in ('asc','desc')}
 
@@ -36,14 +36,14 @@ def catalog_context(request, *, project=None, allowed=None, matches=None):
         if project:
             f.update({k:request.query_params.get(k,'')[:200] for k in PROJECT_FILTERS})
         f['kind']=f['kind'] or ('all' if capec.identifier(f['q']) else 'pattern')
-        if f['kind'] not in LABELS:raise HTTPException(400,'Неизвестный вид записи CAPEC.')
+        if f['kind'] not in LABELS:raise HTTPException(400,i18n._('Неизвестный вид записи CAPEC.'))
         choices={key:sorted({r.get(key,'') for r in rows if r.get(key)}) for key in ('abstraction','status','severity','likelihood')}
         choices['taxonomy']=sorted({t for r in rows for t in r['taxonomies']})
         for key in choices:
-            if f[key] and f[key]!='__empty__' and f[key] not in choices[key]:raise HTTPException(400,f'Неизвестное значение фильтра: {key}.')
+            if f[key] and f[key]!='__empty__' and f[key] not in choices[key]:raise HTTPException(400,i18n._('Неизвестное значение фильтра: {key}.',key=key))
         f['cwe']=','.join(request.query_params.getlist('cwe'))[:1000]
         keys={capec.identifier(x,'CWE') for x in re.split(r'[,;\s]+',f['cwe']) if x}
-        if '' in keys:raise HTTPException(400,'Введите номера CWE через запятую.')
+        if '' in keys:raise HTTPException(400,i18n._('Введите номера CWE через запятую.'))
         q=f['q'].strip()
         if q.upper().startswith('CWE-') and capec.identifier(q,'CWE'):keys.add(capec.identifier(q,'CWE'));q=''
         links=store.capec_for_cwes(keys)
@@ -98,16 +98,20 @@ def detail(request:Request,number:str):
     data=request.app.state.feeds.capec_data(shared=True)
     record=data['records'].get(capec.identifier(number))
     if not record:
-        message = 'Каталог CAPEC не загружен: загрузите capec_latest.zip на странице «Справочники».' if not data['meta'] else 'Записи с таким номером в каталоге CAPEC нет.'
+        message = (i18n._('Каталог CAPEC не загружен: загрузите capec_latest.zip на странице «Справочники».')
+                   if not data['meta'] else i18n._('Записи с таким номером в каталоге CAPEC нет.'))
         return missing_reference(request, 'capec', number, capec.identifier(number), message, data['meta'])
-    links=[{**e,'name':data['records'].get(e['id'],{}).get('name','Запись отсутствует в каталоге')} for e in record['links']]
+    links=[{**e,'name':data['records'].get(e['id'],{}).get('name',i18n._('Запись отсутствует в каталоге'))} for e in record['links']]
     for other in data['records'].values():
         for e in other['links']:
             if e['id']==record['id'] and e['rel'] in ('ChildOf','HasMember'):links.append({'rel':'ParentOf' if e['rel']=='ChildOf' else 'MemberOf','id':other['id'],'name':other['name']})
-    note='\n'.join([f"Справочный сценарий: {record['id']}, {record['name']}; CAPEC {data['meta'].get('version')} от {data['meta'].get('source_date')}.",
-        'Предпосылки из CAPEC: '+ (' '.join(' '.join(plain(x).split()) for x in record['sections'] if x['tag']=='Prerequisites') or 'Не указаны в источнике.'),
-        'Подсказка приложения: проверить входные данные, достижимость операции и действующие ограничения.',
-        'Наблюдаемые факты и ссылки на код/тест: [заполняет оператор].','Вывод о применимости и основание: [заполняет оператор].'])
+    prerequisites=' '.join(' '.join(plain(x).split()) for x in record['sections'] if x['tag']=='Prerequisites')
+    note='\n'.join([i18n._('Справочный сценарий: {id}, {name}; CAPEC {version} от {date}.',id=record['id'],name=record['name'],
+                           version=data['meta'].get('version'),date=data['meta'].get('source_date')),
+        i18n._('Предпосылки из CAPEC: {text}',text=prerequisites or i18n._('Не указаны в источнике.')),
+        i18n._('Подсказка приложения: проверить входные данные, достижимость операции и действующие ограничения.'),
+        i18n._('Наблюдаемые факты и ссылки на код/тест: [заполняет оператор].'),
+        i18n._('Вывод о применимости и основание: [заполняет оператор].')])
     return render(request,'capec/detail.html',{**data,'record':record,'links':links,'back_url':back_url(request),'check_note':note,'rich':rich})
 
 
@@ -120,7 +124,7 @@ def related_context(request, values, project_id):
     with store.snapshot():
         data=store.capec_data(shared=True)
         found=store.capec_for_cwes(values)
-        items=[{'id':k,'name':data['records'].get(k,{}).get('name','Запись CAPEC пока не загружена'),**v} for k,v in found.items()]
+        items=[{'id':k,'name':data['records'].get(k,{}).get('name',i18n._('Запись CAPEC пока не загружена')),**v} for k,v in found.items()]
         status=store.status()
     items.sort(key=lambda r:({'Standard':0,'Detailed':1,'Meta':2}.get(data['records'].get(r['id'],{}).get('abstraction'),3),int(r['id'].split('-')[1])))
     url=getattr(request,'url',None)

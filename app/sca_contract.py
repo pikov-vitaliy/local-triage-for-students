@@ -19,13 +19,32 @@ import json
 import math
 import re
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field as dc_field
 from datetime import date, datetime, timedelta
 from hashlib import sha256 as _sha256
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
+
+# ------------------------------------------------------------------ язык сообщений проверки
+
+# Перевод сообщений проверки (ADR-0158). Модуль работает и без приложения (validate.py в комплекте задания), поэтому
+# app.i18n здесь не импортируется: приложение ставит свой перевод через set_translator (app/sca_research.py), а без
+# него – в комплекте – сообщения остаются на русском, как были. Коды ошибок (SCA-…) и пути полей не переводятся.
+_translator: Callable[[str], str] | None = None
+
+
+def set_translator(func: Callable[[str], str] | None) -> None:
+    """Перевод сообщений проверки: функция msgid → текст на языке интерфейса (None – без перевода)."""
+    global _translator
+    _translator = func
+
+
+def _(msgid: str, /, **kw: Any) -> str:
+    """Сообщение проверки на языке интерфейса; kw – именованные подстановки {name}."""
+    text = _translator(msgid) if _translator is not None else msgid
+    return text.format(**kw) if kw else text
 
 # ------------------------------------------------------------------ контракт и пределы
 
@@ -238,32 +257,32 @@ class Field:
             self._check_number(value, path, ctx, errors)
 
     def _fail(self, code: str, path: str, message: str, errors: list[dict]) -> None:
-        errors.append({"code": code, "path": path or "ответ", "message": message})
+        errors.append({"code": code, "path": path or _("ответ"), "message": message})
 
     def _check_object(self, value: Any, path: str, ctx: "Context", errors: list[dict]) -> None:
         if not isinstance(value, dict):
-            self._fail("SCA-M005", path, "ожидался объект", errors)
+            self._fail("SCA-M005", path, _("ожидался объект"), errors)
             return
         for name in value:
             if name not in self.fields:
-                self._fail("SCA-M003", f"{path}.{name}", "поля нет в контракте", errors)
+                self._fail("SCA-M003", f"{path}.{name}", _("поля нет в контракте"), errors)
         for name, item in self.fields.items():
             if name not in value:
                 if item.required:
-                    self._fail("SCA-M004", f"{path}.{name}", "обязательное поле не заполнено", errors)
+                    self._fail("SCA-M004", f"{path}.{name}", _("обязательное поле не заполнено"), errors)
                 continue
             item.check(value[name], f"{path}.{name}", ctx, errors)
 
     def _check_array(self, value: Any, path: str, ctx: "Context", errors: list[dict]) -> None:
         if not isinstance(value, list):
-            self._fail("SCA-M005", path, "ожидался список", errors)
+            self._fail("SCA-M005", path, _("ожидался список"), errors)
             return
         limit = self.max_items if self.max_items is not None else ctx.limits["max_rows"]
         if len(value) > limit:
-            self._fail("SCA-M002", path, f"элементов больше предела ({len(value)} при пределе {limit})", errors)
+            self._fail("SCA-M002", path, _("элементов больше предела ({count} при пределе {limit})", count=len(value), limit=limit), errors)
             return
         if self.min_items is not None and len(value) < self.min_items:
-            self._fail("SCA-M005", path, f"элементов меньше минимума ({len(value)})", errors)
+            self._fail("SCA-M005", path, _("элементов меньше минимума ({count})", count=len(value)), errors)
         if self.unique_key:
             seen: set[Any] = set()
             for index, item in enumerate(value):
@@ -275,51 +294,51 @@ class Field:
                 key = parts if len(names) > 1 else parts[0]
                 if key in seen:
                     self._fail(self.unique_code, f"{path}[{index}].{names[0]}",
-                               f"повтор значения {key!r}", errors)
+                               _("повтор значения {key!r}", key=key), errors)
                 seen.add(key)
         for index, item in enumerate(value):
             (self.item or Field("string")).check(item, f"{path}[{index}]", ctx, errors)
 
     def _check_string(self, value: Any, path: str, ctx: "Context", errors: list[dict]) -> None:
         if not isinstance(value, str):
-            self._fail("SCA-M005", path, "ожидалась строка", errors)
+            self._fail("SCA-M005", path, _("ожидалась строка"), errors)
             return
         if self.enum and value not in self.enum:
-            self._fail("SCA-M005", path, f"значение не из перечисления: {value!r}", errors)
+            self._fail("SCA-M005", path, _("значение не из перечисления: {value!r}", value=value), errors)
             return
         if self.min_chars is not None and len(value.strip()) < self.min_chars:
-            self._fail("SCA-M005", path, f"строка короче {self.min_chars} символов", errors)
+            self._fail("SCA-M005", path, _("строка короче {min_chars} символов", min_chars=self.min_chars), errors)
         if self.max_chars is not None and len(value) > self.max_chars:
-            self._fail("SCA-M002", path, f"строка длиннее предела ({len(value)} при пределе {self.max_chars})",
+            self._fail("SCA-M002", path, _("строка длиннее предела ({count} при пределе {max_chars})", count=len(value), max_chars=self.max_chars),
                        errors)
         if self.pattern and not re.match(self.pattern, value):
-            self._fail("SCA-M005", path, "значение не по шаблону контракта", errors)
+            self._fail("SCA-M005", path, _("значение не по шаблону контракта"), errors)
         if self.fmt and value.strip():  # пустое значение – факт ещё не установлен, а не ошибка даты
             stamp = _timestamp(value)
             if stamp is None:
-                self._fail("SCA-M005", path, f"не дата и не время ISO 8601: {value!r}", errors)
+                self._fail("SCA-M005", path, _("не дата и не время ISO 8601: {value!r}", value=value), errors)
             elif stamp > ctx.today + timedelta(days=FUTURE_TOLERANCE_DAYS):
-                self._fail("SCA-D001", path, f"дата в будущем: {value}", errors)
+                self._fail("SCA-D001", path, _("дата в будущем: {value}", value=value), errors)
 
     def _check_number(self, value: Any, path: str, ctx: "Context", errors: list[dict]) -> None:
         if self.kind == 'integer' and type(value) is not int:
-            self._fail('SCA-M005', path, 'ожидалось целое число', errors)
+            self._fail('SCA-M005', path, _("ожидалось целое число"), errors)
             return
         if self.kind == "boolean":
             if not isinstance(value, bool):
-                self._fail("SCA-M005", path, f"ожидалось true или false, получено {type(value).__name__}",
+                self._fail("SCA-M005", path, _("ожидалось true или false, получено {type}", type=type(value).__name__),
                            errors)
             return
         if isinstance(value, bool) or not isinstance(value, (int, float)):
-            self._fail("SCA-M005", path, f"ожидалось число, получено {type(value).__name__}", errors)
+            self._fail("SCA-M005", path, _("ожидалось число, получено {type}", type=type(value).__name__), errors)
             return
         if isinstance(value, float) and not math.isfinite(value):
-            self._fail("SCA-M001", path, "число вне диапазона (NaN или бесконечность)", errors)
+            self._fail("SCA-M001", path, _("число вне диапазона (NaN или бесконечность)"), errors)
             return
         if self.minimum is not None and value < self.minimum:
-            self._fail("SCA-M005", path, f"меньше минимума {self.minimum}", errors)
+            self._fail("SCA-M005", path, _("меньше минимума {minimum}", minimum=self.minimum), errors)
         if self.maximum is not None and value > self.maximum:
-            self._fail("SCA-M005", path, f"больше максимума {self.maximum}", errors)
+            self._fail("SCA-M005", path, _("больше максимума {maximum}", maximum=self.maximum), errors)
 
 
 def compare_versions(ecosystem: str, left: str, right: str) -> int | None:
@@ -766,9 +785,10 @@ class Report:
     def text(self) -> str:
         """Отчёт для человека и агента: по одной строке на ошибку с путём до поля."""
         if self.ok:
-            summary = ", ".join(f"{key}: {value}" for key, value in sorted(self.summary.items())) or "нет строк"
-            return f"Ответ принят: строк {len(_list((self.answer or {}).get('rows')))}, состояния – {summary}."
-        lines = [f"Ответ не принят: ошибок {len(self.errors)}."]
+            summary = ", ".join(f"{key}: {value}" for key, value in sorted(self.summary.items())) or _("нет "
+                                                                                                       "строк")
+            return _("Ответ принят: строк {rows}, состояния – {summary}.", rows=len(_list((self.answer or {}).get('rows'))), summary=summary)
+        lines = [_("Ответ не принят: ошибок {count}.", count=len(self.errors))]
         lines += [f"  {item['code']} {item['path']}: {item['message']}" for item in self.errors]
         return "\n".join(lines)
 
@@ -780,7 +800,7 @@ class Report:
 
 
 def _fail(code: str, path: str, message: str, errors: list[dict]) -> None:
-    errors.append({"code": code, "path": path or "ответ", "message": message})
+    errors.append({"code": code, "path": path or _("ответ"), "message": message})
 
 
 def _pairs_hook(dupes: list[str]):
@@ -796,7 +816,7 @@ def _pairs_hook(dupes: list[str]):
 
 
 def _reject_constant(name: str):
-    raise ValueError(f"недопустимое число {name}")
+    raise ValueError(_("недопустимое число {name}", name=name))
 
 
 def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date | None = None,
@@ -807,53 +827,53 @@ def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date |
     raw = text.encode("utf-8") if isinstance(text, str) else bytes(text)
     errors: list[dict] = []
     if len(raw) > ctx.limits["answer_bytes"]:
-        _fail("SCA-M002", "ответ", f"размер ответа {len(raw)} байт при пределе {ctx.limits['answer_bytes']}",
+        _fail("SCA-M002", _("ответ"), _("размер ответа {size} байт при пределе {limit}", size=len(raw), limit=ctx.limits['answer_bytes']),
               errors)
         return Report(ok=False, errors=errors, answer_bytes=len(raw))
     try:
         body = raw.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
-        _fail("SCA-M001", "ответ", f"файл не в UTF-8: {exc.reason}", errors)
+        _fail("SCA-M001", _("ответ"), _("файл не в UTF-8: {reason}", reason=exc.reason), errors)
         return Report(ok=False, errors=errors, answer_bytes=len(raw))
     if not body.strip():
-        _fail("SCA-M001", "ответ", "файл ответа пуст", errors)
+        _fail("SCA-M001", _("ответ"), _("файл ответа пуст"), errors)
         return Report(ok=False, errors=errors, answer_bytes=len(raw))
     dupes: list[str] = []
     try:
         answer = json.loads(body, object_pairs_hook=_pairs_hook(dupes), parse_constant=_reject_constant)
     except RecursionError:
-        _fail("SCA-M006", "ответ", "слишком глубокое вложение JSON", errors)
+        _fail("SCA-M006", _("ответ"), _("слишком глубокое вложение JSON"), errors)
         return Report(ok=False, errors=errors, answer_bytes=len(raw))
     except ValueError as exc:
-        _fail("SCA-M001", "ответ", f"JSON не разобран: {exc}", errors)
+        _fail("SCA-M001", _("ответ"), _("JSON не разобран: {exc}", exc=exc), errors)
         return Report(ok=False, errors=errors, answer_bytes=len(raw))
     for key in dict.fromkeys(dupes):
-        _fail("SCA-M001", "ответ", f"повтор ключа JSON: {key}", errors)
+        _fail("SCA-M001", _("ответ"), _("повтор ключа JSON: {key}", key=key), errors)
     if not isinstance(answer, dict):
-        _fail("SCA-M001", "ответ", f"ожидался объект ответа, получено {type(answer).__name__}", errors)
+        _fail("SCA-M001", _("ответ"), _("ожидался объект ответа, получено {type}", type=type(answer).__name__), errors)
         return Report(ok=False, errors=errors, answer_bytes=len(raw))
     stack = [(answer, 0)]
     while stack:
         node, depth = stack.pop()
         if isinstance(node, (dict, list)):
             if depth > ctx.limits['depth']:
-                _fail('SCA-M006', 'ответ', 'превышен предел глубины JSON', errors)
+                _fail('SCA-M006', _("ответ"), _("превышен предел глубины JSON"), errors)
                 return Report(ok=False, errors=_limited(errors, ctx.limits['reported_errors']), answer_bytes=len(raw))
             stack.extend((child,depth+1) for child in (node.values() if isinstance(node,dict) else node))
     ctx.rows = {_text(item.get("input_ref")): item for item in _list(task.get("rows"))}
     ctx.manifest_sha256 = _text(task.get("manifest_sha256"))
     for name, item in _ANSWER_SPEC.items():
         if name not in answer:
-            _fail("SCA-M004", name, "обязательное поле не заполнено", errors)
+            _fail("SCA-M004", name, _("обязательное поле не заполнено"), errors)
             continue
         item.check(answer[name], name, ctx, errors)
     for name in answer:
         if name not in _ANSWER_SPEC:
-            _fail("SCA-M003", name, "поля нет в контракте", errors)
+            _fail("SCA-M003", name, _("поля нет в контракте"), errors)
     if _text(answer.get("contract")) not in ("", ANSWER_CONTRACT):
-        _fail("SCA-T002", "contract", f"контракт {answer.get('contract')!r}, ожидался {ANSWER_CONTRACT}", errors)
+        _fail("SCA-T002", "contract", _("контракт {contract!r}, ожидался {expected}", contract=answer.get('contract'), expected=ANSWER_CONTRACT), errors)
     if _text(answer.get("validator_version")) not in ("", *ACCEPTED_VALIDATORS):
-        _fail("SCA-T002", "validator_version", f"версия валидатора {answer.get('validator_version')!r}",
+        _fail("SCA-T002", "validator_version", _("версия валидатора {validator_version!r}", validator_version=answer.get('validator_version')),
               errors)
     declared = _text(answer.get("validator_version"))
     if declared in ACCEPTED_VALIDATORS and declared not in EXTENSION_VALIDATORS:
@@ -861,21 +881,21 @@ def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date |
             used = extensions_used(row) if isinstance(row, dict) else []
             if used:
                 _fail("SCA-T002", f"rows[{index}]",
-                      f"поля {', '.join(used)} есть только в схеме {EXTENSION_VALIDATORS[0]}, а объявлена {declared}",
+                      _("поля {used} есть только в схеме {schema}, а объявлена {declared}", used=', '.join(used), schema=EXTENSION_VALIDATORS[0], declared=declared),
                       errors)
     if ctx.manifest_sha256 and _text(answer.get("manifest_sha256")) and not _SHA.match(
             _text(answer.get("manifest_sha256"))):
-        _fail("SCA-M005", "manifest_sha256", "отпечаток манифеста не 64 знака sha256", errors)
+        _fail("SCA-M005", "manifest_sha256", _("отпечаток манифеста не 64 знака sha256"), errors)
     if _text(task.get("task_id")) and _text(answer.get("task_id")) != _text(task.get("task_id")):
-        _fail("SCA-T002", "task_id", f"задание {answer.get('task_id')!r}, а сохранено {task.get('task_id')!r}",
+        _fail("SCA-T002", "task_id", _("задание {given!r}, а сохранено {saved!r}", given=answer.get('task_id'), saved=task.get('task_id')),
               errors)
     if (ctx.manifest_sha256 and _text(answer.get("manifest_sha256"))
             and _text(answer.get("manifest_sha256")) != ctx.manifest_sha256):
-        _fail("SCA-C004", "manifest_sha256", "отпечаток манифеста не совпадает с сохранённым на сервере", errors)
+        _fail("SCA-C004", "manifest_sha256", _("отпечаток манифеста не совпадает с сохранённым на сервере"), errors)
     rows = _list(answer.get("rows"))
     if isinstance(answer.get("row_count"), int) and not isinstance(answer.get("row_count"), bool) \
             and answer["row_count"] != len(rows):
-        _fail("SCA-C003", "row_count", f"в ответе {answer['row_count']} строк, а в rows {len(rows)}", errors)
+        _fail("SCA-C003", "row_count", _("в ответе {declared} строк, а в rows {actual}", declared=answer['row_count'], actual=len(rows)), errors)
     seen: set[str] = set()
     for index, row in enumerate(rows):
         path = f"rows[{index}]"
@@ -884,9 +904,9 @@ def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date |
         ref = _text(row.get("input_ref"))
         source = ctx.rows.get(ref)
         if source is None:
-            _fail("SCA-C001", f"{path}.input_ref", f"строки {ref!r} нет в сохранённом задании", errors)
+            _fail("SCA-C001", f"{path}.input_ref", _("строки {ref!r} нет в сохранённом задании", ref=ref), errors)
         elif ref in seen:
-            _fail("SCA-C003", f"{path}.input_ref", f"повтор строки {ref!r}", errors)
+            _fail("SCA-C003", f"{path}.input_ref", _("повтор строки {ref!r}", ref=ref), errors)
         else:
             seen.add(ref)
             # сверяются те поля, которые есть в сохранённом задании: у сервера их полный набор,
@@ -897,7 +917,7 @@ def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date |
                 given = _text(row.get("current_version")) if name == "version" else _text(row.get(name))
                 if given != _text(source.get(name)):
                     _fail("SCA-C002", f"{path}.{'current_version' if name == 'version' else name}",
-                          f"{given!r} вместо {source.get(name)!r} из задания", errors)
+                          _("{given!r} вместо {expected!r} из задания", given=given, expected=source.get(name)), errors)
             confirmed = _text(_obj(row.get("identity_resolution")).get("coordinates"))
             raw_name, eco = _text(source.get('component')), _text(source.get('ecosystem')).lower()
             same = confirmed == raw_name
@@ -908,19 +928,20 @@ def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date |
                 same = same or bool(re.fullmatch(r'@[^/]+/' + re.escape(raw_name), confirmed))
             if confirmed and not same:
                 _fail("SCA-C002", f"{path}.identity_resolution.coordinates",
-                      f"{confirmed!r} не соответствует исходному пакету {raw_name!r}", errors)
+                      _("{confirmed!r} не соответствует исходному пакету {raw_name!r}", confirmed=confirmed, raw_name=raw_name), errors)
         _check_row(row, path, ctx, errors)
         declared = _text(row.get("package_status"))
         computed = row_status(row)
         if declared and declared != computed:
             _fail("SCA-T001", f"{path}.package_status",
-                  f"заявлено {declared!r}, по проверенным полям {computed!r}", errors)
+                  _("заявлено {declared!r}, по проверенным полям {computed!r}", declared=declared, computed=computed), errors)
     missing = [ref for ref in ctx.rows if ref not in seen]
     if missing:
-        _fail("SCA-C003", "rows", f"нет строк задания: {', '.join(sorted(missing)[:5])}"
-                  + (f" и ещё {len(missing) - 5}" if len(missing) > 5 else ""), errors)
+        shown = ", ".join(sorted(missing)[:5])
+        _fail("SCA-C003", "rows", _("нет строк задания: {refs} и ещё {more}", refs=shown, more=len(missing) - 5)
+              if len(missing) > 5 else _("нет строк задания: {refs}", refs=shown), errors)
     if len(rows) != int(task.get("row_count") or len(rows)):
-        _fail("SCA-C003", "rows", f"в ответе {len(rows)} строк, в задании {task.get('row_count')}", errors)
+        _fail("SCA-C003", "rows", _("в ответе {actual} строк, в задании {expected}", actual=len(rows), expected=task.get('row_count')), errors)
     summary: dict[str, int] = {}
     for row in rows:
         if isinstance(row, dict):
@@ -929,7 +950,7 @@ def validate_answer(text: bytes | str, task: Mapping[str, Any], *, today: date |
     try:
         digest = sha256(canonical(answer))
     except ValueError as exc:  # 1e999 и подобное разбирается в число, которое нельзя ни записать, ни посчитать
-        _fail("SCA-M001", "ответ", f"ответ не пригоден для отпечатка: {exc}", errors)
+        _fail("SCA-M001", _("ответ"), _("ответ не пригоден для отпечатка: {exc}", exc=exc), errors)
         digest = ""
     return Report(ok=not errors, errors=_limited(errors, ctx.limits['reported_errors']), answer=answer, answer_sha256=digest,
                   answer_bytes=len(raw), summary=summary)
@@ -940,8 +961,8 @@ def _limited(errors: list[dict], limit: int) -> list[dict]:
     if len(errors) <= limit:
         return errors
     kept = errors[:limit]
-    kept.append({"code": "SCA-M007", "path": "ответ",
-                 "message": f"показаны первые {limit} ошибок из {len(errors)}: исправьте их и проверьте снова"})
+    kept.append({"code": "SCA-M007", "path": _("ответ"),
+                 "message": _("показаны первые {limit} ошибок из {total}: исправьте их и проверьте снова", limit=limit, total=len(errors))})
     return kept
 
 
@@ -950,61 +971,64 @@ def _check_row(row: dict, path: str, ctx: Context, errors: list[dict]) -> None:
     try:
         body = canonical(row)
     except ValueError as exc:  # число вне диапазона JSON: строку нельзя ни посчитать, ни сравнить с пределом
-        _fail("SCA-M001", path, f"строка не пригодна для проверки: {exc}", errors)
+        _fail("SCA-M001", path, _("строка не пригодна для проверки: {exc}", exc=exc), errors)
         body = b""
     if len(body) > ctx.limits["row_bytes"]:
-        _fail("SCA-M002", path, f"строка ответа {len(body)} байт при пределе {ctx.limits['row_bytes']}", errors)
+        _fail("SCA-M002", path, _("строка ответа {size} байт при пределе {limit}", size=len(body), limit=ctx.limits['row_bytes']), errors)
     evidence = [_text(item.get("evidence_ref")) for item in _list(row.get("evidence")) if isinstance(item, dict)]
     known = {ref for ref in evidence if ref}
 
     def refs(owner: str, value: Any, path_to: str, code: str = "SCA-E001") -> None:
         missing = sorted({ref for ref in _list(value) if isinstance(ref, str) and ref not in known})
         if missing:
-            _fail(code, path_to, f"ссылки на доказательства без записи в evidence: {', '.join(missing[:5])}",
+            _fail(code, path_to, _("ссылки на доказательства без записи в evidence: {refs}", refs=', '.join(missing[:5])),
                   errors)
 
     identity = _obj(row.get("identity_resolution"))
     refs("identity", identity.get("source_refs"), f"{path}.identity_resolution.source_refs")
     if identity.get("state") == "resolved" and not identity.get("source_refs"):
-        _fail("SCA-E001", f"{path}.identity_resolution.source_refs", "подтверждённая идентификация без источника",
+        _fail("SCA-E001", f"{path}.identity_resolution.source_refs", _("подтверждённая идентификация без "
+                                                                       "источника"),
               errors)
     needs_basis = ((_text(row.get('ecosystem')) == 'maven' and ':' not in _text(row.get('component')))
                    or (_text(row.get('ecosystem')) == 'npm' and not _text(row.get('component')).startswith('@')))
     if identity.get('state') == 'resolved' and needs_basis:
         if not _text(identity.get('basis')):
             _fail('SCA-E001', f'{path}.identity_resolution.basis',
-                  'краткое имя требует основания выбора namespace, а не совпадения имени первого кандидата', errors)
+                  _("краткое имя требует основания выбора namespace, а не совпадения имени первого кандидата"), errors)
         identity_checks = [entry for entry in _list(row.get('research_coverage'))
                            if isinstance(entry, dict) and entry.get('purpose') == 'identity'
                            and entry.get('status') == 'ok' and entry.get('complete')]
         if not identity_checks:
             _fail('SCA-E001', f'{path}.research_coverage',
-                  'не подтверждена проверка идентичности краткого имени и текущей версии', errors)
+                  _("не подтверждена проверка идентичности краткого имени и текущей версии"), errors)
     latest = _obj(row.get("latest_stable_release"))
     refs("latest", latest.get("source_refs"), f"{path}.latest_stable_release.source_refs")
     if _text(latest.get("version")) and not latest.get("source_refs"):
-        _fail("SCA-E001", f"{path}.latest_stable_release.source_refs", "назван последний релиз без источника",
+        _fail("SCA-E001", f"{path}.latest_stable_release.source_refs", _("назван последний релиз без источника"),
               errors)
     support = _obj(row.get("support_status"))
     refs("support", support.get("source_refs"), f"{path}.support_status.source_refs")
     if _text(support.get("state")) not in ("", "unknown") and not support.get("source_refs"):
-        _fail("SCA-E001", f"{path}.support_status.source_refs", "состояние поддержки без источника", errors)
+        _fail("SCA-E001", f"{path}.support_status.source_refs", _("состояние поддержки без источника"), errors)
     for index, finding in enumerate(_list(row.get("public_findings"))):
         if not isinstance(finding, dict):
             continue
         owner = f"{path}.public_findings[{index}]"
         refs("finding", finding.get("source_refs"), f"{owner}.source_refs")
         if not finding.get("source_refs"):
-            _fail("SCA-E001", f"{owner}.source_refs", "публичная находка без источника", errors)
+            _fail("SCA-E001", f"{owner}.source_refs", _("публичная находка без источника"), errors)
     evidence_by_ref = {entry.get('evidence_ref'): entry for entry in _list(row.get('evidence'))
                        if isinstance(entry, dict) and isinstance(entry.get('evidence_ref'), str)}
     urls: set[str] = set()
     for index, entry in enumerate(_list(row.get('evidence'))):
         url = _text(_obj(entry).get('url'))
         if public_url_parts(url) is None:
-            _fail('SCA-E001', f'{path}.evidence[{index}].url', 'нужна однозначная ссылка на публичный источник', errors)
+            _fail('SCA-E001', f'{path}.evidence[{index}].url', _("нужна однозначная ссылка на публичный "
+                                                                 "источник"), errors)
         if url in urls:
-            _fail('SCA-E001', f'{path}.evidence[{index}].url', 'повтор URL: используйте один evidence_ref в нескольких source_refs', errors)
+            _fail('SCA-E001', f'{path}.evidence[{index}].url', _("повтор URL: используйте один evidence_ref в "
+                                                                 "нескольких source_refs"), errors)
         urls.add(url)
     advice = _obj(row.get('package_advice'))
     refs('advice', advice.get('source_refs'), f'{path}.package_advice.source_refs')
@@ -1012,7 +1036,7 @@ def _check_row(row: dict, path: str, ctx: Context, errors: list[dict]) -> None:
         publications = [evidence_by_ref.get(ref, {}) for ref in _list(advice.get('source_refs'))]
         if not any(ev.get('source_type') in ('registry', 'release_notes') for ev in publications):
             _fail('SCA-E001', f'{path}.package_advice.source_refs',
-                  'целевая версия требует источника публикации: реестр или официальный релиз', errors)
+                  _("целевая версия требует источника публикации: реестр или официальный релиз"), errors)
     for index, entry in enumerate(_list(row.get("research_coverage"))):
         if not isinstance(entry, dict):
             continue
@@ -1022,35 +1046,35 @@ def _check_row(row: dict, path: str, ctx: Context, errors: list[dict]) -> None:
         query = _obj(entry.get("query"))
         if entry.get('status') == 'ok' and entry.get('complete') and (
                 not _text(query.get('ecosystem')) or not _text(query.get("coordinates")) or not _text(query.get("version"))):
-            _fail("SCA-E001", f"{owner}.query", "проверка уязвимостей без координат и версии: непонятно, что "
-                  "проверяли", errors)
+            _fail("SCA-E001", f"{owner}.query", _("проверка уязвимостей без координат и версии: непонятно, что "
+                                                  "проверяли"), errors)
         else:  # запрос должен совпадать с тем, что человек смотрит: иначе это вывод о другом пакете
             resolved = _text(_obj(row.get("identity_resolution")).get("coordinates"))
             if resolved and _text(query.get("coordinates")) and _text(query.get("coordinates")) != resolved:
                 _fail("SCA-E001", f"{owner}.query.coordinates",
-                      f"{_text(query.get('coordinates'))!r} вместо {resolved!r} – проверяли другой пакет", errors)
+                      _("{coordinates!r} вместо {resolved!r} – проверяли другой пакет", coordinates=_text(query.get('coordinates')), resolved=resolved), errors)
             if _text(query.get("version")) and _text(query.get("version")) != _text(row.get("current_version")):
                 _fail("SCA-E001", f"{owner}.query.version",
-                      f"{_text(query.get('version'))!r} вместо {_text(row.get('current_version'))!r} из задания",
+                      _("{given!r} вместо {current_version!r} из задания", given=_text(query.get('version')), current_version=_text(row.get('current_version'))),
                       errors)
             if _text(query.get('ecosystem')) and _text(query.get('ecosystem')) != _text(row.get('ecosystem')):
-                _fail('SCA-E001', f'{owner}.query.ecosystem', 'запрос относится к другой экосистеме', errors)
+                _fail('SCA-E001', f'{owner}.query.ecosystem', _("запрос относится к другой экосистеме"), errors)
         refs("coverage", entry.get("source_refs"), f"{owner}.source_refs")
         if entry.get('status') == 'ok' and entry.get('complete') and not _list(entry.get("source_refs")):
-            _fail("SCA-E001", f"{owner}.source_refs", "проверка уязвимостей без источника", errors)
+            _fail("SCA-E001", f"{owner}.source_refs", _("проверка уязвимостей без источника"), errors)
     def fix_status_ok(status: Any, owner: str) -> None:
         state = _obj(status)
         refs("fix", state.get("source_refs"), f"{owner}.source_refs")
         if state.get("status") in ("fixed", "no_fix_published") and not _list(state.get("source_refs")):
-            _fail("SCA-E001", f"{owner}.source_refs", "утверждение об исправлении без источника", errors)
+            _fail("SCA-E001", f"{owner}.source_refs", _("утверждение об исправлении без источника"), errors)
         if state.get("scope") == "branch" and not _text(state.get("branch")):
-            _fail("SCA-E001", f"{owner}.branch", "scope=branch требует ветку (префикс версий)", errors)
+            _fail("SCA-E001", f"{owner}.branch", _("scope=branch требует ветку (префикс версий)"), errors)
         if state.get("status") == "no_fix_published":
             proofs = [evidence_by_ref.get(ref, {}) for ref in _list(state.get("source_refs"))]
             if not any(p.get("source_type") in ("advisory", "issue_tracker") and _text(p.get("quote"))
                        and _text(p.get("checked_at")) for p in proofs):
-                _fail("SCA-E001", f"{owner}.source_refs", "«исправления нет» требует бюллетеня или трекера с "
-                      "выдержкой и датой проверки", errors)
+                _fail("SCA-E001", f"{owner}.source_refs", _("«исправления нет» требует бюллетеня или трекера с "
+                                                            "выдержкой и датой проверки"), errors)
 
     for index, finding in enumerate(_list(row.get("public_findings"))):
         owner = f"{path}.public_findings[{index}]"
@@ -1060,11 +1084,11 @@ def _check_row(row: dict, path: str, ctx: Context, errors: list[dict]) -> None:
         disputed = _obj(finding.get("disputed"))
         refs("disputed", disputed.get("source_refs"), f"{owner}.disputed.source_refs")
         if disputed and not _list(disputed.get("source_refs")):
-            _fail("SCA-E001", f"{owner}.disputed.source_refs", "оспоренность без источника", errors)
+            _fail("SCA-E001", f"{owner}.disputed.source_refs", _("оспоренность без источника"), errors)
         for k, position in enumerate(_list(finding.get("source_positions"))):
             refs("position", _obj(position).get("source_refs"), f"{owner}.source_positions[{k}].source_refs")
             if not _list(_obj(position).get("source_refs")):
-                _fail("SCA-E001", f"{owner}.source_positions[{k}].source_refs", "позиция источника без ссылки",
+                _fail("SCA-E001", f"{owner}.source_positions[{k}].source_refs", _("позиция источника без ссылки"),
                       errors)
     for index, check in enumerate(_list(row.get("version_checks"))):
         check = _obj(check)
@@ -1079,23 +1103,24 @@ def _check_row(row: dict, path: str, ctx: Context, errors: list[dict]) -> None:
             if entry.get("status") == "ok" and entry.get("complete") and (
                     not _text(query.get("ecosystem")) or not _text(query.get("coordinates"))
                     or not _text(query.get("version"))):
-                _fail("SCA-E001", f"{where}.query", "проверка версии без координат и версии: непонятно, что "
-                      "проверяли", errors)
+                _fail("SCA-E001", f"{where}.query", _("проверка версии без координат и версии: непонятно, что "
+                                                      "проверяли"), errors)
             if _text(query.get("version")) and _text(query.get("version")) != version:
                 _fail("SCA-E001", f"{where}.query.version",
-                      f"{_text(query.get('version'))!r} вместо проверяемой версии {version!r}", errors)
+                      _("{given!r} вместо проверяемой версии {expected!r}", given=_text(query.get('version')), expected=version), errors)
             if resolved and _text(query.get("coordinates")) and _text(query.get("coordinates")) != resolved:
-                _fail("SCA-E001", f"{where}.query.coordinates", "проверяли другой пакет", errors)
+                _fail("SCA-E001", f"{where}.query.coordinates", _("проверяли другой пакет"), errors)
             if _text(query.get("ecosystem")) and _text(query.get("ecosystem")) != _text(row.get("ecosystem")):
-                _fail("SCA-E001", f"{where}.query.ecosystem", "запрос относится к другой экосистеме", errors)
+                _fail("SCA-E001", f"{where}.query.ecosystem", _("запрос относится к другой экосистеме"), errors)
             refs("coverage", entry.get("source_refs"), f"{where}.source_refs")
             if entry.get("status") == "ok" and entry.get("complete") and not _list(entry.get("source_refs")):
-                _fail("SCA-E001", f"{where}.source_refs", "проверка версии без источника", errors)
+                _fail("SCA-E001", f"{where}.source_refs", _("проверка версии без источника"), errors)
         for k, finding in enumerate(_list(check.get("findings"))):
             finding = _obj(finding)
             refs("finding", finding.get("source_refs"), f"{owner}.findings[{k}].source_refs")
             if not finding.get("source_refs"):
-                _fail("SCA-E001", f"{owner}.findings[{k}].source_refs", "находка проверки версии без источника",
+                _fail("SCA-E001", f"{owner}.findings[{k}].source_refs", _("находка проверки версии без "
+                                                                          "источника"),
                       errors)
             if finding.get("fix_status") is not None and "fix_status" in finding:
                 fix_status_ok(finding.get("fix_status"), f"{owner}.findings[{k}].fix_status")
@@ -1108,22 +1133,22 @@ def _check_row(row: dict, path: str, ctx: Context, errors: list[dict]) -> None:
                     for end, inclusive in (("fixed", False), ("last_affected", True)):
                         order = compare_versions(_text(row.get("ecosystem")), start, _text(interval.get(end)))
                         if order is not None and (order > 0 or (order == 0 and not inclusive)):
-                            _fail("SCA-A001", f"{owner}.findings[{k}].ranges", "пустой или обратный диапазон", errors)
+                            _fail("SCA-A001", f"{owner}.findings[{k}].ranges", _("пустой или обратный диапазон"), errors)
             hits = [range_contains(_text(row.get("ecosystem")), version, r) for r in intervals]
             if intervals and hits and all(hit is False for hit in hits):
                 _fail("SCA-A001", f"{owner}.findings[{k}].ranges",
-                      f"диапазоны находки исключают проверяемую версию {version}", errors)
+                      _("диапазоны находки исключают проверяемую версию {version}", version=version), errors)
     for match in _AST.finditer(body.decode("utf-8", "replace")):
-        _fail("SCA-A001", path, f"внутренний номер соответствия {match.group(0)!r} в ответе по компоненту",
+        _fail("SCA-A001", path, _("внутренний номер соответствия {number!r} в ответе по компоненту", number=match.group(0)),
               errors)
     if not _list(row.get("research_coverage")):
         # нет ни проверенных источников, ни находок, ни доказательств – это незаполненная заготовка, а не
         # исследование: принять её можно было бы, только выдав пустой ответ за результат
-        _fail("SCA-L001", path, "нет протокола попыток проверки источников: строка не исследована", errors)
+        _fail("SCA-L001", path, _("нет протокола попыток проверки источников: строка не исследована"), errors)
     if row.get('package_status') in ('incomplete', 'identity_unresolved') and not _list(row.get('gaps')):
-        _fail('SCA-L001', f'{path}.gaps', 'неполный результат требует конкретной причины', errors)
+        _fail('SCA-L001', f'{path}.gaps', _("неполный результат требует конкретной причины"), errors)
     if any(isinstance(gap, dict) and gap.get('code') == 'NOT_RESEARCHED' for gap in _list(row.get('gaps'))):
-        _fail('SCA-L001', f'{path}.gaps', 'незаполненная заготовка не является выполненным исследованием', errors)
+        _fail('SCA-L001', f'{path}.gaps', _("незаполненная заготовка не является выполненным исследованием"), errors)
     _contradictions(row, path, errors)
 
 
@@ -1133,47 +1158,52 @@ def _contradictions(row: dict, path: str, errors: list[dict]) -> None:
     state = _text(identity.get("state"))
     coordinates = _text(identity.get("coordinates"))
     if state == "resolved" and not coordinates:
-        _fail("SCA-L001", f"{path}.identity_resolution.coordinates", "идентичность подтверждена, а координат нет",
+        _fail("SCA-L001", f"{path}.identity_resolution.coordinates", _("идентичность подтверждена, а координат "
+                                                                       "нет"),
               errors)
     if state in ("ambiguous", "unresolved") and coordinates:
         _fail("SCA-L001", f"{path}.identity_resolution.coordinates",
-              f"идентичность {state}, а координаты указаны", errors)
+              _("идентичность {state}, а координаты указаны", state=state), errors)
     latest = _text(_obj(row.get("latest_stable_release")).get("version"))
     update = _text(row.get("update_status"))
     current = _text(row.get("current_version"))
     latest_order = compare_versions(_text(row.get('ecosystem')), latest, current)
     if update == 'up_to_date' and (not latest or not _obj(row.get('latest_stable_release')).get('source_refs')):
-        _fail('SCA-E001', f'{path}.latest_stable_release.source_refs', 'актуальность версии требует последнего релиза и источника', errors)
+        _fail('SCA-E001', f'{path}.latest_stable_release.source_refs', _("актуальность версии требует "
+                                                                         "последнего релиза и источника"), errors)
     if update == "up_to_date" and latest and latest_order != 0:
-        _fail("SCA-L001", f"{path}.update_status", f"up_to_date, а последний релиз {latest} отличается от {current}",
+        _fail("SCA-L001", f"{path}.update_status", _("up_to_date, а последний релиз {latest} отличается от "
+                                                     "{current}", latest=latest, current=current),
               errors)
     if update == "update_available" and not latest:
-        _fail("SCA-L001", f"{path}.update_status", "доступно обновление, но версия не названа", errors)
+        _fail("SCA-L001", f"{path}.update_status", _("доступно обновление, но версия не названа"), errors)
     if update == "update_available" and latest and latest_order is not None and latest_order != 1:
         _fail("SCA-L001", f"{path}.update_status",
-              f"не подтверждён порядок версий {current} → {latest}: используйте unknown и пояснение", errors)
+              _("не подтверждён порядок версий {current} → {latest}: используйте unknown и пояснение", current=current, latest=latest), errors)
     advice = _obj(row.get("package_advice"))
     action = _text(advice.get("action"))
     target = _text(advice.get("target_version"))
     if action == "update" and not target:
-        _fail("SCA-L001", f"{path}.package_advice.target_version", "действие «обновить» без версии", errors)
+        _fail("SCA-L001", f"{path}.package_advice.target_version", _("действие «обновить» без версии"), errors)
     if target and target == current:
         _fail("SCA-L001", f"{path}.package_advice.target_version",
-              f"советуемая версия совпадает с текущей {current}: обновлять нечего", errors)
+              _("советуемая версия совпадает с текущей {current}: обновлять нечего", current=current), errors)
     target_order = compare_versions(_text(row.get('ecosystem')), target, current)
     if action == 'update' and target and target_order is not None and target_order != 1:
         _fail("SCA-L001", f"{path}.package_advice.target_version",
-              f"версия {target} не подтверждена как более новая, чем {current}; поясните кандидат без совета update", errors)
+              _("версия {target} не подтверждена как более новая, чем {current}; поясните кандидат без совета "
+                "update", target=target, current=current), errors)
     if state != 'resolved' and (latest or update != 'unknown' or target
                                or _obj(row.get('support_status')).get('state') != 'unknown'
                                or _list(row.get('public_findings'))):
-        _fail('SCA-L001', path, 'неразрешённой идентичности нельзя приписывать факты о пакете-кандидате', errors)
+        _fail('SCA-L001', path, _("неразрешённой идентичности нельзя приписывать факты о пакете-кандидате"), errors)
     if action == "replace" and not _text(advice.get("compatibility_notes")):
-        _fail("SCA-L001", f"{path}.package_advice.compatibility_notes", "замена без указания заменяющего пакета",
+        _fail("SCA-L001", f"{path}.package_advice.compatibility_notes", _("замена без указания заменяющего "
+                                                                          "пакета"),
               errors)
     if action == "needs_identity" and state == "resolved":
-        _fail("SCA-L001", f"{path}.package_advice.action", "действие «нужна идентификация» при подтверждённой "
-              "идентичности", errors)
+        _fail("SCA-L001", f"{path}.package_advice.action", _("действие «нужна идентификация» при "
+                                                             "подтверждённой идентичности"), errors)
     applicable = [item for item in _list(row.get("public_findings"))
                   if isinstance(item, dict) and item.get("applies") == "yes"]
     for index, finding in enumerate(_list(row.get('public_findings'))):
@@ -1190,16 +1220,18 @@ def _contradictions(row: dict, path: str, errors: list[dict]) -> None:
                 for end, inclusive in (('fixed',False), ('last_affected',True)):
                     order = compare_versions(_text(row.get('ecosystem')), start, _text(interval.get(end)))
                     if order is not None and (order > 0 or (order == 0 and not inclusive)):
-                        _fail('SCA-A001', owner, 'пустой или обратный диапазон не доказывает неприменимость', errors)
+                        _fail('SCA-A001', owner, _("пустой или обратный диапазон не доказывает неприменимость"), errors)
         if known is None:
             if applies != 'unknown' or not any(_obj(g).get('code')=='APPLICABILITY_UNCLEAR' for g in _list(row.get('gaps'))):
-                _fail('SCA-A001', owner, 'порядок версий не проверен: нужны applies=unknown и gap APPLICABILITY_UNCLEAR', errors)
+                _fail('SCA-A001', owner, _("порядок версий не проверен: нужны applies=unknown и gap "
+                                           "APPLICABILITY_UNCLEAR"), errors)
         elif applies in ('yes','no') and (applies == 'yes') != known:
-            _fail('SCA-A001', owner, f'вывод applies={applies} противоречит диапазону для текущей версии {current}', errors)
+            _fail('SCA-A001', owner, _("вывод applies={applies} противоречит диапазону для текущей версии "
+                                       "{current}", applies=applies, current=current), errors)
     if applicable and action in ("keep", "no_action", "remove"):
         if not _text(advice.get("compatibility_notes")) and not _list(advice.get("remaining_risks")):
             _fail("SCA-L001", f"{path}.package_advice",
-                  f"при применимых уязвимостях ({len(applicable)}) действие {action!r} не объяснено", errors)
+                  _("при применимых уязвимостях ({count}) действие {action!r} не объяснено", count=len(applicable), action=action), errors)
 
 
 def range_contains(ecosystem: str, current: str, interval: Mapping[str, Any]) -> bool | None:

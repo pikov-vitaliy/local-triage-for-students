@@ -1,35 +1,35 @@
 {% extends "base.html" %}
 {% from "macros.html" import project_tabs %}
-{% block title %}Тексты для Hub после 0.10.0.dev21 · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Тексты для Hub после 0.10.0.dev21") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}projects{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, review_stats.sca, "overview", counts.defects) }}{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Тексты для Hub после 0.10.0.dev21</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Тексты для Hub после 0.10.0.dev21") }}</span>{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <p class="eyebrow">Только чтение</p>
-    <h1>Тексты для Hub после 0.10.0.dev21</h1>
-    <p class="page-sub">С версии 0.10.0.dev21 текст оператора уходит в Hub как написан: приложение не срезает «Подтверждено:» и похожие вводные слова, не вырезает теги и слова <span class="mono">javascript:</span>, <span class="mono">vbscript:</span>, <span class="mono">data:</span>, не убирает невидимые знаки, не меняет тире и не схлопывает пустые строки. Ниже – решения, у которых текст по прежним правилам отличался от нынешнего. Уже внесённые в Hub тексты приложение не переотправляет и отметки не снимает.</p>
+    <p class="eyebrow">{{ _("Только чтение") }}</p>
+    <h1 data-section="{{ _("Рабочее место") }}">{{ _("Тексты для Hub после 0.10.0.dev21") }}</h1>
+    <p class="page-sub">{{ _("С версии 0.10.0.dev21 текст оператора уходит в Hub как написан: приложение не срезает «Подтверждено:» и похожие вводные слова, не вырезает теги и слова") }} <span class="mono">javascript:</span>, <span class="mono">vbscript:</span>, <span class="mono">data:</span>, {{ _("не убирает невидимые знаки, не меняет тире и не схлопывает пустые строки. Ниже – решения, у которых текст по прежним правилам отличался от нынешнего. Уже внесённые в Hub тексты приложение не переотправляет и отметки не снимает.") }}</p>
   </div>
 </div>
 
 <section class="panel" aria-labelledby="scale-title">
-  <h2 id="scale-title">Итого</h2>
+  <h2 id="scale-title">{{ _("Итого") }}</h2>
   <dl class="terms" id="hub-text-rules-totals">
     <dt>SAST</dt><dd>{{ report.totals.sast }}</dd>
-    <dt>SCA, короткий комментарий</dt><dd>{{ report.totals.sca }}</dd>
-    <dt>Наборы дефекта SCA</dt><dd>{{ report.totals.sets }}</dd>
-    <dt>DAST и SCA-license</dt><dd>{{ report.totals.other }}</dd>
-    <dt>Из них с отметкой «Внесено в Hub»</dt><dd>{{ report.totals.entered }}</dd>
+    <dt>{{ _("SCA, короткий комментарий") }}</dt><dd>{{ report.totals.sca }}</dd>
+    <dt>{{ _("Наборы дефекта SCA") }}</dt><dd>{{ report.totals.sets }}</dd>
+    <dt>{{ _("DAST и SCA-license") }}</dt><dd>{{ report.totals.other }}</dd>
+    <dt>{{ _("Из них с отметкой «Внесено в Hub»") }}</dt><dd>{{ report.totals.entered }}</dd>
   </dl>
 </section>
 
 {% macro rows(items, sca=False) %}
 <div class="table-wrap"><table class="table">
-  <thead><tr><th scope="col">ID в Hub</th>{% if sca %}<th scope="col">Компонент</th>{% endif %}<th scope="col">Итог</th><th scope="col">Отметка «Внесено в Hub»</th></tr></thead>
+  <thead><tr><th scope="col">{{ _("ID в Hub") }}</th>{% if sca %}<th scope="col">{{ _("Компонент") }}</th>{% endif %}<th scope="col">{{ _("Итог") }}</th><th scope="col">{{ _("Отметка «Внесено в Hub»") }}</th></tr></thead>
   <tbody>
   {% for r in items %}
-  <tr><td><a href="/projects/{{ project.id }}/{{ 'sca/findings' if sca else 'findings' }}/{{ r.id }}" class="mono">{{ r.hub_id }}</a></td>{% if sca %}<td>{{ r.component }} {{ r.version }}</td>{% endif %}<td>{{ r.outcome }}</td><td>{% if r.entered %}{{ r.origin }}, {{ r.basis }}{% else %}нет{% endif %}</td></tr>
+  <tr><td><a href="/projects/{{ project.id }}/{{ 'sca/findings' if sca else 'findings' }}/{{ r.id }}" class="mono">{{ r.hub_id }}</a></td>{% if sca %}<td>{{ r.component }} {{ r.version }}</td>{% endif %}<td>{{ r.outcome }}</td><td>{% if r.entered %}{{ r.origin }}, {{ r.basis }}{% else %}{{ _("нет") }}{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div>
@@ -37,28 +37,28 @@
 
 <section class="panel" aria-labelledby="sast-title">
   <h2 id="sast-title">SAST</h2>
-  {% if report.sast %}{{ rows(report.sast) }}{% else %}<p class="hint">Таких решений нет.</p>{% endif %}
+  {% if report.sast %}{{ rows(report.sast) }}{% else %}<p class="hint">{{ _("Таких решений нет.") }}</p>{% endif %}
 </section>
 
 <section class="panel" aria-labelledby="sca-title">
-  <h2 id="sca-title">SCA: короткий комментарий</h2>
-  {% if report.sca %}{{ rows(report.sca, True) }}{% else %}<p class="hint">Таких решений нет.</p>{% endif %}
+  <h2 id="sca-title">{{ _("SCA: короткий комментарий") }}</h2>
+  {% if report.sca %}{{ rows(report.sca, True) }}{% else %}<p class="hint">{{ _("Таких решений нет.") }}</p>{% endif %}
 </section>
 
 {% if report.other %}
 <section class="panel" aria-labelledby="other-title">
-  <h2 id="other-title">DAST и SCA-license</h2>
+  <h2 id="other-title">{{ _("DAST и SCA-license") }}</h2>
   {{ rows(report.other) }}
 </section>
 {% endif %}
 
 <section class="panel" aria-labelledby="sets-title">
-  <h2 id="sets-title">SCA: наборы дефекта</h2>
-  <p class="hint">Текст набора по прежним правилам другой: отступ в начале Объяснения или «Добавления к «Рекомендациям»» срезался, пустые строки между абзацами «Добавления» не входили. Теперь текст уходит в Hub, как написан. Слова не изменились; подписи «Текст проверен», «Версию проверил сам» и «Остаточный риск проверил», поставленные раньше, остаются в силе.</p>
+  <h2 id="sets-title">{{ _("SCA: наборы дефекта") }}</h2>
+  <p class="hint">{{ _("Текст набора по прежним правилам другой: отступ в начале Объяснения или «Добавления к «Рекомендациям»» срезался, пустые строки между абзацами «Добавления» не входили. Теперь текст уходит в Hub, как написан. Слова не изменились; подписи «Текст проверен», «Версию проверил сам» и «Остаточный риск проверил», поставленные раньше, остаются в силе.") }}</p>
   {% if report.sets %}
   <ul class="list" id="hub-text-rules-sets">
-    {% for s in report.sets %}<li>{{ s.component }} {{ s.version }}{% if s.set_no %}, набор {{ s.set_no }}{% endif %}: {% for m in s.members %}<a href="/projects/{{ project.id }}/sca/findings/{{ m.id }}" class="mono">{{ m.hub_id }}</a> ({% if m.entered %}внесено в Hub: {{ m.origin }}, {{ m.basis }}{% else %}в Hub не вносилось{% endif %}){% if not loop.last %}, {% endif %}{% else %}находок в наборе сейчас нет{% endfor %}</li>{% endfor %}
+    {% for s in report.sets %}<li>{{ s.component }} {{ s.version }}{% if s.set_no %}, {{ _("набор {n}", n=s.set_no) }}{% endif %}: {% for m in s.members %}<a href="/projects/{{ project.id }}/sca/findings/{{ m.id }}" class="mono">{{ m.hub_id }}</a> ({% if m.entered %}{{ _("внесено в Hub:") }} {{ m.origin }}, {{ m.basis }}{% else %}{{ _("в Hub не вносилось") }}{% endif %}){% if not loop.last %}, {% endif %}{% else %}{{ _("находок в наборе сейчас нет") }}{% endfor %}</li>{% endfor %}
   </ul>
-  {% else %}<p class="hint">Таких наборов нет.</p>{% endif %}
+  {% else %}<p class="hint">{{ _("Таких наборов нет.") }}</p>{% endif %}
 </section>
 {% endblock %}

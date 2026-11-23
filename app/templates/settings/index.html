@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, copy_button %}
-{% block title %}Настройки · Локальный триаж{% endblock %}
+{% block title %}{{ _("Настройки") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}settings{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><span aria-current="page">Настройки</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Настройки") }}</span>{% endblock %}
 {% macro field_error(name) -%}
 {%- if errors[name] %}<span class="field-error" id="{{ name }}-error">{{ errors[name] }}</span>{% endif -%}
 {%- endmacro %}
@@ -12,62 +12,75 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Настройки</h1>
-    <p class="page-sub">Действуют во всех проектах и хранятся в приложении – править файлы не нужно. Модель можно выбрать и для отдельного проекта, на его странице.</p>
+    <h1 data-section="{{ _("Параметры") }}">{{ _("Настройки") }}</h1>
+    <p class="page-sub">{{ _("Действуют во всех проектах и хранятся в приложении – править файлы не нужно. Модель можно выбрать и для отдельного проекта, на его странице.") }}</p>
   </div>
-  <div class="page-actions"><a class="btn" id="providers-button" href="/settings/providers">{{ icon("settings") }}Провайдеры моделей</a></div>
+  <div class="page-actions"><a class="btn" id="providers-button" href="/settings/providers">{{ icon("settings") }}{{ _("Провайдеры моделей") }}</a></div>
 </div>
 
-<form method="post" action="/settings" class="settings-form" id="settings-form" data-busy="Сохраняю…">
+<section class="panel" id="language" aria-labelledby="language-title">
+  <h2 id="language-title">{{ _("Язык интерфейса") }}{% if lang() == "en" %} <span class="muted">/ Язык интерфейса</span>{% else %} <span class="muted">/ Interface language</span>{% endif %}</h2>
+  <form method="post" action="/settings/language" class="language-form" id="language-form">
+    <fieldset class="language-choice">
+      <legend class="visually-hidden">{{ _("Язык интерфейса") }}</legend>
+      <label><input type="radio" name="lang" value="en"{% if lang() == "en" %} checked{% endif %}> English</label>
+      <label><input type="radio" name="lang" value="ru"{% if lang() == "ru" %} checked{% endif %}> Русский</label>
+    </fieldset>
+    <button type="submit" class="btn btn-primary" id="language-save">{{ _("Сохранить язык") }}</button>
+  </form>
+  <p class="hint">{{ _("Меняется язык страниц, подсказок, текстов дефектов и ответов модели в новых разборах. Сохранённые решения, тексты и данные выгрузок остаются как есть.") }}</p>
+</section>
+
+<form method="post" action="/settings" class="settings-form" id="settings-form" data-busy="{{ _("Сохраняю…") }}">
   {# Enter в любом поле сохраняет: первая кнопка формы – «Сохранить» #}
-  <button type="submit" name="action" value="save" class="visually-hidden" tabindex="-1" aria-hidden="true">Сохранить</button>
+  <button type="submit" name="action" value="save" class="visually-hidden" tabindex="-1" aria-hidden="true">{{ _("Сохранить") }}</button>
 
   <section class="panel" aria-labelledby="ollama-title">
-    <h2 id="ollama-title">Модель и Ollama</h2>
-    <p class="callout callout-info small" id="providers-link">Серверы моделей – этот компьютер и серверы в сети организации, окно контекста, рассуждение, ключи – на странице <a href="/settings/providers">«Провайдеры моделей»</a>. Этот блок – профиль «Ollama из «Настроек»»{% if default_is_base %}: он разбирает код, где другой профиль не выбран.{% else %}. Сейчас профиль по умолчанию – «{{ default_profile_name }}»: код, где профиль проекта не выбран, разбирает он, а не этот блок.{% endif %}</p>
-    <p class="hint">Модель работает в Ollama на этом компьютере: код находок уходит только по этому адресу. Разрешены хосты localhost, 127.0.0.1, ::1, host.docker.internal и ollama; из контейнера Ollama этого компьютера видна как <span class="mono">http://host.docker.internal:11434</span>.</p>
+    <h2 id="ollama-title">{{ _("Модель и Ollama") }}</h2>
+    <p class="callout callout-info small" id="providers-link">{{ _("Серверы моделей – этот компьютер и серверы в сети организации, окно контекста, рассуждение, ключи – на странице") }} <a href="/settings/providers">{{ _("«Провайдеры моделей»") }}</a>. {% if default_is_base %}{{ _("Этот блок – профиль «Ollama из «Настроек»»: он разбирает код, где другой профиль не выбран.") }}{% else %}{{ _("Этот блок – профиль «Ollama из «Настроек»». Сейчас профиль по умолчанию – «{name}»: код, где профиль проекта не выбран, разбирает он, а не этот блок.", name=default_profile_name) }}{% endif %}</p>
+    <p class="hint">{{ _("Модель работает в Ollama на этом компьютере: код находок уходит только по этому адресу. Разрешены хосты localhost, 127.0.0.1, ::1, host.docker.internal и ollama; из контейнера Ollama этого компьютера видна как") }} <span class="mono">http://host.docker.internal:11434</span>.</p>
     <div class="inline-form">
       <label class="field grow">
-        <span class="field-label">Адрес Ollama</span>
+        <span class="field-label">{{ _("Адрес Ollama") }}</span>
         <input type="text" class="input-mono" name="ollama_url" value="{{ values.ollama_url }}" maxlength="300" autocomplete="off" spellcheck="false" inputmode="url"{{ invalid("ollama_url") }}>
       </label>
-      <button type="submit" name="action" value="check" class="btn" data-busy="Проверяю…">{{ icon("refresh") }}Проверить</button>
+      <button type="submit" name="action" value="check" class="btn" data-busy="{{ _("Проверяю…") }}">{{ icon("refresh") }}{{ _("Проверить") }}</button>
     </div>
     {{ field_error("ollama_url") }}
     {% if check.error %}
-    <p class="callout callout-err" role="status" id="ollama-status">{{ check.error }}</p>
+    <p class="callout callout-err" role="status" id="ollama-status">{{ check.error|run_error }}</p>
     {% elif check.version %}
     <div class="callout callout-ok" role="status" id="ollama-status">
-      <p>{% if check.checked %}Проверено: {% endif %}Ollama {{ check.version }}, моделей для разбора – {{ check.models|length }}{% if check.checked and check.url != values.ollama_url %} ({{ check.url }}){% endif %}.{% if check.checked %} Адрес ещё не сохранён – нажмите «Сохранить».{% endif %}</p>
+      <p>{% if check.checked %}{{ _("Проверено:") }} {% endif %}{{ _("Ollama {version}, моделей для разбора – {n}", version=check.version, n=check.models|length) }}{% if check.checked and check.url != values.ollama_url %} ({{ check.url }}){% endif %}.{% if check.checked %} {{ _("Адрес ещё не сохранён – нажмите «Сохранить».") }}{% endif %}</p>
       {% if check.models %}<p class="small" id="ollama-models">{% for m in check.models %}<span class="mono">{{ m|model_option }}</span>{% if not loop.last %}; {% endif %}{% endfor %}</p>{% endif %}
     </div>
     {% endif %}
 
     <label class="field">
-      <span class="field-label">Модель по умолчанию</span>
+      <span class="field-label">{{ _("Модель по умолчанию") }}</span>
       {% if models %}
       <select name="default_model"{{ invalid("default_model") }}>
-        {% if not model_listed and values.default_model %}<option value="{{ values.default_model }}" selected>{{ values.default_model }} – нет в Ollama</option>{% endif %}
+        {% if not model_listed and values.default_model %}<option value="{{ values.default_model }}" selected>{{ values.default_model }} – {{ _("нет в Ollama") }}</option>{% endif %}
         {% for m in models %}<option value="{{ m.name }}"{% if model_listed and m.name == values.default_model %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
       </select>
       {% else %}
       <input type="text" class="input-mono" name="default_model" value="{{ values.default_model }}" maxlength="200" autocomplete="off" spellcheck="false"{{ invalid("default_model") }}>
       {% endif %}
-      <span class="field-hint">{% if default_is_base %}Её предлагает запуск триажа в проектах, где своя модель не выбрана.{% else %}Её предлагает запуск триажа в проектах с этим профилем, где своя модель не выбрана.{% endif %} Загрузить модель в Ollama: <span class="mono">ollama pull gpt-oss:20b</span>.</span>
+      <span class="field-hint">{% if default_is_base %}{{ _("Её предлагает запуск триажа в проектах, где своя модель не выбрана.") }}{% else %}{{ _("Её предлагает запуск триажа в проектах с этим профилем, где своя модель не выбрана.") }}{% endif %} {{ _("Загрузить модель в Ollama:") }} <span class="mono">ollama pull gpt-oss:20b</span>.</span>
       {{ field_error("default_model") }}
     </label>
-    {% if traffic_log_on %}<p class="callout callout-info small" id="traffic-log-notice">В программе ведётся полное журналирование обмена с моделью (<span class="mono">data/model-traffic</span>): по журналу можно разобрать, что ушло в модель, и проверить соблюдение конфиденциальности. В журнале остаются фрагменты кода – если нужно стереть следы кода, удалите журнал после окончания работы с проектом.</p>{% endif %}
+    {% if traffic_log_on %}<p class="callout callout-info small" id="traffic-log-notice">{{ _("В программе ведётся полное журналирование обмена с моделью") }} (<span class="mono">data/model-traffic</span>){{ _(": по журналу можно разобрать, что ушло в модель, и проверить соблюдение конфиденциальности. В журнале остаются фрагменты кода – если нужно стереть следы кода, удалите журнал после окончания работы с проектом.") }}</p>{% endif %}
   </section>
 
   <section class="panel" aria-labelledby="hub-title">
-    <h2 id="hub-title">Статусы AppSec.Hub</h2>
-    <p class="hint">Текст для Hub начинается со статуса по итоговому вердикту – так, как его показывает Hub: «Подтверждено», «Ложное срабатывание», «Не подтверждено», «Риск принят». Статус должен совпадать с тем, что Hub показывает в списке статусов, буква в букву. «Открыто» и «Исправлено» – жизненный цикл находки, при разборе их не выбирают. У находок SCA вывод «обновить» получает статус вердикта «истинная», «не применимо» – «ложная», «неясно» – «неясно».</p>
+    <h2 id="hub-title">{{ _("Статусы AppSec.Hub") }}</h2>
+    <p class="hint">{#- названия статусов – значения Hub, не переводятся -#}{{ _("Текст для Hub начинается со статуса по итоговому вердикту – так, как его показывает Hub: «{tp}», «{fp}», «{uncertain}», «{risk}». Статус должен совпадать с тем, что Hub показывает в списке статусов, буква в букву. «{opened}» и «{fixed}» – жизненный цикл находки, при разборе их не выбирают. У находок SCA вывод «обновить» получает статус вердикта «истинная», «не применимо» – «ложная», «неясно» – «неясно».", tp=default_statuses.true_positive, fp=default_statuses.false_positive, uncertain=default_statuses.uncertain, risk=default_statuses.risk_accepted, opened="Открыто", fixed="Исправлено") }}</p>
     <div class="cards status-fields">
     {% for verdict, name, label in status_fields %}
       <label class="field">
-        <span class="field-label">{% if verdict == "risk_accepted" %}Решение «Риск принят»{% else %}Вердикт «{{ label }}»{% if verdict == "uncertain" %} и «Отложить»{% endif %}{% endif %}</span>
+        <span class="field-label">{% if verdict == "risk_accepted" %}{{ _("Решение «Риск принят»") }}{% elif verdict == "uncertain" %}{{ _("Вердикт «{verdict}» и «Отложить»", verdict=_(label)) }}{% else %}{{ _("Вердикт «{verdict}»", verdict=_(label)) }}{% endif %}</span>
         <input type="text" name="{{ name }}" value="{{ values[name] }}" maxlength="100" autocomplete="off"{{ invalid(name) }}>
-        <span class="field-hint">по умолчанию – {{ default_statuses[verdict] }}. SAST ({{ GOST_STATUS_BASIS.sast }}) – {{ GOST_STATUS_NOTES.sast[verdict] }}; SCA ({{ GOST_STATUS_BASIS.sca }}) – {{ GOST_STATUS_NOTES.sca[verdict] }}.</span>
+        <span class="field-hint">{{ _("по умолчанию –") }} {{ default_statuses[verdict] }}. SAST ({{ GOST_STATUS_BASIS.sast }}) – {{ GOST_STATUS_NOTES.sast[verdict] }}; SCA ({{ GOST_STATUS_BASIS.sca }}) – {{ GOST_STATUS_NOTES.sca[verdict] }}.</span>
         {{ field_error(name) }}
       </label>
     {% endfor %}
@@ -75,22 +88,22 @@
   </section>
 
   <section class="panel" aria-labelledby="defect-title">
-    <h2 id="defect-title">Текст дефекта</h2>
+    <h2 id="defect-title">{{ _("Текст дефекта") }}</h2>
     <label class="field">
-      <span class="field-label">Название команды</span>
-      <input type="text" name="team_name" id="team-name" value="{{ values.team_name }}" maxlength="100" autocomplete="off" placeholder="например, команда разработки сервиса" data-char-count="team-name-count" aria-describedby="team-name-hint team-name-count"{{ invalid("team_name") }}>
-      <span class="field-hint" id="team-name-hint">Подставляется в первую фразу дефекта SAST: «После тщательного анализа уязвимости команда &lt;название&gt; приняла решение…». Обязательно: без названия текст дефекта SAST не выдаётся.</span>
+      <span class="field-label">{{ _("Название команды") }}</span>
+      <input type="text" name="team_name" id="team-name" value="{{ values.team_name }}" maxlength="100" autocomplete="off" placeholder="{{ _("например, команда разработки сервиса") }}" data-char-count="team-name-count" aria-describedby="team-name-hint team-name-count"{{ invalid("team_name") }}>
+      <span class="field-hint" id="team-name-hint">{{ _("Подставляется в первую фразу дефекта SAST: «После тщательного анализа уязвимости команда <название> приняла решение…». Обязательно: без названия текст дефекта SAST не выдаётся.") }}</span>
       <span class="hint" id="team-name-count" aria-live="polite"></span>
       {{ field_error("team_name") }}
     </label>
   </section>
 
   <section class="panel" aria-labelledby="affiliation-title">
-    <h2 id="affiliation-title">Принадлежность кода</h2>
+    <h2 id="affiliation-title">{{ _("Принадлежность кода") }}</h2>
     <label class="field">
-      <span class="field-label">Слова принадлежности</span>
-      <textarea class="input-mono" name="affiliation_words" id="affiliation-words" rows="3" maxlength="12000" autocomplete="off" spellcheck="false" placeholder="например, Example*, ACME, Контора" aria-describedby="affiliation-words-hint"{{ invalid("affiliation_words") }}>{{ values.affiliation_words }}</textarea>
-      <span class="field-hint" id="affiliation-words-hint">Через запятую. Название организации, её сокращение, город, домен – слова, по которым код можно отнести к организации. В каждом запросе к модели, локальной и внешней, они заменяются на «org» / «орг» – в коде, путях, правилах и сообщениях сканера; сравнение без учёта регистра по целым словам и частям идентификаторов («acmeist» и «Contora» не трогаются). «*» в конце – любое слово с таким началом. В карточке код показывается как есть. Пусто – замены нет.</span>
+      <span class="field-label">{{ _("Слова принадлежности") }}</span>
+      <textarea class="input-mono" name="affiliation_words" id="affiliation-words" rows="3" maxlength="12000" autocomplete="off" spellcheck="false" placeholder="{{ _("например, Example*, ACME, Контора") }}" aria-describedby="affiliation-words-hint"{{ invalid("affiliation_words") }}>{{ values.affiliation_words }}</textarea>
+      <span class="field-hint" id="affiliation-words-hint">{{ _("Через запятую. Название организации, её сокращение, город, домен – слова, по которым код можно отнести к организации. В каждом запросе к модели, локальной и внешней, они заменяются на «org» / «{org_ru}» – в коде, путях, правилах и сообщениях сканера; сравнение без учёта регистра по целым словам и частям идентификаторов («acmeist» и «Contora» не трогаются). «*» в конце – любое слово с таким началом. В карточке код показывается как есть. Пусто – замены нет.", org_ru="орг") }}</span>
       {{ field_error("affiliation_words") }}
     </label>
   </section>
@@ -98,119 +111,119 @@
   <section class="panel" aria-labelledby="sca-title">
     <h2 id="sca-title">SCA</h2>
     <label class="field">
-      <span class="field-label">Префиксы внутренних компонентов</span>
-      <input type="text" class="input-mono" name="sca_internal_prefixes" id="sca-prefixes" value="{{ values.sca_internal_prefixes }}" maxlength="1000" autocomplete="off" spellcheck="false" placeholder="например, org.example., @example/"{{ invalid("sca_internal_prefixes") }}>
-      <span class="field-hint">Через запятую. Библиотеки, имя которых начинается с такого префикса, – свои библиотеки организации: в пакет для внешних агентов они не попадают.</span>
+      <span class="field-label">{{ _("Префиксы внутренних компонентов") }}</span>
+      <input type="text" class="input-mono" name="sca_internal_prefixes" id="sca-prefixes" value="{{ values.sca_internal_prefixes }}" maxlength="1000" autocomplete="off" spellcheck="false" placeholder="{{ _("например, org.example., @example/") }}"{{ invalid("sca_internal_prefixes") }}>
+      <span class="field-hint">{{ _("Через запятую. Библиотеки, имя которых начинается с такого префикса, – свои библиотеки организации: в пакет для внешних агентов они не попадают.") }}</span>
       {{ field_error("sca_internal_prefixes") }}
     </label>
     <div class="inline-form">
       <label class="field">
-        <span class="field-label">Порог CVSS для срочных находок SCA</span>
+        <span class="field-label">{{ _("Порог CVSS для срочных находок SCA") }}</span>
         <input type="text" name="sca_urgent_cvss" value="{{ values.sca_urgent_cvss }}" maxlength="5" size="6" inputmode="decimal" autocomplete="off"{{ invalid("sca_urgent_cvss") }}>
         {{ field_error("sca_urgent_cvss") }}
       </label>
     </div>
-    <p class="hint">Находка SCA срочная, если её CVSS не ниже порога, – такие идут в начале разбора. Severity у SCA в выгрузке Hub – уровень политики Hub, а не тяжесть уязвимости, поэтому срочность считается по CVSS. После смены порога порядок разбора во всех проектах пересчитается.</p>
+    <p class="hint">{{ _("Находка SCA срочная, если её CVSS не ниже порога, – такие идут в начале разбора. Severity у SCA в выгрузке Hub – уровень политики Hub, а не тяжесть уязвимости, поэтому срочность считается по CVSS. После смены порога порядок разбора во всех проектах пересчитается.") }}</p>
   </section>
 
   <div class="actions">
-    <button type="submit" name="action" value="save" class="btn btn-primary" data-busy="Сохраняю…">{{ icon("check") }}Сохранить</button>
-    <a class="btn btn-ghost" href="/settings">Отменить изменения</a>
+    <button type="submit" name="action" value="save" class="btn btn-primary" data-busy="{{ _("Сохраняю…") }}">{{ icon("check") }}{{ _("Сохранить") }}</button>
+    <a class="btn btn-ghost" href="/settings">{{ _("Отменить изменения") }}</a>
   </div>
 </form>
 
 {#- Запись в AppSec.Hub через исполнителя (ADR-0114). Поле адреса – часть общей формы настроек (атрибут form):
     вложенные формы недопустимы, а «Проверить связь» и «Выпустить заново» – свои формы -#}
 <section class="panel" id="hub" aria-labelledby="hub-title">
-  <h2 id="hub-title">AppSec.Hub: запись решений</h2>
+  <h2 id="hub-title">{{ _("AppSec.Hub: запись решений") }}</h2>
   {% if hub.disabled %}
   <div class="callout callout-info" id="hub-disabled" role="status">
     <p>{{ hub.disabled_text }}</p>
-    <p class="small">Находки, решения и статистика учебного стенда хранятся в его базе на этом компьютере.</p>
+    <p class="small">{{ _("Находки, решения и статистика учебного стенда хранятся в его базе на этом компьютере.") }}</p>
   </div>
   {% else %}
-  <details id="hub-worker-instructions"><summary>Установка и обновление исполнителя</summary>
-    <p>Скопируйте папку <code>deploy/hub-worker</code> из этой сборки туда, где доступен Hub. Для первого запуска установите Python и заполните <code>hub_worker.conf</code> по инструкции <code>deploy/hub-worker/README.md</code>. Адрес приложения и ключ исполнителя берутся из настроек ниже.</p>
-    <p>При обновлении остановите работающий исполнитель, замените <code>hub_worker.py</code>, сохранив свой <code>hub_worker.conf</code>, и запустите прежней командой. Синхронизации нужен протокол 2. Дождитесь подтверждения совместимости на странице синхронизации.</p>
+  <details id="hub-worker-instructions"><summary>{{ _("Установка и обновление исполнителя") }}</summary>
+    <p>{{ _("Скопируйте папку {folder} из этой сборки туда, где доступен Hub. Для первого запуска установите Python и заполните {conf} по инструкции {readme}. Адрес приложения и ключ исполнителя берутся из настроек ниже.", folder="<code>deploy/hub-worker</code>", conf="<code>hub_worker.conf</code>", readme="<code>deploy/hub-worker/README.md</code>")|safe }}</p>
+    <p>{{ _("При обновлении остановите работающий исполнитель, замените {script}, сохранив свой {conf}, и запустите прежней командой. Синхронизации нужен протокол 2. Дождитесь подтверждения совместимости на странице синхронизации.", script="<code>hub_worker.py</code>", conf="<code>hub_worker.conf</code>")|safe }}</p>
   </details>
-  <p class="hint">Сейчас статусы находок и дефекты отправляет исполнитель – небольшой скрипт, запущенный там, где виден Hub (виртуальная машина с VPN или этот компьютер с VPN). Он входит в Hub под вашей учётной записью, забирает задания у приложения и возвращает ответы Hub. Прямой режим, в котором приложение обращается к Hub само, ещё не сделан. Как запустить исполнителя – <span class="mono">deploy/hub-worker/README.md</span>.</p>
+  <p class="hint">{{ _("Сейчас статусы находок и дефекты отправляет исполнитель – небольшой скрипт, запущенный там, где виден Hub (виртуальная машина с VPN или этот компьютер с VPN). Он входит в Hub под вашей учётной записью, забирает задания у приложения и возвращает ответы Hub. Прямой режим, в котором приложение обращается к Hub само, ещё не сделан. Как запустить исполнителя –") }} <span class="mono">deploy/hub-worker/README.md</span>.</p>
   <div class="inline-form">
     <label class="field grow">
-      <span class="field-label">Адрес Hub</span>
+      <span class="field-label">{{ _("Адрес Hub") }}</span>
       <input type="url" class="input-mono" name="hub_url" id="hub-url" form="settings-form" value="{{ values.hub_url }}" maxlength="300" autocomplete="off" spellcheck="false" placeholder="https://hub.example.org" aria-describedby="hub-url-hint"{{ invalid("hub_url") }}>
-      <span class="field-hint" id="hub-url-hint">Только https, без пути. Пусто – запись в Hub выключена. Номер приложения Hub задаётся в параметрах проекта.</span>
+      <span class="field-hint" id="hub-url-hint">{{ _("Только https, без пути. Пусто – запись в Hub выключена. Номер приложения Hub задаётся в параметрах проекта.") }}</span>
       {{ field_error("hub_url") }}
     </label>
-    <button type="submit" form="settings-form" name="action" value="save" class="btn" id="hub-url-save">{{ icon("check") }}Сохранить настройки</button>
+    <button type="submit" form="settings-form" name="action" value="save" class="btn" id="hub-url-save">{{ icon("check") }}{{ _("Сохранить настройки") }}</button>
   </div>
   <dl class="facts" id="hub-facts">
     <div>
-      <dt>Ключ исполнителя</dt>
-      <dd>{% if hub.key %}<span class="mono break" id="hub-key">{{ hub.key }}</span> {{ copy_button("Скопировать ключ", target="hub-key") }}{% else %}<span class="text-warn">{{ hub.key_error }}</span>{% endif %}
-        <span class="small muted block">Впишите его в <span class="mono">hub_worker.conf</span> (строка <span class="mono">key</span>). Исполнитель передаёт ключ в заголовке <span class="mono">{{ hub.key_header }}</span>; без него задания не выдаются.</span></dd>
+      <dt>{{ _("Ключ исполнителя") }}</dt>
+      <dd>{% if hub.key %}<span class="mono break" id="hub-key">{{ hub.key }}</span> {{ copy_button(_("Скопировать ключ"), target="hub-key") }}{% else %}<span class="text-warn">{{ hub.key_error }}</span>{% endif %}
+        <span class="small muted block">{{ _("Впишите его в {conf} (строка {key}). Исполнитель передаёт ключ в заголовке {header}; без него задания не выдаются.", conf='<span class="mono">hub_worker.conf</span>', key='<span class="mono">key</span>', header='<span class="mono">%s</span>'|format(hub.key_header|e))|safe }}</span></dd>
     </div>
     <div>
-      <dt>Исполнитель</dt>
-      <dd id="hub-worker-state">{% if hub.write_paused %}<span class="badge badge-warn" id="hub-write-paused">выдача записи приостановлена: POST и PUT не выдаются, чтение выдаётся</span> {% endif %}{% if hub.worker.online %}<span class="badge badge-ok">на связи</span> {% if hub.worker.hub_user %}вошёл в Hub как {{ hub.worker.hub_user }}{% if hub.worker.hub_login %} ({{ hub.worker.hub_login }}){% endif %}{% endif %}{% if hub.worker.hub_url %} · <span class="mono">{{ hub.worker.hub_url }}</span>{% endif %} · обращался {{ hub.worker.ago_s }} с назад{% elif hub.worker.seen %}<span class="badge badge-muted">не на связи</span> последнее обращение {{ hub.worker.ago_s }} с назад{% else %}<span class="badge badge-muted">не на связи</span> ещё не обращался с запуска приложения{% endif %}</dd>
+      <dt>{# «Исполнитель» здесь – скрипт hub-worker, а не поле Hub «assignee» (тот же msgid переведён как Assignee) #}{% if lang() == "ru" %}Исполнитель{% else %}{{ _("Исполнитель Hub (worker)") }}{% endif %}</dt>
+      <dd id="hub-worker-state">{% if hub.write_paused %}<span class="badge badge-warn" id="hub-write-paused">{{ _("выдача записи приостановлена: POST и PUT не выдаются, чтение выдаётся") }}</span> {% endif %}{% if hub.worker.online %}<span class="badge badge-ok">{{ _("на связи") }}</span> {% if hub.worker.hub_user %}{{ _("вошёл в Hub как {user}", user=hub.worker.hub_user) }}{% if hub.worker.hub_login %} ({{ hub.worker.hub_login }}){% endif %}{% endif %}{% if hub.worker.hub_url %} · <span class="mono">{{ hub.worker.hub_url }}</span>{% endif %} · {{ _("обращался {n} с назад", n=hub.worker.ago_s) }}{% elif hub.worker.seen %}<span class="badge badge-muted">{{ _("не на связи") }}</span> {{ _("последнее обращение {n} с назад", n=hub.worker.ago_s) }}{% else %}<span class="badge badge-muted">{{ _("не на связи") }}</span> {{ _("ещё не обращался с запуска приложения") }}{% endif %}</dd>
     </div>
   </dl>
   <form method="post" action="/settings/hub/write-pause" class="actions" id="hub-write-pause-form">
     <input type="hidden" name="paused" value="{{ '0' if hub.write_paused else '1' }}">
-    {% if hub.write_paused and (hub.unknown_writes or hub.resync_projects) %}<label class="small" id="hub-write-accept-unknown"><input type="checkbox" name="accept_unknown" value="1"> Снять, хотя {% if hub.unknown_writes %}операций записи с неизвестным исходом – {{ hub.unknown_writes }}: они остаются неизвестными и повторно не выдаются{% endif %}{% if hub.unknown_writes and hub.resync_projects %}, а {% endif %}{% if hub.resync_projects %}состояние Hub после восстановления копии не принято по проектам: {{ hub.resync_projects }}{% endif %}</label>{% endif %}
-    <button type="submit" class="btn btn-small" id="hub-write-pause">{{ 'Снять паузу записи в Hub' if hub.write_paused else 'Поставить запись в Hub на паузу' }}</button>
-    <span class="field-hint">На паузе исполнитель получает только чтение: «Pull из Hub» работает, статусы и дефекты в Hub не уходят.</span>
+    {% if hub.write_paused and (hub.unknown_writes or hub.resync_projects) %}<label class="small" id="hub-write-accept-unknown"><input type="checkbox" name="accept_unknown" value="1"> {% if hub.unknown_writes and hub.resync_projects %}{{ _("Снять, хотя операций записи с неизвестным исходом – {n}: они остаются неизвестными и повторно не выдаются, а состояние Hub после восстановления копии не принято по проектам: {projects}", n=hub.unknown_writes, projects=hub.resync_projects) }}{% elif hub.unknown_writes %}{{ _("Снять, хотя операций записи с неизвестным исходом – {n}: они остаются неизвестными и повторно не выдаются", n=hub.unknown_writes) }}{% else %}{{ _("Снять, хотя состояние Hub после восстановления копии не принято по проектам: {projects}", projects=hub.resync_projects) }}{% endif %}</label>{% endif %}
+    <button type="submit" class="btn btn-small" id="hub-write-pause">{{ _('Снять паузу записи в Hub') if hub.write_paused else _('Поставить запись в Hub на паузу') }}</button>
+    <span class="field-hint">{{ _("На паузе исполнитель получает только чтение: «Pull из Hub» работает, статусы и дефекты в Hub не уходят.") }}</span>
   </form>
-  <form method="post" action="/settings/hub/probe" class="actions" id="hub-probe-form" data-ajax data-busy="Ставлю проверку…">
-    <button type="submit" class="btn" id="hub-probe-button"{% if not settings.hub_url %} disabled title="Сначала укажите адрес Hub и сохраните настройки"{% endif %}>Проверить связь</button>
+  <form method="post" action="/settings/hub/probe" class="actions" id="hub-probe-form" data-ajax data-busy="{{ _("Ставлю проверку…") }}">
+    <button type="submit" class="btn" id="hub-probe-button"{% if not settings.hub_url %} disabled title="{{ _("Сначала укажите адрес Hub и сохраните настройки") }}"{% endif %}>{{ _("Проверить связь") }}</button>
   </form>
   <p class="small" id="hub-probe-status" role="status" aria-live="polite"{% if not hub.probe %} hidden{% endif %}{% if hub.probe and not hub.probe.final %} data-poll="/settings/hub/probe/{{ hub.probe.op_id }}"{% endif %}>{% if hub.probe %}{{ hub.probe.text }}{% endif %}</p>
-  <form method="post" action="/settings/hub/key/rotate" class="actions" id="hub-key-rotate-form" data-confirm="Выпустить новый ключ исполнителя? Прежний сразу перестанет действовать – исполнитель не подключится, пока вы не впишете новый ключ.">
-    <button type="submit" class="btn btn-ghost" id="hub-key-rotate">Выпустить ключ заново</button>
+  <form method="post" action="/settings/hub/key/rotate" class="actions" id="hub-key-rotate-form" data-confirm="{{ _("Выпустить новый ключ исполнителя? Прежний сразу перестанет действовать – исполнитель не подключится, пока вы не впишете новый ключ.") }}">
+    <button type="submit" class="btn btn-ghost" id="hub-key-rotate">{{ _("Выпустить ключ заново") }}</button>
   </form>
   {% endif %}
 </section>
 
 <section class="panel" aria-labelledby="env-title">
-  <h2 id="env-title">Что видно приложению</h2>
+  <h2 id="env-title">{{ _("Что видно приложению") }}</h2>
   <dl class="facts">
     <div>
-      <dt>Корень папок с репозиториями</dt>
-      <dd><span class="mono break">{{ env.repos_display }}</span>{% if not env.repos_exists %} – <span class="text-warn">не найден</span>{% endif %}</dd>
+      <dt>{{ _("Корень папок с репозиториями") }}</dt>
+      <dd><span class="mono break">{{ env.repos_display }}</span>{% if not env.repos_exists %} – <span class="text-warn">{{ _("не найден") }}</span>{% endif %}</dd>
     </div>
     {% if env.in_container %}
     <div>
-      <dt>Он же внутри контейнера</dt>
+      <dt>{{ _("Он же внутри контейнера") }}</dt>
       <dd><span class="mono">{{ env.repos_inside }}</span></dd>
     </div>
     {% endif %}
     {% if env.repos_exists %}
     <div>
-      <dt>Доступ</dt>
-      <dd>{% if env.repos_readonly %}только чтение{% else %}чтение и запись – приложение всё равно только читает{% endif %}</dd>
+      <dt>{{ _("Доступ") }}</dt>
+      <dd>{% if env.repos_readonly %}{{ _("только чтение") }}{% else %}{{ _("чтение и запись – приложение всё равно только читает") }}{% endif %}</dd>
     </div>
     <div>
-      <dt>Папок в корне</dt>
-      <dd>{{ env.repos_folders }}{% if env.repos_more %} и больше{% endif %}</dd>
+      <dt>{{ _("Папок в корне") }}</dt>
+      <dd>{{ env.repos_folders }}{% if env.repos_more %} {{ _("и больше") }}{% endif %}</dd>
     </div>
     {% endif %}
     <div>
-      <dt>Запуск</dt>
-      <dd>{% if env.in_container %}в контейнере Docker{% else %}без контейнера{% endif %}</dd>
+      <dt>{{ _("Запуск") }}</dt>
+      <dd>{% if env.in_container %}{{ _("в контейнере Docker") }}{% else %}{{ _("без контейнера") }}{% endif %}</dd>
     </div>
     <div>
-      <dt>Предел выгрузки</dt>
-      <dd>{{ env.max_upload_mb }} МБ</dd>
+      <dt>{{ _("Предел выгрузки") }}</dt>
+      <dd>{{ _("{n} МБ", n=env.max_upload_mb) }}</dd>
     </div>
     <div>
-      <dt>Окно контекста модели</dt>
-      <dd>{{ env.num_ctx }} токенов</dd>
+      <dt>{{ _("Окно контекста модели") }}</dt>
+      <dd>{{ _("{n} токенов", n=env.num_ctx) }}</dd>
     </div>
     <div class="wide">
-      <dt>Данные приложения</dt>
+      <dt>{{ _("Данные приложения") }}</dt>
       <dd><span class="mono break">{{ env.data_dir }}</span></dd>
     </div>
   </dl>
-  <p class="hint">Приложение видит только то, что лежит внутри корня папок с репозиториями, и только читает это. Папку с клонами конкретного проекта выбирают на странице проекта. {% if STAND == "npm" %}Корень – папка кода стенда: она задаётся при первом запуске ключом <span class="mono">--code-dir</span> и потом не меняется.{% else %}Корень подключается при запуске: другой корень – <span class="mono">.\start.ps1 -ReposRoot D:/work</span> (диск или папка целиком).{% endif %}</p>
+  <p class="hint">{{ _("Приложение видит только то, что лежит внутри корня папок с репозиториями, и только читает это. Папку с клонами конкретного проекта выбирают на странице проекта.") }} {% if STAND == "npm" %}{{ _("Корень – папка кода стенда: она задаётся при первом запуске ключом") }} <span class="mono">--code-dir</span> {{ _("и потом не меняется.") }}{% else %}{{ _("Корень подключается при запуске: другой корень –") }} <span class="mono">.\start.ps1 -ReposRoot D:/work</span> {{ _("(диск или папка целиком).") }}{% endif %}</p>
 </section>
 
 {% endblock %}

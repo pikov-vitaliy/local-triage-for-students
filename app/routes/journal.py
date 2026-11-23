@@ -6,7 +6,7 @@ from datetime import date
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
-from app import journal, worklists
+from app import i18n, journal, worklists
 from app.db import RUN_STATES
 from app.executors import executor_label
 from app.routes.common import db_of, render
@@ -22,16 +22,16 @@ def selection(request):
             try:
                 date.fromisoformat(filters[key])
             except ValueError:
-                raise HTTPException(400, 'Дата должна быть в формате ГГГГ-ММ-ДД.') from None
+                raise HTTPException(400, i18n._('Дата должна быть в формате ГГГГ-ММ-ДД.')) from None
     if filters['from'] and filters['to'] and filters['from'] > filters['to']:
-        raise HTTPException(400, 'Начало периода позже конца.')
+        raise HTTPException(400, i18n._('Начало периода позже конца.'))
     if filters['state'] and filters['state'] not in RUN_STATES:
-        raise HTTPException(400, 'Неизвестное состояние прогона.')
+        raise HTTPException(400, i18n._('Неизвестное состояние прогона.'))
     if filters['project'] and not (filters['project'].isascii() and filters['project'].isdigit()
                                    and len(filters['project']) <= 18):
-        raise HTTPException(400, 'Неизвестный проект.')
+        raise HTTPException(400, i18n._('Неизвестный проект.'))
     if filters['sort'] and filters['sort'] not in SORTS:
-        raise HTTPException(400, 'Неизвестная сортировка.')
+        raise HTTPException(400, i18n._('Неизвестная сортировка.'))
     rows = journal.collect(db_of(request), filters)
     sort = filters['sort']
     if sort == 'oldest':
@@ -127,6 +127,10 @@ def export_csv(request: Request):
 def show(request: Request, run_id: int):
     data = journal.detail(db_of(request), run_id)
     if data is None:
-        raise HTTPException(404, 'Прогон не найден.')
+        raise HTTPException(404, i18n._('Прогон не найден.'))
+    slow = (data.get('snapshot') or {}).get('slow_model')
+    if isinstance(slow, dict) and slow.get('text'):  # строка медленного режима хранится по-русски (ADR-0158)
+        from app.run_errors import shown_error
+        slow['text'] = shown_error(slow['text'])
     return render(request, 'journal/detail.html', {'item': data,
                   'back_url': worklists.return_url(request, '/journal')})

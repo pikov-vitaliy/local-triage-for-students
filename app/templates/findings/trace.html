@@ -2,71 +2,71 @@
     внутренних номеров у блоков нет. Вердикт модели – в шаге 2; здесь от него осталась короткая ссылка (#trace-verdict). -#}
 {% set check = ctx.export_line_check if ctx else "" %}
 <section class="panel step-panel trace-panel" id="trace" data-route-step="1" aria-labelledby="trace-title">
-  <h2 id="trace-title" class="step-head"><span class="step-no" aria-hidden="true">1</span> Сверка с выгрузкой</h2>
+  <h2 id="trace-title" class="step-head"><span class="step-no" aria-hidden="true">1</span> {{ _("Сверка с выгрузкой") }}</h2>
   <ol class="trace">
     <li class="trace-step" id="trace-export">
-      <h3 class="trace-head">Из выгрузки</h3>
+      <h3 class="trace-head">{{ _("Из выгрузки") }}</h3>
       <dl class="trace-facts">
-        <dt>Файл и строка</dt>
-        <dd class="mono break"{% if f.file %} title="{{ f.file }}"{% endif %}>{{ (f.file.replace("\\", "/").rsplit("/", 1)[-1])|code_text if f.file else "не указан" }}{% if f.line is not none %}<span class="trace-line">:{{ f.line }}</span>{% endif %}</dd>
-        <dt>Фрагмент кода</dt>
-        <dd>{% if export_line %}<code class="break trace-code" id="trace-export-line">{{ export_line|code_text }}</code>{% else %}<span class="muted">в выгрузке нет</span>{% endif %}</dd>
+        <dt>{{ _("Файл и строка") }}</dt>
+        <dd class="mono break"{% if f.file %} title="{{ f.file }}"{% endif %}>{{ (f.file.replace("\\", "/").rsplit("/", 1)[-1])|code_text if f.file else _("не указан") }}{% if f.line is not none %}<span class="trace-line">:{{ f.line }}</span>{% endif %}</dd>
+        <dt>{{ _("Фрагмент кода") }}</dt>
+        <dd>{% if export_line %}<code class="break trace-code" id="trace-export-line">{{ export_line|code_text }}</code>{% else %}<span class="muted">{{ _("в выгрузке нет") }}</span>{% endif %}</dd>
       </dl>
     </li>
     <li class="trace-step trace-{{ check or 'none' }}" id="trace-code">
-      <h3 class="trace-head">В коде</h3>
+      <h3 class="trace-head">{{ _("В коде") }}</h3>
       {% if not ctx %}
-      <p class="trace-state"><span class="badge badge-muted">кода нет</span></p>
-      <p class="small muted">Ни клона, ни строки в выгрузке.</p>
+      <p class="trace-state"><span class="badge badge-muted">{{ _("кода нет") }}</span></p>
+      <p class="small muted">{{ _("Ни клона, ни строки в выгрузке.") }}</p>
       {% elif ctx.status != "ok" and ctx.lines %}
-      <p class="trace-state"><span class="badge badge-warn">только строка из выгрузки</span></p>
-      <p class="small">{% if code_reason %}{{ code_reason }}{% else %}{{ CONTEXT_LABELS.get(ctx.status, ctx.status)|capitalize }}.{% endif %} Модели доступна одна строка без окружения.</p>
+      <p class="trace-state"><span class="badge badge-warn">{{ _("только строка из выгрузки") }}</span></p>
+      <p class="small">{% if code_reason %}{{ code_reason }}{% else %}{{ CONTEXT_LABELS.get(ctx.status, ctx.status)|capitalize }}.{% endif %} {{ _("Модели доступна одна строка без окружения.") }}</p>
       {% elif ctx.status != "ok" %}
-      <p class="trace-state"><span class="badge badge-muted">кода нет</span></p>
+      <p class="trace-state"><span class="badge badge-muted">{{ _("кода нет") }}</span></p>
       <p class="small">{% if code_reason %}{{ code_reason }}{% else %}{{ CONTEXT_LABELS.get(ctx.status, ctx.status)|capitalize }}.{% endif %}</p>
       {% elif check == "match" %}
-      <p class="trace-state" id="export-fragment-match"><span class="badge badge-ok">✓ совпадает</span> фрагмент на строке <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a>, как в выгрузке</p>
-      {% if export_scope %}<p class="small muted" id="export-fragment-scope">{{ {"line": "Совпала строка целиком.", "part": "Фрагмент из выгрузки – часть этой строки: сверьте, о той ли части речь.", "lines": "Совпали все строки фрагмента подряд."}[export_scope] }}</p>{% endif %}
+      <p class="trace-state" id="export-fragment-match"><span class="badge badge-ok">✓ {{ _("совпадает") }}</span> {{ _("фрагмент на строке") }} <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a>{{ _(", как в выгрузке") }}</p>
+      {% if export_scope %}<p class="small muted" id="export-fragment-scope">{{ {"line": _("Совпала строка целиком."), "part": _("Фрагмент из выгрузки – часть этой строки: сверьте, о той ли части речь."), "lines": _("Совпали все строки фрагмента подряд.")}[export_scope] }}</p>{% endif %}
       {% elif check == "near" and ctx.export_line_at %}
-      <p class="trace-state" id="export-fragment-near"><span class="badge badge-ok">✓ рядом</span> Фрагмент из выгрузки – на строке <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a></p>
-      <p class="small muted">Сканер указал строку {{ f.line }}: на {{ (ctx.export_line_at - f.line)|abs }} {{ "строку" if (ctx.export_line_at - f.line)|abs == 1 else "строки" }} {{ "ниже" if ctx.export_line_at > f.line else "выше" }}. Так бывает, когда сканер указывает начало конструкции.</p>
-      {% if export_scope == "part" %}<p class="small muted" id="export-fragment-scope">Фрагмент из выгрузки – часть этой строки: сверьте, о той ли части речь.</p>{% endif %}
+      <p class="trace-state" id="export-fragment-near"><span class="badge badge-ok">✓ {{ _("рядом") }}</span> {{ _("Фрагмент из выгрузки – на строке") }} <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a></p>
+      {% set gap = (ctx.export_line_at - f.line)|abs %}{% set gap_word = _("строку") if gap == 1 else _("строки") %}<p class="small muted">{{ _("Сканер указал строку {line}: на {n} {lines} ниже.", line=f.line, n=gap, lines=gap_word) if ctx.export_line_at > f.line else _("Сканер указал строку {line}: на {n} {lines} выше.", line=f.line, n=gap, lines=gap_word) }} {{ _("Так бывает, когда сканер указывает начало конструкции.") }}</p>
+      {% if export_scope == "part" %}<p class="small muted" id="export-fragment-scope">{{ _("Фрагмент из выгрузки – часть этой строки: сверьте, о той ли части речь.") }}</p>{% endif %}
       {% elif check == "commented" %}
       <div class="trace-state" id="export-fragment-commented">
-        <p><span class="badge badge-warn">в комментарии</span> <strong>Фрагмент из выгрузки найден только в закомментированной строке{% if ctx.export_line_at %} <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a>{% endif %}.</strong></p>
-        <p class="small">Закомментированный код не выполняется. Проверьте, о том ли коде речь: при необходимости откройте файл в репозитории целиком.</p>
+        <p><span class="badge badge-warn">{{ _("в комментарии") }}</span> <strong>{{ _("Фрагмент из выгрузки найден только в закомментированной строке") }}{% if ctx.export_line_at %} <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a>{% endif %}.</strong></p>
+        <p class="small">{{ _("Закомментированный код не выполняется. Проверьте, о том ли коде речь: при необходимости откройте файл в репозитории целиком.") }}</p>
       </div>
       {% elif check == "partial" %}
       <div class="trace-state" id="export-fragment-partial">
-        <p><span class="badge badge-warn">частично</span> <strong>С кодом совпала только часть фрагмента из выгрузки{% if ctx.export_line_at %} (строка <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a>){% endif %}.</strong></p>
-        <p class="small">Сравните фрагмент из Excel с кодом сами: остальная часть фрагмента рядом со строкой {{ f.line }} не найдена. При необходимости откройте файл в репозитории целиком.</p>
+        <p><span class="badge badge-warn">{{ _("частично") }}</span> <strong>{{ _("С кодом совпала только часть фрагмента из выгрузки") }}{% if ctx.export_line_at %} ({{ _("строка") }} <a href="#L{{ ctx.export_line_at }}">{{ ctx.export_line_at }}</a>){% endif %}.</strong></p>
+        <p class="small">{{ _("Сравните фрагмент из Excel с кодом сами: остальная часть фрагмента рядом со строкой {line} не найдена. При необходимости откройте файл в репозитории целиком.", line=f.line) }}</p>
       </div>
       {% elif check == "differs" and export_shift_at %}
       {% set shift = (export_shift_at - f.line)|abs %}
       <div class="trace-state" id="export-fragment-shifted">
-        <p><span class="badge badge-warn">сдвинут на {{ shift }} {{ shift|plural("строку", "строки", "строк") }}</span> <strong>Фрагмент из выгрузки – на строке <a href="#L{{ export_shift_at }}">{{ export_shift_at }}</a>; сканер указал {{ f.line }}.</strong> Вероятно, код в клоне другой версии, чем сканировал Hub.</p>
-        <p class="small">{% if verdict %}Модель разбирала код вокруг строки {{ f.line }}: её вердикт может относиться к другому коду. {% endif %}Сверьте сами, о том ли коде речь: это должна быть исполняемая строка, а не комментарий или текст в кавычках – автоматический разбор этого не гарантирует.</p>
+        <p><span class="badge badge-warn">{{ _("сдвинут на {n} {lines}", n=shift, lines=shift|plural("строку", "строки", "строк")) }}</span> <strong>{{ _("Фрагмент из выгрузки – на строке") }} <a href="#L{{ export_shift_at }}">{{ export_shift_at }}</a>{{ _("; сканер указал {line}.", line=f.line) }}</strong> {{ _("Вероятно, код в клоне другой версии, чем сканировал Hub.") }}</p>
+        <p class="small">{% if verdict %}{{ _("Модель разбирала код вокруг строки {line}: её вердикт может относиться к другому коду.", line=f.line) }} {% endif %}{{ _("Сверьте сами, о том ли коде речь: это должна быть исполняемая строка, а не комментарий или текст в кавычках – автоматический разбор этого не гарантирует.") }}</p>
       </div>
       {% elif check == "differs" %}
       <div class="trace-state" id="export-fragment-differs">
-        <p><span class="badge badge-warn">не найден</span> <strong>Фрагмент из выгрузки не найден рядом со строкой находки.</strong></p>
-        <p class="small">Модель судила по коду вокруг строки {{ f.line }}, а фрагмента из Excel там нет. Проверьте, о том ли коде речь: поиск выполнен в пределах пяти строк выше и ниже.</p>
+        <p><span class="badge badge-warn">{{ _("не найден") }}</span> <strong>{{ _("Фрагмент из выгрузки не найден рядом со строкой находки.") }}</strong></p>
+        <p class="small">{{ _("Модель судила по коду вокруг строки {line}, а фрагмента из Excel там нет. Проверьте, о том ли коде речь: поиск выполнен в пределах пяти строк выше и ниже.", line=f.line) }}</p>
       </div>
       {% elif check == "masked_export_line" %}
-      <p class="trace-state"><span class="badge badge-muted">сверка ограничена</span> рядом есть скрытые значения – совпадение не доказать</p>
+      <p class="trace-state"><span class="badge badge-muted">{{ _("сверка ограничена") }}</span> {{ _("рядом есть скрытые значения – совпадение не доказать") }}</p>
       {% elif check in ("short_export_line", "no_export_line") %}
-      <p class="trace-state"><span class="badge badge-muted">сверить нельзя</span> {{ "фрагмент в выгрузке слишком короткий" if check == "short_export_line" else "в выгрузке нет строки кода" }}</p>
+      <p class="trace-state"><span class="badge badge-muted">{{ _("сверить нельзя") }}</span> {{ _("фрагмент в выгрузке слишком короткий") if check == "short_export_line" else _("в выгрузке нет строки кода") }}</p>
       {% else %}
-      <p class="trace-state"><span class="badge badge-muted">не сверялось</span></p>
+      <p class="trace-state"><span class="badge badge-muted">{{ _("не сверялось") }}</span></p>
       {% endif %}
       {% if ctx and ctx.status == "ok" %}
-      <p class="small muted dot-list"><span>{{ "срез из базы приложения" if code_from_db else "код из клона" }}</span>{% if ctx.start_line %}<span>модель видела строки {{ ctx.start_line }}–{{ ctx.end_line }}</span>{% endif %}</p>
+      <p class="small muted dot-list"><span>{{ _("срез из базы приложения") if code_from_db else _("код из клона") }}</span>{% if ctx.start_line %}<span>{{ _("модель видела строки {start}–{end}", start=ctx.start_line, end=ctx.end_line) }}</span>{% endif %}</p>
       {% endif %}
     </li>
     {#- Короткая ссылка на шаг 2: вердикт целиком показан там один раз -#}
     <li class="trace-ref" id="trace-verdict">
-      {% if verdict %}<span class="muted small">Вердикт модели – шаг 2:</span> <a class="badge verdict verdict-{{ verdict.verdict }} trace-verdict-link" href="#step-2">{{ VERDICT_LABELS.get(verdict.verdict, verdict.verdict) }} · {{ verdict.confidence }}%</a>
-      {% else %}<span class="muted small">Вердикт модели – шаг 2:</span> <span class="badge badge-muted">ещё не разобрана</span>{% endif %}
+      {% if verdict %}<span class="muted small">{{ _("Вердикт модели – шаг 2:") }}</span> <a class="badge verdict verdict-{{ verdict.verdict }} trace-verdict-link" href="#step-2">{{ VERDICT_LABELS.get(verdict.verdict, verdict.verdict) }} · {{ verdict.confidence }}%</a>
+      {% else %}<span class="muted small">{{ _("Вердикт модели – шаг 2:") }}</span> <span class="badge badge-muted">{{ _("ещё не разобрана") }}</span>{% endif %}
     </li>
   </ol>
 </section>

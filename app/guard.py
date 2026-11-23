@@ -19,6 +19,7 @@ from urllib.parse import urlsplit
 
 from starlette.datastructures import Headers, MutableHeaders
 
+from app import i18n
 from app.logsafe import log_failure
 
 log = logging.getLogger("local_triage.web")
@@ -81,19 +82,19 @@ class GuardMiddleware:
         headers = Headers(scope=scope)
         host = headers.get("host", "")
         if host_name(host) not in self.trusted:
-            await self._reply(send, 400, "Неверное имя хоста. На этом компьютере откройте интерфейс по адресу "
-                                         "http://127.0.0.1:8765; с другого устройства – по адресу, который задан в "
-                                         "TRIAGE_LAN_ADDR (.\\start.ps1 -LanAddress <адрес>).")
+            await self._reply(send, 400, i18n._("Неверное имя хоста. На этом компьютере откройте интерфейс по адресу "
+                                                "http://127.0.0.1:8765; с другого устройства – по адресу, который задан "
+                                                "в TRIAGE_LAN_ADDR (.\\start.ps1 -LanAddress <адрес>)."))
             return
         if scope["method"] not in ("GET", "HEAD", "OPTIONS"):
             if not same_origin(headers, scope.get("scheme", "http"), host):
-                await self._reply(send, 403, "Запрос отклонён: он отправлен не со страницы этого приложения. "
-                                             "Обновите страницу и повторите.")
+                await self._reply(send, 403, i18n._("Запрос отклонён: он отправлен не со страницы этого приложения. "
+                                                    "Обновите страницу и повторите."))
                 return
             length = headers.get("content-length")
             if length is not None:
                 if not length.isdigit():
-                    await self._reply(send, 400, "Неверный заголовок Content-Length.")
+                    await self._reply(send, 400, i18n._("Неверный заголовок Content-Length."))
                     return
                 if int(length) > self.max_body:
                     await self._reply(send, 413, self._too_large_text())
@@ -133,12 +134,12 @@ class GuardMiddleware:
                 except Exception as e:
                     log_failure(log, "страница ошибки не собрана", e)
             if response is None:
-                await self._reply(send, 500, f"Внутренняя ошибка приложения. Номер ошибки в журнале: {eid}.")
+                await self._reply(send, 500, i18n._("Внутренняя ошибка приложения. Номер ошибки в журнале: {eid}.", eid=eid))
             else:
                 await response(scope, receive, send_with_headers)
 
     def _too_large_text(self) -> str:
-        return f"Файл слишком большой: допустимо до {self.max_body // (1024 * 1024)} МБ (MAX_UPLOAD_MB)."
+        return i18n._("Файл слишком большой: допустимо до {mb} МБ (MAX_UPLOAD_MB).", mb=self.max_body // (1024 * 1024))
 
     def _limited(self, receive):
         received = 0

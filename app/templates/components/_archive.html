@@ -1,11 +1,11 @@
 {# Архив перехода идентичности пакетов (план dev17, п. 4.6): снятые исследования и решения – только для чтения #}
 <details class="component-history" id="identity-archive"{% if archive_open %} open{% endif %}>
-  <summary>Архив перехода идентичности: {{ archive|length }}</summary>
-  <p class="small muted">Сняты переходом идентичности пакетов по сведениям Hub о библиотеке. Главный ответ и действующее решение их не учитывают.</p>
+  <summary>{{ _("Архив перехода идентичности: {n}", n=archive|length) }}</summary>
+  <p class="small muted">{{ _("Сняты переходом идентичности пакетов по сведениям Hub о библиотеке. Главный ответ и действующее решение их не учитывают.") }}</p>
   <ol class="component-source-list">{% for a in archive %}<li>
-    <div class="cluster"><strong>{{ a.what }}</strong><span class="badge badge-muted">архив</span></div>
+    <div class="cluster"><strong>{{ a.what }}</strong><span class="badge badge-muted">{{ _("архив") }}</span></div>
     {% if a.text %}<p class="prose">{{ a.text }}</p>{% endif %}
     {% for f in a.fields or [] %}<span class="small muted block">{{ f }}</span>{% endfor %}
-    <span class="small muted">прежняя тройка: <span class="mono break">{{ a.old_label }}</span> · снято <time datetime="{{ a.archived_at }}">{{ a.archived_at|ts }}</time>{% if a.reason %} · {{ a.reason }}{% endif %}</span>
+    <span class="small muted">{{ _("прежняя тройка:") }} <span class="mono break">{{ a.old_label }}</span> · {{ _("снято") }} <time datetime="{{ a.archived_at }}">{{ a.archived_at|ts }}</time>{% if a.reason %} · {{ _(a.reason) }}{% endif %}</span>
   </li>{% endfor %}</ol>
 </details>

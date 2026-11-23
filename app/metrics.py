@@ -15,6 +15,7 @@ import threading
 import time
 from typing import Any
 
+from app import i18n
 from app.llm import LlmError
 from app.llm_ollama import OllamaClient
 
@@ -92,7 +93,7 @@ def parse_gpu_csv(text: str) -> dict[str, Any] | None:
         values = [g[key] for g in gpus if g[key] is not None]
         return max(values) if values else None
 
-    names = [g["name"] or "неизвестная видеокарта" for g in gpus]
+    names = [g["name"] or i18n._("неизвестная видеокарта") for g in gpus]
     if len(names) == 1:
         name = names[0]
     elif len(set(names)) == 1:
@@ -165,7 +166,7 @@ def snapshot(client: OllamaClient, host: bool = True) -> dict[str, Any]:
     except LlmError as e:
         error = str(e)
     except Exception as e:  # метрики не должны ронять страницу прогона
-        error = f"Не удалось получить загруженные модели: {type(e).__name__}."
+        error = i18n._("Не удалось получить загруженные модели: {error}.", error=type(e).__name__)
     models = []
     for m in loaded:
         size, vram = m.get("size") or 0, m.get("size_vram") or 0

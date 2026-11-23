@@ -15,6 +15,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from starlette.concurrency import run_in_threadpool
 
+from app import i18n
 from app.config import DEFAULT_STATUS_MAP, ConfigError, normalize_setting
 from app.routes.hub import hub_context
 from app.routes.common import (db_of, models_of, profile_for, redirect, register_messages, render, settings_of,
@@ -28,6 +29,7 @@ log = logging.getLogger(__name__)
 MAX_FIELDS = 30  # полей в форме настроек
 
 register_messages({
+    "language_saved": "Язык интерфейса сохранён.",
     "settings_saved": "Настройки сохранены.",
     "settings_reordered": "Настройки сохранены. Порог срочности SCA изменился – порядок разбора находок "
                           "во всех проектах пересчитан.",
@@ -67,6 +69,24 @@ def settings_page(request: Request):
     return page(request, form_values(settings_of(request)))
 
 
+@router.post("/settings/language")
+async def save_language(request: Request):
+    """Язык интерфейса (ADR-0158): английский или русский. Сохраняется в базе (ключ ui_language) и сразу действует
+    во всём приложении; данные, решения и кэш вердиктов не меняются."""
+    form = await request.form(max_fields=4, max_files=0)
+    lang = i18n.normalize(form.get("lang"))
+
+    def apply():
+        if lang is None:
+            return page(request, form_values(settings_of(request)), status_code=400,
+                        error=i18n._("Язык не сохранён: выберите English или Русский."))
+        db_of(request).set_settings({i18n.SETTING_KEY: lang})
+        i18n.set_saved(lang)
+        return redirect("/settings?ok=language_saved#language")
+
+    return await run_in_threadpool(apply)
+
+
 @router.post("/settings")
 async def save_settings(request: Request):
     form = await request.form(max_fields=MAX_FIELDS, max_files=0)
@@ -85,7 +105,7 @@ async def save_settings(request: Request):
                                   "checked": False})
         if parsed.errors:
             return page(request, parsed.values, parsed.errors,
-                        error="Настройки не сохранены: исправьте отмеченные поля.", status_code=400)
+                        error=i18n._("Настройки не сохранены: исправьте отмеченные поля."), status_code=400)
         settings, db = settings_of(request), db_of(request)
         new_hub = parsed.clean.get("hub_url")
         # адрес Hub пишет только операция смены назначения (п. 4.5 плана dev17): совпадение с действующим адресом и
@@ -98,8 +118,8 @@ async def save_settings(request: Request):
                 result = save(db, settings, clean)
         except TimeoutError:  # профиль 1 занят отправкой запросов дольше срока ожидания (app/profile_gate.py)
             return page(request, parsed.values, {}, status_code=503,
-                        error="Настройки не сохранены: запросы к серверу модели по адресу Ollama отправляются дольше "
-                              "обычного. Повторите сохранение через минуту.")
+                        error=i18n._("Настройки не сохранены: запросы к серверу модели по адресу Ollama отправляются "
+                                     "дольше обычного. Повторите сохранение через минуту."))
         if new_hub is not None:
             preview = db.change_hub_url(new_hub, dry=True, env_url=env_url)
             if preview.get("affects"):  # что-то меняет – сначала подтверждение с итогом по проектам
@@ -124,7 +144,7 @@ def hub_url_page(request: Request, old_url: str, new_url: str, preview: dict, er
         if summary.get("identity_cleared") or summary.get("hub_decisions_withdrawn") or summary.get("findings"):
             project = db.get_project(int(pid)) or {}
             from app.package_transition import entity_rows
-            rows.append({"name": project.get("name") or f"Проект {pid}", "summary": summary,
+            rows.append({"name": project.get("name") or i18n._("Проект {id}", id=pid), "summary": summary,
                          "entities": entity_rows(summary)})
     from app.package_transition import TABLE_LABELS
     return render(request, "settings/hub_url.html", {"old_url": old_url, "new_url": new_url, "rows": rows,
@@ -147,7 +167,7 @@ async def hub_url_apply(request: Request):
             url = normalize_setting("hub_url", raw)
         except ConfigError as e:
             return page(request, form_values(settings), {"hub_url": str(e)}, status_code=400,
-                        error="Адрес Hub не сменён: исправьте адрес.")
+                        error=i18n._("Адрес Hub не сменён: исправьте адрес."))
         env_url = web_of(request).base.hub_url
         try:
             db.change_hub_url(url, expect=token, env_url=env_url)

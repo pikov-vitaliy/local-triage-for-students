@@ -3,7 +3,7 @@
 import json
 from dataclasses import replace
 
-from app import hub_entity_versions as versions, hub_sync_api as api
+from app import hub_entity_versions as versions, hub_sync_api as api, i18n
 from app.db import dumps, loads, now_iso
 from app.hub_ops import hub_base
 from app.hub_status import HUB_ISSUE_TYPE
@@ -12,7 +12,7 @@ ACTIVE = ("running", "waiting")
 
 
 RESYNC_KEY = "hub_resync_required"
-RESYNC_REFUSAL = ("База восстановлена из копии: сначала «Синхронизировать» на вкладке «Дефекты» и «Принять состояние Hub». "
+RESYNC_REFUSAL = i18n.N_("База восстановлена из копии: сначала «Синхронизировать» на вкладке «Дефекты» и «Принять состояние Hub». "
                   "Сделанное в Hub после копии база не знает: новая запись могла бы его повторить.")
 
 
@@ -84,13 +84,13 @@ def _known_defect_in(c, row, item):
 
 def resync_blocker(db, project_id):
     """Почему запись по проекту сейчас не поставить: «» – можно."""
-    return RESYNC_REFUSAL if db.on_connection(lambda c: int(project_id) in resync_pending_in(c)) else ""
+    return i18n._(RESYNC_REFUSAL) if db.on_connection(lambda c: int(project_id) in resync_pending_in(c)) else ""
 
 
 def run_in(c, run_id):
     row = c.execute("SELECT * FROM hub_defect_sync_runs WHERE id=?", (run_id,)).fetchone()
     if row is None:
-        raise ValueError("Запуск синхронизации не найден.")
+        raise ValueError(i18n._("Запуск синхронизации не найден."))
     return dict(row)
 
 
@@ -135,10 +135,10 @@ def start(db, project_id, hub_url, app_id, *, adapter=None, check=None, previous
                              (project_id,)).fetchone()
         actual = (existing["id"], existing["revision"]) if existing else None
         if actual != previous:
-            raise ValueError("Список запусков изменился: откройте подтверждение нового чтения заново.")
+            raise ValueError(i18n._("Список запусков изменился: откройте подтверждение нового чтения заново."))
         if existing:
             if existing["state"] in (*ACTIVE, "comparing"):
-                raise ValueError("Чтение уже идёт. Откройте его результат или остановите запуск.")
+                raise ValueError(i18n._("Чтение уже идёт. Откройте его результат или остановите запуск."))
             cancel_queued(c, existing)
             c.execute("UPDATE hub_defect_sync_runs SET closed_at=?,state='closed',revision=revision+1 WHERE id=?",
                       (now_iso(), existing["id"]))
@@ -226,10 +226,10 @@ def response_body(c, row, adapter, step, op):
     if result.get("truncated") or result.get("error") or result.get("not_sent"):
         raise ValueError("Обязательный ответ не получен полностью. " + str(result.get("error") or ""))
     if op["state"] != "done" and not documented_empty and not missing_404:
-        raise ValueError(op.get("error") or "Чтение Hub не завершено.")
+        raise ValueError(op.get("error") or i18n.N_("Чтение Hub не завершено."))
     body = None if documented_empty or missing_404 else json.loads(result["body_text"])
     if body is None and not (documented_empty or missing_404):
-        raise ValueError("Ответ null не подтверждает отсутствие объекта по установленному контракту.")
+        raise ValueError(i18n.N_("Ответ null не подтверждает отсутствие объекта по установленному контракту."))
     return body
 
 
@@ -330,7 +330,7 @@ def consume_page(c, row, data, adapter, step, body):
     else:
         if not set(data.get("restart_keys", {}).get(kind, [])) <= seen | {key for key, _ in entries}:
             audit["state"] = "invalid"
-            raise ValueError("После изменения шага пропали ранее прочитанные ID. Нужен новый обход.")
+            raise ValueError(i18n.N_("После изменения шага пропали ранее прочитанные ID. Нужен новый обход."))
         data["lists_done"].append(kind)
         if kind == "issue":
             app_check_in(c, row, data)
@@ -382,7 +382,7 @@ def app_check_in(c, row, data):
                                   and not {n.casefold() for n in hub_names} & {n.casefold() for n in export_names}),
              "status": "match", "reason": "", "stop": False}
     if not local:
-        check.update(status="skipped", reason="В последней выгрузке проекта нет номеров находок Hub: сверять не с чем.")
+        check.update(status="skipped", reason=i18n.N_("В последней выгрузке проекта нет номеров находок Hub: сверять не с чем."))
     elif not common:
         # в том числе пустой список Hub при непустой выгрузке: соответствие не установлено, решает оператор
         check.update(status="mismatch", stop=not check["confirmed"])
@@ -421,7 +421,7 @@ def plan_details(c, row):
             continue
         if kind == "issue" and key.split(":")[0] not in api.DETAIL_PATHS:
             c.execute("UPDATE hub_sync_items SET stale_reason=? WHERE run_id=? AND entity_kind=? AND entity_key=?",
-                      ("Неподдержанный тип находки.", row["id"], kind, key))
+                      (i18n.N_("Неподдержанный тип находки."), row["id"], kind, key))
             continue
         brief = loads(item["hub_json"], {}).get("brief", {})
         branch = brief.get("currentBranch") if kind == "issue" else None
@@ -436,42 +436,42 @@ def consume_object(c, row, adapter, step, body, op, *, replay=False):
     coverage = loads(item["coverage_json"], {})
     coverage.get("exceptions", {}).pop(part, None)
     if part in ("manual", "risk") and body is not None and not isinstance(body, dict):
-        raise ValueError("Ручная запись или риск имеет неверный формат: требуется объект либо подтверждённое отсутствие.")
+        raise ValueError(i18n.N_("Ручная запись или риск имеет неверный формат: требуется объект либо подтверждённое отсутствие."))
     if part in ("manual", "risk") and isinstance(body, dict):
         if type(body.get("issueId")) is not int or not isinstance(body.get("issueType"), str):
-            raise ValueError("Ручная запись или риск имеет неверный формат: отсутствуют issueId или issueType.")
+            raise ValueError(i18n.N_("Ручная запись или риск имеет неверный формат: отсутствуют issueId или issueType."))
         if part == "manual" and not isinstance(body.get("status"), str):
-            raise ValueError("Ручная запись имеет неверный формат: отсутствует status.")
+            raise ValueError(i18n.N_("Ручная запись имеет неверный формат: отсутствует status."))
     if part == "detail" and body is None and coverage.get("absent_from_list"):
         coverage["id_response"] = {"status": 404, "op_id": op["id"], "at": step["processed_at"] if replay else now_iso()}
     elif part == "detail" or part.startswith("branch:"):
         expected_id = int(key.split(":")[-1])
         if not isinstance(body, dict) or type(body.get("id")) is not int or body["id"] != expected_id:
-            raise ValueError("ID подробного ответа не совпадает с запросом.")
+            raise ValueError(i18n.N_("ID подробного ответа не совпадает с запросом."))
         actual_app = api.application_id(body, kind)
         if type(actual_app) is not int or actual_app != row["app_id"]:
-            raise ValueError("Подробный объект другого приложения.")
+            raise ValueError(i18n.N_("Подробный объект другого приложения."))
         if kind == "issue" and not isinstance(body.get("status"), str):
-            raise ValueError("В подробном ответе отсутствует текущий статус.")
+            raise ValueError(i18n.N_("В подробном ответе отсутствует текущий статус."))
         if part.startswith("branch:") and body.get("currentBranch") != part.removeprefix("branch:"):
-            raise ValueError("Подробный ответ относится к другой ветке.")
+            raise ValueError(i18n.N_("Подробный ответ относится к другой ветке."))
         selected = (hub.get("brief") or {}).get("currentBranch")
         if kind == "issue" and part == "detail" and selected is not None and body.get("currentBranch") != selected:
-            raise ValueError("Ветка основного подробного ответа не совпала с currentBranch списка.")
+            raise ValueError(i18n.N_("Ветка основного подробного ответа не совпала с currentBranch списка."))
         if kind == "defect" and (problems := api.composition_problems(body)):
             raise ValueError(problems[0])
         if coverage.get("absent_from_list"):
-            coverage["inventory_contradiction"] = "Объект найден по ID, но отсутствует в полном списке."
+            coverage["inventory_contradiction"] = i18n.N_("Объект найден по ID, но отсутствует в полном списке.")
         if kind == "issue" and part == "detail":
             typ, ident = key.split(":")
             if not replay:
                 plan(c, row, kind, key, "manual", api.request("/issue/status", issueId=ident, issueType=typ))
             branches = body.get("issueBranchBriefData", [])
             if not isinstance(branches, list):
-                raise ValueError("Неверный список веток находки.")
+                raise ValueError(i18n.N_("Неверный список веток находки."))
             for branch in branches:
                 if not isinstance(branch, dict) or not isinstance(branch.get("branch"), str):
-                    raise ValueError("У ветки отсутствует имя.")
+                    raise ValueError(i18n.N_("У ветки отсутствует имя."))
                 if not replay and branch["branch"] != body.get("currentBranch"):
                     plan(c, row, kind, key, "branch:" + branch["branch"], api.detail(kind, key, branch["branch"]))
     if not replay and kind == "issue" and (part in ("detail", "manual") or part.startswith("branch:")):
@@ -490,7 +490,7 @@ def consume_object(c, row, adapter, step, body, op, *, replay=False):
             base = {"accepted_epoch": step["base_epoch"], "accepted_hash": step["base_hash"]}
     if (step["base_epoch"] != base["accepted_epoch"] or step["base_hash"] != base["accepted_hash"]
             or (sources and item["base_epoch"] != step["base_epoch"])):
-        stale = "Принятая база изменилась между чтениями. Требуется новое подтверждённое чтение."
+        stale = i18n.N_("Принятая база изменилась между чтениями. Требуется новое подтверждённое чтение.")
     hub[part] = body
     attempt = c.execute("SELECT taken_at FROM hub_attempts WHERE op_id=? ORDER BY id DESC LIMIT 1", (op["id"],)).fetchone()
     observed_from = attempt[0] if attempt else op["created_at"]
@@ -528,7 +528,7 @@ def reparse_saved(c, row):
         try:
             if not isinstance(result.get("body_text"), str):
                 missing += 1
-                raise ValueError("Сырой ответ не сохранён. Требуется подтверждённое продолжение для недостающего чтения.")
+                raise ValueError(i18n.N_("Сырой ответ не сохранён. Требуется подтверждённое продолжение для недостающего чтения."))
             body = response_body(c, row, adapter, step, op)
             consume_object(c, row, adapter, step, body, op, replay=True)
             c.execute("UPDATE hub_sync_requests SET state='done' WHERE id=?", (step["id"],))
@@ -580,12 +580,12 @@ def continue_run(db, run_id, revision, *, check=None):
         row = run_in(c, run_id)
         data = passport(row)
         if row["closed_at"] or row["revision"] != revision or row["state"] in ACTIVE:
-            raise ValueError("Состояние запуска изменилось: обновите страницу подтверждения.")
+            raise ValueError(i18n._("Состояние запуска изменилось: обновите страницу подтверждения."))
         if not data["inventory_complete"]:
-            raise ValueError("Списки прочитаны не полностью. Закройте запуск и подтвердите новый полный обход.")
+            raise ValueError(i18n._("Списки прочитаны не полностью. Закройте запуск и подтвердите новый полный обход."))
         if c.execute("SELECT 1 FROM hub_ops WHERE state='taken' AND id IN"
                      " (SELECT op_id FROM hub_sync_requests WHERE run_id=?)", (run_id,)).fetchone():
-            raise ValueError("Дождитесь ответа уже выданного чтения или истечения его аренды.")
+            raise ValueError(i18n._("Дождитесь ответа уже выданного чтения или истечения его аренды."))
         reparse_saved(c, row)
         row = run_in(c, run_id)
         data = passport(row)

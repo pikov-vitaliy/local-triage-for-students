@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, collector_warning %}
-{% block title %}{{ profile.name if profile else "Новый профиль" }} · Провайдеры моделей · Локальный триаж{% endblock %}
+{% block title %}{{ profile.name if profile else _("Новый профиль") }} · {{ _("Провайдеры моделей") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}settings{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a href="/settings">Настройки</a><span aria-hidden="true"> / </span><a href="/settings/providers">Провайдеры моделей</a><span aria-hidden="true"> / </span><span aria-current="page">{{ profile.name if profile else "Новый профиль" }}</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a href="/settings">{{ _("Настройки") }}</a><span aria-hidden="true"> / </span><a href="/settings/providers">{{ _("Провайдеры моделей") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ profile.name if profile else _("Новый профиль") }}</span>{% endblock %}
 {% macro field_error(name) -%}
 {%- if errors[name] %}<span class="field-error" id="{{ name }}-error">{{ errors[name] }}</span>{% endif -%}
 {%- endmacro %}
@@ -12,53 +12,53 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{{ profile.name if profile else "Новый профиль" }}</h1>
-    <p class="page-sub">{% if fixed %}Профиль «Ollama из «Настроек»»: адрес и модель по умолчанию меняются на странице <a href="/settings">«Настройки»</a>, здесь – окно контекста, рассуждение, пределы и сроки ответа.{% else %}Заполните поля и нажмите «Проверить»: приложение покажет версию сервера и его модели. Затем – «Сохранить».{% endif %}</p>
+    <h1 data-section="{{ _("Параметры") }}">{{ profile.name if profile else _("Новый профиль") }}</h1>
+    <p class="page-sub">{% if fixed %}{{ _("Профиль «Ollama из «Настроек»»: адрес и модель по умолчанию меняются на странице") }} <a href="/settings">{{ _("«Настройки»") }}</a>{{ _(", здесь – окно контекста, рассуждение, пределы и сроки ответа.") }}{% else %}{{ _("Заполните поля и нажмите «Проверить»: приложение покажет версию сервера и его модели. Затем – «Сохранить».") }}{% endif %}</p>
   </div>
 </div>
-{% if check.saved_first %}<p class="callout callout-ok" role="status" id="provider-saved-first">Профиль сохранён{% if check.key_dropped %}: адрес сервера изменился – прежний ключ удалён, введите ключ заново{% endif %}.</p>{% endif %}
+{% if check.saved_first %}<p class="callout callout-ok" role="status" id="provider-saved-first">{% if check.key_dropped %}{{ _("Профиль сохранён: адрес сервера изменился – прежний ключ удалён, введите ключ заново.") }}{% else %}{{ _("Профиль сохранён.") }}{% endif %}</p>{% endif %}
 {% if notice %}<p class="callout callout-ok" role="status" id="provider-notice">{{ notice }}</p>{% endif %}
 {% if external_on and collector.expected and not collector.addresses and profile and profile.trust == "external" %}{{ collector_warning(collector, "external") }}{% endif %}
 
-<form method="post" action="{{ action }}" class="settings-form provider-form" data-busy="Сохраняю…" autocomplete="off">
+<form method="post" action="{{ action }}" class="settings-form provider-form" data-busy="{{ _("Сохраняю…") }}" autocomplete="off">
 {% if values.preset %}<input type="hidden" name="preset" value="{{ values.preset }}">{% endif %}
-{% if values.preset %}<p class="field" id="preset-examples"><label class="check"><input type="checkbox" name="examples_profile" value="1"{% if values.examples_profile != "0" %} checked{% endif %}> Сделать этот профиль профилем для примеров (назначается проектам из каталога учебных примеров)</label></p>{% endif %}
-  <button type="submit" name="action" value="save" class="visually-hidden" tabindex="-1" aria-hidden="true">Сохранить</button>
+{% if values.preset %}<p class="field" id="preset-examples"><label class="check"><input type="checkbox" name="examples_profile" value="1"{% if values.examples_profile != "0" %} checked{% endif %}> {{ _("Сделать этот профиль профилем для примеров (назначается проектам из каталога учебных примеров)") }}</label></p>{% endif %}
+  <button type="submit" name="action" value="save" class="visually-hidden" tabindex="-1" aria-hidden="true">{{ _("Сохранить") }}</button>
   {% if check.key_handle %}<input type="hidden" name="key_handle" value="{{ check.key_handle }}">{% endif %}
   {% if check.key_draft %}<input type="hidden" name="key_draft" value="{{ check.key_draft }}">{% endif %}
 
   <section class="panel" aria-labelledby="where-title">
-    <h2 id="where-title">Где работает модель</h2>
+    <h2 id="where-title">{{ _("Где работает модель") }}</h2>
     <label class="field">
-      <span class="field-label">Название профиля</span>
+      <span class="field-label">{{ _("Название профиля") }}</span>
       <input type="text" name="name" value="{{ values.name }}" maxlength="100"{{ invalid("name") }}>
       {{ field_error("name") }}
     </label>
     {% if fixed %}
-    <p>{{ trust_labels.local }}. Адрес: <span class="mono">{{ values.base_url }}</span>, модель по умолчанию: <span class="mono">{{ values.default_model or "–" }}</span>.</p>
+    <p>{{ trust_labels.local }}. {{ _("Адрес:") }} <span class="mono">{{ values.base_url }}</span>, {{ _("модель по умолчанию:") }} <span class="mono">{{ values.default_model or "–" }}</span>.</p>
     {% else %}
     <fieldset class="field" id="provider-kind">
-      <legend class="field-label">Протокол</legend>
+      <legend class="field-label">{{ _("Протокол") }}</legend>
       {% for kind, label in kind_labels.items() %}
       <label class="radio"><input type="radio" name="kind" value="{{ kind }}"{% if values.kind == kind %} checked{% endif %}{{ invalid("kind") }}> {{ label }}</label>
       {% endfor %}
       {{ field_error("kind") }}
     </fieldset>
     <fieldset class="field">
-      <legend class="field-label">Сервер</legend>
+      <legend class="field-label">{{ _("Сервер") }}</legend>
       {% for trust, label in trust_labels.items() %}
       <label class="radio"><input type="radio" name="trust" value="{{ trust }}"{% if values.trust == trust %} checked{% endif %}{% if trust == "external" and not external_on and values.trust != "external" %} disabled{% endif %}{{ invalid("trust") }}> {{ label }}</label>
       {% endfor %}
-      {% if not external_on %}<span class="field-hint" id="external-off">Интернет выключен на этой установке: внешние провайдеры включаются запуском приложения с LLM_EXTERNAL=1 (строка в .env).</span>{% endif %}
+      {% if not external_on %}<span class="field-hint" id="external-off">{{ _("Интернет выключен на этой установке: внешние провайдеры включаются запуском приложения с LLM_EXTERNAL=1 (строка в .env).") }}</span>{% endif %}
       {{ field_error("trust") }}
     </fieldset>
     <div class="inline-form">
       <label class="field grow">
-        <span class="field-label">Адрес сервера</span>
+        <span class="field-label">{{ _("Адрес сервера") }}</span>
         <input type="text" class="input-mono" name="base_url" value="{{ values.base_url }}" maxlength="300" spellcheck="false" inputmode="url" placeholder="http://10.0.0.5:11434"{{ invalid("base_url") }}>
-        <span class="field-hint">Этот компьютер: хосты {{ local_hosts }}. Сервер в сети: адрес или имя в частной сети (10.x, 172.16–31.x, 192.168.x). Интернет: только https, адрес API провайдера; к нему добавляются /models и /chat/completions (у Anthropic Messages API – /models и /messages).</span>
+        <span class="field-hint">{{ _("Этот компьютер: хосты {hosts}. Сервер в сети: адрес или имя в частной сети (10.x, 172.16–31.x, 192.168.x). Интернет: только https, адрес API провайдера; к нему добавляются /models и /chat/completions (у Anthropic Messages API – /models и /messages).", hosts=local_hosts) }}</span>
       </label>
-      <button type="submit" name="action" value="check" class="btn" data-busy="Проверяю…" id="provider-check">{{ icon("refresh") }}Проверить</button>
+      <button type="submit" name="action" value="check" class="btn" data-busy="{{ _("Проверяю…") }}" id="provider-check">{{ icon("refresh") }}{{ _("Проверить") }}</button>
     </div>
     {{ field_error("base_url") }}
     {% endif %}
@@ -66,67 +66,67 @@
     {% if check.checked %}
       {% if check.addresses %}
       <fieldset class="field" id="provider-addresses">
-        <legend class="field-label">Адреса сервера</legend>
-        <p class="hint">Имя сервера сейчас разрешается в эти адреса. Код находок уйдёт только на подтверждённые: отметьте, если это ваш сервер. Если адрес потом сменится, запросы не уйдут, пока вы не подтвердите новый.</p>
+        <legend class="field-label">{{ _("Адреса сервера") }}</legend>
+        <p class="hint">{{ _("Имя сервера сейчас разрешается в эти адреса. Код находок уйдёт только на подтверждённые: отметьте, если это ваш сервер. Если адрес потом сменится, запросы не уйдут, пока вы не подтвердите новый.") }}</p>
         {% for a in check.addresses %}
-        <label class="check"><input type="checkbox" name="confirm" value="{{ a.address }}"{% if a.address in values.confirmed %} checked{% endif %}{% if not a.private %} disabled{% endif %}> <span class="mono">{{ a.address }}</span>{% if not a.private %} – не частная сеть, не годится{% endif %}</label>
+        <label class="check"><input type="checkbox" name="confirm" value="{{ a.address }}"{% if a.address in values.confirmed %} checked{% endif %}{% if not a.private %} disabled{% endif %}> <span class="mono">{{ a.address }}</span>{% if not a.private %} – {{ _("не частная сеть, не годится") }}{% endif %}</label>
         {% endfor %}
       </fieldset>
       {% endif %}
       {% if check.error %}
-      <p class="callout callout-err" role="status" id="provider-status">{{ check.error }}</p>
+      <p class="callout callout-err" role="status" id="provider-status">{{ check.error|run_error }}</p>
       {% elif check.need_confirm %}
-      <p class="callout callout-info" role="status" id="provider-status">Отметьте адреса сервера и нажмите «Проверить» ещё раз – до подтверждения приложение к серверу не обращается.</p>
+      <p class="callout callout-info" role="status" id="provider-status">{{ _("Отметьте адреса сервера и нажмите «Проверить» ещё раз – до подтверждения приложение к серверу не обращается.") }}</p>
       {% elif check.version %}
       <div class="callout callout-ok" role="status" id="provider-status">
-        <p>Проверено: {% if check.kind != "ollama" %}{{ check.version }}{% else %}Ollama {{ check.version }}, моделей для разбора – {{ check.models|length }}{% endif %}.{% if check.models_unavailable %} Сервер не отдаёт список моделей – в списке имя модели из формы; есть ли такая модель у провайдера, покажет «Пробный ответ».{% endif %} {% if profile %}Проверка не сохраняет изменения формы: если меняли поля, нажмите «Сохранить».{% else %}Профиль ещё не сохранён – нажмите «Сохранить».{% endif %} Генерацию моделью это не проверяет – для этого «Пробный ответ»{% if not profile %} после сохранения{% endif %}.</p>
-        {% if check.models %}<p class="small" id="provider-models">{% for m in check.models %}<span class="mono">{{ m|model_option }}</span>{% if m.context_length %} · окно до {{ m.context_length }} токенов{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</p>{% endif %}
+        <p>{{ _("Проверено:") }} {% if check.kind != "ollama" %}{{ check.version }}{% else %}{{ _("Ollama {version}, моделей для разбора – {n}", version=check.version, n=check.models|length) }}{% endif %}.{% if check.models_unavailable %} {{ _("Сервер не отдаёт список моделей – в списке имя модели из формы; есть ли такая модель у провайдера, покажет «Пробный ответ».") }}{% endif %} {% if profile %}{{ _("Проверка не сохраняет изменения формы: если меняли поля, нажмите «Сохранить».") }}{% else %}{{ _("Профиль ещё не сохранён – нажмите «Сохранить».") }}{% endif %} {% if profile %}{{ _("Генерацию моделью это не проверяет – для этого «Пробный ответ».") }}{% else %}{{ _("Генерацию моделью это не проверяет – для этого «Пробный ответ» после сохранения.") }}{% endif %}</p>
+        {% if check.models %}<p class="small" id="provider-models">{% for m in check.models %}<span class="mono">{{ m|model_option }}</span>{% if m.context_length %} · {{ _("окно до {n} токенов", n=m.context_length) }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</p>{% endif %}
       </div>
       {% endif %}
     {% else %}
       {% for address in values.confirmed %}<input type="hidden" name="confirm" value="{{ address }}">{% endfor %}
-      {% if values.trust == "lan" and values.confirmed %}<p class="small" id="provider-confirmed">Подтверждённые адреса: <span class="mono">{{ values.confirmed|join(", ") }}</span>. «Проверить» покажет, куда имя разрешается сейчас.</p>{% endif %}
+      {% if values.trust == "lan" and values.confirmed %}<p class="small" id="provider-confirmed">{{ _("Подтверждённые адреса:") }} <span class="mono">{{ values.confirmed|join(", ") }}</span>. {{ _("«Проверить» покажет, куда имя разрешается сейчас.") }}</p>{% endif %}
     {% endif %}
 
     {% if not fixed %}
     <label class="field">
-      <span class="field-label">Модель по умолчанию</span>
+      <span class="field-label">{{ _("Модель по умолчанию") }}</span>
       {% if check.models %}
       <select name="default_model">
-        {% if check.model_missing %}<option value="{{ check.model_missing }}" selected>{{ check.model_missing }} – нет в списке сервера</option>{% endif %}
+        {% if check.model_missing %}<option value="{{ check.model_missing }}" selected>{{ check.model_missing }} – {{ _("нет в списке сервера") }}</option>{% endif %}
         {% for m in check.models %}<option value="{{ m.name }}"{% if m.name == (check.selected or values.default_model) %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
       </select>
       {% else %}
       <input type="text" class="input-mono" name="default_model" value="{{ values.default_model }}" maxlength="200" spellcheck="false">
       {% endif %}
-      {% if check.model_missing %}<span class="field-error" id="model-missing">Модели «{{ check.model_missing }}» нет в списке сервера: выберите модель из списка или проверьте имя.</span>{% endif %}
-      <span class="field-hint">Её предлагает запуск разбора в проектах с этим профилем.</span>
+      {% if check.model_missing %}<span class="field-error" id="model-missing">{{ _("Модели «{model}» нет в списке сервера: выберите модель из списка или проверьте имя.", model=check.model_missing) }}</span>{% endif %}
+      <span class="field-hint">{{ _("Её предлагает запуск разбора в проектах с этим профилем.") }}</span>
     </label>
     {% endif %}
   </section>
 
   {% if not fixed %}
   <section class="panel" aria-labelledby="key-title" id="provider-key">
-    <h2 id="key-title">Ключ API</h2>
-    <p class="hint">Для внешнего провайдера и сервера в сети, который требует ключ. Ключ хранится файлом в папке данных и привязан к адресу сервера: в базу и на страницы не попадает, из журнала обмена вырезается заголовок с ключом. Смена адреса удаляет ключ.</p>
-    <label class="check"><input type="checkbox" name="requires_key" value="1"{% if values.requires_key %} checked{% endif %}> Сервер требует ключ</label>
-    {% if check.key_handle %}<p class="callout callout-info small" id="key-not-saved">Ключ {% if check.key_used %}использован для проверки и {% endif %}запомнен до «Сохранить» – вводить его снова не нужно, пока адрес сервера и подтверждённые адреса те же (ключ – только в памяти приложения, не дольше 15 минут; страница его не показывает).</p>{% elif check.key_entered %}<p class="callout callout-info small" id="key-not-saved">Введённый ключ не сохранён: страница ключ не показывает. Введите его ещё раз и нажмите «Сохранить».</p>{% endif %}
+    <h2 id="key-title">{{ _("Ключ API") }}</h2>
+    <p class="hint">{{ _("Для внешнего провайдера и сервера в сети, который требует ключ. Ключ хранится файлом в папке данных и привязан к адресу сервера: в базу и на страницы не попадает, из журнала обмена вырезается заголовок с ключом. Смена адреса удаляет ключ.") }}</p>
+    <label class="check"><input type="checkbox" name="requires_key" value="1"{% if values.requires_key %} checked{% endif %}> {{ _("Сервер требует ключ") }}</label>
+    {% if check.key_handle %}<p class="callout callout-info small" id="key-not-saved">{% if check.key_used %}{{ _("Ключ использован для проверки и запомнен до «Сохранить» – вводить его снова не нужно, пока адрес сервера и подтверждённые адреса те же (ключ – только в памяти приложения, не дольше 15 минут; страница его не показывает).") }}{% else %}{{ _("Ключ запомнен до «Сохранить» – вводить его снова не нужно, пока адрес сервера и подтверждённые адреса те же (ключ – только в памяти приложения, не дольше 15 минут; страница его не показывает).") }}{% endif %}</p>{% elif check.key_entered %}<p class="callout callout-info small" id="key-not-saved">{{ _("Введённый ключ не сохранён: страница ключ не показывает. Введите его ещё раз и нажмите «Сохранить».") }}</p>{% endif %}
     <label class="field">
-      <span class="field-label">Ключ{% if key %} – {{ key }}{% endif %}</span>
-      <input type="password" name="key" value="" maxlength="4096" autocomplete="new-password" spellcheck="false" placeholder="{{ 'оставьте пустым, чтобы не менять' if key else 'если сервер требует ключ – от 16 знаков' }}"{{ invalid("key") }}>
+      <span class="field-label">{{ _("Ключ") }}{% if key %} – {{ key }}{% endif %}</span>
+      <input type="password" name="key" value="" maxlength="4096" autocomplete="new-password" spellcheck="false" placeholder="{{ _('оставьте пустым, чтобы не менять') if key else _('если сервер требует ключ – от 16 знаков') }}"{{ invalid("key") }}>
       {{ field_error("key") }}
     </label>
-    {% if key %}<label class="check"><input type="checkbox" name="delete_key" value="1"> Удалить ключ</label>{% endif %}
+    {% if key %}<label class="check"><input type="checkbox" name="delete_key" value="1"> {{ _("Удалить ключ") }}</label>{% endif %}
   </section>
   {% endif %}
 
   {% if not fixed %}
   <details class="panel provider-chat provider-advanced" id="provider-chat"{% if errors.response_mode or errors.messages_response_mode or errors.thinking or errors.effort or errors.context_window or errors.max_output or errors.tool_steps or errors.chat_timeout_s or errors.search_path or errors.fetch_path %} open{% endif %}>
-    <summary><h2 id="chat-title">Дополнительно</h2> <span class="muted small">формат ответа, рассуждение, пределы, поиск</span></summary>
-    <p class="hint">Можно не трогать: пустые поля и «не передавать» – умолчания провайдера и приложения. Поиск нужен для исследования компонентов. Значения – из документации провайдера; лимиты расхода задаются в его личном кабинете.</p>
-    <p class="provider-cc cluster" id="deepseek-recommended"><button type="button" class="btn btn-small" data-fill-fields="{{ deepseek_recommended|tojson|forceescape }}" data-fill-status="deepseek-recommended-status">Подставить рекомендуемые значения DeepSeek</button><span class="muted small" id="deepseek-recommended-status" role="status" aria-live="polite">Заполнит поля ниже значениями для deepseek-flash; затем «Сохранить».</span></p>
+    <summary><h2 id="chat-title">{{ _("Дополнительно") }}</h2> <span class="muted small">{{ _("формат ответа, рассуждение, пределы, поиск") }}</span></summary>
+    <p class="hint">{{ _("Можно не трогать: пустые поля и «не передавать» – умолчания провайдера и приложения. Поиск нужен для исследования компонентов. Значения – из документации провайдера; лимиты расхода задаются в его личном кабинете.") }}</p>
+    <p class="provider-cc cluster" id="deepseek-recommended"><button type="button" class="btn btn-small" data-fill-fields="{{ deepseek_recommended|tojson|forceescape }}" data-fill-status="deepseek-recommended-status">{{ _("Подставить рекомендуемые значения DeepSeek") }}</button><span class="muted small" id="deepseek-recommended-status" role="status" aria-live="polite">{{ _("Заполнит поля ниже значениями для deepseek-flash; затем «Сохранить».") }}</span></p>
     <label class="field provider-cc">
-      <span class="field-label">Формат ответа</span>
+      <span class="field-label">{{ _("Формат ответа") }}</span>
       <select name="response_mode"{{ invalid("response_mode") }}>
         {% for mode, label in response_labels.items() %}<option value="{{ mode }}"{% if values.response_mode == mode %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
@@ -134,15 +134,15 @@
       {{ field_error("response_mode") }}
     </label>
     <label class="field provider-msg">
-      <span class="field-label">Формат ответа</span>
+      <span class="field-label">{{ _("Формат ответа") }}</span>
       <select name="messages_response_mode"{{ invalid("messages_response_mode") }}>
         {% for mode, label in messages_response_labels.items() %}<option value="{{ mode }}"{% if values.messages_response_mode == mode %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
-      <span class="field-hint">Рассуждение (thinking) протоколу Messages приложение не передаёт: модель отвечает с настройками провайдера по умолчанию.</span>
+      <span class="field-hint">{{ _("Рассуждение (thinking) протоколу Messages приложение не передаёт: модель отвечает с настройками провайдера по умолчанию.") }}</span>
       {{ field_error("messages_response_mode") }}
     </label>
     <label class="field provider-cc">
-      <span class="field-label">Рассуждение – поле thinking</span>
+      <span class="field-label">{{ _("Рассуждение – поле thinking") }}</span>
       <select name="thinking"{{ invalid("thinking") }}>
         {% for mode, label in thinking_labels.items() %}<option value="{{ mode }}"{% if values.thinking == mode %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
@@ -150,86 +150,86 @@
       {{ field_error("thinking") }}
     </label>
     <label class="field provider-cc">
-      <span class="field-label">Уровень рассуждения – поле reasoning_effort</span>
+      <span class="field-label">{{ _("Уровень рассуждения – поле reasoning_effort") }}</span>
       <select name="effort"{{ invalid("effort") }}>
         {% for level, label in effort_labels.items() %}<option value="{{ level }}"{% if values.effort == level %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
-      <span class="field-hint">{{ advanced_hints.effort }} «Не передавать» – как решит сервер. Поля, которых сервер не знает, он может отвергнуть: «Пробный ответ» покажет.</span>
+      <span class="field-hint">{{ advanced_hints.effort }} {{ _("«Не передавать» – как решит сервер. Поля, которых сервер не знает, он может отвергнуть: «Пробный ответ» покажет.") }}</span>
       {{ field_error("effort") }}
     </label>
     {% for name in ("context_window", "max_output", "tool_steps", "chat_timeout_s") %}
     <label class="field">
-      <span class="field-label">{{ chat_numbers[name][3] }}{% if name == "chat_timeout_s" %}, с{% elif name != "tool_steps" %}, токенов{% endif %}</span>
-      <input type="text" name="{{ name }}" value="{{ values[name] }}" inputmode="numeric" maxlength="8" placeholder="{{ {'context_window': 'не проверять', 'max_output': '8192', 'tool_steps': '12', 'chat_timeout_s': '600'}[name] }}" title="{{ advanced_hints[name] }}"{{ invalid(name) }}>
+      <span class="field-label">{{ _(chat_numbers[name][3]) }}{% if name == "chat_timeout_s" %}, {{ _("с") }}{% elif name != "tool_steps" %}, {{ _("токенов") }}{% endif %}</span>
+      <input type="text" name="{{ name }}" value="{{ values[name] }}" inputmode="numeric" maxlength="8" placeholder="{{ {'context_window': _('не проверять'), 'max_output': '8192', 'tool_steps': '12', 'chat_timeout_s': '600'}[name] }}" title="{{ advanced_hints[name] }}"{{ invalid(name) }}>
       <span class="field-hint">{{ advanced_hints[name] }}</span>
       {{ field_error(name) }}
     </label>
     {% endfor %}
-    <label class="check"><input type="checkbox" name="retry_on_drop" value="1"{% if values.retry_on_drop %} checked{% endif %}> Повторять после обрыва без ответа – один раз на находку или строку исследования</label>
-    <span class="field-hint" id="retry-on-drop-hint">Только для внешнего провайдера. Запрос, на который сервер не ответил, мог быть принят и оплачен – повтор тоже платный. Если обрывы идут подряд (3 находки подряд или больше 10 % прогона), прогон встаёт на паузу. «Продолжить» и перезапуск такие находки сами не отправляют.</span>
-    <label class="check"><input type="checkbox" name="search_on" value="1"{% if values.search_on %} checked{% endif %}> Поиск по источникам через API провайдера – для исследования компонентов</label>
+    <label class="check"><input type="checkbox" name="retry_on_drop" value="1"{% if values.retry_on_drop %} checked{% endif %}> {{ _("Повторять после обрыва без ответа – один раз на находку или строку исследования") }}</label>
+    <span class="field-hint" id="retry-on-drop-hint">{{ _("Только для внешнего провайдера. Запрос, на который сервер не ответил, мог быть принят и оплачен – повтор тоже платный. Если обрывы идут подряд (3 находки подряд или больше 10 % прогона), прогон встаёт на паузу. «Продолжить» и перезапуск такие находки сами не отправляют.") }}</span>
+    <label class="check"><input type="checkbox" name="search_on" value="1"{% if values.search_on %} checked{% endif %}> {{ _("Поиск по источникам через API провайдера – для исследования компонентов") }}</label>
     <div class="inline-form">
       <label class="field grow">
-        <span class="field-label">Путь поиска</span>
+        <span class="field-label">{{ _("Путь поиска") }}</span>
         <input type="text" class="input-mono" name="search_path" value="{{ values.search_path }}" maxlength="200" spellcheck="false" placeholder="/v1/tools/search"{{ invalid("search_path") }}>
         {{ field_error("search_path") }}
       </label>
       <label class="field grow">
-        <span class="field-label">Путь получения страницы</span>
+        <span class="field-label">{{ _("Путь получения страницы") }}</span>
         <input type="text" class="input-mono" name="fetch_path" value="{{ values.fetch_path }}" maxlength="200" spellcheck="false" placeholder="/v1/tools/fetch"{{ invalid("fetch_path") }}>
         {{ field_error("fetch_path") }}
       </label>
     </div>
-    <span class="field-hint">Пустые пути – стандартные /v1/tools/search и /v1/tools/fetch. Пути – от корня адреса профиля: тот же сервер и тот же ключ. Каждый запрос поиска расходуется у провайдера.</span>
+    <span class="field-hint">{{ _("Пустые пути – стандартные /v1/tools/search и /v1/tools/fetch. Пути – от корня адреса профиля: тот же сервер и тот же ключ. Каждый запрос поиска расходуется у провайдера.") }}</span>
   </details>
   {% endif %}
 
   <section class="panel provider-ollama" aria-labelledby="gen-title">
-    <h2 id="gen-title">Ответ модели{% if not fixed %} – Ollama{% endif %}</h2>
+    <h2 id="gen-title">{{ _("Ответ модели") }}{% if not fixed %} – Ollama{% endif %}</h2>
     <label class="field">
-      <span class="field-label">Рассуждение</span>
+      <span class="field-label">{{ _("Рассуждение") }}</span>
       <select name="think"{{ invalid("think") }}>
         {% for rule, label in think_labels.items() %}<option value="{{ rule }}"{% if values.think == rule %} selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
-      <span class="field-hint">Модель с рассуждением отвечает дольше: рассуждение получает своё место в окне и свой срок. Уровни низкий – высокий понимают модели gpt-oss, другим рассуждение просто включено.</span>
+      <span class="field-hint">{{ _("Модель с рассуждением отвечает дольше: рассуждение получает своё место в окне и свой срок. Уровни низкий – высокий понимают модели gpt-oss, другим рассуждение просто включено.") }}</span>
       {{ field_error("think") }}
     </label>
     <label class="field">
-      <span class="field-label">Окно контекста, токенов</span>
-      <input type="text" name="num_ctx" value="{{ values.num_ctx }}" inputmode="numeric" maxlength="7" placeholder="авто – {{ app_num_ctx }}"{{ invalid("num_ctx") }}>
-      <span class="field-hint">Сколько текста модель видит за раз: промпт с кодом и ответ. Больше окно – больше видеопамяти. Пусто – как в настройках приложения ({{ app_num_ctx }}).</span>
+      <span class="field-label">{{ _("Окно контекста, токенов") }}</span>
+      <input type="text" name="num_ctx" value="{{ values.num_ctx }}" inputmode="numeric" maxlength="7" placeholder="{{ _("авто – {n}", n=app_num_ctx) }}"{{ invalid("num_ctx") }}>
+      <span class="field-hint">{{ _("Сколько текста модель видит за раз: промпт с кодом и ответ. Больше окно – больше видеопамяти. Пусто – как в настройках приложения ({n}).", n=app_num_ctx) }}</span>
       {{ field_error("num_ctx") }}
     </label>
     <details class="field provider-limits"{% if errors.num_predict or errors.think_num_predict or errors.timeout_s or errors.think_timeout_s %} open{% endif %}>
-      <summary>Пределы и сроки ответа</summary>
+      <summary>{{ _("Пределы и сроки ответа") }}</summary>
       {% for name in ("num_predict", "think_num_predict", "timeout_s", "think_timeout_s") %}
       <label class="field">
-        <span class="field-label">{{ number_fields[name][3] }}{% if name.endswith("timeout_s") %}, с{% else %}, токенов{% endif %}</span>
-        <input type="text" name="{{ name }}" value="{{ values[name] }}" inputmode="numeric" maxlength="7" placeholder="авто"{{ invalid(name) }}>
+        <span class="field-label">{{ _(number_fields[name][3]) }}{% if name.endswith("timeout_s") %}, {{ _("с") }}{% else %}, {{ _("токенов") }}{% endif %}</span>
+        <input type="text" name="{{ name }}" value="{{ values[name] }}" inputmode="numeric" maxlength="7" placeholder="{{ _("авто") }}"{{ invalid(name) }}>
         {{ field_error(name) }}
       </label>
       {% endfor %}
-      <p class="field-hint">Авто: разбор – до 3072 токенов (не больше четверти окна); с рассуждением – остаток окна после промпта, до 8192; срок ответа – 900 с, с рассуждением – 2400 с.</p>
+      <p class="field-hint">{{ _("Авто: разбор – до 3072 токенов (не больше четверти окна); с рассуждением – остаток окна после промпта, до 8192; срок ответа – 900 с, с рассуждением – 2400 с.") }}</p>
     </details>
     {% if not fixed %}
-    <label class="check"><input type="checkbox" name="allows_unload" value="1"{% if values.allows_unload %} checked{% endif %}> Сервер в сети: разрешить выгружать модель, если она стала работать медленно (общий сервер может выполнять чужие задачи – по умолчанию нет)</label>
+    <label class="check"><input type="checkbox" name="allows_unload" value="1"{% if values.allows_unload %} checked{% endif %}> {{ _("Сервер в сети: разрешить выгружать модель, если она стала работать медленно (общий сервер может выполнять чужие задачи – по умолчанию нет)") }}</label>
     {% endif %}
   </section>
 
   <section class="panel" aria-labelledby="use-title">
-    <h2 id="use-title">Использование</h2>
-    <label class="check"><input type="checkbox" name="enabled" value="1"{% if values.enabled %} checked{% endif %}{{ invalid("enabled") }}> Профиль включён</label>
+    <h2 id="use-title">{{ _("Использование") }}</h2>
+    <label class="check"><input type="checkbox" name="enabled" value="1"{% if values.enabled %} checked{% endif %}{{ invalid("enabled") }}> {{ _("Профиль включён") }}</label>
     {{ field_error("enabled") }}
-    <label class="check provider-code-default"><input type="checkbox" name="default_code" value="1"{% if values.default_code %} checked{% endif %}{{ invalid("default_code") }}> По умолчанию для разбора кода во всех проектах</label>
+    <label class="check provider-code-default"><input type="checkbox" name="default_code" value="1"{% if values.default_code %} checked{% endif %}{{ invalid("default_code") }}> {{ _("По умолчанию для разбора кода во всех проектах") }}</label>
     {{ field_error("default_code") }}
-    {% if not fixed %}<p class="field-hint provider-chat-only" id="provider-code-default-note">Профиль по умолчанию действует на все проекты, где свой профиль не выбран. Внешнему провайдеру код уходит только проекту с отметкой «код не секретный» (у проектов учебных примеров и Demo Library она стоит сразу; у других проектов ставится в параметрах проекта после предпросмотра). Проекту без отметки разбор через этот профиль откажет – выберите для него другой профиль в «Параметрах проекта».</p>{% endif %}
+    {% if not fixed %}<p class="field-hint provider-chat-only" id="provider-code-default-note">{{ _("Профиль по умолчанию действует на все проекты, где свой профиль не выбран. Внешнему провайдеру код уходит только проекту с отметкой «код не секретный» (у проектов учебных примеров и Demo Library она стоит сразу; у других проектов ставится в параметрах проекта после предпросмотра). Проекту без отметки разбор через этот профиль откажет – выберите для него другой профиль в «Параметрах проекта».") }}</p>{% endif %}
   </section>
 
   <div class="actions">
-    <button type="submit" name="action" value="save" class="btn btn-primary" id="provider-save">Сохранить</button>
-    {% if profile %}<button type="submit" name="action" value="probe" class="btn" data-busy="Сохраняю и жду ответ…" id="provider-probe">{% if not fixed %}Сохранить и {% endif %}пробный ответ{% if profile.kind != "ollama" %} (расходует токены){% endif %}</button>{% endif %}
-    {% if profile and profile.kind in ("chat_completions", "messages") %}<button type="submit" name="action" value="search_check" class="btn" data-busy="Сохраняю и ищу…" id="provider-search-check">Сохранить и проверить поиск (расходует запрос)</button>{% endif %}
-    <a href="/settings/providers" class="btn btn-ghost">К списку</a>
+    <button type="submit" name="action" value="save" class="btn btn-primary" id="provider-save">{{ _("Сохранить") }}</button>
+    {% if profile %}<button type="submit" name="action" value="probe" class="btn" data-busy="{{ _("Сохраняю и жду ответ…") }}" id="provider-probe">{% if not fixed %}{{ _("Сохранить и пробный ответ") }}{% else %}{{ _("пробный ответ") }}{% endif %}{% if profile.kind != "ollama" %} {{ _("(расходует токены)") }}{% endif %}</button>{% endif %}
+    {% if profile and profile.kind in ("chat_completions", "messages") %}<button type="submit" name="action" value="search_check" class="btn" data-busy="{{ _("Сохраняю и ищу…") }}" id="provider-search-check">{{ _("Сохранить и проверить поиск (расходует запрос)") }}</button>{% endif %}
+    <a href="/settings/providers" class="btn btn-ghost">{{ _("К списку") }}</a>
   </div>
 </form>
 {% endblock %}

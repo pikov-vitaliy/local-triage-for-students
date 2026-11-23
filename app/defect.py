@@ -21,19 +21,19 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
-from app import cvss
+from app import cvss, defect_where, i18n
 from app.models import Finding
 from app.textsafe import hub_clean, is_invisible
 
 READY_VERDICTS = ("true_positive", "false_positive")
 # SAST с 0.9.6: дефект – только для подтверждённой находки, ложное срабатывание – короткий комментарий (ADR-0089)
 SAST_READY_VERDICTS = ("true_positive",)
-DEFAULT_RECOMMENDATION = "Исправить код так, чтобы недостаток не мог быть использован для реализации угроз."
-CATEGORY = {"true_positive": "True Positive", "false_positive": "False Positive"}
-NO_INFO = "Нет информации"
+DEFAULT_RECOMMENDATION = i18n.N_("Исправить код так, чтобы недостаток не мог быть использован для реализации угроз.")
+CATEGORY = {"true_positive": "True Positive", "false_positive": "False Positive"}  # категория Hub – не переводится
+NO_INFO = i18n.N_("Нет информации")  # msgid: в текущих текстах – i18n._(NO_INFO), в прежних форматах – как есть
 SEPARATOR = "-" * 10
 # Пробелов после самого длинного значения колонки сводной таблицы SCA (ID, Компонент, Серьёзность, Уязвимость) –
 # как в образце дефекта Hub (docs/hub-format.md)
@@ -44,9 +44,14 @@ MAX_CWE_DESCRIPTION = 600
 
 # Длинное тире и неразрывный дефис в тексте для Hub не нужны
 _DASHES = str.maketrans({chr(0x2014): "–", chr(0x2011): "-", chr(0x2010): "-"})
-# Начало комментария модели для Hub («Подтверждено: …»): в обосновании дефекта оно лишнее – категория уже названа
+# Начало комментария модели для Hub («Подтверждено: …»): в обосновании дефекта оно лишнее – категория уже названа.
+# Узнаётся на обоих языках независимо от языка интерфейса (ADR-0158): модель при английском интерфейсе пишет
+# «False positive: …». Прежние форматы (только узнавание отметок, тексты до dev38 – русские) – прежнее правило.
+_VERDICT_PREFIX_RU = re.compile(r"^\s*(?:подтверждено|ложное срабатывание|нужна проверка|требуется (?:дополнительная )?"
+                                r"проверка|риск принят)\s*[:.–-]\s*", re.I)
 _VERDICT_PREFIX = re.compile(r"^\s*(?:подтверждено|ложное срабатывание|нужна проверка|требуется (?:дополнительная )?"
-                             r"проверка|риск принят)\s*[:.–-]\s*", re.I)
+                             r"проверка|риск принят|confirmed|true positive|false positive|(?:needs|requires) "
+                             r"(?:an? )?(?:additional )?(?:review|verification|check)|risk accepted)\s*[:.–-]\s*", re.I)
 # маркер пункта: «2)» – и без пробела («2)текст»), «2.», «-», «*», «•» – только с пробелом, чтобы не резать «1.5 раза»,
 # «-x» и «*args»; цифры только ASCII, пробелы – только пробел и табуляция (одинаково в Python и JS); то же выражение –
 # в предпросмотре app/static/app.js (recommendationPoints)
@@ -125,26 +130,30 @@ GOST_DEADLINE_SAST = ("Срок – исправить либо запланир
                       "квалификационного тестирования (ГОСТ Р 71207-2024, п. 5.9).")
 GOST_TRUE_NO_FIX = ("«истинные, но не требующие исправлений кода предупреждения» (ГОСТ Р 71207-2024, п. 5.5)")
 DEADLINE_SCA = "Срок – по регламенту композиционного анализа."
-# Уточнение решения SCA по ГОСТ Р КАПО (окончательная редакция, пп. 6.12, 6.14) – подписи для текста и карточки
-KAPO_LABELS = {"not_finished": "анализ не завершён – актуальность не установлена",
-               "actual": "актуальна", "not_actual": "неактуальна для продукта",
-               "neutralized": "нейтрализована принятыми мерами",
-               "false_positive": "ложноположительное срабатывание"}
+# Уточнение решения SCA по ГОСТ Р КАПО (окончательная редакция, пп. 6.12, 6.14). KAPO_UI_LABELS – подписи карточки на
+# языке интерфейса; KAPO_LABELS – те же подписи по-русски для текста прежних форматов (sca.sca_comment, sca_conclusion):
+# по нему узнаются прежние отметки, он не переводится
+KAPO_UI_LABELS = i18n.Labels({"not_finished": "анализ не завершён – актуальность не установлена",
+                              "actual": "актуальна", "not_actual": "неактуальна для продукта",
+                              "neutralized": "нейтрализована принятыми мерами",
+                              "false_positive": "ложноположительное срабатывание"})
+KAPO_LABELS = dict(dict.items(KAPO_UI_LABELS))
 
 
-# соответствие статусов Hub и ГОСТ для подсказок в карточках и настройках (docs/hub-verdict-text-plan.md)
+# соответствие статусов Hub и ГОСТ для подсказок в карточках и настройках (docs/hub-verdict-text-plan.md); только
+# показ – подписи на языке интерфейса
 GOST_STATUS_NOTES = {
-    "sast": {"true_positive": "истинное срабатывание: ошибка в программе, требуется исправление",
-             "false_positive": "ложное срабатывание",
-             "risk_accepted": "истинное срабатывание, не требующее исправлений кода",
-             "uncertain": "решение не принято"},
-    "sca": {"true_positive": "уязвимость актуальна или анализ не завершён: требуется обновление или обоснование "
-                             "неактуальности",
-            "false_positive": "ложноположительное: компонент или сведения об уязвимости определены ошибочно",
-            "risk_accepted": "уязвимость неактуальна (с обоснованием) или нейтрализована принятыми мерами",
-            "uncertain": "решение не принято"},
+    "sast": i18n.Labels({"true_positive": "истинное срабатывание: ошибка в программе, требуется исправление",
+                         "false_positive": "ложное срабатывание",
+                         "risk_accepted": "истинное срабатывание, не требующее исправлений кода",
+                         "uncertain": "решение не принято"}),
+    "sca": i18n.Labels({"true_positive": "уязвимость актуальна или анализ не завершён: требуется обновление или "
+                                         "обоснование неактуальности",
+                        "false_positive": "ложноположительное: компонент или сведения об уязвимости определены ошибочно",
+                        "risk_accepted": "уязвимость неактуальна (с обоснованием) или нейтрализована принятыми мерами",
+                        "uncertain": "решение не принято"}),
 }
-GOST_STATUS_BASIS = {"sast": "ГОСТ Р 71207-2024, п. 5.5", "sca": "ГОСТ Р КАПО, пп. 6.12, 6.14"}
+GOST_STATUS_BASIS = i18n.Labels({"sast": "ГОСТ Р 71207-2024, п. 5.5", "sca": "ГОСТ Р КАПО, пп. 6.12, 6.14"})
 
 
 def effective_kapo(outcome: str, kapo_state: str) -> str:
@@ -193,7 +202,7 @@ def sast_comment_v4(f: Finding, outcome: str, comment: str) -> str:
 def sast_comment_v3(f: Finding, outcome: str, comment: str) -> str:
     """Формат 0.9.6–0.9.10: обоснование как написал оператор, без поднятия первой буквы, с прежней чисткой. По нему
     узнаются отметки «Внесено в Hub», поставленные до 0.9.11 (причина «формат текста»)."""
-    return _finish(reason_text(comment, clean=True), clean=True)
+    return _finish(reason_text(comment, clean=True, legacy=True), clean=True)
 
 
 def sast_comment_v2(f: Finding, outcome: str, comment: str) -> str:
@@ -202,8 +211,8 @@ def sast_comment_v2(f: Finding, outcome: str, comment: str) -> str:
     Короткое заключение по находке SAST – текст поля «Комментарий» для «Скопировать для Hub». Зависит только от
     находки, итога решения и комментария оператора: отпечаток отметки «Внесено в Hub» не меняется от справочников
     и соседних находок. Обоснование – комментарий оператора без вводного «Подтверждено:», не сокращается. Чистка –
-    прежняя (формат узнавания, clean=True)."""
-    reason = reason_text(comment, clean=True)
+    прежняя (формат узнавания, clean=True). Текст прежнего формата – русский при любом языке интерфейса."""
+    reason = reason_text(comment, clean=True, legacy=True)
     where = where_text(f)
     lines: list[str] = []
     if outcome == "true_positive":
@@ -385,24 +394,26 @@ def reference_block(cwes: Iterable[str], catalog: Mapping[str, Mapping[str, Any]
 
 def sast_title(number: int, f: Finding) -> str:
     # заголовок собирается из данных выгрузки (правило), не из текста оператора: чистка прежняя
-    return _finish(f"ID{number} - {one_line(f.rule) or 'Правило не указано'} (SAST)", clean=True)
+    return _finish(f"ID{number} - {one_line(f.rule) or i18n._('Правило не указано')} (SAST)", clean=True)
 
 
 def sca_title(number: int, component: str, version: str) -> str:
-    return _finish(f"ID{number} - {one_line(component) or 'Библиотека не указана'} | Component version: "
-                   f"{one_line(version) or NO_INFO} (SCA)", clean=True)
+    # каркас «ID<n> - … | Component version: … (SCA)» – формат Hub, не переводится; переводятся только заглушки
+    return _finish(f"ID{number} - {one_line(component) or i18n._('Библиотека не указана')} | Component version: "
+                   f"{one_line(version) or i18n._(NO_INFO)} (SCA)", clean=True)
 
 
 # ============================================================================ SAST
 
-def reason_text(comment: str, *, clean: bool = True) -> str:
+def reason_text(comment: str, *, clean: bool = True, legacy: bool = False) -> str:
     """Комментарий человека без вводного «Подтверждено:», «Ложное срабатывание:» и подобного и с прежней чисткой
     тегов, схем и невидимых знаков – только для проверки, есть ли обоснование (ADR-0089 п. 6: одно вводное слово,
     пустой тег или невидимый знак обоснованием не считаются; критерий тот же, что до 0.10.0.dev21) и для прежних
     форматов. В Hub с 0.10.0.dev21 уходит комментарий как написан. clean=False – без чистки
-    (ссылки «строка N» в обосновании и т. п.)."""
+    (ссылки «строка N» в обосновании и т. п.). Вводное слово узнаётся на обоих языках («False positive:» – как
+    «Ложное срабатывание:», ADR-0158); legacy=True – только русское, как в прежних форматах (узнавание отметок)."""
     text = (hub_clean(str(comment or "")) if clean else str(comment or "")).strip()
-    return _VERDICT_PREFIX.sub("", text, count=1).strip()
+    return (_VERDICT_PREFIX_RU if legacy else _VERDICT_PREFIX).sub("", text, count=1).strip()
 
 
 def sast_reason(comment: str, *, legacy: bool = False) -> str:
@@ -415,7 +426,7 @@ def sast_reason(comment: str, *, legacy: bool = False) -> str:
     legacy=True – формат 0.9.11–0.10.0.dev20 (только узнавание прежних отметок): вводное слово снято, прежняя чистка
     тегов, схем и невидимых знаков."""
     if legacy:
-        text = reason_text(comment, clean=True)
+        text = reason_text(comment, clean=True, legacy=True)
     else:
         text = edges(comment) if reason_text(comment) else ""  # отступ первой строки остаётся (ревью Kimi)
     # первая видимая буква: невидимые знаки перед ней остаются на месте (их прежде вырезала чистка, ревью Kimi)
@@ -547,16 +558,128 @@ def cwe_id(value: Any) -> str:
     return f"CWE-{int(m.group(1))}" if m else ""
 
 
+# Стандартная фраза команды (ADR-0089) на языке интерфейса (ADR-0158): с названием команды и без него; категория Hub –
+# «True Positive» / «False Positive» – не переводится
+PHRASE_TEAM = i18n.N_("После тщательного анализа уязвимости команда {team} приняла решение присвоить данной уязвимости "
+                      "категорию {category}.")
+PHRASE_NO_TEAM = i18n.N_("После тщательного анализа уязвимости команда приняла решение присвоить данной уязвимости "
+                         "категорию {category}.")
+
+
 def _phrase(team: str, outcome: str) -> str:
-    who = f"команда {hub_clean(one_line(team, 100))}" if hub_clean(one_line(team)) else "команда"
-    return f"После тщательного анализа уязвимости {who} приняла решение присвоить данной уязвимости категорию " \
-           f"{CATEGORY[outcome]}."
+    name = hub_clean(one_line(team, 100)) if hub_clean(one_line(team)) else ""
+    if name:
+        return i18n._(PHRASE_TEAM, team=name, category=CATEGORY[outcome])
+    return i18n._(PHRASE_NO_TEAM, category=CATEGORY[outcome])
 
 
 def sast_phrase(team: str = "", outcome: str = "true_positive") -> str:
     """Стандартная фраза команды – первая строка тела дефекта SAST (ADR-0089) так, как её выдаёт sast_body: с ней
-    проверка текста перед Hub сверяет первую строку (ADR-0123, требование S2)."""
+    проверка текста перед Hub сверяет первую строку (ADR-0123, требование S2). На языке интерфейса."""
     return _finish(_phrase(team, outcome))
+
+
+def sast_phrases(team: str = "", outcome: str = "true_positive") -> tuple[str, ...]:
+    """Стандартная фраза на обоих языках: текст, собранный до переключения языка интерфейса, проходит проверку S2."""
+    return tuple(dict.fromkeys(in_both_languages(lambda: sast_phrase(team, outcome))))
+
+
+def phrase_variants(phrase: str) -> tuple[str, ...]:
+    """Стандартная фраза команды и она же на другом языке: название команды и категория берутся из самой фразы (её
+    собрал sast_phrase на языке интерфейса вызывающего). Не узнана – (phrase,)."""
+    text = str(phrase or "")
+    out = [text]
+    templates = [(t, PHRASE_TEAM) for t in defect_where.variants((PHRASE_TEAM, _PHRASE_TEAM_EN))]
+    templates += [(t, PHRASE_NO_TEAM) for t in defect_where.variants((PHRASE_NO_TEAM, _PHRASE_NO_TEAM_EN))]
+    for template, _msgid in templates:
+        pattern = re.escape(template).replace(re.escape("{team}"), "(?P<team>.+?)").replace(
+            re.escape("{category}"), "(?P<category>True Positive|False Positive)")
+        found = re.fullmatch(pattern, text.strip())
+        if found is None:
+            continue
+        team, category = found.groupdict().get("team"), found.group("category")
+        for t, msgid in templates:
+            if (msgid == PHRASE_TEAM) == (team is not None):
+                out.append(t.replace("{category}", category).replace("{team}", team or ""))
+        break
+    return tuple(dict.fromkeys(out))
+
+
+# английские варианты фразы – те же, что в каталоге (app/locales/en/defects.json): разбор не зависит от каталога
+_PHRASE_TEAM_EN = "After a thorough analysis of the vulnerability, team {team} decided to assign this vulnerability the " \
+                  "{category} category."
+_PHRASE_NO_TEAM_EN = "After a thorough analysis of the vulnerability, the team decided to assign this vulnerability " \
+                     "the {category} category."
+
+
+def _neutral_phrase(line: str) -> str:
+    """Стандартная фраза команды на английском -> та же фраза на русском (для body_key); иначе строка как есть."""
+    text = line.strip()
+    for template, msgid in ((_PHRASE_TEAM_EN, PHRASE_TEAM), (_PHRASE_NO_TEAM_EN, PHRASE_NO_TEAM),
+                            (i18n.translate(PHRASE_TEAM, "en"), PHRASE_TEAM),
+                            (i18n.translate(PHRASE_NO_TEAM, "en"), PHRASE_NO_TEAM)):
+        if template == msgid:
+            continue
+        pattern = re.escape(template).replace(re.escape("{team}"), "(?P<team>.+?)").replace(
+            re.escape("{category}"), "(?P<category>True Positive|False Positive)")
+        found = re.fullmatch(pattern + r"\.?", text)
+        if found:
+            team = found.groupdict().get("team")
+            ru = msgid.replace("{category}", found.group("category")).replace("{team}", team or "")
+            return _finish(ru)
+    return line
+
+
+def body_key(text: str) -> str:
+    """Тело дефекта (до раздела «Где исправлять», defect_where.body_of) в языконезависимом виде – для сравнения
+    отпечатков текстов дефектов (ADR-0158): английские заголовки разделов, подписи полей, «not specified», строка
+    обновления и стандартная фраза команды заменяются русскими. Тексты одного решения, собранные на разных языках
+    интерфейса, дают один ключ; разные решения остаются разными – меняются только написания из таблиц генератора."""
+    body = defect_where.body_of(str(text or ""))
+    # подписи полей живут только в разделе «Где исправлять», который body_of отрезает: в теле нормализуются одни
+    # заголовки разделов – отдельной строкой (ревью Codex dev38, круги 2–3: «Branch: …» в обосновании – текст)
+    pairs = [(en, ru) for ru, en in defect_where.HEADS.values()]
+    pairs += [(i18n.translate(ru, "en"), ru) for ru, _en in defect_where.HEADS.values()]
+    pairs = sorted({(a, b) for a, b in pairs if a and a != b}, key=lambda x: -len(x[0]))
+    upd_ru, upd_en = defect_where.UPDATE_LINE
+    upd = []
+    for template in dict.fromkeys((upd_en, i18n.translate(upd_ru, "en"))):
+        if template != upd_ru:
+            upd.append(re.compile(re.escape(template).replace(re.escape("{component}"), "(?P<component>.+?)")
+                                  .replace(re.escape("{target}"), "(?P<target>.+)")))
+    out = []
+    first = True
+    in_recs = False  # строка обновления SCA стоит в разделе «Рекомендации»: только там её написание нормализуется
+    recs = set(defect_where.variants(defect_where.HEADS["recommendations"]))
+    for line in body.split("\n"):
+        if first and line.strip():
+            line, first = _neutral_phrase(line), False
+        # только заголовки разделов отдельной строкой: текст оператора (обоснование, рекомендация), даже если похож на
+        # подпись поля или строку обновления, сравнивается буквально (ревью Codex dev38, круги 2–4)
+        for en, ru in pairs:
+            if line == en:
+                line = ru
+                break
+        if line in recs or line == defect_where.HEADS["recommendations"][0]:
+            in_recs = True
+        elif in_recs:
+            for rx in upd:
+                m = rx.fullmatch(line)
+                if m:
+                    line = upd_ru.format(component=m.group("component"), target=m.group("target"))
+                    break
+        out.append(line)
+    return "\n".join(out)
+
+
+def in_both_languages(build: Callable[[], Any]) -> list[Any]:
+    """build() на русском и на английском – для сверки отпечатков текста дефекта (ADR-0158): отметка «Внесено в Hub»
+    совпадает, если текст, собранный на любом из двух языков, совпал с отправленным."""
+    out = []
+    for lang in ("ru", "en"):
+        with i18n.use(lang):
+            out.append(build())
+    return out
 
 
 def sast_body(f: Finding, outcome: str, comment: str, fix: str, team: str = "", legacy_0910: bool = False,
@@ -582,16 +705,26 @@ def sast_body(f: Finding, outcome: str, comment: str, fix: str, team: str = "", 
     legacy_0911 – по правилам 0.9.11–0.10.0.dev20 (вводное слово снято, прежняя чистка): только для узнавания отметок
     «Внесено в Hub», поставленных до 0.9.11 и до 0.10.0.dev21."""
     if not sast_ready(outcome):
-        raise ValueError("дефект SAST готовится только для подтверждённой находки (итог «истинная»)")
+        raise ValueError(i18n._("дефект SAST готовится только для подтверждённой находки (итог «истинная»)"))
     if not has_recommendation(fix):
-        raise ValueError("дефект SAST готовится только с рекомендацией оператора (ADR-0092)")
+        raise ValueError(i18n._("дефект SAST готовится только с рекомендацией оператора (ADR-0092)"))
+    if legacy_0910 or legacy_0911:
+        # прежние форматы – только узнавание отметок, поставленных до dev38: русский текст при любом языке интерфейса
+        with i18n.use("ru"):
+            return _sast_body(outcome, comment, fix, team, legacy_0910, legacy_0911)
+    return _sast_body(outcome, comment, fix, team, False, False)
+
+
+def _sast_body(outcome: str, comment: str, fix: str, team: str, legacy_0910: bool, legacy_0911: bool) -> str:
     if legacy_0910:
-        reason, items = reason_text(comment, clean=True), recommendation_points(fix, _LIST_ITEM_0910, clean=True)[0]
+        reason = reason_text(comment, clean=True, legacy=True)
+        items = recommendation_points(fix, _LIST_ITEM_0910, clean=True)[0]
     elif legacy_0911:
         reason, items = sast_reason(comment, legacy=True), fix_items(fix, clean=True)
     else:
         reason, items = sast_reason(comment), fix_items(fix)
-    parts = [_phrase(team, outcome), "", "Обоснование:", reason or NO_INFO, "", "Рекомендация:"]
+    parts = [_phrase(team, outcome), "", defect_where.head("reason"), reason or i18n._(NO_INFO), "",
+             defect_where.head("recommendation")]
     parts += [_point(n, item) for n, item in enumerate(items, 1)]
     return _finish("\n".join(parts), clean=legacy_0910 or legacy_0911)
 
@@ -609,7 +742,7 @@ def fmt_cvss(value: Any) -> str:
     try:
         number = float(value)
     except (TypeError, ValueError):
-        return NO_INFO
+        return i18n._(NO_INFO)
     return f"{number:.1f}"
 
 

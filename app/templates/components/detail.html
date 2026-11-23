@@ -2,7 +2,7 @@
 {% from "macros.html" import icon, project_tabs, cvss %}
 
 {% macro scope_label(value) -%}
-{{ "открытая поддержка" if value == "oss" else labels.scope.get(value, "неизвестно") }}
+{{ _("открытая поддержка") if value == "oss" else labels.scope.get(value, _("неизвестно")) }}
 {%- endmacro %}
 
 {% macro source_refs(refs) -%}
@@ -12,8 +12,8 @@
 {# Подпись цели проверки приходит кодом (vulnerabilities, release, support, identity, other): набор знаков
    принадлежит контракту ответа, а не общему словарю подписей, поэтому разбор здесь. #}
 {% macro purpose_label(value) -%}
-{{ {"vulnerabilities": "уязвимости", "release": "релиз", "support": "поддержка",
-    "identity": "идентичность", "other": "прочее"}.get(value, value or "не указана") }}
+{{ {"vulnerabilities": _("уязвимости"), "release": _("релиз"), "support": _("поддержка"),
+    "identity": _("идентичность"), "other": _("прочее")}.get(value, value or _("не указана")) }}
 {%- endmacro %}
 
 {# Что именно проверяли: координаты и версию. Пустой query у старых ответов показывается как прочерк. #}
@@ -25,107 +25,107 @@
 {%- endmacro %}
 
 {% macro decision_details(item) -%}
-{% if item.target_version %}<span class="small muted block">целевая версия: <span class="mono">{{ item.target_version }}</span></span>{% endif %}
-{% if item.replacement_name %}<span class="small muted block">замена: <span class="mono">{{ item.replacement_name }}{% if item.replacement_version %}@{{ item.replacement_version }}{% endif %}</span></span>{% endif %}
-{% if item.review_at %}<span class="small muted block">пересмотр: {{ item.review_at }}</span>{% endif %}
+{% if item.target_version %}<span class="small muted block">{{ _("целевая версия:") }} <span class="mono">{{ item.target_version }}</span></span>{% endif %}
+{% if item.replacement_name %}<span class="small muted block">{{ _("замена:") }} <span class="mono">{{ item.replacement_name }}{% if item.replacement_version %}@{{ item.replacement_version }}{% endif %}</span></span>{% endif %}
+{% if item.review_at %}<span class="small muted block">{{ _("пересмотр: {date}", date=item.review_at) }}</span>{% endif %}
 {%- endmacro %}
 
 {% macro invalid_field(name) -%}
 {% if error_field == name %} aria-invalid="true" aria-errormessage="decision-error"{% endif %}
 {%- endmacro %}
 
-{% block title %}{{ row.name }}@{{ row.version }} · Компоненты · Локальный триаж{% endblock %}
+{% block title %}{{ row.name }}@{{ row.version }} · {{ _("Компоненты") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}components{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">Компоненты</a><span aria-hidden="true"> / </span><span aria-current="page">{{ row.name }}</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">{{ _("Компоненты") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ row.name }}</span>{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
 
 {% block content %}
 {% include 'capec/context.html' %}
 {% set pid = project.id %}
-{% if siblings|length > 1 %}<nav class="chips" aria-label="Версии компонента">{% for sibling in siblings %}<a class="btn btn-small{% if sibling.input_ref == row.input_ref %} btn-primary{% endif %}" href="/projects/{{ pid }}/components/{{ sibling.input_ref }}?back={{ back_url|urlencode }}">{{ sibling.version }}</a>{% endfor %}</nav>{% endif %}
+{% if siblings|length > 1 %}<nav class="chips" aria-label="{{ _("Версии компонента") }}">{% for sibling in siblings %}<a class="btn btn-small{% if sibling.input_ref == row.input_ref %} btn-primary{% endif %}" href="/projects/{{ pid }}/components/{{ sibling.input_ref }}?back={{ back_url|urlencode }}">{{ sibling.version }}</a>{% endfor %}</nav>{% endif %}
 <div class="page-head">
   <div>
-    <h1 class="break">{{ row.name }}</h1>
-    <p class="page-sub">{{ row.ecosystem }} · текущая версия <span class="mono">{{ row.version }}</span> · {{ row.identity_kind_label }}</p>
+    <h1 data-section="{{ _("Компоненты") }}" class="break">{{ row.name }}</h1>
+    <p class="page-sub">{{ row.ecosystem }} · {{ _("текущая версия") }} <span class="mono">{{ row.version }}</span> · {{ row.identity_kind_label }}</p>
     {% if identity_marks %}<p class="small muted" id="component-identity-marks">{% for m in identity_marks %}<span class="block">{{ m }}</span>{% endfor %}</p>{% endif %}
-    {% if row.defects %}<p class="page-sub" id="component-defects">{% for d in row.defects %}<a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="Карточка дефекта: {{ d.label }}">{{ d.word }} {{ d.text }}</a> {% endfor %}</p>{% endif %}
+    {% if row.defects %}<p class="page-sub" id="component-defects">{% for d in row.defects %}<a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="{{ _("Карточка дефекта: {label}", label=d.label) }}">{{ d.word }} {{ d.text }}</a> {% endfor %}</p>{% endif %}
   </div>
   <div class="page-actions">
     {% if row.researched %}
-    <a class="btn" href="{{ report_urls.md }}" download>{{ icon("download") }}Отчёт Markdown</a>
-    <a class="btn btn-ghost" href="{{ report_urls.json }}" target="_blank" rel="noopener noreferrer" title="Открыть JSON в новой вкладке">JSON</a>
+    <a class="btn" href="{{ report_urls.md }}" download>{{ icon("download") }}{{ _("Отчёт Markdown") }}</a>
+    <a class="btn btn-ghost" href="{{ report_urls.json }}" target="_blank" rel="noopener noreferrer" title="{{ _("Открыть JSON в новой вкладке") }}">JSON</a>
     {% endif %}
-    <a class="btn btn-ghost" href="{{ back_url }}">{{ icon("arrow-left") }}К списку</a>
-    <a class="btn btn-primary" href="#operator-decision">К решению</a>
+    <a class="btn btn-ghost" href="{{ back_url }}">{{ icon("arrow-left") }}{{ _("К списку") }}</a>
+    <a class="btn btn-primary" href="#operator-decision">{{ _("К решению") }}</a>
   </div>
 </div>
 
-<nav class="chips component-sections" aria-label="Разделы компонента">
-  <a class="btn btn-small" href="#component-facts">Версии и поддержка</a>
-  <a class="btn btn-small" href="#public-findings">Уязвимости: {{ row.findings_total if row.researched else "не исследован" }}</a>
-  <a class="btn btn-small" href="#research-coverage">Охват источников</a>
-  <a class="btn btn-small" href="#component-advice">Совет и пробелы</a>
-  <a class="btn btn-small" href="#operator-decision">Решение оператора</a>
+<nav class="chips component-sections" aria-label="{{ _("Разделы компонента") }}">
+  <a class="btn btn-small" href="#component-facts">{{ _("Версии и поддержка") }}</a>
+  <a class="btn btn-small" href="#public-findings">{{ _("Уязвимости: {n}", n=row.findings_total if row.researched else _("не исследован")) }}</a>
+  <a class="btn btn-small" href="#research-coverage">{{ _("Охват источников") }}</a>
+  <a class="btn btn-small" href="#component-advice">{{ _("Совет и пробелы") }}</a>
+  <a class="btn btn-small" href="#operator-decision">{{ _("Решение оператора") }}</a>
 </nav>
 
 <section class="panel" id="component-research-one" aria-labelledby="component-research-one-title">
-  <div class="panel-head"><h2 id="component-research-one-title">Исследование провайдером</h2></div>
+  <div class="panel-head"><h2 id="component-research-one-title">{{ _("Исследование провайдером") }}</h2></div>
   {% if research_one.can %}
   <form method="post" action="/projects/{{ pid }}/components/research/preview" class="inline-form" id="research-one-form">
     <input type="hidden" name="selection" value="picked">
     <input type="hidden" name="input_ref" value="{{ row.input_ref }}">
-    <button type="submit" class="btn btn-primary" id="research-one">{{ icon("search") }}{{ "Исследовать заново" if row.researched else "Исследовать" }} провайдером – предпросмотр</button>
+    <button type="submit" class="btn btn-primary" id="research-one">{{ icon("search") }}{{ _("Исследовать заново провайдером – предпросмотр") if row.researched else _("Исследовать провайдером – предпросмотр") }}</button>
   </form>
-  <p class="small muted">Только этот компонент. Профиль: {{ research_one.profile.name }} · модель <span class="mono">{{ research_one.profile.default_model }}</span>. Перед отправкой – предпросмотр того, что уйдёт, и согласие.</p>
+  <p class="small muted">{{ _("Только этот компонент.") }} {{ _("Профиль: {name} · модель", name=research_one.profile.name) }} <span class="mono">{{ research_one.profile.default_model }}</span>. {{ _("Перед отправкой – предпросмотр того, что уйдёт, и согласие.") }}</p>
   {% else %}
-  <p class="hint" id="research-one-why">{{ research_one.why }}{% if research_one.run %} <a href="/projects/{{ pid }}/components/research/{{ research_one.run.id }}">Открыть получение</a>.{% endif %}</p>
+  <p class="hint" id="research-one-why">{{ research_one.why }}{% if research_one.run %} <a href="/projects/{{ pid }}/components/research/{{ research_one.run.id }}">{{ _("Открыть получение") }}</a>.{% endif %}</p>
   {% endif %}
 </section>
 
 {% if row.task_stale %}
-<div class="callout callout-warn" role="note"><p>Строка относится к прежнему составу задания. Сохранённые факты и решения доступны, но состав проекта изменился.</p></div>
+<div class="callout callout-warn" role="note"><p>{{ _("Строка относится к прежнему составу задания. Сохранённые факты и решения доступны, но состав проекта изменился.") }}</p></div>
 {% endif %}
 {% if not row.researched %}
-<div class="callout callout-info" role="note"><p><strong>Компонент не исследован.</strong> Ответа агента пока нет, поэтому сведения о релизах, поддержке и публичных уязвимостях не заполнены. Это не означает, что уязвимостей нет.</p></div>
+<div class="callout callout-info" role="note"><p><strong>{{ _("Компонент не исследован.") }}</strong> {{ _("Ответа агента пока нет, поэтому сведения о релизах, поддержке и публичных уязвимостях не заполнены. Это не означает, что уязвимостей нет.") }}</p></div>
 {% endif %}
-{% if row.version_order_unchecked %}<div class="callout callout-warn" role="note"><p><strong>Порядок версий не проверен приложением.</strong> Сведения и совет агента сохранены; сравнение этих версий требует проверки оператором.</p></div>{% endif %}
-{% if row.prior_validation_rules %}<p class="hint">Ответ проверен по прежним правилам {{ row.validator_version }}. Новые проверки применяются при следующем импорте; сохранённые факты и решения не изменены.</p>{% endif %}
+{% if row.version_order_unchecked %}<div class="callout callout-warn" role="note"><p><strong>{{ _("Порядок версий не проверен приложением.") }}</strong> {{ _("Сведения и совет агента сохранены; сравнение этих версий требует проверки оператором.") }}</p></div>{% endif %}
+{% if row.prior_validation_rules %}<p class="hint">{{ _("Ответ проверен по прежним правилам {version}. Новые проверки применяются при следующем импорте; сохранённые факты и решения не изменены.", version=row.validator_version) }}</p>{% endif %}
 
 <section class="panel" id="component-facts" aria-labelledby="component-facts-title">
-  <div class="panel-head"><h2 id="component-facts-title">Идентичность, версии и поддержка</h2><span class="badge badge-{{ 'err' if row.status == 'vulnerable' else ('ok' if row.status == 'no_known_vulnerabilities' else 'warn' if row.status else 'muted') }}">{{ row.status_label }}</span></div>
+  <div class="panel-head"><h2 id="component-facts-title">{{ _("Идентичность, версии и поддержка") }}</h2><span class="badge badge-{{ 'err' if row.status == 'vulnerable' else ('ok' if row.status == 'no_known_vulnerabilities' else 'warn' if row.status else 'muted') }}">{{ row.status_label }}</span></div>
   {% if row.status_note %}<p class="hint">{{ row.status_note }}</p>{% endif %}
   <div class="grid-2">
     <div>
-      <h3 class="section-title">Идентичность</h3>
+      <h3 class="section-title">{{ _("Идентичность") }}</h3>
       <dl class="terms">
-        <dt>Исходная</dt><dd><span class="mono break">{{ row.ecosystem }}:{{ row.name }}@{{ row.version }}</span><span class="small muted block">{{ row.identity_kind_label }}</span></dd>
-        <dt>Разрешённая</dt><dd>{{ identity.state_label or labels.identity.get(identity.state, "не определялась") }}<span class="mono break block">{{ identity.coordinates or "–" }}</span></dd>
-        <dt>Основание</dt><dd>{% if identity.basis %}{{ identity.basis }}{% if identity.note %}<span class="block">{{ identity.note }}</span>{% endif %}{% else %}{{ identity.note or "–" }}{% endif %}<span class="small muted block">Источники: {{ source_refs(identity.source_refs) }}</span></dd>
+        <dt>{{ _("Исходная") }}</dt><dd><span class="mono break">{{ row.ecosystem }}:{{ row.name }}@{{ row.version }}</span><span class="small muted block">{{ row.identity_kind_label }}</span></dd>
+        <dt>{{ _("Разрешённая") }}</dt><dd>{{ identity.state_label or labels.identity.get(identity.state, _("не определялась")) }}<span class="mono break block">{{ identity.coordinates or "–" }}</span></dd>
+        <dt>{{ _("Основание") }}</dt><dd>{% if identity.basis %}{{ identity.basis }}{% if identity.note %}<span class="block">{{ identity.note }}</span>{% endif %}{% else %}{{ identity.note or "–" }}{% endif %}<span class="small muted block">{{ _("Источники:") }} {{ source_refs(identity.source_refs) }}</span></dd>
       </dl>
-      {% if identity.candidates %}<details class="compact"><summary class="compact-summary">Варианты идентичности: {{ identity.candidates|length }}</summary><ul class="compact-list">{% for candidate in identity.candidates %}<li>{% if candidate is string %}{{ candidate }}{% else %}<span class="mono break">{{ candidate.coordinates or candidate.name or candidate.component or "вариант без названия" }}</span>{% if candidate.note %} – {{ candidate.note }}{% endif %}{% endif %}</li>{% endfor %}</ul></details>{% endif %}
+      {% if identity.candidates %}<details class="compact"><summary class="compact-summary">{{ _("Варианты идентичности: {n}", n=identity.candidates|length) }}</summary><ul class="compact-list">{% for candidate in identity.candidates %}<li>{% if candidate is string %}{{ candidate }}{% else %}<span class="mono break">{{ candidate.coordinates or candidate.name or candidate.component or _("вариант без названия") }}</span>{% if candidate.note %} – {{ candidate.note }}{% endif %}{% endif %}</li>{% endfor %}</ul></details>{% endif %}
     </div>
     <div>
-      <h3 class="section-title">Релизы и поддержка</h3>
+      <h3 class="section-title">{{ _("Релизы и поддержка") }}</h3>
       <dl class="terms">
-        <dt>Текущая версия</dt><dd><span class="mono">{{ row.version }}</span></dd>
-        <dt>Актуальный стабильный релиз</dt><dd><span class="mono">{{ latest.version or "–" }}</span>{% if latest.released_at %}<span class="small muted block">дата релиза: {{ latest.released_at }}</span>{% endif %}{% if latest.note %}<span class="small muted block">{{ latest.note }}</span>{% endif %}<span class="small muted block">Источники: {{ source_refs(latest.source_refs) }}</span></dd>
-        <dt>Доступность обновления</dt><dd>{{ row.update_label or labels.update.get(update_status, "неизвестно") }}</dd>
-        <dt>Советуемая версия</dt><dd><span class="mono">{{ advice.target_version or "–" }}</span><span class="small muted block">Это совет агента, а не последний релиз и не решение оператора.</span></dd>
-        <dt>Поддержка</dt><dd>{{ row.support_label or labels.support.get(support.state, "неизвестно") }}<span class="small muted block">Вид: {{ scope_label(support.scope) }}</span>{% if support.as_of %}<span class="small muted block">по состоянию на {{ support.as_of }}</span>{% endif %}{% if support.note %}<span class="small muted block">{{ support.note }}</span>{% endif %}<span class="small muted block">Источники: {{ source_refs(support.source_refs) }}</span></dd>
-        {% if row.hub_fix_candidate %}<dt>Подсказка Hub</dt><dd><span class="mono">{{ row.hub_fix_candidate }}</span><span class="small muted block">Предложение из исходной выгрузки, не подтверждённая рекомендация.</span></dd>{% endif %}
+        <dt>{{ _("Текущая версия") }}</dt><dd><span class="mono">{{ row.version }}</span></dd>
+        <dt>{{ _("Актуальный стабильный релиз") }}</dt><dd><span class="mono">{{ latest.version or "–" }}</span>{% if latest.released_at %}<span class="small muted block">{{ _("дата релиза: {date}", date=latest.released_at) }}</span>{% endif %}{% if latest.note %}<span class="small muted block">{{ latest.note }}</span>{% endif %}<span class="small muted block">{{ _("Источники:") }} {{ source_refs(latest.source_refs) }}</span></dd>
+        <dt>{{ _("Доступность обновления") }}</dt><dd>{{ row.update_label or labels.update.get(update_status, _("неизвестно")) }}</dd>
+        <dt>{{ _("Советуемая версия") }}</dt><dd><span class="mono">{{ advice.target_version or "–" }}</span><span class="small muted block">{{ _("Это совет агента, а не последний релиз и не решение оператора.") }}</span></dd>
+        <dt>{{ _("Поддержка") }}</dt><dd>{{ row.support_label or labels.support.get(support.state, _("неизвестно")) }}<span class="small muted block">{{ _("Вид:") }} {{ scope_label(support.scope) }}</span>{% if support.as_of %}<span class="small muted block">{{ _("по состоянию на {date}", date=support.as_of) }}</span>{% endif %}{% if support.note %}<span class="small muted block">{{ support.note }}</span>{% endif %}<span class="small muted block">{{ _("Источники:") }} {{ source_refs(support.source_refs) }}</span></dd>
+        {% if row.hub_fix_candidate %}<dt>{{ _("Подсказка Hub") }}</dt><dd><span class="mono">{{ row.hub_fix_candidate }}</span><span class="small muted block">{{ _("Предложение из исходной выгрузки, не подтверждённая рекомендация.") }}</span></dd>{% endif %}
       </dl>
     </div>
   </div>
 </section>
 
 <section class="panel" id="public-findings" aria-labelledby="public-findings-title">
-  <div class="panel-head"><h2 id="public-findings-title">Публичные находки</h2>{% if row.researched %}<span class="panel-actions muted small">применимых: {{ row.applicable }} из {{ findings|length }}</span>{% endif %}</div>
-  <p class="hint">Применимость к версии не доказывает эксплуатируемость в этом приложении. Условия использования и решение о риске оценивает оператор.</p>
+  <div class="panel-head"><h2 id="public-findings-title">{{ _("Публичные находки") }}</h2>{% if row.researched %}<span class="panel-actions muted small">{{ _("применимых: {applicable} из {total}", applicable=row.applicable, total=findings|length) }}</span>{% endif %}</div>
+  <p class="hint">{{ _("Применимость к версии не доказывает эксплуатируемость в этом приложении. Условия использования и решение о риске оценивает оператор.") }}</p>
   {% if not row.researched %}
-  <p class="empty">Компонент не исследован: публичные находки ещё не проверялись.</p>
+  <p class="empty">{{ _("Компонент не исследован: публичные находки ещё не проверялись.") }}</p>
   {% elif not findings %}
-  <p class="empty">Публичные находки в ответе не указаны. Это не доказывает их отсутствие: проверьте охват и ошибки источников ниже.</p>
+  <p class="empty">{{ _("Публичные находки в ответе не указаны. Это не доказывает их отсутствие: проверьте охват и ошибки источников ниже.") }}</p>
   {% else %}
   <div class="stack-lg">
     {% for finding in findings %}
@@ -134,21 +134,21 @@
         <h3><span class="mono break">{{ finding.id }}</span></h3>
         <span class="badge badge-{{ 'err' if finding.applies == 'yes' else ('ok' if finding.applies == 'no' else 'warn') }}">{{ finding.applies_label }}</span>
       </summary>
-      {% if finding.aliases %}<p class="small muted">Также: <span class="mono">{{ finding.aliases|join(", ") }}</span></p>{% endif %}
+      {% if finding.aliases %}<p class="small muted">{{ _("Также:") }} <span class="mono">{{ finding.aliases|join(", ") }}</span></p>{% endif %}
       <p class="prose">{{ finding.description }}</p>
       <dl class="terms">
-        <dt>Условия</dt><dd>{{ finding.conditions or "–" }}</dd>
-        <dt>Исправления</dt><dd>{% if finding.fixed_versions %}<span class="mono">{{ finding.fixed_versions|join(", ") }}</span>{% else %}–{% endif %}</dd>
-        <dt>CVSS</dt><dd>{% if finding.cvss %}{% if finding.cvss.version %}<span class="small muted">CVSS {{ finding.cvss.version }}</span> {{ cvss(finding.cvss.score, finding.cvss.version) }}{% else %}<span class="small muted">CVSS, версия не указана</span> <span class="cvss cvss-none">{{ finding.cvss.score|num }}</span>{% endif %}{% if finding.cvss.vector %}<span class="mono break block">{{ finding.cvss.vector }}</span>{% endif %}{% else %}–{% endif %}</dd>
+        <dt>{{ _("Условия") }}</dt><dd>{{ finding.conditions or "–" }}</dd>
+        <dt>{{ _("Исправления") }}</dt><dd>{% if finding.fixed_versions %}<span class="mono">{{ finding.fixed_versions|join(", ") }}</span>{% else %}–{% endif %}</dd>
+        <dt>CVSS</dt><dd>{% if finding.cvss %}{% if finding.cvss.version %}<span class="small muted">CVSS {{ finding.cvss.version }}</span> {{ cvss(finding.cvss.score, finding.cvss.version) }}{% else %}<span class="small muted">{{ _("CVSS, версия не указана") }}</span> <span class="cvss cvss-none">{{ finding.cvss.score|num }}</span>{% endif %}{% if finding.cvss.vector %}<span class="mono break block">{{ finding.cvss.vector }}</span>{% endif %}{% else %}–{% endif %}</dd>
       </dl>
-      {% if finding.ranges %}<h4 class="section-title">Затронутые диапазоны</h4><ul>{% for range in finding.ranges %}<li>введено в <span class="mono">{{ range.introduced or "–" }}</span>; исправлено в <span class="mono">{{ range.fixed or "–" }}</span></li>{% endfor %}</ul>{% endif %}
-      <h4 class="section-title">Источники находки</h4>
+      {% if finding.ranges %}<h4 class="section-title">{{ _("Затронутые диапазоны") }}</h4><ul>{% for range in finding.ranges %}<li>{{ _("введено в") }} <span class="mono">{{ range.introduced or "–" }}</span>; {{ _("исправлено в") }} <span class="mono">{{ range.fixed or "–" }}</span></li>{% endfor %}</ul>{% endif %}
+      <h4 class="section-title">{{ _("Источники находки") }}</h4>
       {% if finding.sources %}<ul class="component-source-list">{% for source in finding.sources %}<li>
         <a class="break" href="{{ source.url }}" target="_blank" rel="noreferrer">{{ source.url }}</a>
-        <span class="small muted block">{{ source.source_type_label }} · {{ source.level_label }} · проверено {{ source.checked_at }}</span>
+        <span class="small muted block">{{ source.source_type_label }} · {{ source.level_label }} · {{ _("проверено {date}", date=source.checked_at) }}</span>
         {% if source.justification %}<p class="small">{{ source.justification }}</p>{% endif %}
         {% if source.quote %}<blockquote class="component-quote" cite="{{ source.url }}">{{ source.quote }}</blockquote>{% endif %}
-      </li>{% endfor %}</ul>{% else %}<p class="muted">Источники не указаны.</p>{% endif %}
+      </li>{% endfor %}</ul>{% else %}<p class="muted">{{ _("Источники не указаны.") }}</p>{% endif %}
       </details>
     </article>
     {% endfor %}
@@ -157,118 +157,118 @@
 </section>
 
 <section class="panel" id="research-coverage" aria-labelledby="research-coverage-title">
-  <div class="panel-head"><h2 id="research-coverage-title">Охват источников</h2></div>
+  <div class="panel-head"><h2 id="research-coverage-title">{{ _("Охват источников") }}</h2></div>
   {% if not row.researched %}
-  <p class="empty">Источники ещё не проверялись.</p>
+  <p class="empty">{{ _("Источники ещё не проверялись.") }}</p>
   {% else %}
-  <p class="hint">Запись «уязвимости» с состоянием «проверен» и полнотой «полная» означает, что по этой версии искали уязвимости и источник ответил целиком. Реестр пакетов, заметки о релизах и политики поддержки уязвимостей не отменяют.</p>
+  <p class="hint">{{ _("Запись «уязвимости» с состоянием «проверен» и полнотой «полная» означает, что по этой версии искали уязвимости и источник ответил целиком. Реестр пакетов, заметки о релизах и политики поддержки уязвимостей не отменяют.") }}</p>
   <div class="table-wrap">
     <table class="table table-compact">
-      <thead><tr><th scope="col">Источник</th><th scope="col">Цель проверки</th><th scope="col">Что проверяли</th><th scope="col">Проверен</th><th scope="col">Состояние</th><th scope="col">Полнота</th><th scope="col">Ссылки находок</th><th scope="col">Комментарий</th></tr></thead>
+      <thead><tr><th scope="col">{{ _("Источник") }}</th><th scope="col">{{ _("Цель проверки") }}</th><th scope="col">{{ _("Что проверяли") }}</th><th scope="col">{{ _("Проверен") }}</th><th scope="col">{{ _("Состояние") }}</th><th scope="col">{{ _("Полнота") }}</th><th scope="col">{{ _("Ссылки находок") }}</th><th scope="col">{{ _("Комментарий") }}</th></tr></thead>
       <tbody>{% for item in coverage %}<tr>
-        <td data-label="Источник">{{ item.source }}</td>
-        <td data-label="Цель проверки">{{ purpose_label(item.purpose) }}</td>
-        <td data-label="Что проверяли">{{ query_label(item) }}</td>
-        <td data-label="Проверен">{{ item.checked_at }}</td>
-        <td data-label="Состояние"><span class="badge badge-{{ 'ok' if item.status == 'ok' else 'warn' }}">{{ item.status_label }}</span></td>
-        <td data-label="Полнота">{{ "полная" if item.complete else "неполная" }}</td>
-        <td data-label="Ссылки находок">{{ source_refs(item.source_refs) }}</td>
-        <td data-label="Комментарий">{{ item.note or "–" }}</td>
+        <td data-label="{{ _("Источник") }}">{{ item.source }}</td>
+        <td data-label="{{ _("Цель проверки") }}">{{ purpose_label(item.purpose) }}</td>
+        <td data-label="{{ _("Что проверяли") }}">{{ query_label(item) }}</td>
+        <td data-label="{{ _("Проверен") }}">{{ item.checked_at }}</td>
+        <td data-label="{{ _("Состояние") }}"><span class="badge badge-{{ 'ok' if item.status == 'ok' else 'warn' }}">{{ item.status_label }}</span></td>
+        <td data-label="{{ _("Полнота") }}">{{ _("полная") if item.complete else _("неполная") }}</td>
+        <td data-label="{{ _("Ссылки находок") }}">{{ source_refs(item.source_refs) }}</td>
+        <td data-label="{{ _("Комментарий") }}">{{ item.note or "–" }}</td>
       </tr>{% endfor %}</tbody>
     </table>
   </div>
-  <h3 class="section-title">Ошибки и ограничения источников</h3>
+  <h3 class="section-title">{{ _("Ошибки и ограничения источников") }}</h3>
   {% set problems = namespace(count=0) %}
-  <ul class="component-source-list">{% for item in coverage %}{% if item.status != "ok" or not item.complete %}{% set problems.count = problems.count + 1 %}<li><strong>{{ item.source }}</strong>: {{ item.status_label }}{% if not item.complete %} · охват неполный{% endif %}{% if item.note %} – {{ item.note }}{% endif %}</li>{% endif %}{% endfor %}</ul>
-  {% if not problems.count %}<p class="muted">Ошибок и ограничений источников не объявлено.</p>{% endif %}
+  <ul class="component-source-list">{% for item in coverage %}{% if item.status != "ok" or not item.complete %}{% set problems.count = problems.count + 1 %}<li><strong>{{ item.source }}</strong>: {{ item.status_label }}{% if not item.complete %} · {{ _("охват неполный") }}{% endif %}{% if item.note %} – {{ item.note }}{% endif %}</li>{% endif %}{% endfor %}</ul>
+  {% if not problems.count %}<p class="muted">{{ _("Ошибок и ограничений источников не объявлено.") }}</p>{% endif %}
   {% endif %}
 </section>
 
 <section class="panel" id="component-advice" aria-labelledby="component-advice-title">
-  <div class="panel-head"><h2 id="component-advice-title">Совет агента и пробелы</h2></div>
-  <p class="hint">Это рекомендация агента, а не решение человека. Принять риск может только оператор в форме ниже.</p>
+  <div class="panel-head"><h2 id="component-advice-title">{{ _("Совет агента и пробелы") }}</h2></div>
+  <p class="hint">{{ _("Это рекомендация агента, а не решение человека. Принять риск может только оператор в форме ниже.") }}</p>
   <dl class="terms">
-    <dt>Совет</dt><dd>{{ "рассмотреть принятие риска" if advice.action == "accept_risk" else (advice.action_label or labels.advice.get(advice.action, "–")) }}</dd>
-    <dt>Советуемая версия</dt><dd><span class="mono">{{ advice.target_version or "–" }}</span></dd>
-    <dt>Совместимость</dt><dd>{{ advice.compatibility_notes or "–" }}</dd>
-    {% if advice.source_refs %}<dt>Основание рекомендуемой версии</dt><dd>{{ source_refs(advice.source_refs) }}</dd>{% endif %}
+    <dt>{{ _("Совет") }}</dt><dd>{{ _("рассмотреть принятие риска") if advice.action == "accept_risk" else (advice.action_label or labels.advice.get(advice.action, "–")) }}</dd>
+    <dt>{{ _("Советуемая версия") }}</dt><dd><span class="mono">{{ advice.target_version or "–" }}</span></dd>
+    <dt>{{ _("Совместимость") }}</dt><dd>{{ advice.compatibility_notes or "–" }}</dd>
+    {% if advice.source_refs %}<dt>{{ _("Основание рекомендуемой версии") }}</dt><dd>{{ source_refs(advice.source_refs) }}</dd>{% endif %}
   </dl>
-  {% if advice.remaining_risks %}<h3 class="section-title">Оставшиеся риски</h3><ul>{% for risk in advice.remaining_risks %}<li>{{ risk }}</li>{% endfor %}</ul>{% endif %}
-  <h3 class="section-title">Пробелы исследования</h3>
-  {% if gaps %}<ul class="component-source-list">{% for gap in gaps %}<li><strong>{{ gap.code_label or gap.code }}</strong>{% if gap.text %} – {{ gap.text }}{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">Пробелы не объявлены.</p>{% endif %}
+  {% if advice.remaining_risks %}<h3 class="section-title">{{ _("Оставшиеся риски") }}</h3><ul>{% for risk in advice.remaining_risks %}<li>{{ risk }}</li>{% endfor %}</ul>{% endif %}
+  <h3 class="section-title">{{ _("Пробелы исследования") }}</h3>
+  {% if gaps %}<ul class="component-source-list">{% for gap in gaps %}<li><strong>{{ gap.code_label or gap.code }}</strong>{% if gap.text %} – {{ gap.text }}{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">{{ _("Пробелы не объявлены.") }}</p>{% endif %}
 </section>
 
 <section class="panel" id="component-evidence" aria-labelledby="component-evidence-title">
-  <div class="panel-head"><h2 id="component-evidence-title">Доказательства</h2></div>
-  <p class="hint">Тип, уровень и основание источника записаны агентом. Приложение не считает эту подпись независимой перепроверкой содержимого источника.</p>
+  <div class="panel-head"><h2 id="component-evidence-title">{{ _("Доказательства") }}</h2></div>
+  <p class="hint">{{ _("Тип, уровень и основание источника записаны агентом. Приложение не считает эту подпись независимой перепроверкой содержимого источника.") }}</p>
   {% if evidence %}
   <details{% if evidence|length <= 3 %} open{% endif %}>
-    <summary>Сохранённые доказательства: {{ evidence|length }}</summary>
+    <summary>{{ _("Сохранённые доказательства: {n}", n=evidence|length) }}</summary>
     <div class="stack-lg">{% for item in evidence %}<article id="evidence-{{ item.evidence_ref }}">
       <h3 class="section-title"><span class="mono">{{ item.evidence_ref }}</span> · {{ item.source_type_label }}</h3>
-      {% if item.url %}<p><a class="break" href="{{ item.url }}" target="_blank" rel="noreferrer">{{ item.url }}</a></p>{% else %}<p class="small text-warn">Ссылка не соответствует действующим правилам публичного источника.</p>{% endif %}
-      <p class="small muted">{{ item.level_label }} · проверено {{ item.checked_at }}</p>
+      {% if item.url %}<p><a class="break" href="{{ item.url }}" target="_blank" rel="noreferrer">{{ item.url }}</a></p>{% else %}<p class="small text-warn">{{ _("Ссылка не соответствует действующим правилам публичного источника.") }}</p>{% endif %}
+      <p class="small muted">{{ item.level_label }} · {{ _("проверено {date}", date=item.checked_at) }}</p>
       {% if item.justification %}<p>{{ item.justification }}</p>{% endif %}
       {% if item.quote %}<blockquote class="component-quote" cite="{{ item.url }}">{{ item.quote }}</blockquote>{% endif %}
     </article>{% endfor %}</div>
   </details>
-  {% else %}<p class="empty">Доказательства не приложены.</p>{% endif %}
-  {% if row.researched %}<details class="compact"><summary class="compact-summary">Данные ревизии исследования</summary><dl class="terms">
-    <dt>Ревизия</dt><dd>{{ research.revision }}</dd>
-    <dt>Источник</dt><dd id="research-source">{% if research.source.kind == "provider" %}{{ research.source.label }}, модель <span class="mono">{{ research.source.model }}</span>, {{ research.source.date }}; {{ research.source.search }}{% else %}{{ research.source.label }}{% endif %}</dd>
-    <dt>Загружено</dt><dd>{{ research.imported_at }}</dd>
-    <dt>Валидатор</dt><dd><span class="mono">{{ research.validator_version }}</span></dd>
-    <dt>Задание</dt><dd><span class="mono break">{{ research.task_id }}</span> · {{ labels.task_state.get(research.task_state, research.task_state) }}</dd>
-    <dt>Отпечаток ответа</dt><dd><span class="mono break">{{ research.answer_sig }}</span></dd>
+  {% else %}<p class="empty">{{ _("Доказательства не приложены.") }}</p>{% endif %}
+  {% if row.researched %}<details class="compact"><summary class="compact-summary">{{ _("Данные ревизии исследования") }}</summary><dl class="terms">
+    <dt>{{ _("Ревизия") }}</dt><dd>{{ research.revision }}</dd>
+    <dt>{{ _("Источник") }}</dt><dd id="research-source">{% if research.source.kind == "provider" %}{{ research.source.label }}, {{ _("модель") }} <span class="mono">{{ research.source.model }}</span>, {{ research.source.date }}; {{ research.source.search }}{% else %}{{ research.source.label }}{% endif %}</dd>
+    <dt>{{ _("Загружено") }}</dt><dd>{{ research.imported_at }}</dd>
+    <dt>{{ _("Валидатор") }}</dt><dd><span class="mono">{{ research.validator_version }}</span></dd>
+    <dt>{{ _("Задание") }}</dt><dd><span class="mono break">{{ research.task_id }}</span> · {{ labels.task_state.get(research.task_state, research.task_state) }}</dd>
+    <dt>{{ _("Отпечаток ответа") }}</dt><dd><span class="mono break">{{ research.answer_sig }}</span></dd>
   </dl></details>{% endif %}
 </section>
 
 <section class="panel" id="component-apply" aria-labelledby="component-apply-title">
-  <div class="panel-head"><h2 id="component-apply-title">Решение – находкам этой версии</h2></div>
+  <div class="panel-head"><h2 id="component-apply-title">{{ _("Решение – находкам этой версии") }}</h2></div>
   {% if apply_notice %}<p class="callout callout-{{ 'info' if apply_notice.ok else 'warn' }}" role="{{ 'status' if apply_notice.ok else 'alert' }}" id="component-apply-result">{{ apply_notice.text }}</p>{% endif %}
   {% if apply.can %}
   <form method="post" action="/projects/{{ project.id }}/components/{{ row.input_ref }}/apply-findings?back={{ back_url|urlencode }}" class="inline-form" id="component-apply-form">
     <input type="hidden" name="decision_revision" value="{{ apply.decision_revision }}">
     <input type="hidden" name="token" value="{{ apply.token }}">
-    <button type="submit" class="btn btn-primary" id="component-apply-button" data-busy="Записываю…">{{ icon("check") }}Применить решение к находкам этой версии ({{ apply.count }})</button>
+    <button type="submit" class="btn btn-primary" id="component-apply-button" data-busy="{{ _("Записываю…") }}">{{ icon("check") }}{{ _("Применить решение к находкам этой версии ({n})", n=apply.count) }}</button>
   </form>
-  <p class="small muted">Каждой находке запишутся вывод «обновить», обоснование компонента как комментарий и отметка «Проверено». Целевая версия дефекта берётся из этого решения, если в тексте дефекта не указана своя версия, не выбран режим «Исправленной версии нет» и не наступил срок пересмотра решения.{% if apply.decided %} У {{ apply.decided }} из {{ apply.count }} уже есть своё решение – оно заменится.{% endif %}</p>
+  <p class="small muted">{{ _("Каждой находке запишутся вывод «обновить», обоснование компонента как комментарий и отметка «Проверено». Целевая версия дефекта берётся из этого решения, если в тексте дефекта не указана своя версия, не выбран режим «Исправленной версии нет» и не наступил срок пересмотра решения.") }}{% if apply.decided %} {{ _("У {decided} из {total} уже есть своё решение – оно заменится.", decided=apply.decided, total=apply.count) }}{% endif %}</p>
   {% else %}
   <p class="hint" id="component-apply-why">{{ apply.why }}</p>
   {% endif %}
-  {% if apply.first_id %}<p class="small"><a href="/projects/{{ project.id }}/sca/findings/{{ apply.first_id }}?back={{ self_back }}" id="component-apply-defect">Открыть карточку находки этой версии</a> – там текст дефекта и создание дефекта в Hub.</p>{% endif %}
+  {% if apply.first_id %}<p class="small"><a href="/projects/{{ project.id }}/sca/findings/{{ apply.first_id }}?back={{ self_back }}" id="component-apply-defect">{{ _("Открыть карточку находки этой версии") }}</a> – {{ _("там текст дефекта и создание дефекта в Hub.") }}</p>{% endif %}
 </section>
 
 <section class="panel" id="component-usages" aria-labelledby="component-usages-title">
-  <div class="panel-head"><h2 id="component-usages-title">Где используется</h2><span class="panel-actions muted small">{{ usages|length }} {{ usages|length|plural("находка", "находки", "находок") }} в выгрузке · {{ usage_codebases }} {{ usage_codebases|plural("кодовая база", "кодовые базы", "кодовых баз") }}</span></div>
+  <div class="panel-head"><h2 id="component-usages-title">{{ _("Где используется") }}</h2><span class="panel-actions muted small">{{ usages|length }} {{ usages|length|plural("находка", "находки", "находок") }} {{ _("в выгрузке") }} · {{ usage_codebases }} {{ usage_codebases|plural("кодовая база", "кодовые базы", "кодовых баз") }}</span></div>
   {% if usages %}
   <details{% if usages|length <= 10 %} open{% endif %}>
-    <summary class="compact-summary">Находки этой версии по кодовым базам</summary>
-    <ul class="item-list">{% for u in usages %}<li><a class="mono" href="/projects/{{ project.id }}/sca/findings/{{ u.id }}?back={{ self_back }}">{{ u.hub_id }}</a>{% if u.codebase %} · <span class="mono">{{ u.codebase }}</span>{% else %} · <span class="muted">без кодовой базы</span>{% endif %}{% if u.build_type %} · {{ u.build_type }}{% endif %}{% if u.dep_path %} · <span class="mono break">{{ u.dep_path }}</span>{% endif %}</li>{% endfor %}</ul>
+    <summary class="compact-summary">{{ _("Находки этой версии по кодовым базам") }}</summary>
+    <ul class="item-list">{% for u in usages %}<li><a class="mono" href="/projects/{{ project.id }}/sca/findings/{{ u.id }}?back={{ self_back }}">{{ u.hub_id }}</a>{% if u.codebase %} · <span class="mono">{{ u.codebase }}</span>{% else %} · <span class="muted">{{ _("без кодовой базы") }}</span>{% endif %}{% if u.build_type %} · {{ u.build_type }}{% endif %}{% if u.dep_path %} · <span class="mono break">{{ u.dep_path }}</span>{% endif %}</li>{% endfor %}</ul>
   </details>
-  <p class="muted small">Решение компонента относится к этой версии целиком; решения отдельных находок принимаются в их карточках.</p>
+  <p class="muted small">{{ _("Решение компонента относится к этой версии целиком; решения отдельных находок принимаются в их карточках.") }}</p>
   {% else %}
-  <p class="muted">В текущей выгрузке находок этой версии нет: она могла уйти из выгрузки после исследования.</p>
+  <p class="muted">{{ _("В текущей выгрузке находок этой версии нет: она могла уйти из выгрузки после исследования.") }}</p>
   {% endif %}
 </section>
 
 <section class="panel" id="operator-decision" aria-labelledby="operator-decision-title">
-  <div class="panel-head"><h2 id="operator-decision-title">Решение оператора</h2></div>
-  {% if decision_stale %}<div class="callout callout-warn" role="note"><p><strong>Сохранённое решение требует пересмотра.</strong> {{ decision_note }}</p></div>{% elif decision_note %}<div class="callout callout-info" role="note"><p>{{ decision_note }}</p></div>{% endif %}
+  <div class="panel-head"><h2 id="operator-decision-title">{{ _("Решение оператора") }}</h2></div>
+  {% if decision_stale %}<div class="callout callout-warn" role="note"><p><strong>{{ _("Сохранённое решение требует пересмотра.") }}</strong> {{ decision_note }}</p></div>{% elif decision_note %}<div class="callout callout-info" role="note"><p>{{ decision_note }}</p></div>{% endif %}
   {% if decision %}
   <div class="component-current-decision">
-    <h3 class="section-title">{{ "Сохранённое решение, требует пересмотра" if decision_stale else "Сохранённое решение" }}</h3>
+    <h3 class="section-title">{{ _("Сохранённое решение, требует пересмотра") if decision_stale else _("Сохранённое решение") }}</h3>
     <span class="badge badge-{{ 'warn' if decision_stale else 'info' }}">{{ decision.action_label }}</span>
     <p class="prose">{{ decision.rationale }}</p>
     {{ decision_details(decision) }}
-    <p class="small muted">сохранено <time datetime="{{ decision.decided_at }}">{{ decision.decided_at|ts }}</time></p>
+    <p class="small muted">{{ _("сохранено") }} <time datetime="{{ decision.decided_at }}">{{ decision.decided_at|ts }}</time></p>
   </div>
   {% endif %}
-  {% if error %}<div class="callout callout-warn" role="alert" id="decision-error" tabindex="-1"><p>{{ error }}</p><p>Введённые значения остались в форме.{% if decision_conflict %} Откройте страницу заново, сверьте факты и решение, затем подтвердите снова.{% else %} Исправьте указанное поле и сохраните решение снова.{% endif %}</p>{% if error_field %}<a href="#decision-{{ error_field|replace('_', '-') }}">Перейти к полю</a>{% endif %}</div>{% endif %}
+  {% if error %}<div class="callout callout-warn" role="alert" id="decision-error" tabindex="-1"><p>{{ error }}</p><p>{{ _("Введённые значения остались в форме.") }}{% if decision_conflict %} {{ _("Откройте страницу заново, сверьте факты и решение, затем подтвердите снова.") }}{% else %} {{ _("Исправьте указанное поле и сохраните решение снова.") }}{% endif %}</p>{% if error_field %}<a href="#decision-{{ error_field|replace('_', '-') }}">{{ _("Перейти к полю") }}</a>{% endif %}</div>{% endif %}
   <form method="post" action="/projects/{{ pid }}/components/{{ row.input_ref }}/decision?back={{ back_url|urlencode }}" class="stack-form" id="decision-form">
-    <p class="hint" id="component-draft-status" role="status" aria-live="polite">Черновик хранится в этой вкладке до сохранения решения.</p>
-    <noscript><p class="text-warn">JavaScript отключён: черновик автоматически не сохраняется. Перед уходом сохраните решение или скопируйте введённый текст.</p></noscript>
-    <div class="callout callout-warn" id="component-draft-check" hidden><p>Факты или сохранённое решение изменились. Сверьте восстановленный черновик с текущими сведениями.</p><label class="check"><input type="checkbox" id="component-draft-confirm">Я сверил черновик с текущими фактами и решением</label></div>
+    <p class="hint" id="component-draft-status" role="status" aria-live="polite">{{ _("Черновик хранится в этой вкладке до сохранения решения.") }}</p>
+    <noscript><p class="text-warn">{{ _("JavaScript отключён: черновик автоматически не сохраняется. Перед уходом сохраните решение или скопируйте введённый текст.") }}</p></noscript>
+    <div class="callout callout-warn" id="component-draft-check" hidden><p>{{ _("Факты или сохранённое решение изменились. Сверьте восстановленный черновик с текущими сведениями.") }}</p><label class="check"><input type="checkbox" id="component-draft-confirm">{{ _("Я сверил черновик с текущими фактами и решением") }}</label></div>
     {# Снимок того, что человек видел: строка задания, отпечаток ответа и его ревизия. Значения берутся из формы,
        а не из свежих данных страницы, поэтому после отказа 409 они остаются прежними и повторная отправка не может
        молча привязать решение к фактам, которых человек не читал. #}
@@ -276,54 +276,54 @@
     <input type="hidden" name="expected_input_sig" value="{{ form.expected_input_sig }}">
     <input type="hidden" name="expected_research_sig" value="{{ form.expected_research_sig }}">
     <input type="hidden" name="expected_research_revision" value="{{ form.expected_research_revision|default(0) }}">
-    {% if research_draft %}<div class="cluster" id="research-draft-box"><button type="button" class="btn" id="fill-from-research" data-draft='{{ research_draft|tojson }}'>{{ icon("check") }}Заполнить по исследованию</button><span class="field-hint">Заполняет только пустые поля: действие по совету исследования, целевую версию, обоснование из фактов{% if research_draft.review_at %} и срок пересмотра +90 дней{% endif %}. Проверьте и поправьте перед сохранением.</span></div>{% endif %}
+    {% if research_draft %}<div class="cluster" id="research-draft-box"><button type="button" class="btn" id="fill-from-research" data-draft='{{ research_draft|tojson }}'>{{ icon("check") }}{{ _("Заполнить по исследованию") }}</button><span class="field-hint">{{ _("Заполняет только пустые поля: действие по совету исследования, целевую версию, обоснование из фактов") }}{% if research_draft.review_at %} {{ _("и срок пересмотра +90 дней") }}{% endif %}. {{ _("Проверьте и поправьте перед сохранением.") }}</span></div>{% endif %}
     <label class="field" for="decision-action">
-      <span class="field-label">Действие</span>
+      <span class="field-label">{{ _("Действие") }}</span>
       <select name="action" id="decision-action" required{{ invalid_field('action') }}>
-        <option value=""{% if not form.action %} selected{% endif %} disabled>Выберите действие</option>
+        <option value=""{% if not form.action %} selected{% endif %} disabled>{{ _("Выберите действие") }}</option>
         {% for value in ("keep", "update", "replace", "remove", "accept_risk", "investigate") %}<option value="{{ value }}"{% if form.action == value %} selected{% endif %}>{{ labels.decision.get(value, value) }}</option>{% endfor %}
       </select>
     </label>
     <label class="field" for="decision-rationale">
-      <span class="field-label">Обоснование <span aria-hidden="true">*</span></span>
+      <span class="field-label">{{ _("Обоснование") }} <span aria-hidden="true">*</span></span>
       <textarea name="rationale" id="decision-rationale" rows="5" minlength="1" maxlength="2000" required aria-describedby="decision-rationale-hint"{{ invalid_field('rationale') }}>{{ form.rationale }}</textarea>
-      <span class="field-hint" id="decision-rationale-hint">Обязательно для любого действия. Для принятия риска опишите условия применительно к приложению.</span>
+      <span class="field-hint" id="decision-rationale-hint">{{ _("Обязательно для любого действия. Для принятия риска опишите условия применительно к приложению.") }}</span>
     </label>
     <div class="form-grid">
       <label class="field" for="decision-target-version">
-        <span class="field-label">Целевая версия</span>
+        <span class="field-label">{{ _("Целевая версия") }}</span>
         <input type="text" name="target_version" id="decision-target-version" value="{{ form.target_version }}" maxlength="200" autocomplete="off" spellcheck="false" aria-describedby="decision-target-hint"{{ invalid_field('target_version') }}>
-        <span class="field-hint" id="decision-target-hint">Обязательна для действия «обновить».</span>
+        <span class="field-hint" id="decision-target-hint">{{ _("Обязательна для действия «обновить».") }}</span>
       </label>
       <div class="field">
-        <label class="field-label" for="decision-review-at">Дата пересмотра</label>
+        <label class="field-label" for="decision-review-at">{{ _("Дата пересмотра") }}</label>
         {# календарь браузера; без поддержки type="date" поле остаётся текстовым с образцом ГГГГ-ММ-ДД #}
-        <input type="{{ 'text' if review_at_text else 'date' }}" name="review_at" id="decision-review-at" value="{{ form.review_at }}" placeholder="ГГГГ-ММ-ДД" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" aria-describedby="decision-review-hint"{{ invalid_field('review_at') }}>
-        <span class="cluster review-presets" role="group" aria-label="Быстрый срок пересмотра">{% for days, value in review_presets %}<button type="button" class="btn btn-ghost btn-small" data-review-date="{{ value }}" title="{{ value }}">+{{ days }} дней</button>{% endfor %}</span>
-        <span class="field-hint" id="decision-review-hint">Необязательна. Наступивший срок попадает в отбор «требующие пересмотра». Дата приложения: {{ review_clock }}; быстрый срок считается от неё.</span>
+        <input type="{{ 'text' if review_at_text else 'date' }}" name="review_at" id="decision-review-at" value="{{ form.review_at }}" placeholder="{{ _("ГГГГ-ММ-ДД") }}" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" aria-describedby="decision-review-hint"{{ invalid_field('review_at') }}>
+        <span class="cluster review-presets" role="group" aria-label="{{ _("Быстрый срок пересмотра") }}">{% for days, value in review_presets %}<button type="button" class="btn btn-ghost btn-small" data-review-date="{{ value }}" title="{{ value }}">{{ _("+{n} дней", n=days) }}</button>{% endfor %}</span>
+        <span class="field-hint" id="decision-review-hint">{{ _("Необязательна. Наступивший срок попадает в отбор «требующие пересмотра». Дата приложения: {date}; быстрый срок считается от неё.", date=review_clock) }}</span>
       </div>
       <label class="field" for="decision-replacement-name">
-        <span class="field-label">Название замены</span>
+        <span class="field-label">{{ _("Название замены") }}</span>
         <input type="text" name="replacement_name" id="decision-replacement-name" value="{{ form.replacement_name }}" maxlength="200" autocomplete="off" spellcheck="false" aria-describedby="decision-replacement-hint"{{ invalid_field('replacement_name') }}>
-        <span class="field-hint" id="decision-replacement-hint">Обязательно для действия «заменить».</span>
+        <span class="field-hint" id="decision-replacement-hint">{{ _("Обязательно для действия «заменить».") }}</span>
       </label>
       <label class="field" for="decision-replacement-version">
-        <span class="field-label">Версия замены</span>
+        <span class="field-label">{{ _("Версия замены") }}</span>
         <input type="text" name="replacement_version" id="decision-replacement-version" value="{{ form.replacement_version }}" maxlength="200" autocomplete="off" spellcheck="false"{{ invalid_field('replacement_version') }}>
-        <span class="field-hint">Необязательна: можно указать только название или направление замены.</span>
+        <span class="field-hint">{{ _("Необязательна: можно указать только название или направление замены.") }}</span>
       </label>
     </div>
-    <div class="actions"><button type="submit" class="btn btn-primary" id="save-component-decision" data-busy="Сохраняю…">{{ icon("check") }}Сохранить решение</button>{% if apply.offer %}<input type="hidden" name="apply_token" value="{{ apply.token }}"><button type="submit" class="btn" id="save-component-apply" name="after" value="apply" aria-describedby="save-component-apply-hint">Сохранить и применить к находкам</button>{% endif %}<button type="submit" class="btn" id="save-component-next" name="after" value="next">Сохранить и дальше</button><button type="button" class="btn btn-ghost" id="discard-component-draft" hidden>Отбросить черновик</button></div>
-    {% if apply.offer %}<p class="small muted" id="save-component-apply-hint">«Сохранить и применить к находкам»: решение «обновить» сразу запишется находкам этой версии ({{ apply.count }}) – вывод, обоснование и отметка «Проверено».{% if apply.decided %} У {{ apply.decided }} из {{ apply.count }} уже есть своё решение – оно заменится.{% endif %} Другие действия находкам не записываются.</p>{% endif %}
+    <div class="actions"><button type="submit" class="btn btn-primary" id="save-component-decision" data-busy="{{ _("Сохраняю…") }}">{{ icon("check") }}{{ _("Сохранить решение") }}</button>{% if apply.offer %}<input type="hidden" name="apply_token" value="{{ apply.token }}"><button type="submit" class="btn" id="save-component-apply" name="after" value="apply" aria-describedby="save-component-apply-hint">{{ _("Сохранить и применить к находкам") }}</button>{% endif %}<button type="submit" class="btn" id="save-component-next" name="after" value="next">{{ _("Сохранить и дальше") }}</button><button type="button" class="btn btn-ghost" id="discard-component-draft" hidden>{{ _("Отбросить черновик") }}</button></div>
+    {% if apply.offer %}<p class="small muted" id="save-component-apply-hint">{{ _("«Сохранить и применить к находкам»: решение «обновить» сразу запишется находкам этой версии ({n}) – вывод, обоснование и отметка «Проверено».", n=apply.count) }}{% if apply.decided %} {{ _("У {decided} из {total} уже есть своё решение – оно заменится.", decided=apply.decided, total=apply.count) }}{% endif %} {{ _("Другие действия находкам не записываются.") }}</p>{% endif %}
   </form>
   {% if decisions %}
   <details class="component-history"{% if decision_stale or error %} open{% endif %}>
-    <summary>История решений: {{ decisions|length }}</summary>
+    <summary>{{ _("История решений: {n}", n=decisions|length) }}</summary>
     <ol class="component-source-list">{% for item in decisions %}<li>
-      <div class="cluster"><strong>{{ item.action_label }}</strong>{% if item.state != "current" %}<span class="badge badge-muted">прежнее решение</span>{% elif decision_stale and loop.first %}<span class="badge badge-warn">требует пересмотра</span>{% else %}<span class="badge badge-info">сохранено</span>{% endif %}</div>
+      <div class="cluster"><strong>{{ item.action_label }}</strong>{% if item.state != "current" %}<span class="badge badge-muted">{{ _("прежнее решение") }}</span>{% elif decision_stale and loop.first %}<span class="badge badge-warn">{{ _("требует пересмотра") }}</span>{% else %}<span class="badge badge-info">{{ _("сохранено") }}</span>{% endif %}</div>
       <p class="prose">{{ item.rationale }}</p>
       {{ decision_details(item) }}
-      <span class="small muted"><time datetime="{{ item.decided_at }}">{{ item.decided_at|ts }}</time>{% if item.superseded_at %} · заменено <time datetime="{{ item.superseded_at }}">{{ item.superseded_at|ts }}</time>{% endif %}</span>
+      <span class="small muted"><time datetime="{{ item.decided_at }}">{{ item.decided_at|ts }}</time>{% if item.superseded_at %} · {{ _("заменено") }} <time datetime="{{ item.superseded_at }}">{{ item.superseded_at|ts }}</time>{% endif %}</span>
     </li>{% endfor %}</ol>
   </details>
   {% endif %}

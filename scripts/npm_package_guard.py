@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hygiene_rules import (CONTROL, LOCAL_PATHS, PLACE_WORDS, REAL_PROJECT, STAND_LAN,  # noqa: E402
                            hub_number_hits)
 
-GENERATED = {"README.md", "npm/build.json"}
+GENERATED = {"README.md", "README.ru.md", "npm/build.json"}
 AUTHOR_EMAILS = {"pikov@" + "yandex.ru"}
 LICENSE_TEXTS = {"THIRD-PARTY-NOTICES.md", "LICENSE"}
 XLSX = {".xlsx", ".xlsm"}

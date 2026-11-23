@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import re
+
 from app import package_identity
 
 from typing import Any
 
-from app import hub_entity_versions
+from app import hub_entity_versions, i18n
 from app.db import Database, dumps, loads, now_iso, text_hash
 from app.defect import defect_key_sca
 from app.sca_contract import input_ref
@@ -25,7 +27,29 @@ def fields_of(obj: dict) -> dict:
 # цель «тип:номер», которой нет среди находок проекта с тем же типом связи (SAST:73001 рядом с SCA_S:73001 – не та же
 # цель): единственный набор SCA по такому составу не доказан – одинаково во всех фазах принятия Hub, при подготовке,
 # подтверждении и сверке дефекта (план dev17, остаток шага 4)
-UNMATCHED_TARGETS = "цели дефекта {ids} нет среди находок SCA проекта или у неё другой тип: единственный набор не определить"
+UNMATCHED_TARGETS = i18n.N_("цели дефекта {ids} нет среди находок SCA проекта или у неё другой тип: единственный набор "
+                            "не определить")
+# Конфликты состава SCA (conflicts_json) хранятся русским каноническим текстом (ADR-0158): их пересчитывают и сравнивают
+# с сохранёнными (package_transition), смена языка интерфейса не должна давать «конфликт изменился». Перевод – при показе
+# (conflict_text).
+NO_SINGLE_SET = i18n.N_("Нельзя определить единый набор SCA: находка отсутствует или другого вида.")
+IN_NO_DEFECT_GROUP = i18n.N_("Находка SCA находится в группе «без дефекта».")
+NOT_SINGLE_SET = i18n.N_("Цели не определяют единственный набор SCA.")
+_UNMATCHED = re.compile("^" + re.escape(UNMATCHED_TARGETS).replace(re.escape("{ids}"), "(?P<ids>.+?)") + "$", re.S)
+
+
+def conflict_text(text: str) -> str:
+    """Сохранённый конфликт состава (русский канонический текст) на языке интерфейса; неизвестный текст – как есть."""
+    value = str(text or "")
+    found = _UNMATCHED.match(value)
+    if found:
+        return i18n._(UNMATCHED_TARGETS, ids=found.group("ids"))
+    return i18n._(value) if value in (NO_SINGLE_SET, IN_NO_DEFECT_GROUP, NOT_SINGLE_SET) else value
+
+
+def conflict_texts(items) -> list[str]:
+    """conflict_text для списка из conflicts_json."""
+    return [conflict_text(x) for x in (items or [])]
 
 
 def unmatched_targets(c, project_id: int, targets, *, typeless: bool = False) -> list[str]:
@@ -56,18 +80,18 @@ def sca_identity(c, project_id: int, targets: list[dict]) -> tuple[str, list]:
         row = c.execute("SELECT kind, data_json, pkg_ecosystem, pkg_name, pkg_source, pkg_note, pkg_scope FROM findings WHERE project_id = ? AND hub_id = ?",
                         (project_id, hub_id)).fetchone()
         if row is None or row["kind"] != "SCA":
-            return "", ["Нельзя определить единый набор SCA: находка отсутствует или другого вида."]
+            return "", [NO_SINGLE_SET]
         # эффективная тройка (план dev17, п. 4.3) – та же, что у ключей находок (defect_keys_of_findings_in)
         eco, name, version = package_identity.of(package_identity.with_package(dict(row)))
         place = c.execute("SELECT set_no FROM sca_set_members WHERE project_id = ? AND hub_id = ? AND input_ref = ?",
                           (project_id, hub_id, input_ref(eco, name, version))).fetchone()
         if place is not None and place["set_no"] is None:
-            return "", ["Находка SCA находится в группе «без дефекта»."]
+            return "", [IN_NO_DEFECT_GROUP]
         number = int(place["set_no"]) if place is not None else 0
         key = defect_key_sca(name, version, eco)
         keys.add(key if not number else f"{key}#{number}")
     if len(keys) != 1:
-        return "", ["Цели не определяют единственный набор SCA."]
+        return "", [NOT_SINGLE_SET]
     return keys.pop(), []
 
 
@@ -115,7 +139,7 @@ def owner_in(c, row: dict) -> dict:
     found = c.execute("SELECT * FROM hub_defects WHERE id = ? AND project_id = ?",
                       (owner_id, row["project_id"])).fetchone()
     if found is None:
-        raise ValueError("Владелец черновика не найден.")
+        raise ValueError(i18n._("Владелец черновика не найден."))
     return dict(found)
 
 
@@ -176,13 +200,13 @@ def initialize(c, row: dict, owner_id=None) -> None:
 def edit_problem(c, row: dict) -> str:
     from app import hub_defects
     if row["state"] != "done":
-        return "Черновик доступен для правки после создания или занесения дефекта."
+        return i18n._("Черновик доступен для правки после создания или занесения дефекта.")
     if not family_single_in(c, row):
         return hub_defects.UPDATE_FAMILY_UNMERGED
     if hub_defects.update_unconfirmed(row) or hub_defects.update_busy(row):
-        return "Сначала дождитесь или подтвердите результат обновления в Hub."
+        return i18n._("Сначала дождитесь или подтвердите результат обновления в Hub.")
     if hub_defects.update_state(row).get("phase") == "preview":
-        return "Сначала отмените или завершите предпросмотр обновления."
+        return i18n._("Сначала отмените или завершите предпросмотр обновления.")
     return hub_defects._update_idle_problem(c, row, local=True)
 
 
@@ -192,7 +216,7 @@ def save(db: Database, row: dict, revision: str, *, summary="", command="", gene
     with db._tx() as c:
         current = owner_in(c, row)
         if str(current["draft_revision"]) != str(revision):
-            raise ValueError("Черновик изменился в другой вкладке: обновите страницу.")
+            raise ValueError(i18n._("Черновик изменился в другой вкладке: обновите страницу."))
         problem = edit_problem(c, current)
         if problem:
             raise ValueError(problem)
@@ -208,7 +232,7 @@ def save(db: Database, row: dict, revision: str, *, summary="", command="", gene
         basis = defect_fields.basis_of(current)
         fields_raw, basis_raw = current["draft_fields_json"], current["draft_fields_basis_json"]
         if operations is not None and not isinstance(operations, list):
-            raise defect_fields.FieldError("changes: требуется массив изменений.")
+            raise defect_fields.FieldError(i18n._("changes: требуется массив изменений."))
         if operations:
             choices, reference = defect_references.choices_in(c, current, reference_load)
             proposed = defect_fields.edit(fields, operations, choices)
@@ -336,6 +360,10 @@ def accept(c, row: dict, seen: dict, op_id: int) -> None:
                   (dumps(new_basis(seen["object"], "accepted", op_id=op_id)), row["id"]))
 
 
+SYNC_CONFLICT = i18n.N_("Конфликт сверки: {label} изменён и локально, и в Hub. Применение отменено. Отмените "
+                        "предпросмотр, выберите текст в карточке и повторите сверку.")
+
+
 def apply_sync(c, previous: dict, seen: dict) -> None:
     """Применение прежней одиночной сверки: база и черновик согласуются в транзакции строки.
 
@@ -343,19 +371,20 @@ def apply_sync(c, previous: dict, seen: dict) -> None:
     предпросмотр и обе версии; отмена предпросмотра позволяет явно выбрать текст в карточке.
     """
     if seen.get("text_note"):
-        raise ValueError("Текст дефекта в Hub не выделен: исправьте описание в Hub и повторите сверку.")
+        raise ValueError(i18n._("Текст дефекта в Hub не выделен: исправьте описание в Hub и повторите сверку."))
     if not isinstance(seen.get("object"), dict) or not seen["object"]:
-        raise ValueError("Полный объект сверки не сохранён: повторите «Pull из Hub».")
+        raise ValueError(i18n._("Полный объект сверки не сохранён: повторите «Pull из Hub»."))
     hub_entity_versions.require_current(c, previous, seen.get("op_id"))
     owner = owner_in(c, previous)
     from app.hub_defects import _norm_lines as _lines
     # описание синхронизируется целиком (ADR-0132): блок изменён в Hub, а текст – в неотправленном черновике
     if seen.get("block_changed") and _lines(owner["draft_command_text"]) != _lines(previous["command_text"]):
-        raise ValueError("Конфликт сверки: описание изменено с двух сторон – в Hub служебный блок, в приложении текст. Применение "
-                         "отменено. Отмените предпросмотр и решите, что оставить: «Push в Hub» отправит ваш текст вместе с блоком из Hub.")
+        raise ValueError(i18n._("Конфликт сверки: описание изменено с двух сторон – в Hub служебный блок, в приложении текст. "
+                                "Применение отменено. Отмените предпросмотр и решите, что оставить: «Push в Hub» отправит "
+                                "ваш текст вместе с блоком из Hub."))
     merged = {}
     from app.hub_defects import _norm_lines
-    for field, label in (("summary", "заголовок"), ("command_text", "текст команды")):
+    for field, label in (("summary", i18n._("заголовок")), ("command_text", i18n._("текст команды"))):
         base, local, remote = previous[field], owner[f"draft_{field}"], seen[field]
         if field == "command_text" and previous.get("origin") != "import":
             # у дефекта из приложения текст – исходный текст оператора, а разбор описания Hub отличается от него
@@ -368,18 +397,16 @@ def apply_sync(c, previous: dict, seen: dict) -> None:
             elif lo == b:
                 merged[field] = remote
             else:
-                raise ValueError(f"Конфликт сверки: {label} изменён и локально, и в Hub. "
-                                 "Применение отменено. Отмените предпросмотр, выберите текст в карточке и повторите сверку.")
+                raise ValueError(i18n._(SYNC_CONFLICT, label=label))
             continue
         if local != base and remote != base and local != remote:
-            raise ValueError(f"Конфликт сверки: {label} изменён и локально, и в Hub. "
-                             "Применение отменено. Отмените предпросмотр, выберите текст в карточке и повторите сверку.")
+            raise ValueError(i18n._(SYNC_CONFLICT, label=label))
         merged[field] = remote if local == base else local
     from app import defect_fields
     basis = defect_fields.basis_of(owner)
     remote = fields_of(seen["object"])
     if not basis["known"] and basis.get("pending"):
-        raise ValueError("Сначала явно используйте показанные поля как основу черновика: локальные правки сохранены.")
+        raise ValueError(i18n._("Сначала явно используйте показанные поля как основу черновика: локальные правки сохранены."))
     fields = dumps(defect_fields.merge(basis["base"], loads(owner["draft_fields_json"], {}), remote)
                    if basis["known"] else remote)
     new_basis = defect_fields.new_basis(seen["object"], "sync", references=basis["references"])
@@ -416,7 +443,7 @@ def mark_kept_local(c, previous: dict) -> None:
 def confirm(c, row: dict, seen: dict, op_id: int, targets: list[dict]) -> None:
     """Подтверждение текста и метаданных целей до любых последствий, на соединении перехода строки."""
     if seen.get("text_note"):
-        raise ValueError("Текст команды не выделен: подтверждение недоступно.")
+        raise ValueError(i18n._("Текст команды не выделен: подтверждение недоступно."))
     hub_entity_versions.require_current(c, row, op_id)
     owner = owner_in(c, row)
     from app.defect_fields import new_basis
@@ -573,20 +600,20 @@ def use_basis(db, row, revision, source, shown):
     with db._tx() as c:
         current = owner_in(c, row)
         if str(current["draft_revision"]) != str(revision):
-            raise ValueError("Черновик изменился: обновите страницу.")
+            raise ValueError(i18n._("Черновик изменился: обновите страницу."))
         problem = edit_problem(c, {**current, "sync_json": ""})
         if problem or hub_defects.update_busy(current):
-            raise ValueError(problem or "Дождитесь результата операции.")
+            raise ValueError(problem or i18n._("Дождитесь результата операции."))
         basis = defect_fields.basis_of(current)
         if basis["known"]:
-            raise ValueError("Основа уже определена: обновите страницу.")
+            raise ValueError(i18n._("Основа уже определена: обновите страницу."))
         seen = (loads(current["sync_json"], {}).get("read", {}) if source == "sync"
                 else loads(current["import_json"], {}) if source == "observation" else {})
         if not seen.get("object") or defect_references.signature(seen) != shown:
-            raise ValueError("Показанное наблюдение изменилось: обновите страницу.")
+            raise ValueError(i18n._("Показанное наблюдение изменилось: обновите страницу."))
         obj = seen["object"]
         if str(obj.get("id")) != str(current["hub_defect_id"]) or obj.get("appId") != current["app_id"]:
-            raise ValueError("Наблюдение относится к другому дефекту или приложению.")
+            raise ValueError(i18n._("Наблюдение относится к другому дефекту или приложению."))
         new = defect_fields.new_basis(obj, "observation", source=source, observation_signature=shown,
                                      read_at=seen.get("read_at"), references=basis["references"])
         fields = defect_fields.apply_changes(new["base"], basis.get("pending", []))

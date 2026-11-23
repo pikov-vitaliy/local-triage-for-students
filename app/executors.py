@@ -16,6 +16,7 @@ import threading
 from collections.abc import Callable, Mapping
 from typing import Any, NamedTuple
 
+from app import i18n
 from app.llm import DEFAULT_OPTIONS, LlmError, SendNotAllowed, gate_for, is_gpt_oss
 from app.llm_net import normalize_addresses
 
@@ -294,25 +295,28 @@ def choose_profile(db: Any, settings: Any, project: Mapping[str, Any] | None = N
     if profile is None and int(chosen) == DEFAULT_PROVIDER_ID:
         profile = db.ensure_default_profile(settings.ollama_url, settings.default_model)
     if profile is None:
-        raise ProfileError(f"Профиль провайдера модели №{chosen} не найден: выберите профиль на странице проекта "
-                           "или «Настройки».")
+        raise ProfileError(i18n._("Профиль провайдера модели №{id} не найден: выберите профиль на странице проекта "
+                                  "или «Настройки».", id=chosen))
     if not profile.get("enabled"):
-        raise ProfileError(f"Профиль провайдера модели «{profile.get('name')}» выключен: включите его на странице "
-                           "«Настройки» или выберите для проекта другой профиль.")
+        raise ProfileError(i18n._("Профиль провайдера модели «{name}» выключен: включите его на странице "
+                                  "«Настройки» или выберите для проекта другой профиль.", name=profile.get('name')))
     # разбор кода: Ollama – этот компьютер или сеть организации; внешний провайдер по удалённому API – только
     # проекту с действующей отметкой «код не секретный» (ADR-0104 п. 3, К9)
     if not code_profile_fits(profile, project):
         if str(profile.get("trust")) == "external" and str(profile.get("kind")) in REMOTE_KINDS:
-            raise ProfileError(f"Профиль провайдера модели «{profile.get('name')}» – внешний: код уходит ему только "
-                               "проекту с отметкой «код не секретный». Поставьте отметку в параметрах проекта.")
-        raise ProfileError(f"Профиль провайдера модели «{profile.get('name')}»: класс доверия «{profile.get('trust')}» "
-                           f"или вид «{profile.get('kind')}» не поддерживаются для разбора кода.")
+            raise ProfileError(i18n._("Профиль провайдера модели «{name}» – внешний: код уходит ему только "
+                                      "проекту с отметкой «код не секретный». Поставьте отметку в параметрах проекта.",
+                                      name=profile.get('name')))
+        raise ProfileError(i18n._("Профиль провайдера модели «{name}»: класс доверия «{trust}» или вид «{kind}» не "
+                                  "поддерживаются для разбора кода.", name=profile.get('name'),
+                                  trust=profile.get('trust'), kind=profile.get('kind')))
     try:
         purposes = json.loads(str(profile.get("purposes_json") or "[]"))
     except ValueError:
         purposes = []
     if "code" not in purposes:
-        raise ProfileError(f"Профиль провайдера модели «{profile.get('name')}» не предназначен для разбора кода.")
+        raise ProfileError(i18n._("Профиль провайдера модели «{name}» не предназначен для разбора кода.",
+                                  name=profile.get('name')))
     return profile
 
 
@@ -431,15 +435,17 @@ def snapshot_mismatch(profile: Mapping[str, Any] | None, execution: Mapping[str,
     """Почему по снимку уже нельзя работать или переносить его («Повторить ошибочные»), "" – можно: профиль выключен,
     адрес профиля сменился, у lan – изменились подтверждённые адреса (ADR-0102 п. 5, 7)."""
     if profile is None or not profile.get("enabled"):
-        return f"Профиль провайдера модели «{(profile or {}).get('name') or execution.get('base_url')}» выключен."
+        return i18n._("Профиль провайдера модели «{name}» выключен.",
+                      name=(profile or {}).get('name') or execution.get('base_url'))
     if str(profile.get("base_url")) != str(execution.get("base_url")):
-        return f"Адрес профиля «{profile.get('name')}» изменился после этого прогона."
+        return i18n._("Адрес профиля «{name}» изменился после этого прогона.", name=profile.get('name'))
     if str(execution.get("trust")) == "lan" and set(server_of(profile).confirmed) != set(server_of(execution).confirmed):
-        return f"Подтверждённые адреса профиля «{profile.get('name')}» изменились после этого прогона."
+        return i18n._("Подтверждённые адреса профиля «{name}» изменились после этого прогона.", name=profile.get('name'))
     return ""
 
 
-LEGACY_EXECUTOR = "профиль не записан – разбор до 0.9.12"
+LEGACY_EXECUTOR = i18n.N_("профиль не записан – разбор до 0.9.12")  # msgid: перевод при показе
+EXECUTOR_WHERE = i18n.Labels({"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"})
 
 
 def executor_info(db: Any, execution: Mapping[str, Any] | None, providers: Mapping[int, Mapping[str, Any]] | None = None) -> dict[str, Any]:
@@ -447,15 +453,15 @@ def executor_info(db: Any, execution: Mapping[str, Any] | None, providers: Mappi
     {"name": LEGACY_EXECUTOR, "trust": "", "where": ""}. Адреса сервера здесь нет – выгрузки журнала идут в общую
     таблицу команды."""
     if not execution:
-        return {"id": None, "name": LEGACY_EXECUTOR, "version": None, "trust": "", "where": ""}
+        return {"id": None, "name": i18n._(LEGACY_EXECUTOR), "version": None, "trust": "", "where": ""}
     pid = execution.get("provider_id")
     # providers – уже прочитанные профили, когда подпись нужна для целого списка
     profile = None if pid is None else (providers.get(int(pid)) if providers is not None else db.get_provider(int(pid)))
     trust = str(execution.get("trust") or "")
-    where = {"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"}.get(trust, trust)
+    where = EXECUTOR_WHERE.get(trust, trust)
     if not str(execution.get("base_url") or ""):  # снимок без адреса (ответ получен при сборке образа ВМ)
-        where = str(execution.get("note") or "адрес не сохранён")
-    return {"id": pid, "name": str((profile or {}).get("name") or f"профиль №{pid}"),
+        where = str(execution.get("note") or i18n._("адрес не сохранён"))
+    return {"id": pid, "name": str((profile or {}).get("name") or i18n._("профиль №{id}", id=pid)),
             "version": execution.get("provider_version"), "trust": trust, "where": where}
 
 
@@ -470,7 +476,8 @@ def probe_generation(client: Any, model: str) -> float:
     from app import model_traffic
     gate = gate_for({"trust": getattr(client, "trust", "local"), "base_url": getattr(client, "url", "")})
     if not gate.try_acquire("check"):
-        raise ProbeBusy(f"Сейчас модель ({gate.label}) занята разбором или вопросом: проверьте генерацию после них.")
+        raise ProbeBusy(i18n._("Сейчас модель ({group}) занята разбором или вопросом: проверьте генерацию после них.",
+                               group=gate.label))
     try:
         with model_traffic.context(purpose="check"):
             return float(client.probe(model))

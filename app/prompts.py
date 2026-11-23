@@ -515,6 +515,22 @@ def _ask_limits(ctx: CodeContext) -> list[str]:
     return []
 
 
+# Язык ответа (ADR-0158, решение владельца 23.11.2026): текст промпта не меняется; при английском интерфейсе в конце
+# сообщения пользователя – отдельная строка о языке ответа. При русском строки нет, запрос байт в байт прежний; ключ
+# кэша вердиктов (request_key) различает языки сам – по сообщениям.
+ANSWER_LANGUAGE_EN = ("Answer language: English. Write every free-text field of the JSON answer in English; this "
+                      "overrides the language named in the system message. Keep the enumerated values (verdict, "
+                      "cwe_fit, verdict_changes) exactly as the system message lists them, and keep names from the "
+                      "code, rule names and CWE exactly as they appear in the data.")
+
+
+def answer_language_lines() -> list[str]:
+    """Строка о языке ответа для текущего языка интерфейса: [] при русском."""
+    from app.i18n import current
+
+    return [] if current() == "ru" else [ANSWER_LANGUAGE_EN]
+
+
 def build_sast_messages(f: Finding, ctx: CodeContext, mask_key: bytes | None = None,
                         prompt_version: str | None = None) -> list[dict[str, str]]:
     """Сообщения для /api/chat: системное (роль, правила, ключи ответа) и пользовательское (блок данных находки).
@@ -540,6 +556,7 @@ def build_sast_messages(f: Finding, ctx: CodeContext, mask_key: bytes | None = N
     spec = spec_for(prompt_version)
     parts.append("Разбери находку по правилам из системного сообщения. Ответ – один объект JSON с ключами: "
                  + ", ".join(spec.fields) + ".")
+    parts += answer_language_lines()
     return [{"role": "system", "content": spec.system}, {"role": "user", "content": "\n".join(parts)}]
 
 
@@ -719,7 +736,8 @@ _LINK = re.compile(r"\b(?:https?|ftp|file)://\S+|\bwww\.[^\s/]+\.\S+|\bjavascrip
 
 
 def _plain_comment(text: str) -> str:
-    return _LINK.sub("[ссылка убрана]", hub_clean(text))
+    from app import i18n
+    return _LINK.sub(i18n._("[ссылка убрана]").replace("\\", "\\\\"), hub_clean(text))  # язык прогона (ADR-0158)
 
 
 def _has_words(text: str) -> bool:
@@ -791,7 +809,8 @@ def parse_verdict(obj: Mapping[str, Any], ctx: CodeContext | None = None, *, pro
     checks = _text_list(o.get("check_by_eye"), _EYE_MAX)
     fix = _text(o.get("fix"), markdown=False)
     if verdict == "uncertain" and not _has_words(fix) and checks:
-        fix = "Проверить: " + "; ".join(checks)
+        from app import i18n
+        fix = i18n._("Проверить: {checks}", checks="; ".join(checks))  # язык прогона (ADR-0158)
     confidence = _confidence(o.get("confidence"))
     if ctx is not None and ctx.status == "ok" and ctx.export_line_check in UNCONFIRMED_EXPORT_CHECKS:
         # ADR-0080, ADR-0082: фрагмент из выгрузки не подтверждён показанным кодом (не найден, только в комментарии
@@ -1013,6 +1032,7 @@ def build_ask_messages(f: Finding, ctx: CodeContext, verdict: Verdict, question:
     parts.append("Вопрос специалиста:")
     parts.append(_neutralize(str(question or "").strip()))
     parts.append("Ответ – один объект JSON с ключами: " + ", ".join(ASK_FIELDS) + ".")
+    parts += answer_language_lines()
     return [{"role": "system", "content": ASK_SYSTEM_PROMPT}, {"role": "user", "content": "\n".join(parts)}]
 
 
@@ -1071,9 +1091,31 @@ def hub_text_other(f: Finding, verdict: str, comment: str, status_map: Mapping[s
     status = statuses.get(verdict, "")
     from app.defect import edges
     text = edges(comment)  # отступ первой строки остаётся (ADR-0149 п. 5)
-    lines = [f"Статус: {status}".translate(_DASHES)] if status else []
-    lines.append(f"Комментарий: {text or _fallback_comment(f, verdict).translate(_DASHES)}")
+    # подписи и вывод по находке – на языке интерфейса (ADR-0158; при русском – прежние байты), статус Hub и комментарий
+    # оператора – как есть
+    from app import i18n
+    lines = [i18n._("Статус: {status}", status=status).translate(_DASHES)] if status else []
+    fallback = _fallback_comment(f, verdict) if i18n.current() == "ru" else _fallback_comment_en(f, verdict)
+    lines.append(i18n._("Комментарий: {text}", text=text or fallback.translate(_DASHES)))
     return "\n".join(lines)
+
+
+_FALLBACK_PREFIX_EN = {"true_positive": "Confirmed", "false_positive": "False positive",
+                       "uncertain": "Needs additional review", "risk_accepted": "Risk accepted"}
+
+
+def _fallback_comment_en(f: Finding, verdict: str) -> str:
+    """Вывод по находке на английском интерфейсе – то же, что _fallback_comment (ADR-0158)."""
+    subject = _one_line(f.rule) or "analyzer finding"
+    cwe = ", ".join(_one_line(c, 40) for c in f.cwe if str(c).strip())
+    if cwe:
+        subject += f" ({cwe})"
+    place = _one_line(f.file)
+    if place and f.line:
+        place += f":{f.line}"
+    if place:
+        subject += f" in {place}"
+    return f"{_FALLBACK_PREFIX_EN.get(verdict, 'Finding')}: {subject}."
 
 
 def hub_text_v2(f: Finding, verdict: str, comment: str, status_map: Mapping[str, str] | None = None) -> str:

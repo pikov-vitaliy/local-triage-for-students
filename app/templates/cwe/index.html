@@ -2,54 +2,54 @@
 {% from "macros.html" import icon, stat, empty_state, cwe_link with context %}
 {% from "worklists.html" import pager, sort_heading with context %}
 {% block wide %} wrap-wide{% endblock %}
-{% block title %}Справочник CWE · Локальный триаж{% endblock %}
+{% block title %}{{ _("Справочник CWE") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}cwe{% endblock %}
-{% block crumbs %}<a href="{{ work_link('/') }}">Проекты</a><span aria-hidden="true"> / </span><span aria-current="page">Справочник CWE</span>{% endblock %}
+{% block crumbs %}<a href="{{ work_link('/') }}">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Справочник CWE") }}</span>{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Справочник CWE</h1>
-    <p class="page-sub">Классы слабостей MITRE: номер, название и связи без интернета.</p>
+    <h1 data-section="{{ _("Классы слабостей") }}">{{ _("Справочник CWE") }}</h1>
+    <p class="page-sub">{{ _("Классы слабостей MITRE: номер, название и связи без интернета.") }}</p>
   </div>
   <div class="page-actions">
-    <a class="btn btn-ghost" href="{{ work_link('/feeds#feed-cwe') }}">{{ icon("book") }}Справочники</a>
+    <a class="btn btn-ghost" href="{{ work_link('/feeds#feed-cwe') }}">{{ icon("book") }}{{ _("Справочники") }}</a>
   </div>
 </div>
 
 {% if not loaded %}
 <section class="panel" id="cwe-empty">
-  {{ empty_state("Каталог CWE не загружен", "Классы CWE появятся здесь после загрузки архива cwec_latest.xml.zip со страницы «Справочники»: тот же файл, что уже используется для карточек находок.", work_link('/feeds#feed-cwe'), "К загрузке каталога", "book") }}
+  {{ empty_state(_("Каталог CWE не загружен"), _("Классы CWE появятся здесь после загрузки архива cwec_latest.xml.zip со страницы «Справочники»: тот же файл, что уже используется для карточек находок."), work_link('/feeds#feed-cwe'), _("К загрузке каталога"), "book") }}
 </section>
 {% else %}
 
-<section class="panel panel-compact" aria-label="Сведения о каталоге">
+<section class="panel panel-compact" aria-label="{{ _("Сведения о каталоге") }}">
   <div class="stats">
     {# число – весь каталог этого вида, без прочих отборов: таблица показывает ровно столько записей #}
     {% macro kind_href(kind) %}{{ work_link('/cwe?' ~ ('kind=' ~ kind ~ '&' if kind else '') ~ 'page_size=' ~ worklist.size ~ '#cwe-results') }}{% endmacro %}
     {% set plain = not (filters.q or filters.status or filters.abstraction) %}
-    {{ stat(catalog_size, "Записей в каталоге", sub=(meta.version ~ " от " ~ meta.source_date) if meta.version else "", href=kind_href(''), active=(plain and not filters.kind)) }}
+    {{ stat(catalog_size, _("Записей в каталоге"), sub=_("{version} от {date}", version=meta.version, date=meta.source_date) if meta.version else "", href=kind_href(''), active=(plain and not filters.kind)) }}
     {{ stat(counts.weakness, "Weaknesses", href=kind_href('weakness'), active=(plain and filters.kind == 'weakness')) }}
     {{ stat(counts.category, "Categories", href=kind_href('category'), active=(plain and filters.kind == 'category')) }}
-    {{ stat(meta.ref_records, "Ссылок в каталоге") }}
+    {{ stat(meta.ref_records, _("Ссылок в каталоге")) }}
   </div>
 </section>
 
 <form method="get" action="/cwe" class="filters catalog-filters" id="cwe-filters">{% include 'navigation-fields.html' %}
   <div class="catalog-filter-grid">
     <div class="filter-group catalog-filter-wide">
-      <label class="filter-label" for="cwe-q">Поиск по номеру или названию</label>
-      <input type="search" name="q" id="cwe-q" value="{{ filters.q }}" placeholder="89, sql injection, Недостаточная экранизация" autocomplete="off">
+      <label class="filter-label" for="cwe-q">{{ _("Поиск по номеру или названию") }}</label>
+      <input type="search" name="q" id="cwe-q" value="{{ filters.q }}" placeholder="{{ _("89, sql injection, Недостаточная экранизация") }}" autocomplete="off">
     </div>
     {% for field, title in (("abstraction", "Abstraction"), ("status", "Status")) %}
-    <label class="filter-group"><span class="filter-label">{{ title }}</span><select name="{{ field }}"><option value="">все</option>{% for value in choices[field] %}<option value="{{ value }}"{% if filters[field] == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+    <label class="filter-group"><span class="filter-label">{{ title }}</span><select name="{{ field }}"><option value="">{{ _("все") }}</option>{% for value in choices[field] %}<option value="{{ value }}"{% if filters[field] == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
     {% endfor %}
     <div class="filter-group">
       <label class="filter-label" for="cwe-kind">Record Type</label>
-      <select name="kind" id="cwe-kind"><option value="">все</option>{% for kind,label in kind_filters.items() %}<option value="{{ kind }}"{% if filters.kind == kind %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <select name="kind" id="cwe-kind"><option value="">{{ _("все") }}</option>{% for kind,label in kind_filters.items() %}<option value="{{ kind }}"{% if filters.kind == kind %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
     </div>
     <div class="filter-actions">
-      <button type="submit" class="btn">Показать</button>
-      {% if filters.q or filters.kind or filters.status or filters.abstraction or filters.sort != "id_asc" %}<a class="btn btn-ghost" href="{{ work_link('/cwe') }}">Сбросить</a>{% endif %}
+      <button type="submit" class="btn">{{ _("Показать") }}</button>
+      {% if filters.q or filters.kind or filters.status or filters.abstraction or filters.sort != "id_asc" %}<a class="btn btn-ghost" href="{{ work_link('/cwe') }}">{{ _("Сбросить") }}</a>{% endif %}
     </div>
   </div>
   <input type="hidden" name="sort" value="{{ filters.sort }}">
@@ -58,8 +58,8 @@
 
 <section class="panel panel-flush" id="cwe-results" aria-labelledby="cwe-list-title">
   <div class="panel-head">
-    <h2 id="cwe-list-title">Классы каталога</h2>
-    <div class="panel-actions"><span class="muted small">Показано {{ rows|length }} из {{ total }}{% if pages > 1 %}, страница {{ page }} из {{ pages }}{% endif %}</span></div>
+    <h2 id="cwe-list-title">{{ _("Классы каталога") }}</h2>
+    <div class="panel-actions"><span class="muted small">{{ _("Показано {shown} из {total}", shown=rows|length, total=total) }}{% if pages > 1 %}, {{ _("страница {page} из {pages}", page=page, pages=pages) }}{% endif %}</span></div>
   </div>
   {{ pager(worklist) }}
   {% if rows %}
@@ -76,7 +76,7 @@
       {% for row in rows %}
         <tr>
           <td data-label="ID" class="nowrap"><strong class="catalog-id">{{ cwe_link(row.id) }}</strong></td>
-          <td data-label="Name"><a class="break" href="{{ work_link('/cwe/' ~ (row.id)) }}">{{ row.name }}</a>{% if row.name_ru %}<span class="muted small block">БДУ ФСТЭК России: {{ row.name_ru }}</span>{% endif %}</td>
+          <td data-label="Name"><a class="break" href="{{ work_link('/cwe/' ~ (row.id)) }}">{{ row.name }}</a>{% if row.name_ru %}<span class="muted small block">{{ _("БДУ ФСТЭК России") }}: {{ row.name_ru }}</span>{% endif %}</td>
           <td data-label="Record Type">{{ "Category" if row.kind == "category" else "Weakness" }}</td>
           <td data-label="Abstraction">{{ row.abstraction or "–" }}</td>
           <td data-label="Status">{{ row.status or "–" }}</td>
@@ -86,12 +86,12 @@
     </table>
   </div>
   {% else %}
-  <p class="empty" id="cwe-no-match">По запросу «{{ filters.q }}»{% if filters.kind %} вида «{{ kind_filters[filters.kind] }}»{% endif %} в каталоге ничего нет.</p>
+  <p class="empty" id="cwe-no-match">{% if filters.kind %}{{ _("По запросу «{query}» вида «{kind}» в каталоге ничего нет.", query=filters.q, kind=kind_filters[filters.kind]) }}{% else %}{{ _("По запросу «{query}» в каталоге ничего нет.", query=filters.q) }}{% endif %}</p>
   {% endif %}
 </section>
 
 {{ pager(worklist, "bottom") }}
 
-<p class="hint">Содержимое каталога – на английском, как в источнике; русское название рядом с английским берётся из выгрузки БДУ ФСТЭК России по тому же номеру. Данные MITRE CWE (© MITRE, распространяется по <a href="{{ work_link((terms_url)) }}" rel="noopener noreferrer" target="_blank">{{ icon("external") }}условиям использования CWE</a>). Каталог загружен {{ meta.version }}{% if meta.source_date %} от {{ meta.source_date }}{% endif %}{% if meta.loaded_at %}, файл <span class="mono break">{{ meta.filename }}</span>{% endif %}.</p>
+<p class="hint">{{ _("Содержимое каталога – на английском, как в источнике; русское название рядом с английским берётся из выгрузки БДУ ФСТЭК России по тому же номеру.") }} {{ _("Данные MITRE CWE (© MITRE, распространяется по") }} <a href="{{ work_link((terms_url)) }}" rel="noopener noreferrer" target="_blank">{{ icon("external") }}{{ _("условиям использования CWE") }}</a>). {% if meta.source_date %}{{ _("Каталог загружен {version} от {date}", version=meta.version, date=meta.source_date) }}{% else %}{{ _("Каталог загружен {version}", version=meta.version) }}{% endif %}{% if meta.loaded_at %}, {{ _("файл") }} <span class="mono break">{{ meta.filename }}</span>{% endif %}.</p>
 {% endif %}
 {% endblock %}

@@ -1,6 +1,6 @@
 """Фактические группы SCA и локальный текст конфликтного состава, без расширения целей."""
 
-from app import defect_drafts, defect_where, package_identity
+from app import defect_drafts, defect_where, i18n, package_identity
 from app.db import loads
 from app.models import Finding
 from app.sca_contract import input_ref
@@ -20,11 +20,11 @@ def groups_in(c, row):
         set_no = place["set_no"] if place else 0
         issues = []
         if not found or found["kind"] != "SCA":
-            issues.append("находка отсутствует или другого вида")
+            issues.append(i18n._("находка отсутствует или другого вида"))
         if not component or not version:
-            issues.append("не указаны компонент или версия")
+            issues.append(i18n._("не указаны компонент или версия"))
         if found and found["missing"]:
-            issues.append("нет в текущей выгрузке")
+            issues.append(i18n._("нет в текущей выгрузке"))
         key = (eco, component, version, set_no)
         group = groups.setdefault(key, {"ecosystem": eco, "component": component, "version": version,
                                         "set_no": set_no, "targets": []})
@@ -34,16 +34,16 @@ def groups_in(c, row):
 
 def explanation(groups):
     if not groups:
-        return "В дефекте нет локальных целей; версии и наборы определить нельзя."
+        return i18n._("В дефекте нет локальных целей; версии и наборы определить нельзя.")
     if any(t["issues"] for g in groups for t in g["targets"]):
-        return "Данных части находок недостаточно для определения единого состава SCA."
+        return i18n._("Данных части находок недостаточно для определения единого состава SCA.")
     if len({(g["ecosystem"], g["component"]) for g in groups}) > 1:
-        return "В дефекте объединены находки разных компонентов или экосистем."
+        return i18n._("В дефекте объединены находки разных компонентов или экосистем.")
     if len({g["version"] for g in groups}) > 1:
-        return "В дефекте объединены находки разных версий компонента."
+        return i18n._("В дефекте объединены находки разных версий компонента.")
     if any(g["set_no"] is None for g in groups):
-        return "В составе есть находки из группы «без дефекта»."
-    return "В дефекте объединены находки разных наборов SCA."
+        return i18n._("В составе есть находки из группы «без дефекта».")
+    return i18n._("В дефекте объединены находки разных наборов SCA.")
 
 
 def generate(request, row):
@@ -68,36 +68,38 @@ def _from_decisions(request, row):
     members = db.on_connection(lambda c: defect_drafts.members_in(c, row))
     sources, sections = [], []
     for group in groups:
-        number = "без дефекта" if group["set_no"] is None else str(group["set_no"])
-        lines = [f"{group['ecosystem'] or 'экосистема не указана'} / {group['component'] or 'компонент не указан'} / "
-                 f"{group['version'] or 'версия не указана'} / набор {number}"]
+        number = i18n._("без дефекта") if group["set_no"] is None else str(group["set_no"])
+        lines = [i18n._("{ecosystem} / {component} / {version} / набор {number}",
+                        ecosystem=group["ecosystem"] or i18n._("экосистема не указана"),
+                        component=group["component"] or i18n._("компонент не указан"),
+                        version=group["version"] or i18n._("версия не указана"), number=number)]
         for target in group["targets"]:
             hub_id = target["hub_id"]
             snap = db.sca_snapshot(row["project_id"], hub_id)
             review = snap.review or {}
             sources.append((hub_id, snap.fingerprint, review.get("revision", 0)))
-            lines.append(f"Находка {hub_id}:")
+            lines.append(i18n._("Находка {hub_id}:", hub_id=hub_id))
             if snap.row is None:
-                lines.append("Находка отсутствует; решение не подставлено.")
+                lines.append(i18n._("Находка отсутствует; решение не подставлено."))
                 continue
             state, outcome = sca_card.decision_state(Finding.from_dict(snap.row["data"]), review,
                                                      snap.latest_answer, snap.row)
             if state != "ok":
-                lines.append(sca_card.state_text(state, outcome) + ". Сохранённый текст не использован.")
+                lines.append(sca_card.state_text(state, outcome) + i18n._(". Сохранённый текст не использован."))
                 continue
-            lines.append("Решение: " + sca_card.OUTCOME_LABELS.get(outcome, outcome))
-            lines.append(review.get("final_comment") or "Текст решения не сохранён.")
+            lines.append(i18n._("Решение: {outcome}", outcome=sca_card.OUTCOME_LABELS.get(outcome, outcome)))
+            lines.append(review.get("final_comment") or i18n._("Текст решения не сохранён."))
         sections.append("\n".join(lines))
 
     def check(c):
         if defect_drafts.members_in(c, row) != members or groups_in(c, row) != groups:
-            raise ValueError("Состав изменился во время сборки: повторите действие.")
+            raise ValueError(i18n._("Состав изменился во время сборки: повторите действие."))
         for hub_id, fingerprint, revision in sources:
             if db._sca_defect_fingerprint(c, row["project_id"], hub_id) != fingerprint:
-                raise ValueError("Источники решения изменились во время сборки.")
+                raise ValueError(i18n._("Источники решения изменились во время сборки."))
             current = c.execute("SELECT revision FROM reviews WHERE project_id = ? AND hub_id = ?",
                                 (row["project_id"], hub_id)).fetchone()
             if (current[0] if current else 0) != revision:
-                raise ValueError("Решение изменилось во время сборки.")
-    return {"summary": row["draft_summary"], "command_text": "\n\n".join(sections) or "В дефекте нет локальных целей.",
+                raise ValueError(i18n._("Решение изменилось во время сборки."))
+    return {"summary": row["draft_summary"], "command_text": "\n\n".join(sections) or i18n._("В дефекте нет локальных целей."),
             "tx_check": check, "refusals": []}

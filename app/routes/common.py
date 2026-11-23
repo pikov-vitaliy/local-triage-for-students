@@ -31,6 +31,7 @@ from app.executors import Server, server_of, service_client
 from app.llm import LlmError
 from app.llm_ollama import OllamaClient
 from app.triage import TriageRunner
+from app import i18n
 from app.view import VERDICT_LABELS, num, reopened_note
 
 log = logging.getLogger("local_triage.web")
@@ -46,7 +47,7 @@ OK_MESSAGES: dict[str, str] = {}
 OK_ERRORS: set[str] = set()
 
 # Стандартные ошибки HTTP – по-русски
-HTTP_ERRORS = {
+HTTP_ERRORS = i18n.Labels({
     400: "Неверный запрос.",
     403: "Доступ запрещён.",
     404: "Страница не найдена.",
@@ -55,16 +56,16 @@ HTTP_ERRORS = {
     413: "Слишком большой запрос.",
     422: "Неверный адрес или параметры запроса.",
     500: "Внутренняя ошибка приложения.",
-}
+})
 
 
 def copy_missing_message(prior: dict | None) -> str:
     """Находки нет в текущей выгрузке, текст для Hub не копируется. Запрос при этом ничего не записывает: введённое в форме не
     сохранено, а то, что было сохранено раньше (prior – прежняя запись решения), осталось как есть."""
     kept = bool(prior and (prior.get("decision") or prior.get("final_verdict") or prior.get("final_comment")))
-    tail = ("Решение, сохранённое раньше, осталось в истории без изменений." if kept
-            else "Раньше сохранённого решения по этой находке нет.")
-    return ("Находки нет в текущей выгрузке: текст для Hub не копируется, а введённое в форме не сохранено. " + tail)
+    tail = (i18n._("Решение, сохранённое раньше, осталось в истории без изменений.") if kept
+            else i18n._("Раньше сохранённого решения по этой находке нет."))
+    return i18n._("Находки нет в текущей выгрузке: текст для Hub не копируется, а введённое в форме не сохранено.") + " " + tail
 
 
 class CommentNeedsCheck(Exception):
@@ -72,8 +73,8 @@ class CommentNeedsCheck(Exception):
     явного подтверждения (поле comment_confirmed)."""
 
 
-CONFIRM_STALE = ("Решение изменилось после того, как вы отметили «Текст проверен» (например, в другой вкладке): "
-                 "обновите карточку, проверьте обоснование и отметьте ещё раз.")
+CONFIRM_STALE = i18n.N_("Решение изменилось после того, как вы отметили «Текст проверен» (например, в другой вкладке): "
+                        "обновите карточку, проверьте обоснование и отметьте ещё раз.")
 
 
 def form_int(value: Any) -> int | None:
@@ -92,21 +93,21 @@ def comment_confirm_valid(form, review: dict | None, strict: bool = True) -> boo
     shown = form_int(form.get("review_revision"))
     if shown is None or int((review or {}).get("revision") or 0) != shown:
         if strict:
-            raise CommentNeedsCheck(CONFIRM_STALE)
+            raise CommentNeedsCheck(i18n._(CONFIRM_STALE))
         return False
     return True
 
 
 def comment_check_text(origin: str, target: str) -> str:
-    return (f"Комментарий написан моделью к вердикту «{VERDICT_LABELS.get(origin, origin)}», а в Hub уйдёт вердикт "
-            f"«{VERDICT_LABELS.get(target, target)}». Поправьте текст или отметьте «Текст проверен» – и скопируйте "
-            "ещё раз.")
+    return i18n._("Комментарий написан моделью к вердикту «{origin}», а в Hub уйдёт вердикт «{target}». Поправьте текст "
+                  "или отметьте «Текст проверен» – и скопируйте ещё раз.",
+                  origin=VERDICT_LABELS.get(origin, origin), target=VERDICT_LABELS.get(target, target))
 
 
 def entered_check_text(origin: str, target: str) -> str:
-    return (f"Комментарий написан моделью к вердикту «{VERDICT_LABELS.get(origin, origin)}», а в Hub уйдёт вердикт "
-            f"«{VERDICT_LABELS.get(target, target)}». Поправьте текст и сохраните решение или отметьте «Текст проверен» – "
-            "и поставьте отметку ещё раз.")
+    return i18n._("Комментарий написан моделью к вердикту «{origin}», а в Hub уйдёт вердикт «{target}». Поправьте текст "
+                  "и сохраните решение или отметьте «Текст проверен» – и поставьте отметку ещё раз.",
+                  origin=VERDICT_LABELS.get(origin, origin), target=VERDICT_LABELS.get(target, target))
 
 
 def register_messages(messages: dict[str, str], errors: tuple[str, ...] = ()) -> None:
@@ -209,7 +210,7 @@ def compute_metrics(make_client: Callable[[str], OllamaClient], key: Any, db: An
             snap = metrics.snapshot(client, host=host)
     except Exception as e:
         log.warning("метрики недоступны: %s", type(e).__name__)
-        snap = {"gpu": None, "models": [], "error": f"Метрики недоступны: {type(e).__name__}"}
+        snap = {"gpu": None, "models": [], "error": i18n._("Метрики недоступны: {error}", error=type(e).__name__)}
     # server – чей это снимок: наблюдение и страницы не выдают метрики одного сервера за метрики другого
     return {**metrics_view(snap), "measured_at": time.time(), "server": server_identity((str(url), bool(host)))}
 
@@ -333,7 +334,7 @@ def collector_of(request: Request) -> dict:
 def render(request: Request, name: str, context: dict, status_code: int = 200) -> HTMLResponse:
     """Страница по шаблону: сообщение после действия (?ok=…, ?reopened=N), действующие настройки, контекст."""
     ok = request.query_params.get("ok", "")
-    message = OK_MESSAGES.get(ok, "")
+    message = i18n._(OK_MESSAGES.get(ok, ""))  # ключ сообщения – msgid каталога (ADR-0158)
     reopened = request.query_params.get("reopened", "")
     if message and COUNT.fullmatch(reopened) and int(reopened) > 0:
         message += " " + reopened_note(int(reopened))
@@ -378,7 +379,7 @@ def redirect(url: str) -> RedirectResponse:
 def project_or_404(request: Request, project_id: int) -> dict:
     project = db_of(request).get_project(project_id)
     if project is None:
-        raise HTTPException(status_code=404, detail="Проект не найден.")
+        raise HTTPException(status_code=404, detail=i18n._("Проект не найден."))
     return project
 
 
@@ -401,6 +402,7 @@ def error_response(request: Request, status_code: int, detail: str, headers: dic
                    settings: Any = None):
     """Ошибка по-русски: страница для браузера, JSON для запросов из скрипта. settings – готовые настройки для
     страницы: при занятой базе их передаёт обработчик (чтение настроек из базы в цикле событий ждало бы соединение)."""
+    detail = i18n._(detail)  # тексты-константы (занятая база, замок, обслуживание) приходят msgid (ADR-0158)
     if "text/html" in request.headers.get("accept", ""):
         try:
             settings = settings or settings_of(request)

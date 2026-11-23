@@ -175,7 +175,10 @@ def composition_problems(con: Any, expected_ids: set[str], report_names: set[str
                 if k not in allowed_meta and not str(k).startswith(f"rev:{pid}:")]
     if odd_meta:
         problems.append(f"служебные значения не демо-проекта: {len(odd_meta)}")
-    odd_settings = sorted(k for (k,) in con.execute("SELECT key FROM settings") if k not in settings_keys)
+    # язык интерфейса и язык прогонов демо-проекта (ADR-0158) – тоже настройки приложения
+    run_langs = {f"run_lang:{rid}" for (rid,) in con.execute("SELECT id FROM runs WHERE project_id = ?", (pid,))}
+    odd_settings = sorted(k for (k,) in con.execute("SELECT key FROM settings")
+                          if k not in settings_keys and k != "ui_language" and k not in run_langs)
     if odd_settings:
         problems.append(f"настройки не из интерфейса: {', '.join(odd_settings[:10])}")
     problems += profile_problems(con, tables)

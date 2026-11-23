@@ -19,6 +19,7 @@ from fastapi.responses import HTMLResponse
 from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 
+from app import i18n
 from app.feeds import BUSY, KINDS, FeedError, FeedStore
 from app.logsafe import log_failure
 from app.routes.common import MAX_NAME, redirect, register_messages, render, settings_of
@@ -54,7 +55,7 @@ class FeedJob:
         with self._lock:
             if self.state == "running":
                 path.unlink(missing_ok=True)
-                raise FeedError(BUSY)
+                raise FeedError(i18n._(BUSY))
             self.state, self.kind, self.filename, self.message = "running", kind, filename, ""
             self.started = time.monotonic()
         thread = threading.Thread(target=self._run, args=(store, kind, path, filename), name="feed-load", daemon=True)
@@ -63,15 +64,22 @@ class FeedJob:
     def _run(self, store: FeedStore, kind: str, path: Path, filename: str) -> None:
         try:
             meta = store.load(kind, path, filename)
-            message = (f"Готово: {KINDS[kind]} загружен, записей – {meta['records']}"
-                       + (f", дата выгрузки {meta['source_date']}" if meta.get("source_date") else "")
-                       + f", разбор занял {meta['seconds']} с. Сведения из него уже видны в карточках находок.")
+            if meta.get("source_date"):
+                message = i18n._("Готово: {feed} загружен, записей – {records}, дата выгрузки {date}, разбор занял "
+                                 "{seconds} с. Сведения из него уже видны в карточках находок.", feed=KINDS[kind],
+                                 records=meta["records"], date=meta["source_date"], seconds=meta["seconds"])
+            else:
+                message = i18n._("Готово: {feed} загружен, записей – {records}, разбор занял {seconds} с. Сведения "
+                                 "из него уже видны в карточках находок.", feed=KINDS[kind], records=meta["records"],
+                                 seconds=meta["seconds"])
             state = "done"
         except FeedError as e:
-            state, message = "error", f"{KINDS[kind]} не загружен: файл не принят. {e} Прежний справочник не изменился."
+            state, message = "error", i18n._("{feed} не загружен: файл не принят. {reason} Прежний справочник не "
+                                             "изменился.", feed=KINDS[kind], reason=e)
         except Exception as e:  # текст исключения в журнал не пишется (ADR 0016)
             eid = log_failure(log, "справочник не загружен", e)
-            state, message = "error", f"{KINDS[kind]}: внутренняя ошибка при загрузке (номер в журнале {eid})."
+            state, message = "error", i18n._("{feed}: внутренняя ошибка при загрузке (номер в журнале {eid}).",
+                                             feed=KINDS[kind], eid=eid)
         finally:
             path.unlink(missing_ok=True)
         with self._lock:
@@ -123,17 +131,17 @@ def cancel_feed(request: Request):
 @router.post("/feeds/{kind}")
 async def upload_feed(request: Request, kind: str):
     if kind not in KINDS:
-        raise HTTPException(status_code=404, detail="Такого справочника нет.")
+        raise HTTPException(status_code=404, detail=i18n._("Такого справочника нет."))
     settings = await run_in_threadpool(settings_of, request)
     form = await request.form(max_files=1, max_fields=5)
     try:
         upload = form.get("file")
         try:
             if not isinstance(upload, UploadFile) or not upload.filename:
-                raise FeedError("Выберите файл архива (.zip).")
+                raise FeedError(i18n._("Выберите файл архива (.zip)."))
             filename = Path(upload.filename.replace("\\", "/")).name[:MAX_NAME]
             if not filename.lower().endswith(".zip"):
-                raise FeedError("Нужен архив .zip – в том виде, как он скачан с сайта.")
+                raise FeedError(i18n._("Нужен архив .zip – в том виде, как он скачан с сайта."))
             settings.tmp_dir.mkdir(parents=True, exist_ok=True)
             fd, tmp_name = tempfile.mkstemp(dir=settings.tmp_dir, prefix="feed-", suffix=".zip")
             tmp = Path(tmp_name)
@@ -143,8 +151,8 @@ async def upload_feed(request: Request, kind: str):
                     while chunk := await upload.read(1024 * 1024):
                         size += len(chunk)
                         if size > settings.max_upload_bytes:
-                            raise FeedError(f"Архив больше {settings.max_upload_mb} МБ – это предел приложения "
-                                            "(MAX_UPLOAD_MB).")
+                            raise FeedError(i18n._("Архив больше {limit} МБ – это предел приложения "
+                                                   "(MAX_UPLOAD_MB).", limit=settings.max_upload_mb))
                         out.write(chunk)
                 job_of(request).start(store_of(request), kind, tmp, filename)
             except BaseException:

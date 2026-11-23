@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app import __version__
 from app.build_info import build_info
-from app import model_traffic
+from app import i18n, model_traffic
 from app.executors import generation, service_client
 from app.llm import LlmError, gate_for
 from app.storage import DatabaseBusy
@@ -82,13 +82,13 @@ def api_metrics(request: Request) -> dict:
 def metrics_history(request:Request,window:str='15m',run:int|None=None):
     """История ресурсов сервера модели: прогона run (его снимка исполнителя; прогон до 0.9.12 – профиль приложения)
     или профиля приложения – ряды других серверов на графике не смешиваются (ADR-0102 п. 9)."""
-    if window not in ('15m','24h'):raise HTTPException(400,'Выберите окно 15m или 24h.')
+    if window not in ('15m','24h'):raise HTTPException(400,i18n._('Выберите окно 15m или 24h.'))
     observer=request.app.state.telemetry
     db=db_of(request)
     if run is None:
         return {'window':window,'points':observer.history(window,server=observer.server_tag(server_of(profile_for(request))))}
     row=db.get_run(run)
-    if row is None:raise HTTPException(404,'Прогон не найден.')
+    if row is None:raise HTTPException(404,i18n._('Прогон не найден.'))
     execution=db.get_execution(row.get('execution_id'))
     # прогон до 0.9.12: сервер не записан – его история тоже без метки сервера (ряд '')
     tag=observer.server_tag(server_of(execution)) if execution else ''
@@ -105,7 +105,7 @@ def active_run(request:Request):
     runs.sort(key=lambda r:({'running':0,'queued':1,'paused':2}.get(r['state'],3),r['id']))
     result=status_payload(request,runs[0]['id'])
     if result is None:return {'run':None}
-    result['project_name']=(db.get_project(runs[0]['project_id']) or {}).get('name','Проект')
+    result['project_name']=(db.get_project(runs[0]['project_id']) or {}).get('name', i18n._('Проект'))
     return result
 
 
@@ -125,7 +125,7 @@ def active_research(request: Request, last: int | None = None):
     project = db.get_project(int(run['project_id'])) or {}
     keys = ('id', 'project_id', 'state', 'rows_total', 'rows_saved', 'rows_unchanged', 'rows_failed', 'rows_unknown')
     return {'run': {**{k: run.get(k) for k in keys}, 'state_label': RUN_STATE_LABELS.get(run['state'], run['state'])},
-            'project_name': project.get('name') or 'Проект', 'running': len(running),
+            'project_name': project.get('name') or i18n._('Проект'), 'running': len(running),
             'url': f"/projects/{run['project_id']}/components/research/{run['id']}"}
 
 
@@ -137,11 +137,11 @@ def model_warmup(request: Request) -> dict:
     db, settings = db_of(request), settings_of(request)
     profile = profile_for(request)
     if not profile.get("enabled") or profile.get("trust") != "local":
-        return {"state": "skipped", "reason": "профиль по умолчанию выключен или это сервер в сети"}
+        return {"state": "skipped", "reason": i18n._("профиль по умолчанию выключен или это сервер в сети")}
     model = str(profile.get("default_model") or settings.default_model)
     gate = gate_for(profile)
     if not gate.try_acquire("warmup"):
-        return {"state": "busy", "reason": f"модель ({gate.label}) занята разбором или вопросом"}
+        return {"state": "busy", "reason": i18n._("модель ({label}) занята разбором или вопросом", label=gate.label)}
     try:
         client = service_client(web_of(request).make_client, server_of(profile), db)
         with model_traffic.context(purpose="warmup"):

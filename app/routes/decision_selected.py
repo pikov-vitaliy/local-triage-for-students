@@ -4,7 +4,7 @@
 from fastapi import APIRouter, Request
 from starlette.concurrency import run_in_threadpool
 
-from app import defect, hub_defects, hub_status
+from app import defect, hub_defects, hub_status, i18n
 from app.db import source_version
 from app.hub_entity_versions import digest
 from app.models import Finding
@@ -13,8 +13,9 @@ from app.routes.common import db_of, project_or_404, redirect, register_messages
 from app.routes.hub_bulk import MAX_SELECTED
 
 router = APIRouter()
-OUTCOMES = {"false_positive": "Ложное срабатывание", "true_positive": "Подтверждаю дефект"}
-STALE = "Состав, данные или решения изменились после показа: проверьте состав и подтвердите ещё раз. Ничего не сохранено."
+OUTCOMES = i18n.Labels({"false_positive": "Ложное срабатывание", "true_positive": "Подтверждаю дефект"})
+STALE = i18n.N_("Состав, данные или решения изменились после показа: проверьте состав и подтвердите ещё раз. Ничего не "
+                "сохранено.")
 register_messages({"decide_selected": "Решение сохранено на всех находках показанного состава."})
 
 
@@ -27,12 +28,13 @@ def assess(request, c, project, selected, outcome, comment, fix):
         url = flow._card_url_of(db, pid, hub_id) if row else ""
         try:
             if row is None or row.get("missing"):
-                raise hub_defects.DefectRefused("находки нет в текущей выгрузке")
+                raise hub_defects.DefectRefused(i18n._("находки нет в текущей выгрузке"))
             if row["kind"] != "SAST":
-                raise hub_defects.DefectRefused("не SAST: решение по SCA – в карточке версии компонента")
+                raise hub_defects.DefectRefused(i18n._("не SAST: решение по SCA – в карточке версии компонента"))
             bound = db.hub_defect_bound_in(c, pid, hub_id)
             if bound is not None:  # решение находки в дефекте – через дефект
-                raise hub_defects.DefectRefused(f"входит в {hub_defects.bound_name(bound)}: решение меняется в карточке находки")
+                raise hub_defects.DefectRefused(i18n._("входит в {defect}: решение меняется в карточке находки",
+                                                        defect=hub_defects.bound_name(bound)))
             ident = hub_status.issue_id(hub_id)
             why = defect_selected.busy_reason(db, c, pid, hub_id, ident)
             if why:
@@ -63,20 +65,20 @@ def text_refusal(request, project_id, view, outcome, comment, fix) -> str:
     """Что мешает сохранить: те же требования, что в карточке находки."""
     from app.routes import findings as card
     if outcome not in OUTCOMES:
-        return "Выберите решение: «Ложное срабатывание» или «Подтверждаю дефект»."
+        return i18n._("Выберите решение: «Ложное срабатывание» или «Подтверждаю дефект».")
     if not defect.reason_text(comment):
         return card.SAST_NEED_REASON[outcome]
     if outcome == "true_positive" and not defect.has_recommendation(fix):
-        return card.SAST_NEED_FIX
+        return i18n._(card.SAST_NEED_FIX)
     if len(comment) > card.MAX_COMMENT or len(fix) > card.MAX_FIX:
-        return "Текст решения слишком длинный: сократите его."
+        return i18n._("Текст решения слишком длинный: сократите его.")
     if not view["ready"]:
-        return "Нет находок, на которые можно сохранить решение."
+        return i18n._("Нет находок, на которые можно сохранить решение.")
     db = db_of(request)
     for r in view["ready"]:
         origin = card.comment_origin(db, r["snapshot"]["case"], r["snapshot"]["review"], comment, project_id=project_id, hub_id=r["hub_id"])
         if origin and origin != outcome:
-            return f"{r['hub_id']}: текст написан моделью к другому исходу, поправьте его."
+            return i18n._("{id}: текст написан моделью к другому исходу, поправьте его.", id=r['hub_id'])
     return ""
 
 
@@ -89,11 +91,11 @@ def apply(request, project_id, selected, outcome, comment, fix, shown, confirmed
     if refusal:
         raise hub_defects.DefectRefused(refusal)
     if not shown or shown != view["snapshot"]:
-        raise hub_defects.DefectRefused(STALE)
+        raise hub_defects.DefectRefused(i18n._(STALE))
     if not confirmed:
-        raise hub_defects.DefectRefused("Подтвердите состав и общее решение.")
+        raise hub_defects.DefectRefused(i18n._("Подтвердите состав и общее решение."))
     if view["replacements"] and not overwrite:
-        raise hub_defects.DefectRefused("Подтвердите замену перечисленных решений.")
+        raise hub_defects.DefectRefused(i18n._("Подтвердите замену перечисленных решений."))
     items = []
     for r in view["ready"]:
         snap, old = r["snapshot"], r["snapshot"]["review"]
@@ -107,7 +109,7 @@ def apply(request, project_id, selected, outcome, comment, fix, shown, confirmed
 
     def check(c) -> None:  # всё или ничего: состав перечитывается в транзакции записи
         if assess(request, c, project, selected, outcome, comment, fix)["snapshot"] != shown:
-            raise hub_defects.DefectRefused(STALE)
+            raise hub_defects.DefectRefused(i18n._(STALE))
 
     db.save_reviews(project_id, items, check=check)
     return len(items)

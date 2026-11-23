@@ -63,7 +63,7 @@
           row = link.closest("tr"); if (row) row.classList.add("is-returned");
         } else {
           var note = document.getElementById("sr-status");
-          if (note) note.textContent = "Исходная строка больше не входит в текущую выборку. Показан обновлённый список.";
+          if (note) note.textContent = ltT("Исходная строка больше не входит в текущую выборку. Показан обновлённый список.");
         }
       }); });
     }
@@ -105,8 +105,8 @@
       });
       syncBatchFields();
       if (batchStatus) batchStatus.textContent = filled
-        ? "Пустые поля заполнены по исследованию – проверьте и поправьте их, затем примените решение."
-        : "Заполнять нечего: поля уже заполнены. Очистите поле, чтобы взять значение из исследования.";
+        ? ltT("Пустые поля заполнены по исследованию – проверьте и поправьте их, затем примените решение.")
+        : ltT("Заполнять нечего: поля уже заполнены. Очистите поле, чтобы взять значение из исследования.");
     });
   }
   var form = document.getElementById("decision-form");
@@ -137,9 +137,9 @@
     dirty = JSON.stringify(values(names)) !== JSON.stringify(baseline);
     discard.hidden = !dirty;
     if (dirty) {
-      if (saveDraft()) say("Черновик сохранён в этой вкладке; решение ещё не сохранено.");
-      else say("Хранилище вкладки недоступно. Не закрывайте страницу до сохранения решения.", true);
-    } else { remove(key); say("Изменений нет. Показано сохранённое решение."); }
+      if (saveDraft()) say(ltT("Черновик сохранён в этой вкладке; решение ещё не сохранено."));
+      else say(ltT("Хранилище вкладки недоступно. Не закрывайте страницу до сохранения решения."), true);
+    } else { remove(key); say(ltT("Изменений нет. Показано сохранённое решение.")); }
   }
   names.forEach(function (name) {
     var field = form.elements.namedItem(name); field.addEventListener("input", changed); field.addEventListener("change", changed);
@@ -165,14 +165,14 @@
     });
     syncDecisionFields();
     changed();
-    say(filled ? "Пустые поля заполнены по исследованию – проверьте и поправьте их, затем сохраните решение."
-               : "Заполнять нечего: поля уже заполнены. Очистите поле, чтобы взять значение из исследования.");
+    say(filled ? ltT("Пустые поля заполнены по исследованию – проверьте и поправьте их, затем сохраните решение.")
+               : ltT("Заполнять нечего: поля уже заполнены. Очистите поле, чтобы взять значение из исследования."));
   });
   discard.addEventListener("click", function () {
     names.forEach(function (name) { form.elements.namedItem(name).value = baseline[name]; });
     syncDecisionFields();
     dirty = false; check.hidden = true; confirm.checked = false; discard.hidden = true;
-    remove(key); updateButtons(); say("Черновик отброшен. Восстановлены значения с открытой страницы.");
+    remove(key); updateButtons(); say(ltT("Черновик отброшен. Восстановлены значения с открытой страницы."));
   });
   var draft = read(key);
   if (draft && draft.v === 1 && draft.fields && JSON.stringify(draft.fields) !== JSON.stringify(baseline)) {
@@ -180,7 +180,8 @@
     syncDecisionFields();
     dirty = true; stored = true; discard.hidden = false;
     if (draft.needsCheck || JSON.stringify(draft.seen) !== JSON.stringify(seen)) check.hidden = false;
-    say("Черновик восстановлен в форму, но не сохранён как решение." + (check.hidden ? "" : " Сверьте изменившиеся сведения."), !check.hidden);
+    say(check.hidden ? ltT("Черновик восстановлен в форму, но не сохранён как решение.")
+      : ltT("Черновик восстановлен в форму, но не сохранён как решение. Сверьте изменившиеся сведения."), !check.hidden);
     updateButtons();
   } else if (draft) { remove(key); }
   window.addEventListener("beforeunload", function (event) {
@@ -193,29 +194,29 @@
     var data = new FormData(form), sent = edits, fields = values(names);
     form.querySelectorAll("[aria-invalid]").forEach(function (field) { field.removeAttribute("aria-invalid"); field.removeAttribute("aria-errormessage"); });
     if (event.submitter && event.submitter.name) data.set(event.submitter.name, event.submitter.value);
-    sending = true; updateButtons(); say("Сохраняется решение…");
+    sending = true; updateButtons(); say(ltT("Сохраняется решение…"));
     fetch(form.getAttribute("action"), {method: "POST", body: data, headers: {Accept: "application/json"}, credentials: "same-origin"})
       .then(function (response) { return response.json().then(function (answer) {
         if (!response.ok || !answer.ok) {
           var box = document.getElementById("decision-error");
           if (!box) { box = document.createElement("div"); box.id = "decision-error"; box.className = "callout callout-warn"; box.setAttribute("role", "alert"); form.parentNode.insertBefore(box, form); }
           box.setAttribute("tabindex", "-1");
-          box.textContent = (answer.detail || "Решение не сохранено.") + " Введённый текст оставлен в форме." +
-            (response.status === 409 ? " Обновите страницу и сверьте сведения перед повторным сохранением." :
-             response.status === 422 ? " Исправьте указанное поле и сохраните решение снова." : " Повторите сохранение.");
+          box.textContent = (answer.detail || ltT("Решение не сохранено.")) + " " + ltT("Введённый текст оставлен в форме.") + " " +
+            (response.status === 409 ? ltT("Обновите страницу и сверьте сведения перед повторным сохранением.") :
+             response.status === 422 ? ltT("Исправьте указанное поле и сохраните решение снова.") : ltT("Повторите сохранение."));
           var invalid = answer.error_field && form.elements.namedItem(answer.error_field);
           if (invalid && !invalid.disabled) {
             invalid.setAttribute("aria-invalid", "true"); invalid.setAttribute("aria-errormessage", "decision-error");
             invalid.focus();
           } else { box.focus(); }
-          throw new Error(answer.detail || "Решение не сохранено.");
+          throw new Error(answer.detail || ltT("Решение не сохранено."));
         }
         form.elements.namedItem("revision").value = String(answer.revision);
         baseline = fields;
         if (edits === sent) {
           dirty = false; remove(key);
           // сбой записи находкам (apply_message): оба итога показываются здесь – странице карточки нужна база
-          if (answer.apply_message) { say("Решение сохранено. " + answer.apply_message); }
+          if (answer.apply_message) { say(ltT("Решение сохранено.") + " " + answer.apply_message); }
           else { location.assign(answer.redirect); }
         } else {
           saveDraft(); check.hidden = true; confirm.checked = false;
@@ -223,12 +224,15 @@
           var applyNote = answer.apply_message
             ? " " + answer.apply_message
             : (answer.apply_error
-              ? " Находкам решение не записано: сохраните правки, обновите страницу и примените решение ещё раз."
-              : (answer.applied ? " Находкам этой версии решение записано: " + answer.applied + "." : ""));
-          say("Отправленное решение сохранено; новые правки остались черновиком и ещё не сохранены." + applyNote);
+              ? " " + ltT("Находкам решение не записано: сохраните правки, обновите страницу и примените решение ещё раз.")
+              : (answer.applied ? " " + ltT("Находкам этой версии решение записано: {n}.", {n: answer.applied}) : ""));
+          say(ltT("Отправленное решение сохранено; новые правки остались черновиком и ещё не сохранены.") + applyNote);
         }
       }); })
-      .catch(function (error) { say(error.message + (stored ? " Черновик сохранён в этой вкладке." : " Не закрывайте страницу: решение не сохранено."), true); })
+      .catch(function (error) {
+        say(error.message + " " + (stored ? ltT("Черновик сохранён в этой вкладке.")
+          : ltT("Не закрывайте страницу: решение не сохранено.")), true);
+      })
       .finally(function () { sending = false; updateButtons(); });
   });
 })();

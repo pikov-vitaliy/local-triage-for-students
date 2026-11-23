@@ -23,7 +23,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from app import hub_defects, hub_effects, hub_ops, hub_status, hub_sync, hub_sync_compare
+from app import hub_defects, hub_effects, hub_ops, hub_status, hub_sync, hub_sync_compare, i18n
 from app.db import Database, finding_data_sig, hub_verdict, loads, text_hash
 from app.defect import edges
 from app.models import Finding
@@ -46,45 +46,47 @@ router = APIRouter()
 
 SAST_STATUS_OUTCOMES = ("false_positive",)
 SCA_STATUS_OUTCOMES = ("false_positive", "risk_accepted")
-STALE_REVISION = ("Решение изменилось в другой вкладке, пока карточка была открыта: обновите карточку и отправьте "
-                  "ещё раз.")
+# сообщения – msgid (N_): перевод там, где текст выводится или поднимается отказ (ADR-0158)
+STALE_REVISION = i18n.N_("Решение изменилось в другой вкладке, пока карточка была открыта: обновите карточку и "
+                         "отправьте ещё раз.")
 
 
-DATA_CHANGED = ("Выгрузка обновилась, пока карточка была открыта: данные находки изменились. Обновите карточку, "
+DATA_CHANGED = i18n.N_("Выгрузка обновилась, пока карточка была открыта: данные находки изменились. Обновите карточку, "
                 "проверьте решение и отправьте ещё раз.")
-TEXT_CHANGED = ("Текст для Hub изменился с тех пор, как карточка его показала (например, пришло соответствие номеров "
+TEXT_CHANGED = i18n.N_("Текст для Hub изменился с тех пор, как карточка его показала (например, пришло соответствие номеров "
                 "или новый ответ агента): обновите карточку, проверьте текст и отправьте ещё раз.")
-TEXT_NOT_SHOWN = ("Карточка не показала текст для Hub (решение не сохранено или данные менялись при её сборке): "
+TEXT_NOT_SHOWN = i18n.N_("Карточка не показала текст для Hub (решение не сохранено или данные менялись при её сборке): "
                   "сохраните решение или обновите карточку и отправьте ещё раз.")
-DRAFT_NOTE = "Решение не сохранено: отправить в Hub можно после сохранения – уйдёт сохранённый текст."
-UNSETTLED_NOTE = "Данные этой версии компонента менялись, пока собиралась карточка: обновите её, затем отправляйте."
-NOT_REVIEWED = ("Находка не отмечена как проверенная (после обновления выгрузки её нужно проверить снова): "
+DRAFT_NOTE = i18n.N_("Решение не сохранено: отправить в Hub можно после сохранения – уйдёт сохранённый текст.")
+UNSETTLED_NOTE = i18n.N_("Данные этой версии компонента менялись, пока собиралась карточка: обновите её, затем "
+                         "отправляйте.")
+NOT_REVIEWED = i18n.N_("Находка не отмечена как проверенная (после обновления выгрузки её нужно проверить снова): "
                 "отметьте «Проверено» и сохраните решение.")
-TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились, пока собирался запрос (в другой вкладке – «Параметры "
+TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились, пока собирался запрос (в другой вкладке – «Параметры "
                   "проекта» или «Настройки»): ничего не отправлено – обновите карточку и повторите.")
 # «Отправить в Hub» из карточки: форма несёт назначение, которое показала карточка (KIMI-12)
-CARD_TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились, пока карточка была открыта (в другой вкладке – "
+CARD_TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились, пока карточка была открыта (в другой вкладке – "
                        "«Параметры проекта» или «Настройки»): ничего не отправлено – обновите карточку и отправьте ещё "
                        "раз.")
 
 
 # форма без назначения (страница открыта до обновления приложения, 0.9.23.dev2) – не «изменилось», а «устарела»
-CARD_FORM_OUTDATED = ("Страница открыта до обновления приложения: обновите карточку и отправьте ещё раз – ничего не "
+CARD_FORM_OUTDATED = i18n.N_("Страница открыта до обновления приложения: обновите карточку и отправьте ещё раз – ничего не "
                       "отправлено.")
 # статус уже стоит в Hub у самой находки (dev29): повторно Hub его не принимает – обычная отправка отклоняется до
 # запроса, комментарий заменяется двумя шагами по подтверждению
-ALREADY_IN_HUB = ("В Hub у находки уже стоит статус «{label}»: повторно тот же статус Hub не принимает, комментарий "
+ALREADY_IN_HUB = i18n.N_("В Hub у находки уже стоит статус «{label}»: повторно тот же статус Hub не принимает, комментарий "
                   "в Hub остаётся прежним. Чтобы заменить комментарий, подтвердите «Обновить комментарий в Hub».")
-REPLACE_CONFIRM = ("Подтвердите замену комментария: отметьте, что статус в Hub сменится на «Подтверждено» и обратно, а "
+REPLACE_CONFIRM = i18n.N_("Подтвердите замену комментария: отметьте, что статус в Hub сменится на «Подтверждено» и обратно, а "
                    "в истории Hub появятся две записи.")
-REPLACE_NOT_NEEDED = ("Статуса «{label}» у находки в Hub сейчас нет: обновите карточку и отправьте решение кнопкой "
+REPLACE_NOT_NEEDED = i18n.N_("Статуса «{label}» у находки в Hub сейчас нет: обновите карточку и отправьте решение кнопкой "
                       "«Отправить в Hub».")
-REPLACE_DONE = ("Текущий текст решения уже внесён в Hub: заменять нечего. Обновите карточку.")
-REPLACE_NOTE = ("В Hub у находки уже стоит «{label}», а комментарий там прежний: повторно тот же статус Hub не "
+REPLACE_DONE = i18n.N_("Текущий текст решения уже внесён в Hub: заменять нечего. Обновите карточку.")
+REPLACE_NOTE = i18n.N_("В Hub у находки уже стоит «{label}», а комментарий там прежний: повторно тот же статус Hub не "
                 "принимает. «Обновить комментарий в Hub» сменит статус на «Подтверждено» (Confirmed) и сразу вернёт «{label}» с "
                 "текущим комментарием и сроком из поля – в истории статусов Hub появятся две записи. Соседи по группе "
                 "не затрагиваются: их комментарий меняется из их карточек.")
-REPLACE_CHECK = ("Понимаю: статус в Hub сменится на «Подтверждено» и обратно на «{label}», в истории Hub будет две "
+REPLACE_CHECK = i18n.N_("Понимаю: статус в Hub сменится на «Подтверждено» и обратно на «{label}», в истории Hub будет две "
                  "записи")
 
 
@@ -125,7 +127,7 @@ def hub_target_check(request: Request, project_id: int, hub_url: str, app_id: An
         current_app, stored = Database.hub_target_in(c, project_id)
         current = (hub_ops.hub_base(base.with_stored(stored).hub_url), int(current_app or 0))
         if not seen[0] or not seen[1] or used != seen or current != seen:
-            raise StaleTarget(message)
+            raise StaleTarget(i18n._(message))  # message – msgid вызывающего (TARGET_CHANGED и т. п.)
     return check
 
 
@@ -146,7 +148,7 @@ def today() -> date:
 # ============================================================================ условия и вид для карточки
 
 
-STAND_NO_HUB = ("На учебном стенде отправки в Hub нет: заголовок и текст копируются кнопками выше как образец для "
+STAND_NO_HUB = i18n.N_("На учебном стенде отправки в Hub нет: заголовок и текст копируются кнопками выше как образец для "
                 "Hub.")
 
 
@@ -154,11 +156,11 @@ def send_blocker(settings, project: dict) -> str:
     """Почему отправка в Hub недоступна для проекта: «» – доступна."""
     if getattr(settings, "hub_disabled", False):
         # учебный стенд (ADR-0155): Hub выключен – не отправлять студента настраивать адрес Hub
-        return STAND_NO_HUB
+        return i18n._(STAND_NO_HUB)
     if not settings.hub_url:
-        return "Адрес Hub не задан: «Настройки» → раздел «AppSec.Hub»."
+        return i18n._("Адрес Hub не задан: «Настройки» → раздел «AppSec.Hub».")
     if not project.get("hub_app_id"):
-        return "Номер приложения в Hub не задан: «Параметры проекта» → «Приложение в Hub»."
+        return i18n._("Номер приложения в Hub не задан: «Параметры проекта» → «Приложение в Hub».")
     return ""
 
 
@@ -175,7 +177,7 @@ def until_moment(expired_at: Any) -> str:
     return f"{day}T23:59:59Z"
 
 
-SUPERSEDED_NOTE = " Позже статус в Hub изменили (принято «Pull из Hub»): отметка снята, отправить можно снова."
+SUPERSEDED_NOTE = i18n.N_(" Позже статус в Hub изменили (принято «Pull из Hub»): отметка снята, отправить можно снова.")
 
 
 def _reset_view(op: dict, checking: bool) -> dict:
@@ -185,24 +187,27 @@ def _reset_view(op: dict, checking: bool) -> dict:
     label = hub_status.API_STATUS_LABEL.get(str(then.get("status") or ""), str(then.get("status") or ""))
     error = str(op.get("error") or "")
     if state == "unknown" and checking:
-        text, tone, verify, final = "Сверяем с Hub: исполнитель читает статус…", "warn", False, False
+        text, tone, verify, final = i18n._("Сверяем с Hub: исполнитель читает статус…"), "warn", False, False
     else:
         texts = {
-            "queued": (f"В очереди: ждём исполнителя – замена комментария в Hub: сначала «Подтверждено», затем «{label}» "
-                       "с новым комментарием.", "", False),
-            "taken": ("Исполнитель снимает прежний статус в Hub (ставит «Подтверждено»)…", "", False),
+            "queued": (i18n._("В очереди: ждём исполнителя – замена комментария в Hub: сначала «Подтверждено», затем "
+                              "«{label}» с новым комментарием.", label=label), "", False),
+            "taken": (i18n._("Исполнитель снимает прежний статус в Hub (ставит «Подтверждено»)…"), "", False),
             # выполнен: второй шаг поставлен (карточка обычно уже показывает его), ещё ставится (последствия ответа
             # не доставлены – опрос продолжается, ревью круг 5) или не поставлен – пояснение из записи операции
-            "done": ((f"Прежний статус в Hub снят (стоит «Подтверждено»): {hub_effects.CHAIN_NOTE_QUEUED}.", "ok", False)
+            "done": ((i18n._("Прежний статус в Hub снят (стоит «Подтверждено»): {note}.",
+                             note=i18n._(hub_effects.CHAIN_NOTE_QUEUED)), "ok", False)
                      if then.get("chained") else
-                     ("Прежний статус в Hub снят (стоит «Подтверждено»); ставлю второй шаг – прежний статус с новым "
-                      "комментарием…", "", False) if then.get("chained") is None else
-                     (f"Прежний статус в Hub снят (стоит «Подтверждено»): {error or 'второй шаг не поставлен'}.", "warn", False)),
-            "failed": (f"Hub не принял снятие прежнего статуса: {error or 'ошибка'}. Статус и комментарий в Hub "
-                       "прежние; можно повторить.", "err", False),
-            "unknown": (f"Результат первого шага неизвестен ({error or 'ответа нет'}). Нажмите «Pull из Hub»: "
-                        "приложение прочитает статус; повторно само не отправит.", "warn", True),
-            "cancelled": (op.get("error") or "Отправка отменена.", "", False),
+                     (i18n._("Прежний статус в Hub снят (стоит «Подтверждено»); ставлю второй шаг – прежний статус с "
+                             "новым комментарием…"), "", False) if then.get("chained") is None else
+                     (i18n._("Прежний статус в Hub снят (стоит «Подтверждено»): {note}.",
+                             note=error or i18n._("второй шаг не поставлен")), "warn", False)),
+            "failed": (i18n._("Hub не принял снятие прежнего статуса: {error}. Статус и комментарий в Hub прежние; можно "
+                              "повторить.", error=error or i18n._("ошибка")), "err", False),
+            "unknown": (i18n._("Результат первого шага неизвестен ({error}). Нажмите «Pull из Hub»: приложение "
+                               "прочитает статус; повторно само не отправит.", error=error or i18n._("ответа нет")),
+                        "warn", True),
+            "cancelled": (op.get("error") or i18n._("Отправка отменена."), "", False),
         }
         text, tone, verify = texts.get(state, ("", "", False))
         final = state not in ("queued", "taken") and not (state == "done" and then.get("chained") is None)
@@ -230,51 +235,57 @@ def op_view(op: dict | None, checking: bool = False, pending: bool = False, supe
     moment = until_moment(body.get("expiredAt"))
     fallback = f"{moment[8:10]}.{moment[5:7]}.{moment[0:4]}, 23:59 UTC" if moment else "–"
     count = len(loads(op.get("targets_json"), []))
-    head, tail = f"«{label}», срок до ", (f", находок: {count}" if count > 1 else "")
+    # текст со сроком – кусками: срок между prefix и suffix показывает скрипт в часовом поясе браузера (time)
+    head = i18n._("«{label}», срок до ", label=label)
+    tail = i18n._(", находок: {count}", count=count) if count > 1 else ""
     dated = {  # состояния, в тексте которых есть срок: (начало, конец, тон, «Сверить»)
-        "queued": ("В очереди: ждём исполнителя – ", ".", "", False),
-        "taken": ("Исполнитель отправляет в Hub ", "…", "", False),
-        "done": ("Записано в Hub: ", ".", "ok", False),
+        "queued": (i18n._("В очереди: ждём исполнителя – "), ".", "", False),
+        "taken": (i18n._("Исполнитель отправляет в Hub "), "…", "", False),
+        "done": (i18n._("Записано в Hub: "), ".", "ok", False),
     }
     legacy = hub_effects.legacy_status_needs_read(op)
     if (state == "unknown" or legacy) and checking:
-        lead, end, tone, verify, final = "Сверяем с Hub: исполнитель читает статус ", "…", "warn", False, False
+        lead, end, tone, verify, final = i18n._("Сверяем с Hub: исполнитель читает статус "), "…", "warn", False, False
     elif legacy:
-        return {"state": state, "final": True, "text": "Отправка завершена до обновления приложения. Для отметки "
-                "«Внесено в Hub» подтвердите новое чтение кнопкой «Pull из Hub». " + str(op.get("error") or ""),
+        return {"state": state, "final": True, "text": i18n._("Отправка завершена до обновления приложения. Для "
+                "отметки «Внесено в Hub» подтвердите новое чтение кнопкой «Pull из Hub». ") + str(op.get("error") or ""),
                 "tone": "warn", "verify": True, "op_id": op["id"], "time": None}
     elif state == "done" and pending:  # ответ записан, отметки – после повторной доставки (hub_effects.effects_pending)
-        lead, end, tone, verify, final = "Записано в Hub: ", ". Ставлю отметку «Внесено в Hub»…", "ok", False, False
+        lead, end, tone, verify, final = (i18n._("Записано в Hub: "), i18n._(". Ставлю отметку «Внесено в Hub»…"), "ok",
+                                          False, False)
     elif state in dated:
         lead, end, tone, verify = dated[state]
         final = state not in ("queued", "taken")
         if state == "done" and superseded:
-            end, tone = end + SUPERSEDED_NOTE, "warn"
+            end, tone = end + i18n._(SUPERSEDED_NOTE), "warn"
     else:
         named = hub_status.refused_issue_ids(op)
         texts = {
-            "failed": ((f"Hub не принял тогда: статус «{label}» у находки уже стоял. Позже принята другая версия "
-                        "находки – это история, отправить можно снова.", "", False)
+            "failed": ((i18n._("Hub не принял тогда: статус «{label}» у находки уже стоял. Позже принята другая "
+                               "версия находки – это история, отправить можно снова.", label=label), "", False)
                        if hub_status.already_refused(op) and (not hub_id or hub_id in named) and refusal_stale else
-                       (f"Hub не принял: статус «{label}» у находки уже стоит, комментарий в Hub прежний. Заменить "
-                        "комментарий можно кнопкой «Обновить комментарий в Hub».", "warn", False)
+                       (i18n._("Hub не принял: статус «{label}» у находки уже стоит, комментарий в Hub прежний. "
+                               "Заменить комментарий можно кнопкой «Обновить комментарий в Hub».", label=label),
+                        "warn", False)
                        if hub_status.already_refused(op) and (not hub_id or hub_id in named) and replace_active else
-                       (f"Hub не принял: статус «{label}» у находки уже стоит; текущий текст решения совпадает с "
-                        "внесённым – отправлять нечего.", "", False)
+                       (i18n._("Hub не принял: статус «{label}» у находки уже стоит; текущий текст решения совпадает с "
+                               "внесённым – отправлять нечего.", label=label), "", False)
                        if hub_status.already_refused(op) and (not hub_id or hub_id in named) and text_current else
                        # решение с тех пор другое (другой итог): отказ прежней отправки – без утверждения о доставке
                        # (ревью dev29, круг 7)
-                       (f"Hub не принял прежнюю отправку: статус «{label}» у находки уже стоит. Текущее решение "
-                        "другое – отправьте его.", "", False)
+                       (i18n._("Hub не принял прежнюю отправку: статус «{label}» у находки уже стоит. Текущее решение "
+                               "другое – отправьте его.", label=label), "", False)
                        if hub_status.already_refused(op) and (not hub_id or hub_id in named) else
-                       (f"Hub не принял групповую отправку: статус «{label}» уже стоит у "
-                        f"{', '.join(sorted(named)) or 'одной из находок группы'}; эта находка не отправлена – "
-                        "отправьте ещё раз, названные соседи в группу не войдут.", "err", False)
+                       (i18n._("Hub не принял групповую отправку: статус «{label}» уже стоит у {who}; эта находка не "
+                               "отправлена – отправьте ещё раз, названные соседи в группу не войдут.", label=label,
+                               who=', '.join(sorted(named)) or i18n._("одной из находок группы")), "err", False)
                        if hub_status.already_refused(op) else
-                       (f"Hub не принял: {op.get('error') or 'ошибка'}. Можно отправить ещё раз.", "err", False)),
-            "unknown": (f"Результат неизвестен ({op.get('error') or 'ответа нет'}). Нажмите «Сверить»: приложение "
-                        "прочитает статус в Hub; повторно само не отправит.", "warn", True),
-            "cancelled": (op.get("error") or "Отправка отменена.", "", False),
+                       (i18n._("Hub не принял: {error}. Можно отправить ещё раз.",
+                               error=op.get('error') or i18n._("ошибка")), "err", False)),
+            "unknown": (i18n._("Результат неизвестен ({error}). Нажмите «Сверить»: приложение прочитает статус в Hub; "
+                               "повторно само не отправит.", error=op.get('error') or i18n._("ответа нет")),
+                        "warn", True),
+            "cancelled": (op.get("error") or i18n._("Отправка отменена."), "", False),
         }
         text, tone, verify = texts.get(state, ("", "", False))
         return {"state": state, "final": True, "text": text, "tone": tone, "verify": verify, "op_id": op["id"],
@@ -339,7 +350,8 @@ def card_context(request: Request, project: dict, hub_id: str, text: str = "", n
             "max": (now + timedelta(days=hub_status.EXPIRY_MAX_DAYS)).isoformat(),
             "hub_base": hub_ops.hub_base(settings.hub_url), "hub_app_id": project.get("hub_app_id") or "",
             "hub_url": settings.hub_url, "sig": db.finding_sig(int(project["id"]), str(hub_id)), "hub_id": str(hub_id),
-            "text_hash": text_hash(text) if text else "", "note": note,
+            # note – msgid (DRAFT_NOTE, UNSETTLED_NOTE) или готовый текст: перевод здесь, при выводе
+            "text_hash": text_hash(text) if text else "", "note": i18n._(note) if note else "",
             # находка входит в дефект (dev32): панели отправки нет – пояснение и ссылка на дефект
             "in_defect": in_defect_view(db, int(project["id"]), str(hub_id)),
             # статус «Fixed» (dev7): формы отправки нет, причина названа
@@ -472,6 +484,34 @@ def status_already(db: Database, project: dict, settings, hub_id: str, status: s
                                                              project.get("hub_app_id"))))
 
 
+def _text_hashes(db: Database, project: dict, settings, hub_id: str, review: dict, text: str) -> set[str]:
+    """Отпечатки текста по сохранённому решению на обоих языках интерфейса (ADR-0158): отметка «Внесено в Hub»,
+    поставленная на другом языке, – тот же текст. text – текст на действующем языке (его отпечаток – всегда)."""
+    hashes = {text_hash(text)}
+    stored = str(review.get("entered_text_hash") or "")
+    if not stored or stored in hashes:
+        return hashes
+    row = db.get_finding_by_hub_id(int(project["id"]), hub_id)
+    if row is None:
+        return hashes
+    from app.models import Finding
+    f = Finding.from_dict(row["data"]) if isinstance(row.get("data"), dict) else None
+    if f is None:
+        return hashes
+    other = "en" if i18n.current() == "ru" else "ru"
+    try:
+        with i18n.use(other):
+            if row["kind"] == "SAST":
+                from app.routes.findings import saved_hub_text
+                alt = saved_hub_text(f, review, settings.hub_status_map)
+            else:
+                from app.routes.sca import saved_hub_text as sca_saved_hub_text
+                alt = sca_saved_hub_text(db, settings, int(project["id"]), f, review)
+    except Exception:  # другой язык – только запасная сверка: сбой сборки не меняет прежнего поведения
+        return hashes
+    return hashes | ({text_hash(alt)} if alt else set())
+
+
 def replace_view(db: Database, project: dict, settings, hub_id: str, review: dict, text: str) -> dict:
     """Режим «Обновить комментарий в Hub» панели (dev29): итог сохранённого решения уже стоит в Hub у этой находки,
     а текущего текста решения там нет (отметки «Внесено в Hub» с его отпечатком нет). {active, already, status,
@@ -490,7 +530,7 @@ def replace_view(db: Database, project: dict, settings, hub_id: str, review: dic
     if not status_already(db, project, settings, hub_id, status):
         return {**empty, "status": status, "label": label}
     current = bool(review.get("entered_hub")) and (
-        str(review.get("entered_text_hash") or "") == text_hash(text)
+        str(review.get("entered_text_hash") or "") in _text_hashes(db, project, settings, hub_id, review, text)
         # отметка принятого Pull без отпечатка (hub_pull): текущим считается текст, равный принятому комментарию Hub
         # (ревью dev29, круг 5)
         # (ревью dev29, круг 5); тот же текст – буква в букву, кроме краёв текста (ADR-0149 п. 5): комментарий нового
@@ -504,7 +544,8 @@ def replace_view(db: Database, project: dict, settings, hub_id: str, review: dic
         if done is not None and hub_status.sent_status(done) == status:
             expires = hub_status._day(((loads(done.get("request_json"), {}) or {}).get("body") or {}).get("expiredAt"))
     return {"active": not current, "already": True, "current": current, "status": status, "label": label,
-            "expires": expires, "note": REPLACE_NOTE.format(label=label), "check": REPLACE_CHECK.format(label=label)}
+            "expires": expires, "note": i18n._(REPLACE_NOTE, label=label),
+            "check": i18n._(REPLACE_CHECK, label=label)}
 
 
 def replace_answer(request: Request, project_id: int, hub_id: str, review: dict | None, text: str) -> dict:
@@ -607,9 +648,9 @@ VERSION_SQL = ("SELECT accepted_source_json FROM hub_entity_versions WHERE proje
 STATE_SQL = ("SELECT confirmed_json, confirmed_presence FROM hub_issue_states WHERE project_id = ? AND hub_url = ?"
              " AND app_id = ? AND issue_type = ? AND issue_id = ?")
 STATUS_RUN_SQL = "SELECT closed_at FROM hub_defect_sync_runs WHERE id = ?"
-RESEARCH_CONFLICT = ("Совет агента «не применимо» расходится с исследованием, принятым после решения ({conflict}). Проверьте находку: "
+RESEARCH_CONFLICT = i18n.N_("Совет агента «не применимо» расходится с исследованием, принятым после решения ({conflict}). Проверьте находку: "
                      "подтвердите совет или измените решение и сохраните, затем отправляйте.")
-FIXED_REFUSAL = ("Статус находки в Hub – «Fixed»: находка исправлена, Hub отклоняет смену её статуса (ответ «issue was fixed»). "
+FIXED_REFUSAL = i18n.N_("Статус находки в Hub – «Fixed»: находка исправлена, Hub отклоняет смену её статуса (ответ «issue was fixed»). "
                  "Отправлять нечего.")
 CONFIRMED_OP_SQL = ("SELECT state, request_json FROM hub_ops WHERE id = ? AND project_id = ? AND purpose = 'status'"
                     " AND hub_url = ? AND app_id IS NOT DISTINCT FROM ?")
@@ -684,6 +725,12 @@ def status_now_in(c, project_id: int, hub_id: str, kind: str, exported: str, hub
     return fallback
 
 
+# source у status_now_in – код состояния (по нему сравнивают fixed_refusal, entered_scope_note, card_context): в
+# базе и сравнениях – русский как есть, показ – через эти подписи или {{ _(source) }} (ADR-0158)
+STATUS_SOURCE_LABELS = i18n.Labels({"из выгрузки": "из выгрузки", "подтверждённая запись": "подтверждённая запись",
+                                    "принятая сверка": "принятая сверка"})
+
+
 def status_now(db: Database, project: dict, settings, f: Finding) -> dict:
     return db.on_connection(lambda c: status_now_in(c, int(project["id"]), f.hub_id, f.kind, f.status, settings.hub_url,
                                                     project.get("hub_app_id")))
@@ -707,10 +754,11 @@ def is_fixed(view: dict) -> bool:
 
 def fixed_refusal(view: dict) -> str:
     """Причина отказа: статус из выгрузки мог устареть – находку могли вновь открыть, поэтому названо основание и что сделать."""
-    if view.get("source") == "из выгрузки":
-        return FIXED_REFUSAL + (" Статус взят из выгрузки и мог устареть: если находку вновь открыли, выполните сверку с Hub на вкладке "
-                                "«Дефекты» (кнопка «Синхронизировать») – форма отправки вернётся.")
-    return FIXED_REFUSAL
+    if view.get("source") == "из выгрузки":  # источник – код состояния (status_now_in), не перевод
+        return i18n._(FIXED_REFUSAL) + i18n._(" Статус взят из выгрузки и мог устареть: если находку вновь открыли, "
+                                              "выполните сверку с Hub на вкладке «Дефекты» (кнопка «Синхронизировать») – "
+                                              "форма отправки вернётся.")
+    return i18n._(FIXED_REFUSAL)
 
 
 def _target(f: Finding, review: dict, text: str, parts: str = "", sig: str = "") -> dict:
@@ -792,8 +840,9 @@ def _revisions_check(project_id: int, targets: list[dict], status: str = "", lef
                       if status_already_in(c, project_id, t["hub_id"], status, hub_url, app_id)]
                      + [h for h in (left_out or []) if not status_already_in(c, project_id, h, status, hub_url, app_id)])
             if moved:
-                raise StaleTarget("Состав группы изменился, пока собирался запрос (статус в Hub или отметка «Внесено в "
-                                  f"Hub» у находки {moved[0]}): обновите карточку и отправьте ещё раз.")
+                raise StaleTarget(i18n._("Состав группы изменился, пока собирался запрос (статус в Hub или отметка "
+                                         "«Внесено в Hub» у находки {hub_id}): обновите карточку и отправьте ещё раз.",
+                                         hub_id=moved[0]))
         for target in targets:
             row = c.execute("SELECT revision, reviewed FROM reviews WHERE project_id = ? AND hub_id = ?",
                             (project_id, str(target["hub_id"]))).fetchone()
@@ -807,9 +856,9 @@ def _revisions_check(project_id: int, targets: list[dict], status: str = "", lef
                      and data is not None and not data["missing"]
                      and finding_data_sig(data["data_json"]) == target.get("sig"))
             if not fresh:
-                raise StaleTarget(STALE_REVISION if len(targets) == 1 else
-                                  f"Решение или данные находки {target['hub_id']} из группы изменились, пока "
-                                  "собирался запрос: обновите карточку и отправьте ещё раз.")
+                raise StaleTarget(i18n._(STALE_REVISION) if len(targets) == 1 else
+                                  i18n._("Решение или данные находки {hub_id} из группы изменились, пока собирался "
+                                         "запрос: обновите карточку и отправьте ещё раз.", hub_id=target['hub_id']))
     return check
 
 
@@ -829,13 +878,13 @@ def _enqueue_replace(page: Request, db: Database, settings, project: dict, targe
         revisions(c)
         if not status_already_in(c, int(project["id"]), target["hub_id"], status, settings.hub_url,
                                  int(project["hub_app_id"])):
-            raise StaleTarget("Статус в Hub у находки изменился, пока собирался запрос: обновите карточку и отправьте "
-                              "ещё раз.")
+            raise StaleTarget(i18n._("Статус в Hub у находки изменился, пока собирался запрос: обновите карточку и "
+                                     "отправьте ещё раз."))
         # этот текст уже записан выполненной операцией, чьё подтверждение – текущая версия (цепочка выполнена,
         # отметка может ещё не стоять): заменять нечего (ревью dev29, круг 13)
         if text_delivered_in(c, int(project["id"]), str(target["hub_id"]), status, reason,
                              int(target.get("revision") or 0), settings.hub_url, int(project["hub_app_id"])):
-            raise StaleTarget(REPLACE_DONE)
+            raise StaleTarget(i18n._(REPLACE_DONE))
         hub_defects.refuse_in_defect(c, int(project["id"]), [target["hub_id"]], own=str(target["hub_id"]))
 
     return db.hub_enqueue(purpose="status", request=request, hub_url=settings.hub_url, app_id=int(project["hub_app_id"]),
@@ -853,8 +902,8 @@ def in_defect_check(project_id: int, in_defect: list[str] | None) -> Callable:
     def check(c) -> None:
         for hub_id in in_defect or []:
             if Database.hub_defect_bound_in(c, int(project_id), str(hub_id)) is None:
-                raise StaleTarget(f"Находка {hub_id} вышла из дефекта, пока собирался запрос: обновите карточку и "
-                                  "отправьте ещё раз.")
+                raise StaleTarget(i18n._("Находка {hub_id} вышла из дефекта, пока собирался запрос: обновите карточку "
+                                         "и отправьте ещё раз.", hub_id=hub_id))
     return check
 
 
@@ -920,35 +969,38 @@ async def _send(request: Request, project_id: int, finding_id: int, kind: str):
             raise hub_status.StatusRefused(blocker)
         row = db.get_finding(project_id, finding_id)
         if row is None or (kind == "SAST") != (row["kind"] == "SAST"):
-            raise LookupError("Находка не найдена.")
+            raise LookupError(i18n._("Находка не найдена."))
         bound = db.hub_defect_bound(project_id, row["hub_id"])
         if bound is not None:  # статус находки в дефекте – через дефект (dev32): отказ до проверок формы
             raise hub_status.StatusRefused(hub_defects.in_defect_text(bound))
         # назначение сменили после показа карточки: состав и запрос собрались бы для другого Hub или приложения –
         # отказ до их сборки; в транзакции постановки – ещё раз (hub_target_check)
         if not same_target(settings.hub_url, project.get("hub_app_id"), target_shown):
-            raise StaleTarget(CARD_FORM_OUTDATED if not (target_shown[0] and target_shown[1]) else CARD_TARGET_CHANGED)
+            raise StaleTarget(i18n._(CARD_FORM_OUTDATED if not (target_shown[0] and target_shown[1])
+                                     else CARD_TARGET_CHANGED))
         sig = db.finding_sig(project_id, row["hub_id"])  # до чтения данных: обновление выгрузки поймает транзакция
         f = _finding_of(db, project_id, row["hub_id"])
         if f is None:
-            raise hub_status.StatusRefused("Находки нет в текущей выгрузке: статус в Hub не отправляется.")
+            raise hub_status.StatusRefused(i18n._("Находки нет в текущей выгрузке: статус в Hub не отправляется."))
         now_view = status_now(db, project, settings, f)
         if is_fixed(now_view):
             raise hub_status.StatusRefused(fixed_refusal(now_view))
         review = db.get_review(project_id, f.hub_id)
         if not review or not review.get("decision"):
-            raise hub_status.StatusRefused("Сначала сохраните решение по находке.")
+            raise hub_status.StatusRefused(i18n._("Сначала сохраните решение по находке."))
         if not shown.isdigit() or int(shown) != int(review.get("revision") or 0):
-            raise hub_status.StatusRefused(STALE_REVISION)
+            raise hub_status.StatusRefused(i18n._(STALE_REVISION))
         if not shown_sig or shown_sig != sig:  # карточку открыли до обновления выгрузки: текст собран бы по новым данным
-            raise hub_status.StatusRefused(DATA_CHANGED)
+            raise hub_status.StatusRefused(i18n._(DATA_CHANGED))
         if not review.get("reviewed"):
-            raise hub_status.StatusRefused(NOT_REVIEWED)
+            raise hub_status.StatusRefused(i18n._(NOT_REVIEWED))
         outcome = hub_verdict(review["decision"], review["final_verdict"])
         allowed = SAST_STATUS_OUTCOMES if kind == "SAST" else SCA_STATUS_OUTCOMES
         if outcome not in allowed:
-            raise hub_status.StatusRefused("Из карточки в Hub уходит статус только для «Ложное срабатывание»"
-                                           + ("" if kind == "SAST" else " и «Риск принят»") + ".")
+            raise hub_status.StatusRefused(i18n._("Из карточки в Hub уходит статус только для «Ложное срабатывание».")
+                                           if kind == "SAST" else
+                                           i18n._("Из карточки в Hub уходит статус только для «Ложное срабатывание» и "
+                                                  "«Риск принят»."))
         status = hub_status.api_status(outcome)
         expired = hub_status.expired_at(str(form.get("expires") or ""), today())
         in_defect: list[str] = []  # соседи группы SAST, входящие в дефект (dev32)
@@ -969,7 +1021,7 @@ async def _send(request: Request, project_id: int, finding_id: int, kind: str):
             from app.routes import sca as sca_card
             conflict = sca_card.unconfirmed_conflict(db, project_id, f, review)
             if conflict:
-                raise hub_status.StatusRefused(RESEARCH_CONFLICT.format(conflict=conflict))
+                raise hub_status.StatusRefused(i18n._(RESEARCH_CONFLICT, conflict=conflict))
             origin = sca_card.comment_origin(db, project_id, f, review.get("final_comment") or "")
             if origin and origin != outcome and not comment_confirm_valid(form, review):
                 raise CommentNeedsCheck(comment_check_text(origin, outcome))
@@ -978,29 +1030,29 @@ async def _send(request: Request, project_id: int, finding_id: int, kind: str):
         # уходит ровно показанный текст: любая его зависимость (данные, соответствия номеров, ответ агента, подписи
         # статусов) изменилась – отпечаток другой, отправки нет
         if not shown_text:  # черновик или несогласованная карточка: текста для Hub карточка не показала
-            raise hub_status.StatusRefused(TEXT_NOT_SHOWN)
+            raise hub_status.StatusRefused(i18n._(TEXT_NOT_SHOWN))
         if shown_text != text_hash(text):
-            raise hub_status.StatusRefused(TEXT_CHANGED)
+            raise hub_status.StatusRefused(i18n._(TEXT_CHANGED))
         reason = hub_status.clean_reason(text)
         # статус у самой находки уже стоит в Hub (dev29): обычная отправка отклоняется до запроса (Hub ответил бы
         # 400 «already has the requested status»); замена комментария – двумя шагами по подтверждению
         label = hub_status.API_STATUS_LABEL.get(status, status)
         if replace:
             if not status_already(db, project, settings, f.hub_id, status):
-                raise hub_status.StatusRefused(REPLACE_NOT_NEEDED.format(label=label))
+                raise hub_status.StatusRefused(i18n._(REPLACE_NOT_NEEDED, label=label))
             # повтор той же формы после выполненной замены (ревью dev29, круги 12–13): текущий текст уже внесён –
             # по отметке или по подтверждённой операции (отметка ещё не доставлена)
             if replace_view(db, project, settings, f.hub_id, review, text).get("current") or db.on_connection(
                     lambda c: text_delivered_in(c, project_id, f.hub_id, status, reason,
                                                 int(review.get("revision") or 0), settings.hub_url,
                                                 project.get("hub_app_id"))):
-                raise hub_status.StatusRefused(REPLACE_DONE)
+                raise hub_status.StatusRefused(i18n._(REPLACE_DONE))
             if not replace_confirmed:
-                raise hub_status.StatusRefused(REPLACE_CONFIRM)
+                raise hub_status.StatusRefused(i18n._(REPLACE_CONFIRM))
             return project, _enqueue_replace(request, db, settings, project, targets[0], status, reason, expired,
                                              target_shown), [], []
         if status_already(db, project, settings, f.hub_id, status):
-            raise hub_status.StatusRefused(ALREADY_IN_HUB.format(label=label))
+            raise hub_status.StatusRefused(i18n._(ALREADY_IN_HUB, label=label))
         return project, _enqueue(request, db, settings, project, targets, status, reason, expired, already,
                                  target_shown, in_defect), already, in_defect
 
@@ -1028,15 +1080,18 @@ async def _send(request: Request, project_id: int, finding_id: int, kind: str):
               "hub_queued_defect" if in_defect else "hub_queued")
         return redirect(_card_url(request, "/hub-status", ok))
     count = len(loads(op.get("targets_json"), []))
-    note = ("Поставлено в очередь исполнителю: сначала «Подтверждено», затем прежний статус с новым комментарием."
+    note = (i18n._("Поставлено в очередь исполнителю: сначала «Подтверждено», затем прежний статус с новым "
+                   "комментарием.")
             if hub_status.is_reset(op) else
-            f"Поставлено в очередь исполнителю: находок – {count}." if count > 1 else "Поставлено в очередь исполнителю.")
+            i18n._("Поставлено в очередь исполнителю: находок – {count}.", count=count) if count > 1 else
+            i18n._("Поставлено в очередь исполнителю."))
     if already:
-        note += (" Уже внесены в Hub и не отправляются: " if len(already) > 1 else
-                 " Уже внесена в Hub и не отправляется: ") + ", ".join(already) + "."
+        note += (i18n._(" Уже внесены в Hub и не отправляются: {ids}.", ids=", ".join(already)) if len(already) > 1 else
+                 i18n._(" Уже внесена в Hub и не отправляется: {ids}.", ids=", ".join(already)))
     if in_defect:
-        note += (" Входят в дефект и не отправляются (статус через дефект): " if len(in_defect) > 1 else
-                 " Входит в дефект и не отправляется (статус через дефект): ") + ", ".join(in_defect) + "."
+        note += (i18n._(" Входят в дефект и не отправляются (статус через дефект): {ids}.", ids=", ".join(in_defect))
+                 if len(in_defect) > 1 else
+                 i18n._(" Входит в дефект и не отправляется (статус через дефект): {ids}.", ids=", ".join(in_defect)))
     return _answer(project_id, op, note, hub_id=str(row["hub_id"]))
 
 
@@ -1074,7 +1129,7 @@ def status_state(request: Request, project_id: int, op_id: int):
     except HTTPException as e:  # опрос из скрипта – всегда JSON
         return _json_error(str(e.detail), e.status_code)
     if op is None:
-        return _json_error("Операция не найдена.", 404)
+        return _json_error(i18n._("Операция не найдена."), 404)
     db = db_of(request)
     if hub_effects.chain_pending(op):  # первый шаг записан, а его последствия не доставлены (сбой между записью
         hub_effects.status_done(db, op)  # результата и последствиями): довести при опросе (ревью dev29, круг 9)
@@ -1098,9 +1153,9 @@ async def verify_status(request: Request, project_id: int):
     def apply():
         op = _project_op(request, project_id, op_id) if op_id is not None else None
         if op is None:
-            raise LookupError("Операция не найдена.")
+            raise LookupError(i18n._("Операция не найдена."))
         if op["state"] != "unknown" and not hub_effects.legacy_status_needs_read(op):
-            raise hub_status.StatusRefused("Сверка нужна только операции с результатом «неизвестен».")
+            raise hub_status.StatusRefused(i18n._("Сверка нужна только операции с результатом «неизвестен»."))
         db = db_of(request)
         if checking_of(db, op):
             return op, 0, True
@@ -1113,7 +1168,7 @@ async def verify_status(request: Request, project_id: int):
             hub_target_check(request, project_id, op["hub_url"], op["app_id"])(c)
             row = c.execute("SELECT * FROM hub_ops WHERE id = ?", (op["id"],)).fetchone()
             if row is None or (row["state"] != "unknown" and not hub_effects.legacy_status_needs_read(dict(row))):
-                raise hub_status.StatusRefused("Операция уже сверена: обновите карточку.")
+                raise hub_status.StatusRefused(i18n._("Операция уже сверена: обновите карточку."))
 
         try:
             db.hub_enqueue_many(items, check=still_unknown)
@@ -1134,6 +1189,6 @@ async def verify_status(request: Request, project_id: int):
         return await _refused(request, as_json, str(e), 404)
     if not as_json:
         return redirect(await run_in_threadpool(_op_card_url, request, project_id, op) + "?ok=hub_verify_queued#hub-send")
-    message = (f"Сверка поставлена в очередь: чтений – {queued}." if queued else
-               "Сверка уже идёт: дождитесь ответа исполнителя.")
+    message = (i18n._("Сверка поставлена в очередь: чтений – {queued}.", queued=queued) if queued else
+               i18n._("Сверка уже идёт: дождитесь ответа исполнителя."))
     return _answer(project_id, op, message, checking=checking, hub_id=str(form.get("hub_id") or "")[:40])

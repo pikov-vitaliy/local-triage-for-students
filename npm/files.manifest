@@ -1,6 +1,7 @@
 # Состав пакета npm учебного стенда: сценарий npm/pack.mjs manifest, проверка – npm/pack.mjs check.
 LICENSE
 README.md
+README.ru.md
 THIRD-PARTY-NOTICES.md
 app/__init__.py
 app/affiliation.py
@@ -46,6 +47,7 @@ app/hub_sync_compare.py
 app/hub_sync_contract.py
 app/hub_template_model.py
 app/hub_text_scale.py
+app/i18n.py
 app/journal.py
 app/llm.py
 app/llm_chat.py
@@ -53,6 +55,23 @@ app/llm_http.py
 app/llm_messages.py
 app/llm_net.py
 app/llm_ollama.py
+app/locales/en/base.json
+app/locales/en/components_tpl.json
+app/locales/en/core_misc.json
+app/locales/en/defects.json
+app/locales/en/examples_data.json
+app/locales/en/findings_py.json
+app/locales/en/findings_tpl.json
+app/locales/en/hub_logic.json
+app/locales/en/hub_py.json
+app/locales/en/hub_tpl.json
+app/locales/en/js.json
+app/locales/en/projects_py.json
+app/locales/en/projects_tpl.json
+app/locales/en/research.json
+app/locales/en/sca_py.json
+app/locales/en/sca_tpl.json
+app/locales/en/settings_llm.json
 app/lockfile.py
 app/logsafe.py
 app/main.py
@@ -230,6 +249,7 @@ npm/lib/cluster.js
 npm/lib/env.js
 npm/lib/fsx.js
 npm/lib/http.js
+npm/lib/lang.js
 npm/lib/metrics.js
 npm/lib/paths.js
 npm/lib/pg.js

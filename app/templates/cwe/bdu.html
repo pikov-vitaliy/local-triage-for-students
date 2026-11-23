@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, ext_link, cwe_link with context %}
-{% block title %}{{ cve }} · БДУ ФСТЭК России · Локальный триаж{% endblock %}
+{% block title %}{{ cve }} · {{ _("БДУ ФСТЭК России") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}bdu{% endblock %}
-{% block crumbs %}<a href="{{ work_link('/') }}">Проекты</a><span aria-hidden="true"> / </span><a href="{{ work_link('/feeds#feed-bdu') }}">Справочники</a><span aria-hidden="true"> / </span><span aria-current="page">{{ cve }}</span>{% endblock %}
+{% block crumbs %}<a href="{{ work_link('/') }}">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a href="{{ work_link('/feeds#feed-bdu') }}">{{ _("Справочники") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ cve }}</span>{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1><span class="mono">{{ cve }}</span></h1>
-    <p class="page-sub">Записи базы данных угроз безопасности информации ФСТЭК России по этому идентификатору, из выгруженного справочника. Если страницу открыли из карточки класса CWE, запись показывается по этому же номеру CVE.</p>
+    <h1 data-section="{{ _("База данных угроз") }}"><span class="mono">{{ cve }}</span></h1>
+    <p class="page-sub">{{ _("Записи базы данных угроз безопасности информации ФСТЭК России по этому идентификатору, из выгруженного справочника. Если страницу открыли из карточки класса CWE, запись показывается по этому же номеру CVE.") }}</p>
   </div>
   <div class="page-actions">
-    <a class="btn btn-ghost" href="{{ work_link('/feeds#feed-bdu') }}">{{ icon("book") }}Справочники</a>
+    <a class="btn btn-ghost" href="{{ work_link('/feeds#feed-bdu') }}">{{ icon("book") }}{{ _("Справочники") }}</a>
   </div>
 </div>
 
@@ -21,36 +21,36 @@
     {% if r.severity %}<span class="badge badge-err">{{ r.severity }}</span>{% endif %}
   </div>
   <p class="lead">{{ r.name }}</p>
-  {% if r.description %}<h3>Описание</h3><p class="prose">{{ r.description }}</p>{% endif %}
-  {% if r.solution %}<h3>Как устранить</h3><p class="prose">{{ r.solution }}</p>{% endif %}
+  {% if r.description %}<h3>{{ _("Описание") }}</h3><p class="prose">{{ r.description }}</p>{% endif %}
+  {% if r.solution %}<h3>{{ _("Как устранить") }}</h3><p class="prose">{{ r.solution }}</p>{% endif %}
   <dl class="facts">
     {% if r.cvss2 %}<div><dt>CVSS 2.0</dt><dd class="mono break">{{ r.cvss2 }}</dd></div>{% endif %}
     {% if r.cvss3 %}<div><dt>CVSS 3.x</dt><dd class="mono break">{{ r.cvss3 }}</dd></div>{% endif %}
-    {% if r.fix_status %}<div><dt>Устранение</dt><dd>{{ r.fix_status }}</dd></div>{% endif %}
-    {% if r.vul_status %}<div><dt>Статус уязвимости</dt><dd>{{ r.vul_status }}</dd></div>{% endif %}
-    {% if r.published %}<div><dt>Опубликована</dt><dd>{{ r.published }}</dd></div>{% endif %}
-    {% if r.updated %}<div><dt>Обновлена</dt><dd>{{ r.updated }}</dd></div>{% endif %}
-    {% if r.cves %}<div><dt>Идентификаторы CVE</dt><dd class="mono">{{ r.cves|join(", ") }}</dd></div>{% endif %}
+    {% if r.fix_status %}<div><dt>{{ _("Устранение") }}</dt><dd>{{ r.fix_status }}</dd></div>{% endif %}
+    {% if r.vul_status %}<div><dt>{{ _("Статус уязвимости") }}</dt><dd>{{ r.vul_status }}</dd></div>{% endif %}
+    {% if r.published %}<div><dt>{{ _("Опубликована") }}</dt><dd>{{ r.published }}</dd></div>{% endif %}
+    {% if r.updated %}<div><dt>{{ _("Обновлена") }}</dt><dd>{{ r.updated }}</dd></div>{% endif %}
+    {% if r.cves %}<div><dt>{{ _("Идентификаторы CVE") }}</dt><dd class="mono">{{ r.cves|join(", ") }}</dd></div>{% endif %}
   </dl>
   {% if r.cwes %}
-  <h3>Классы CWE</h3>
+  <h3>{{ _("Классы CWE") }}</h3>
   <ul class="dot-list">{% for c in r.cwes %}<li>{{ cwe_link(c.id, c.name or c.id) }}</li>{% endfor %}</ul>
   {% endif %}
   {% if r.software %}
-  <h3>Уязвимое программное обеспечение</h3>
+  <h3>{{ _("Уязвимое программное обеспечение") }}</h3>
   <div class="table-wrap">
     <table class="table table-compact">
-      <thead><tr><th scope="col">Название</th><th scope="col">Производитель</th><th scope="col">Версия</th></tr></thead>
-      <tbody>{% for s in r.software %}<tr><td data-label="Название">{{ s.name or "–" }}</td><td data-label="Производитель">{{ s.vendor or "–" }}</td><td data-label="Версия" class="break">{{ s.version or "–" }}</td></tr>{% endfor %}</tbody>
+      <thead><tr><th scope="col">{{ _("Название") }}</th><th scope="col">{{ _("Производитель") }}</th><th scope="col">{{ _("Версия") }}</th></tr></thead>
+      <tbody>{% for s in r.software %}<tr><td data-label="{{ _("Название") }}">{{ s.name or "–" }}</td><td data-label="{{ _("Производитель") }}">{{ s.vendor or "–" }}</td><td data-label="{{ _("Версия") }}" class="break">{{ s.version or "–" }}</td></tr>{% endfor %}</tbody>
     </table>
   </div>
   {% endif %}
   {% if r.sources %}
-  <h3>Источники</h3>
+  <h3>{{ _("Источники") }}</h3>
   <ul class="dot-list">{% for s in r.sources %}<li>{% set url = s|norm_link %}{% if url %}{{ ext_link(url) }}{% else %}<span class="break">{{ s }}</span>{% endif %}</li>{% endfor %}</ul>
   {% endif %}
 </section>
 {% endfor %}
 
-<p class="hint">Выгрузка БДУ загружена {{ meta.loaded_at }} из файла <span class="mono break">{{ meta.filename }}</span>, записей в ней {{ meta.records }}.</p>
+<p class="hint">{{ _("Выгрузка БДУ загружена {date} из файла", date=meta.loaded_at) }} <span class="mono break">{{ meta.filename }}</span>, {{ _("записей в ней {count}", count=meta.records) }}.</p>
 {% endblock %}

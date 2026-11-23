@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Сохранённые правки – {{ project.name }}{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Сохранённые правки</span>{% endblock %}
+{% block title %}{{ _("Сохранённые правки") }} – {{ project.name }}{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Сохранённые правки") }}</span>{% endblock %}
 {% block content %}
 {# История сохранённых правок текущего назначения Hub (0.10.0.dev15, план п. 1.4): решения приложения, заменённые
    состоянием Hub при принятии, и прежние ожидания. Каждую можно открыть, вернуть в редактор или отбросить. #}
-<h1>Сохранённые правки</h1>
-<p>Когда «Принять состояние Hub» заменяет решение приложения решением Hub, прежнее решение не теряется: оно хранится здесь, его можно открыть и вернуть в редактор.</p>
-<section class="panel" id="hub-pending-open"><h2>Действующие ({{ open_total }})</h2>
+<h1>{{ _("Сохранённые правки") }}</h1>
+<p>{{ _("Когда «Принять состояние Hub» заменяет решение приложения решением Hub, прежнее решение не теряется: оно хранится здесь, его можно открыть и вернуть в редактор.") }}</p>
+<section class="panel" id="hub-pending-open"><h2>{{ _("Действующие ({n})", n=open_total) }}</h2>
 {% if counts %}<p class="small muted" id="hub-pending-counts">{% for state, n in counts|dictsort %}{{ labels.get(state, state) }} – {{ n }}{{ "; " if not loop.last }}{% endfor %}</p>{% endif %}
 {% if open_rows %}<ul>{% for r in open_rows %}<li><a class="mono" href="/projects/{{ project.id }}/hub-pending/{{ r.id }}">{{ r.entity_key }}</a> · {{ labels.get(r.state, r.state) }} · {{ r.created_at|ts }}</li>{% endfor %}</ul>
-{% else %}<p class="muted">Нет.</p>{% endif %}
-{% if pages > 1 %}<p class="small" id="hub-pending-pages">Страница {{ page }} из {{ pages }}{% if previous %} · <a href="{{ previous }}">предыдущая</a>{% endif %}{% if next %} · <a href="{{ next }}" id="hub-pending-next">следующая</a>{% endif %}</p>{% endif %}
+{% else %}<p class="muted">{{ _("Нет.") }}</p>{% endif %}
+{% if pages > 1 %}<p class="small" id="hub-pending-pages">{{ _("Страница {page} из {last}", page=page, last=pages) }}{% if previous %} · <a href="{{ previous }}">{{ _("предыдущая") }}</a>{% endif %}{% if next %} · <a href="{{ next }}" id="hub-pending-next">{{ _("следующая") }}</a>{% endif %}</p>{% endif %}
 </section>
-{% if closed_rows %}<details class="panel" id="hub-pending-closed"><summary>Закрытые ({{ closed_total }}{% if closed_total > closed_rows|length %}, показаны последние {{ closed_rows|length }}{% endif %})</summary><ul>{% for r in closed_rows %}<li><a class="mono" href="/projects/{{ project.id }}/hub-pending/{{ r.id }}">{{ r.entity_key }}</a> · {{ labels.get(r.state, r.state) }} · {{ r.created_at|ts }}{% if r.resolved_at %} · закрыто {{ r.resolved_at|ts }}{% endif %}</li>{% endfor %}</ul></details>{% endif %}
-<p><a href="/projects/{{ project.id }}#step-hub">К обзору проекта</a></p>
+{% if closed_rows %}<details class="panel" id="hub-pending-closed"><summary>{% if closed_total > closed_rows|length %}{{ _("Закрытые ({total}, показаны последние {n})", total=closed_total, n=closed_rows|length) }}{% else %}{{ _("Закрытые ({total})", total=closed_total) }}{% endif %}</summary><ul>{% for r in closed_rows %}<li><a class="mono" href="/projects/{{ project.id }}/hub-pending/{{ r.id }}">{{ r.entity_key }}</a> · {{ labels.get(r.state, r.state) }} · {{ r.created_at|ts }}{% if r.resolved_at %} · {{ _("закрыто {at}", at=r.resolved_at|ts) }}{% endif %}</li>{% endfor %}</ul></details>{% endif %}
+<p><a href="/projects/{{ project.id }}#step-hub">{{ _("К обзору проекта") }}</a></p>
 {% endblock %}

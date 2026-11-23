@@ -17,7 +17,7 @@ from datetime import timedelta
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-from app import hub_defects, hub_effects, hub_ops, hub_status, hub_sync
+from app import hub_defects, hub_effects, hub_ops, hub_status, hub_sync, i18n
 from app.db import Database, hub_verdict, loads, text_hash
 from app.models import Finding
 from app.routes.common import db_of, form_int, project_or_404, redirect, register_messages, render, settings_of
@@ -48,10 +48,11 @@ router = APIRouter()
 MAX_SELECTED = 50  # находок за одну отправку: больше – выберите часть
 OUTCOME = "false_positive"
 # форма предпросмотра несёт назначение, которое он показал (KIMI-12)
-FORM_OUTDATED = ("Страница открыта до обновления приложения: обновите предпросмотр и отправьте ещё раз – ничего не "
-                 "отправлено.")
-TARGET_CHANGED = ("Приложение Hub или адрес Hub изменились, пока открыт предпросмотр (в другой вкладке – «Параметры "
-                  "проекта» или «Настройки»): ничего не отправлено – обновите предпросмотр и отправьте ещё раз.")
+FORM_OUTDATED = i18n.N_("Страница открыта до обновления приложения: обновите предпросмотр и отправьте ещё раз – "
+                        "ничего не отправлено.")
+TARGET_CHANGED = i18n.N_("Приложение Hub или адрес Hub изменились, пока открыт предпросмотр (в другой вкладке – "
+                         "«Параметры проекта» или «Настройки»): ничего не отправлено – обновите предпросмотр и отправьте "
+                         "ещё раз.")
 
 register_messages({
     "hub_bulk_queued": "Поставлено в очередь исполнителю: состояние – ниже, под перечнем находок.",
@@ -102,33 +103,33 @@ def assess(db: Database, settings, project: dict, hub_ids: list[str]) -> tuple[l
     for hub_id in hub_ids:
         row = db.get_finding_by_hub_id(pid, hub_id)
         if row is None or row.get("missing"):
-            excluded.append({"hub_id": hub_id, "why": "нет в текущей выгрузке"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("нет в текущей выгрузке")})
             continue
         if row["kind"] != "SAST":
-            excluded.append({"hub_id": hub_id, "why": "не находка SAST – из списка уходят только SAST"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("не находка SAST – из списка уходят только SAST")})
             continue
         review = db.get_review(pid, hub_id)
         if not review or not review.get("decision"):
-            excluded.append({"hub_id": hub_id, "why": "решения нет"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("решения нет")})
             continue
         if hub_verdict(review["decision"], review.get("final_verdict") or "") != OUTCOME:
-            excluded.append({"hub_id": hub_id, "why": "решение – не «Ложное срабатывание»"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("решение – не «Ложное срабатывание»")})
             continue
         if not review.get("reviewed"):
-            excluded.append({"hub_id": hub_id, "why": "нет отметки «Проверено»"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("нет отметки «Проверено»")})
             continue
         bound = db.hub_defect_bound(pid, hub_id)
         if bound is not None:
-            excluded.append({"hub_id": hub_id, "why": f"входит в {hub_defects.bound_name(bound)} – статус "
-                                                       "противоречил бы дефекту в Hub"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("входит в {defect} – статус противоречил бы дефекту в Hub",
+                                                             defect=hub_defects.bound_name(bound))})
             continue
         found = Finding.from_dict(row["data"])
         if is_fixed(db.on_connection(lambda c, n=found: status_now_in(c, pid, n.hub_id, n.kind, n.status, settings.hub_url, app_id))):
-            excluded.append({"hub_id": hub_id, "why": "статус в Hub – «Fixed»: Hub отклонил бы смену статуса"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("статус в Hub – «Fixed»: Hub отклонил бы смену статуса")})
             continue
         # тот же предикат, что в транзакции постановки (status_already_in: версия или отказ Hub, назвавший находку)
         if db.status_in_hub(pid, hub_id, status, status_already_in, settings.hub_url, app_id):
-            excluded.append({"hub_id": hub_id, "why": "статус уже внесён в Hub"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("статус уже внесён в Hub")})
             continue
         try:
             issue = hub_status.issue_id(hub_id)  # номер в Hub – только число (как у отправки из карточки)
@@ -141,13 +142,14 @@ def assess(db: Database, settings, project: dict, hub_ids: list[str]) -> tuple[l
                                       [{"issue_type": hub_status.issue_type(row["kind"]), "issue_id": issue}]))
         busy = next((op for op, keys in open_ops if keys & locks), None)
         if busy is not None:
-            excluded.append({"hub_id": hub_id, "why": f"есть незакрытая операция №{busy['id']} («{busy['state']}») – "
-                                                       "дождитесь её итога или сверьте результат"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("есть незакрытая операция №{op_id} («{state}») – "
+                                                             "дождитесь её итога или сверьте результат",
+                                                             op_id=busy['id'], state=busy['state'])})
             continue
         sig = db.finding_sig(pid, hub_id)  # до чтения данных: обновление выгрузки поймает транзакция
         f = _finding_of(db, pid, hub_id)
         if f is None:
-            excluded.append({"hub_id": hub_id, "why": "нет в текущей выгрузке"})
+            excluded.append({"hub_id": hub_id, "why": i18n._("нет в текущей выгрузке")})
             continue
         ready.append({"hub_id": hub_id, "id": int(row["id"]), "where": f"{f.file}:{f.line or '–'}", "rule": f.rule,
                       "revision": int(review.get("revision") or 0), "sig": sig,
@@ -223,10 +225,10 @@ async def send_selected(request: Request, project_id: int):
         if blocker:
             raise hub_status.StatusRefused(blocker)
         if not hub_ids:
-            raise hub_status.StatusRefused("Не выбрано ни одной находки.")
+            raise hub_status.StatusRefused(i18n._("Не выбрано ни одной находки."))
         # назначение сменили после показа предпросмотра – отказ сразу и ещё раз в транзакции (hub_target_check)
         if not same_target(settings.hub_url, project.get("hub_app_id"), target_shown):
-            raise StaleTarget(FORM_OUTDATED if not (target_shown[0] and target_shown[1]) else TARGET_CHANGED)
+            raise StaleTarget(i18n._(FORM_OUTDATED if not (target_shown[0] and target_shown[1]) else TARGET_CHANGED))
         shown_by_id = {}
         for item in shown:
             parts = item.split("|")
@@ -234,14 +236,14 @@ async def send_selected(request: Request, project_id: int):
                 shown_by_id[parts[0]] = (parts[1], parts[2])
         ready, excluded = assess(db, settings, project, hub_ids)
         if excluded:
-            raise StaleTarget("Состав изменился, пока открыт предпросмотр – не отправляются: "
-                              + "; ".join(f"{e['hub_id']} ({e['why']})" for e in excluded)
-                              + ". Обновите предпросмотр и отправьте ещё раз.")
+            raise StaleTarget(i18n._("Состав изменился, пока открыт предпросмотр – не отправляются: {items}. Обновите "
+                                     "предпросмотр и отправьте ещё раз.",
+                                     items="; ".join(f"{e['hub_id']} ({e['why']})" for e in excluded)))
         for r in ready:
             rev, sig = shown_by_id.get(r["hub_id"], ("", ""))
             if not rev.isdigit() or int(rev) != r["revision"] or sig != r["sig"]:
-                raise StaleTarget(f"Решение или данные находки {r['hub_id']} изменились, пока открыт предпросмотр: "
-                                  "обновите его и отправьте ещё раз.")
+                raise StaleTarget(i18n._("Решение или данные находки {hub_id} изменились, пока открыт предпросмотр: "
+                                         "обновите его и отправьте ещё раз.", hub_id=r['hub_id']))
         reason = hub_status.clean_reason(comment)
         expired = hub_status.expired_at(expires, today())
         status = hub_status.api_status(OUTCOME)
@@ -259,8 +261,9 @@ async def send_selected(request: Request, project_id: int):
             for target in targets:  # находка попала в дефект после предпросмотра – партия не ставится (ADR-0121 п. 3)
                 bound = Database.hub_defect_bound_in(c, project_id, target["hub_id"])
                 if bound is not None:
-                    raise StaleTarget(f"Находка {target['hub_id']} входит в {hub_defects.bound_name(bound)}: статус "
-                                      "противоречил бы дефекту в Hub. Обновите предпросмотр и отправьте ещё раз.")
+                    raise StaleTarget(i18n._("Находка {hub_id} входит в {defect}: статус противоречил бы дефекту в "
+                                             "Hub. Обновите предпросмотр и отправьте ещё раз.",
+                                             hub_id=target['hub_id'], defect=hub_defects.bound_name(bound)))
 
         op = db.hub_enqueue(purpose="status", request=hub_status.status_request(targets, status, reason, expired),
                             hub_url=settings.hub_url, app_id=app_id, project_id=project_id, targets=targets,
@@ -285,4 +288,4 @@ async def send_selected(request: Request, project_id: int):
     if not as_json:
         return redirect(_back_url(project_id, hub_ids, int(op["id"]), "hub_bulk_queued"))
     count = len(loads(op.get("targets_json"), []))
-    return _answer(project_id, op, f"Поставлено в очередь исполнителю: находок – {count}.")
+    return _answer(project_id, op, i18n._("Поставлено в очередь исполнителю: находок – {count}.", count=count))

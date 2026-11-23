@@ -6,6 +6,8 @@ import json
 import re
 from collections import Counter
 
+from app import i18n
+
 NS = "http://capec.mitre.org/capec-3"
 TABLES = ("capec", "capec_index", "capec_refs", "capec_links", "capec_cwe", "capec_meta")  # таблицы – миграция 0002, ADR-0133
 KNOWN = set("Description Extended_Description Likelihood_Of_Attack Typical_Severity Related_Attack_Patterns Execution_Flow Prerequisites Skills_Required Resources_Required Consequences Mitigations Example_Instances Related_Weaknesses Taxonomy_Mappings Content_History Indicators References Notes Alternate_Terms Summary Relationships Objective Members Filter Audience".split())
@@ -40,7 +42,7 @@ def parse_record(elem):
             part.tag = '{' + part.tag
     ident = identifier(elem.get("ID"))
     if not ident or not elem.get("Name") or not elem.tag.startswith("{" + NS + "}"):
-        raise FeedError("Некорректная запись CAPEC: нужны ID, Name и пространство имён CAPEC.")
+        raise FeedError(i18n._("Некорректная запись CAPEC: нужны ID, Name и пространство имён CAPEC."))
     def elements(path): return elem.findall(path, {"c": NS})
     def text(name): return elem.findtext("c:" + name, default="", namespaces={"c": NS}).strip()
     links = [{"rel": x.get("Nature", ""), "id": identifier(x.get("CAPEC_ID"))}
@@ -61,7 +63,7 @@ def parse_record(elem):
            "unknown_fields": [_tag(x) for x in elem if _tag(x) not in KNOWN]}
     row["search_text"] = " ".join(elem.itertext()).casefold() + " " + row["name"].casefold()
     if len(json.dumps(row, ensure_ascii=False).encode()) > MAX_JSON:
-        raise FeedError("Запись CAPEC слишком велика: полный текст не был сохранён, каталог не заменён.")
+        raise FeedError(i18n._("Запись CAPEC слишком велика: полный текст не был сохранён, каталог не заменён."))
     return row
 
 
@@ -72,11 +74,11 @@ def parse_reference(elem):
         return ' '.join(''.join(x.itertext()).strip() for x in elem if _tag(x) == name)
     ident = elem.get('Reference_ID', '')
     if not ident:
-        raise FeedError('В источнике CAPEC нет Reference_ID.')
+        raise FeedError(i18n._("В источнике CAPEC нет Reference_ID."))
     row = {'id': ident, 'title': text('Title'), 'url': text('URL'),
            'authors': [''.join(x.itertext()) for x in elem if _tag(x) == 'Author'], 'tree': _node(elem)}
     if len(json.dumps(row, ensure_ascii=False).encode()) > MAX_JSON:
-        raise FeedError('Источник CAPEC слишком велик: каталог не заменён.')
+        raise FeedError(i18n._("Источник CAPEC слишком велик: каталог не заменён."))
     return row
 
 
@@ -89,10 +91,11 @@ def fill(store, archive, info, check):
     def root(elem):
         root_attrs.update(elem.attrib)
         if elem.tag.lstrip('{') != NS + "}Attack_Pattern_Catalog" or elem.get("Name") != "CAPEC":
-            raise FeedError("Нужен полный архив capec_latest.zip с каталогом CAPEC, не отдельное представление.")
+            raise FeedError(i18n._("Нужен полный архив capec_latest.zip с каталогом CAPEC, не отдельное "
+                                   "представление."))
         schema = next((v for k,v in elem.attrib.items() if k.lstrip('{') == 'http://www.w3.org/2001/XMLSchema-instance}schemaLocation'), '')
         if not re.search(r"ap_schema_v3\.5\.xsd(?:\s|$)", schema):
-            raise FeedError("Версия XML-схемы CAPEC не поддерживается: ожидается 3.5.")
+            raise FeedError(i18n._("Версия XML-схемы CAPEC не поддерживается: ожидается 3.5."))
     def chunks(stream):
         for piece in guarded_chunks(stream, compressed=info.compress_size):
             xml_hash.update(piece)
@@ -102,11 +105,11 @@ def fill(store, archive, info, check):
             check()
             is_ref = _tag(elem) == "External_Reference"
             row = parse_reference(elem) if is_ref else parse_record(elem)
-            if row is None: raise FeedError("Некорректный источник CAPEC.")
+            if row is None: raise FeedError(i18n._("Некорректный источник CAPEC."))
             key = ("ref" if is_ref else "record", row["id"])
-            if key in seen: raise FeedError(f"Повтор ID {row['id']} в каталоге CAPEC.")
+            if key in seen: raise FeedError(i18n._("Повтор ID {id} в каталоге CAPEC.", id=row['id']))
             seen.add(key)
-            if len(seen) > MAX_RECORDS["capec"]: raise FeedError("Слишком много записей CAPEC.")
+            if len(seen) > MAX_RECORDS["capec"]: raise FeedError(i18n._("Слишком много записей CAPEC."))
             encoded = json.dumps(row, ensure_ascii=False)
             store._check_space(len(encoded.encode()) * 4 + 65536)
             with store._tx() as conn:
@@ -122,7 +125,8 @@ def fill(store, archive, info, check):
                     conn.executemany("INSERT INTO feeds_imp.capec_cwe VALUES (?,?) ON CONFLICT DO NOTHING", [(row['id'],x) for x in row['cwes']])
                     pairs += len(row['cwes'])
     if not all(counts[x] for x in ('pattern','category','view')) or not refs:
-        raise FeedError("В архиве нет полного состава CAPEC: нужны шаблоны, категории, представления и источники.")
+        raise FeedError(i18n._("В архиве нет полного состава CAPEC: нужны шаблоны, категории, представления и "
+                               "источники."))
     profile = {"counts": dict(counts), "statuses": dict(statuses), "cwe_pairs": pairs,
                "sha256": xml_hash.hexdigest(), "schema": "3.5", "namespace": NS, "storage_version": 1}
     with store._tx() as conn:
@@ -134,7 +138,7 @@ def fill(store, archive, info, check):
 def view_members(records, ident):
     """Состав представления; исключения относятся к пути, а не к записи целиком."""
     view=records.get(ident,{})
-    if view.get('kind')!='view': return set(),'Представление не найдено.'
+    if view.get('kind')!='view': return set(),i18n._('Представление не найдено.')
     if view['view_type']=='Implicit':
         expr=re.sub(r"\s+(?=(?:[^']*'[^']*')*[^']*$)",'',view['filter'])
         if expr=='/Attack_Pattern_Catalog/*[not(self::External_References)]/*': return set(records),''
@@ -146,7 +150,7 @@ def view_members(records, ident):
         if m:return {k for k,v in records.items() if m[1] in v['taxonomies']},''
         m=re.fullmatch(r'/Attack_Pattern_Catalog/\*/\*\[@ID=\(([\d,]+)\)\]',expr)
         if m:return {identifier(x) for x in m[1].split(',')} & records.keys(),''
-        return set(),'Условие представления пока не поддерживается.'
+        return set(),i18n._('Условие представления пока не поддерживается.')
     roots=[x['id'] for x in view['links'] if x['rel']=='HasMember']
     if view['view_type']=='Explicit':return set(roots),''
     children={}
@@ -157,9 +161,9 @@ def view_members(records, ident):
     result,note,stack,steps=set(),'',[(x,(ident,)) for x in roots],0
     while stack:
         key,path=stack.pop();steps+=1
-        if steps>20000:return result,'Обход ограничен: слишком много путей в представлении.'
+        if steps>20000:return result,i18n._('Обход ограничен: слишком много путей в представлении.')
         if key in path:
-            note='В связях обнаружен цикл; повторный путь пропущен.'
+            note=i18n._('В связях обнаружен цикл; повторный путь пропущен.')
             continue
         row=records.get(key)
         if not row or set(row['exclude']) & set(path):continue

@@ -14,12 +14,12 @@ import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
-from app import hub_ops
+from app import hub_ops, i18n
 
 HUB_ISSUE_TYPE = {"SAST": "SAST", "SCA": "SCA_S", "SCA-license": "SCA_L", "DAST": "DAST"}
 # итог разбора -> машинное значение статуса в API Hub (IssueStatusChangeRequestDto.status)
 API_STATUS = {"false_positive": "False Positive", "risk_accepted": "Accepted risk"}
-API_STATUS_LABEL = {"False Positive": "Ложное срабатывание", "Accepted risk": "Риск принят"}
+API_STATUS_LABEL = i18n.Labels({"False Positive": "Ложное срабатывание", "Accepted risk": "Риск принят"})
 EXPIRY_MAX_DAYS = 5 * 366  # срок действия статуса – не дальше пяти лет
 # Замена комментария у статуса, который уже стоит в Hub (dev29): Hub принимает комментарий только со
 # сменой статуса и отклоняет повтор того же статуса («issue already has the requested status»), а исходный
@@ -28,9 +28,11 @@ EXPIRY_MAX_DAYS = 5 * 366  # срок действия статуса – не �
 # которые Hub принимает в этом запросе, единственный без решения приложения) со служебным пояснением, затем прежний
 # итог с новым комментарием и сроком. Первый шаг отметки «Внесено в Hub» не ставит.
 RESET_STATUS = "Confirmed"
-RESET_LABEL = "Подтверждено"
-RESET_REASON = ("Технический шаг приложения «Локальный триаж»: прежний статус снимается для замены комментария, "
-                "следующая запись возвращает его с новым обоснованием.")
+RESET_LABEL = i18n.N_("Подтверждено")
+# служебное пояснение уходит в Hub на языке интерфейса (как тексты дефектов, ADR-0158); сверка сравнивает ответ Hub с
+# телом отправленной операции, а не с этой константой
+RESET_REASON = i18n.N_("Технический шаг приложения «Локальный триаж»: прежний статус снимается для замены комментария, "
+                       "следующая запись возвращает его с новым обоснованием.")
 ALREADY_RE = re.compile(r"already has the requested status", re.IGNORECASE)
 REASON_MAX = 4000  # знаков комментария к статусу
 _DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
@@ -44,7 +46,7 @@ def issue_type(kind: str) -> str:
     """Вид находки приложения -> тип находки Hub; неизвестный вид – StatusRefused."""
     value = HUB_ISSUE_TYPE.get(str(kind or ""))
     if not value:
-        raise StatusRefused(f"Для находки вида «{kind}» отправка статуса в Hub не поддерживается.")
+        raise StatusRefused(i18n._("Для находки вида «{kind}» отправка статуса в Hub не поддерживается.", kind=kind))
     return value
 
 
@@ -52,14 +54,14 @@ def issue_id(hub_id: str) -> int:
     """Номер находки Hub (колонка «Issue id» выгрузки) – целое число."""
     text = str(hub_id or "").strip()
     if not (text.isascii() and text.isdigit() and 0 < int(text) < 10**12):
-        raise StatusRefused(f"Номер находки «{text}» – не номер Hub: отправить статус нельзя.")
+        raise StatusRefused(i18n._("Номер находки «{number}» – не номер Hub: отправить статус нельзя.", number=text))
     return int(text)
 
 
 def api_status(outcome: str) -> str:
     value = API_STATUS.get(outcome)
     if not value:
-        raise StatusRefused("В Hub из приложения уходят только «Ложное срабатывание» и «Риск принят».")
+        raise StatusRefused(i18n._("В Hub из приложения уходят только «Ложное срабатывание» и «Риск принят»."))
     return value
 
 
@@ -68,17 +70,17 @@ def expired_at(raw: str, today: date) -> str:
     Дата – позже сегодняшней и не дальше пяти лет."""
     text = str(raw or "").strip()
     if not text:
-        raise StatusRefused("Укажите срок действия статуса: дату или быстрый срок +30, +90, +180 дней.")
+        raise StatusRefused(i18n._("Укажите срок действия статуса: дату или быстрый срок +30, +90, +180 дней."))
     if not _DATE.fullmatch(text):
-        raise StatusRefused("Срок действия статуса – дата в виде ГГГГ-ММ-ДД.")
+        raise StatusRefused(i18n._("Срок действия статуса – дата в виде ГГГГ-ММ-ДД."))
     try:
         day = date.fromisoformat(text)
     except ValueError:
-        raise StatusRefused("Срок действия статуса – такой даты нет.") from None
+        raise StatusRefused(i18n._("Срок действия статуса – такой даты нет.")) from None
     if day <= today:
-        raise StatusRefused("Срок действия статуса должен быть позже сегодняшней даты.")
+        raise StatusRefused(i18n._("Срок действия статуса должен быть позже сегодняшней даты."))
     if day > today + timedelta(days=EXPIRY_MAX_DAYS):
-        raise StatusRefused("Срок действия статуса – не дальше пяти лет.")
+        raise StatusRefused(i18n._("Срок действия статуса – не дальше пяти лет."))
     return f"{day.isoformat()}T00:00:00Z"
 
 
@@ -88,16 +90,16 @@ def clean_reason(text: str) -> str:
     from app.defect import edges
     reason = edges(text)
     if not reason.strip():
-        raise StatusRefused("Комментария к статусу нет: сохраните решение с обоснованием.")
+        raise StatusRefused(i18n._("Комментария к статусу нет: сохраните решение с обоснованием."))
     if len(reason) > REASON_MAX:
-        raise StatusRefused(f"Комментарий к статусу длиннее {REASON_MAX} знаков: сократите обоснование.")
+        raise StatusRefused(i18n._("Комментарий к статусу длиннее {limit} знаков: сократите обоснование.", limit=REASON_MAX))
     return reason
 
 
 def status_request(issues: list[dict], status: str, reason: str, expired: str) -> dict:
     """Запрос смены статуса: одна находка – update, несколько – change (одним запросом)."""
     if not issues:
-        raise StatusRefused("Нет находок для отправки статуса.")
+        raise StatusRefused(i18n._("Нет находок для отправки статуса."))
     if len(issues) == 1:
         body: dict[str, Any] = {"issueId": issues[0]["issue_id"], "issueType": issues[0]["issue_type"],
                                 "status": status, "reason": reason, "expiredAt": expired}
@@ -115,7 +117,7 @@ def replace_request(target: dict, status: str, reason: str, expired: str) -> dic
     сроком; второй шаг –
     `then` – тот же статус с новым комментарием, ставится после ответа Hub на первый (hub_effects.chain_replace).
     Hub хранит `then` не видит: это часть записи операции, не тела запроса."""
-    request = status_request([target], RESET_STATUS, RESET_REASON, expired)
+    request = status_request([target], RESET_STATUS, i18n._(RESET_REASON), expired)
     request["then"] = {"status": status, "reason": clean_reason(reason), "expiredAt": expired}
     return request
 

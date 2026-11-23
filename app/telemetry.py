@@ -10,6 +10,8 @@ import uuid
 from collections import deque
 from pathlib import Path
 
+from app import i18n
+
 
 def host_snapshot(path, now=None):
     now=time.time() if now is None else now
@@ -73,11 +75,12 @@ def collector_state(path, expected, now=None):
     age=None if stamp is None else abs(now-stamp)
     if state=='stale':
         minutes=int(age//60)
-        detail=f'последний снимок {minutes} мин назад' if minutes<120 else f'последний снимок {minutes//60} ч назад'
+        detail=(i18n._('последний снимок {minutes} мин назад',minutes=minutes) if minutes<120
+                else i18n._('последний снимок {hours} ч назад',hours=minutes//60))
     elif state=='missing':
-        detail='снимков от него нет'
+        detail=i18n._('снимков от него нет')
     elif state=='ok' and not addresses:
-        detail='сборщик работает, но адреса компьютера не прочитались'
+        detail=i18n._('сборщик работает, но адреса компьютера не прочитались')
     else:
         detail=''
     return {'state':state,'expected':bool(expected),'addresses':addresses,'sampled_at':stamp,
@@ -114,7 +117,7 @@ class Telemetry:
             if not self._conn.execute('SELECT 1 FROM telemetry_meta').fetchone():self._conn.execute('INSERT INTO telemetry_meta VALUES (1)')
             self._conn.execute('CREATE TABLE IF NOT EXISTS resource_samples(minute INTEGER,epoch TEXT,data_json TEXT,PRIMARY KEY(minute,epoch))')
             self._conn.commit()
-        except sqlite3.Error:self._history_error='История ресурсов недоступна.'
+        except sqlite3.Error:self._history_error=i18n.N_('История ресурсов недоступна.')
 
     def start(self):
         if self._thread is not None:return
@@ -132,7 +135,7 @@ class Telemetry:
                 data=self.compute()
                 self.record(data if isinstance(data,dict) else {})
             except Exception:
-                self.record({'gpu':None,'models':[],'error':'Измерения ресурсов временно недоступны.'})
+                self.record({'gpu':None,'models':[],'error':i18n._('Измерения ресурсов временно недоступны.')})
             self._ready.set()
             self._stop.wait(self.interval)
 
@@ -164,7 +167,7 @@ class Telemetry:
         """Ответ «ещё не измерено» для сервера, которого нет в наблюдении: без сетевых обращений."""
         data=copy.deepcopy(empty)
         data.update(server={'base_url':str(server[0]),'local':bool(server[1])},observed_at=None,
-                    resource_status='unavailable',pending=True,history_error=self._history_error,
+                    resource_status='unavailable',pending=True,history_error=i18n._(self._history_error),
                     host=self.local_host() if server[1] else self._remote_host())
         return data
 
@@ -180,7 +183,7 @@ class Telemetry:
         if host.get('sampled_at') and now-host['sampled_at']>30:
             host['status']='stale'
         data['resource_status']='unavailable' if stamp is None or not data.get('gpu') and not data.get('models') and host.get('status')!='fresh' else 'stale' if now-stamp>30 else 'fresh'
-        data['history_error']=self._history_error
+        data['history_error']=i18n._(self._history_error)
         return data
 
     def _point(self,data,host,now):
@@ -266,8 +269,8 @@ class Telemetry:
                     self._conn.execute('PRAGMA wal_checkpoint(TRUNCATE)')
                     if sum(p.stat().st_size for p in self.folder.glob('telemetry.db*'))>50*1024**2:
                         self._conn.close();self._conn=None
-                        self._history_error='История ресурсов остановлена: достигнут предел 50 МиБ.'
-            except (sqlite3.Error,OSError):self._history_error='История ресурсов временно не сохраняется.'
+                        self._history_error=i18n.N_('История ресурсов остановлена: достигнут предел 50 МиБ.')
+            except (sqlite3.Error,OSError):self._history_error=i18n.N_('История ресурсов временно не сохраняется.')
 
     def snapshot(self,now=None):
         now=time.time() if now is None else now

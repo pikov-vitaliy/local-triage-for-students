@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from app import hub_pull, hub_sync, hub_sync_api, hub_sync_compare
+from app import hub_pull, hub_sync, hub_sync_api, hub_sync_compare, i18n
 from app.db import loads
 from app.hub_entity_versions import digest
 from app.hub_ops import hub_base
@@ -19,9 +19,9 @@ router = APIRouter()
 register_messages({"pending_kept": "В редакторе уже другое решение – оно не изменено; отброшена только сохранённая правка."})
 GROUP_PAGE_SIZE = 50
 GROUP_ORDER = hub_sync_compare.GROUP_ORDER
-STATES = {"running": "Чтение Hub", "waiting": "Ожидание исполнителя", "stopped": "Остановлено",
-          "interrupted": "Прервано перезапуском", "failed": "Чтение завершилось ошибкой",
-          "comparing": "Локальное сравнение", "ready": "Чтение завершено", "closed": "Запуск закрыт"}
+STATES = i18n.Labels({"running": "Чтение Hub", "waiting": "Ожидание исполнителя", "stopped": "Остановлено",
+                      "interrupted": "Прервано перезапуском", "failed": "Чтение завершилось ошибкой",
+                      "comparing": "Локальное сравнение", "ready": "Чтение завершено", "closed": "Запуск закрыт"})
 
 
 def target(request, project):
@@ -33,7 +33,7 @@ def get_run(request, project_id, run_id):
     project_or_404(request, project_id)
     row = db_of(request)._one("SELECT * FROM hub_defect_sync_runs WHERE id=? AND project_id=?", (run_id, project_id))
     if not row:
-        raise HTTPException(404, "Запуск синхронизации не найден.")
+        raise HTTPException(404, i18n._("Запуск синхронизации не найден."))
     return row
 
 
@@ -55,14 +55,25 @@ def context(request, project, row=None, app_confirmed=False):
             "labels": hub_sync_compare.LABELS, "states": STATES}
 
 
-def worker_label(worker, hub_url):
+# состояние исполнителя для чтения Hub: код решает, заменять ли фазу подписью (state), подпись – по языку интерфейса
+WORKER_LABELS = i18n.Labels({"offline": "Ожидание исполнителя: связи нет.",
+                             "other_hub": "Ожидание исполнителя для указанного Hub.",
+                             "old_protocol": "Исполнитель на связи, но протокол устарел: обновите исполнитель.",
+                             "ok": "Исполнитель на связи."})
+
+
+def worker_state(worker, hub_url) -> str:
     if not worker["online"]:
-        return "Ожидание исполнителя: связи нет."
+        return "offline"
     if worker.get("hub_url") != hub_url:
-        return "Ожидание исполнителя для указанного Hub."
+        return "other_hub"
     if worker.get("sync_protocol") != hub_sync_api.SYNC_PROTOCOL:
-        return "Исполнитель на связи, но протокол устарел: обновите исполнитель."
-    return "Исполнитель на связи."
+        return "old_protocol"
+    return "ok"
+
+
+def worker_label(worker, hub_url):
+    return WORKER_LABELS[worker_state(worker, hub_url)]
 
 
 @router.post("/projects/{project_id}/hub-sync/preview")
@@ -83,7 +94,7 @@ async def start(request: Request, project_id: int):
     confirmed = form.get("app_confirmed") == "yes"
     ctx = context(request, project, app_confirmed=confirmed)
     if form.get("confirm") != "yes" or form.get("confirmation") != ctx["confirmation"]:
-        raise HTTPException(409, "Область чтения изменилась или не подтверждена.")
+        raise HTTPException(409, i18n._("Область чтения изменилась или не подтверждена."))
     db = db_of(request)
     to = ctx["target"]
     check = hub_target_check(request, project_id, to["hub_url"], to["app_id"])
@@ -127,12 +138,13 @@ def progress(db, row):
 
 def progress_view(row, data, counts, needed, exceptions, complete, total):
     totals = data["totals"]
-    text = (f"Находки в списке: {counts['issue']} / {totals.get('issue', '?')}. "
-            f"Подробности находок: {counts['issue_detail']} / {needed['issue']}. "
-            f"Основания и риски: {counts['basis']} / {needed['basis']}. "
-            f"Дефекты в списке: {counts['defect']} / {totals.get('defect', '?')}; "
-            f"подробности: {counts['defect_detail']} / {needed['defect']}. "
-            f"Сохранено запросов: {data['saved_requests']}.")
+    text = i18n._("Находки в списке: {issues} / {issues_total}. Подробности находок: {issue_details} / {issue_needed}. "
+                  "Основания и риски: {basis} / {basis_needed}. Дефекты в списке: {defects} / {defects_total}; "
+                  "подробности: {defect_details} / {defect_needed}. Сохранено запросов: {saved}.",
+                  issues=counts['issue'], issues_total=totals.get('issue', '?'), issue_details=counts['issue_detail'],
+                  issue_needed=needed['issue'], basis=counts['basis'], basis_needed=needed['basis'],
+                  defects=counts['defect'], defects_total=totals.get('defect', '?'),
+                  defect_details=counts['defect_detail'], defect_needed=needed['defect'], saved=data['saved_requests'])
     done = row["state"] not in hub_sync.ACTIVE
     percent = None
     if data["inventory_complete"]:
@@ -140,11 +152,15 @@ def progress_view(row, data, counts, needed, exceptions, complete, total):
     checks = data.get("page_checks", [])
     checked = sum(p["state"] == "checked" for p in checks)
     restarts = sum(p["state"] == "restart" for p in checks)
-    verification = (f"Проверка на ходу: страницы {checked}, перечитывания с меньшим шагом {restarts}; "
-                    f"уникальные ID / total: находки {counts['issue']} / {totals.get('issue', '?')}, "
-                    f"дефекты {counts['defect']} / {totals.get('defect', '?')}; исключения ответов: {exceptions}.")
-    scope = "запрошено отключение фильтра веток" if data["adapter"]["all_branches"] else "как в Hub по умолчанию"
-    branches = f"Ветки: {scope}. Фактически встретились: {', '.join(data.get('branches', [])) or 'не встретились'}."
+    verification = i18n._("Проверка на ходу: страницы {checked}, перечитывания с меньшим шагом {restarts}; "
+                          "уникальные ID / total: находки {issues} / {issues_total}, дефекты {defects} / {defects_total}; "
+                          "исключения ответов: {exceptions}.", checked=checked, restarts=restarts,
+                          issues=counts['issue'], issues_total=totals.get('issue', '?'), defects=counts['defect'],
+                          defects_total=totals.get('defect', '?'), exceptions=exceptions)
+    scope = (i18n._("запрошено отключение фильтра веток") if data["adapter"]["all_branches"]
+             else i18n._("как в Hub по умолчанию"))
+    branches = i18n._("Ветки: {scope}. Фактически встретились: {found}.", scope=scope,
+                      found=', '.join(data.get('branches', [])) or i18n._("не встретились"))
     return {"text": text, "percent": percent, "done": done, "needed": needed, "counts": counts,
             "verification": verification, "exceptions": exceptions, "branches": branches}
 
@@ -164,12 +180,15 @@ def item_card(project_id, item):
     return ""
 
 
-# после «у»: родительный падеж – «у 1 находки», «у 3 находок»
-KIND_WORDS = {"issue": ("находки", "находок"), "defect": ("дефекта", "дефектов")}
-
-
-def _plural(n: int, forms: tuple[str, str]) -> str:
-    return forms[0] if n % 10 == 1 and n % 100 != 11 else forms[1]
+# после «у»: родительный падеж – «у 1 находки», «у 3 находок» (формы few и many совпадают)
+def _who(kind: str, n: int) -> str:
+    if kind == "issue":
+        noun = i18n.plural(n, "находки", "находок", "находок")
+    elif kind == "defect":
+        noun = i18n.plural(n, "дефекта", "дефектов", "дефектов")
+    else:
+        noun = i18n.plural(n, "объекта", "объектов", "объектов")
+    return i18n._("у {n} {noun}", n=n, noun=noun)
 
 
 def incomplete_causes(db, run_id: int) -> list[dict]:
@@ -203,35 +222,39 @@ def incomplete_causes(db, run_id: int) -> list[dict]:
         merged.setdefault((kind, part, reason, code, missing_raw), set()).update(keys)
     causes = []
     for (kind, part, reason, code, missing_raw), keys in sorted(merged.items(), key=lambda kv: (-len(kv[1]), kv[0])):
-        words = KIND_WORDS.get(kind, ("объекта", "объектов"))
-        who = f"у {len(keys)} {_plural(len(keys), words)}"
+        who = _who(kind, len(keys))
         what = part_words(part, kind)
         # только код ответа не 2xx – отказ Hub; остальное – приложение не смогло прочитать или обработать ответ
         if missing_raw:
-            text = f"{who} ответ Hub на чтение {what} не сохранён в приложении" + (f": {reason}" if reason else "")
+            text = (i18n._("{who} ответ Hub на чтение {what} не сохранён в приложении: {reason}", who=who, what=what,
+                           reason=reason) if reason else
+                    i18n._("{who} ответ Hub на чтение {what} не сохранён в приложении", who=who, what=what))
         elif code and not code.startswith("2"):
-            text = f"{who} Hub ответил ошибкой {code} на чтение {what}"
+            text = i18n._("{who} Hub ответил ошибкой {code} на чтение {what}", who=who, code=code, what=what)
         else:
-            text = (f"{who} не удалось прочитать или обработать {what}" + (f" (ответ Hub {code})" if code else "")
-                    + f": {reason or 'причина не записана'}")
+            reason_text = reason or i18n._("причина не записана")
+            text = (i18n._("{who} не удалось прочитать или обработать {what} (ответ Hub {code}): {reason}", who=who,
+                           what=what, code=code, reason=reason_text) if code else
+                    i18n._("{who} не удалось прочитать или обработать {what}: {reason}", who=who, what=what,
+                           reason=reason_text))
         causes.append({"count": len(keys), "part": part, "code": code, "reason": reason, "missing_raw": missing_raw,
                        "text": text})
     return causes
 
 
-PART_WORDS = {"detail": "карточки находки", "manual": "статуса находки", "risk": "принятия риска"}
+PART_WORDS = i18n.Labels({"detail": "карточки находки", "manual": "статуса находки", "risk": "принятия риска"})
 
 
 def part_words(part: str, kind: str = "issue") -> str:
     """Часть чтения словами (hub_sync.plan: detail, manual, risk, branch:<имя>) – с названием в кавычках; detail у
     дефекта – карточка дефекта (GET /defects/{id})."""
     if part == "detail" and kind == "defect":
-        return "карточки дефекта («detail»)"
+        return i18n._("карточки дефекта («detail»)")
     if part.startswith("branch:"):
-        return f"ветки «{part[len('branch:'):]}»"
+        return i18n._("ветки «{name}»", name=part[len('branch:'):])
     if part in PART_WORDS:
-        return f"{PART_WORDS[part]} («{part}»)"
-    return f"«{part}»" if part else "сведений"
+        return i18n._("{what} («{part}»)", what=PART_WORDS[part], part=part)
+    return i18n._("«{part}»", part=part) if part else i18n._("сведений")
 
 
 @router.get("/projects/{project_id}/hub-sync/{run_id}")
@@ -292,7 +315,7 @@ async def apply(request: Request, project_id: int, run_id: int):
     row = get_run(request, project_id, run_id)
     form = await request.form()
     if form.get("confirm") != "yes":
-        raise HTTPException(409, "Принятие состояния Hub не подтверждено.")
+        raise HTTPException(409, i18n._("Принятие состояния Hub не подтверждено."))
     check = hub_target_check(request, project_id, row["hub_url"], row["app_id"])
     try:
         await run_in_threadpool(lambda: hub_pull.apply(db_of(request), run_id, str(form.get("confirmation") or ""), check=check))
@@ -301,8 +324,8 @@ async def apply(request: Request, project_id: int, run_id: int):
     return redirect(f"/projects/{project_id}/hub-sync/{run_id}")
 
 
-PENDING_STATES = {"pending": "ждёт отправки в Hub", "saved": "сохранено до принятия состояния Hub",
-                  "restored": "возвращено в редактор", "delivered": "принято Hub", "discarded": "отброшено"}
+PENDING_STATES = i18n.Labels({"pending": "ждёт отправки в Hub", "saved": "сохранено до принятия состояния Hub",
+                              "restored": "возвращено в редактор", "delivered": "принято Hub", "discarded": "отброшено"})
 
 
 PENDING_PAGE = 200  # действующих правок на странице списка; закрытые – последние CLOSED_SHOWN
@@ -360,7 +383,7 @@ async def pending_action(request: Request, project_id: int, pending_id: int):
     form = await request.form()
     to = target(request, project)
     if form.get("confirm") != "yes" or form.get("action") not in ("restore", "discard"):
-        raise HTTPException(409, "Действие с неотправленной правкой не подтверждено.")
+        raise HTTPException(409, i18n._("Действие с неотправленной правкой не подтверждено."))
     try:
         note = await run_in_threadpool(lambda: hub_pull.restore(db_of(request), to, pending_id,
             str(form.get("confirmation") or ""), discard=form.get("action") == "discard",
@@ -379,17 +402,18 @@ def raw_item(request: Request, project_id: int, run_id: int, kind: str, key: str
     item = db._one("SELECT * FROM hub_sync_items WHERE run_id=? AND entity_kind=? AND entity_key=?",
                    (run_id, kind, key))
     if not item:
-        raise HTTPException(404, "Объект синхронизации не найден.")
+        raise HTTPException(404, i18n._("Объект синхронизации не найден."))
     operations = db._all("SELECT s.request_key,s.generation,s.state,s.processed_at,o.id,o.request_json,o.result_json"
                          " FROM hub_sync_requests s JOIN hub_ops o ON o.id=s.op_id"
                          " WHERE s.run_id=? AND s.entity_kind=? AND s.entity_key=? ORDER BY s.id", (run_id, kind, key))
-    return JSONResponse({"B: принятая база": loads(item["base_json"], {}),
-                         "L: локальные данные": loads(item["local_json"], {}),
-                         "H: отдельные ответы Hub": loads(item["hub_json"], {}),
-                         "Источники": loads(item["source_ops_json"], {}),
-                         "Расхождения полей": loads(item["diff_json"], {}),
-                         "Полнота и исключения": loads(item["coverage_json"], {}),
-                         "Сохранённые операции": operations})
+    # ключи – подписи разделов для человека (страница «сырых» данных), их никто не разбирает
+    return JSONResponse({i18n._("B: принятая база"): loads(item["base_json"], {}),
+                         i18n._("L: локальные данные"): loads(item["local_json"], {}),
+                         i18n._("H: отдельные ответы Hub"): loads(item["hub_json"], {}),
+                         i18n._("Источники"): loads(item["source_ops_json"], {}),
+                         i18n._("Расхождения полей"): loads(item["diff_json"], {}),
+                         i18n._("Полнота и исключения"): loads(item["coverage_json"], {}),
+                         i18n._("Сохранённые операции"): operations})
 
 
 @router.get("/projects/{project_id}/hub-sync/{run_id}/state")
@@ -401,8 +425,9 @@ def state(request: Request, project_id: int, run_id: int):
     p = progress(db, row)
     worker = worker_summary(request)
     label = STATES.get(row["state"], row["state"])
-    worker_text = worker_label(worker, row["hub_url"])
-    if row["state"] in hub_sync.ACTIVE and worker_text != "Исполнитель на связи.":
+    worker_code = worker_state(worker, row["hub_url"])
+    worker_text = WORKER_LABELS[worker_code]
+    if row["state"] in hub_sync.ACTIVE and worker_code != "ok":  # сравнение кода состояния, не видимого текста
         label = worker_text
     return JSONResponse({"ok": True, "done": p["done"], "reload": p["done"],
                          "text": {"hub-sync-progress-label": p["text"], "hub-sync-state": label,
@@ -422,7 +447,7 @@ def stop(request: Request, project_id: int, run_id: int):
 def continue_preview(request: Request, project_id: int, run_id: int):
     row = get_run(request, project_id, run_id)
     if row["closed_at"]:
-        raise HTTPException(409, "Запуск закрыт. Подтвердите новое чтение на вкладке «Дефекты».")
+        raise HTTPException(409, i18n._("Запуск закрыт. Подтвердите новое чтение на вкладке «Дефекты»."))
     remaining = db_of(request)._all("SELECT request_json,state FROM hub_sync_requests WHERE run_id=?"
                                    " AND generation=? AND state!='done' ORDER BY id", (run_id, row["generation"]))
     return render(request, "projects/hub_sync_confirm.html", {
@@ -436,7 +461,7 @@ async def continue_run(request: Request, project_id: int, run_id: int):
     row = get_run(request, project_id, run_id)
     ctx = context(request, project_or_404(request, project_id), row)
     if form.get("confirm") != "yes" or form.get("confirmation") != ctx["confirmation"]:
-        raise HTTPException(409, "Продолжение не подтверждено или состояние изменилось.")
+        raise HTTPException(409, i18n._("Продолжение не подтверждено или состояние изменилось."))
     db = db_of(request)
     check = hub_target_check(request, project_id, row["hub_url"], row["app_id"])
     try:

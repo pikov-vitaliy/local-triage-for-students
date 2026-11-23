@@ -24,6 +24,8 @@ related: [../README.md, ARCHITECTURE.md]
 | [external-providers.md](external-providers.md) | Внешние провайдеры моделей: API чат-завершений и Anthropic Messages API по ключу |
 | [hub-format.md](hub-format.md) | Формат AppSec.Hub – выгрузка, дефекты и сценарий работы |
 | [hub-verdict-text.md](hub-verdict-text.md) | Текст вердикта для Hub: исследование и целевой формат |
+| [i18n-agent-brief.md](i18n-agent-brief.md) | Задание агенту перевода интерфейса (dev38) |
+| [i18n-glossary.md](i18n-glossary.md) | Словарь терминов перевода интерфейса (английский) |
 | [lan-model-server.md](lan-model-server.md) | Сервер модели в сети: Ollama на другом компьютере |
 | [model-benchmark.md](model-benchmark.md) | Замер моделей: набор с известными ответами, прогон и сводка |
 | [model-errors-note.md](model-errors-note.md) | Ошибки модели на находках о секретах, перевод и общий текст дефекта: замер |

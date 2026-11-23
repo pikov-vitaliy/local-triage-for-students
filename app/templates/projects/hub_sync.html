@@ -1,104 +1,104 @@
 {% extends "base.html" %}
-{% block title %}Синхронизация с Hub{% endblock %}
+{% block title %}{{ _("Синхронизация с Hub") }}{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
 {% block content %}
-<h1>Синхронизация с Hub</h1>
-<p><a href="/projects/{{ project.id }}/defects">Дефекты проекта {{ project.name }}</a> · {{ run.hub_url }} · Приложение {{ run.app_id }}</p>
+<h1>{{ _("Синхронизация с Hub") }}</h1>
+<p><a href="/projects/{{ project.id }}/defects">{{ _("Дефекты проекта {name}", name=project.name) }}</a> · {{ run.hub_url }} · {{ _("Приложение") }} {{ run.app_id }}</p>
 <section class="panel" {% if not progress.done %}data-poll="/projects/{{ project.id }}/hub-sync/{{ run.id }}/state"{% endif %}>
   <h2 id="hub-sync-state">{{ state_label }}</h2>
   {% include "projects/hub_sync_worker.html" %}
-  <progress id="hub-sync-progress" max="100" {% if progress.percent is not none %}value="{{ progress.percent }}"{% endif %} aria-label="Ход синхронизации"></progress>
+  <progress id="hub-sync-progress" max="100" {% if progress.percent is not none %}value="{{ progress.percent }}"{% endif %} aria-label="{{ _("Ход синхронизации") }}"></progress>
   <p id="hub-sync-progress-label" role="status">{{ progress.text }}</p>
   <p id="hub-sync-verification">{{ progress.verification }}</p>
   <p id="hub-sync-branches">{{ progress.branches }}</p>
-  {% if data.page_checks %}<details><summary>Проверки страниц</summary><ul>{% for check in data.page_checks %}<li>{{ "Находки" if check.kind == "issue" else "Дефекты" }}, страница {{ check.index }}: запрошено {{ check.size }}, получено {{ check.received }}, total {{ check.total }}; {{ {"checked": "проверена", "restart": "перечитывание с меньшим шагом", "invalid": "проверка не сошлась", "superseded": "заменена повторным обходом"}[check.state] }}.</li>{% endfor %}</ul></details>{% endif %}
-  <p>Интервал чтения: {{ data.started_at|ts }}{% if data.finished_at %} – {{ data.finished_at|ts }}{% endif %}. Ответы отражают этот интервал; единовременный снимок сервером не гарантирован.</p>
+  {% if data.page_checks %}<details><summary>{{ _("Проверки страниц") }}</summary><ul>{% for check in data.page_checks %}<li>{{ _("{kind}, страница {index}: запрошено {size}, получено {received}, total {total}; {state}.", kind=_("Находки") if check.kind == "issue" else _("Дефекты"), index=check.index, size=check.size, received=check.received, total=check.total, state={"checked": _("проверена"), "restart": _("перечитывание с меньшим шагом"), "invalid": _("проверка не сошлась"), "superseded": _("заменена повторным обходом")}[check.state]) }}</li>{% endfor %}</ul></details>{% endif %}
+  <p>{{ _("Интервал чтения:") }} {{ data.started_at|ts }}{% if data.finished_at %} – {{ data.finished_at|ts }}{% endif %}. {{ _("Ответы отражают этот интервал; единовременный снимок сервером не гарантирован.") }}</p>
   {% if data.error %}<p role="alert" class="text-warn">{{ data.error }}</p>{% endif %}
   {% set ac = data.app_check %}
   {% if ac %}{#- сверка номера приложения с выгрузкой: после списка находок Hub, до дефектов и подробностей -#}
   <div id="hub-sync-app-check" class="{{ 'text-warn' if ac.status == 'mismatch' else '' }}" {% if ac.status == 'mismatch' %}role="alert"{% endif %}>
   {% if ac.status == 'mismatch' %}
-    <p><strong>Находки приложения Hub №{{ run.app_id }} не совпадают с выгрузкой проекта:</strong> общих {{ ac.common }} из {{ ac.export }}{% if ac.hub_names or ac.export_names %}. Название в Hub – «{{ ac.hub_names|join("», «") or "не указано" }}», в выгрузке – «{{ ac.export_names|join("», «") or "не указано" }}»{% endif %}.
-    {% if ac.stop %}Похоже, номер приложения не тот. Чтение остановлено до дефектов и подробностей, в приложении ничего не изменилось.{% else %}Номер подтверждён оператором, чтение продолжено.{% endif %}</p>
+    <p><strong>{{ _("Находки приложения Hub №{app} не совпадают с выгрузкой проекта:", app=run.app_id) }}</strong> {{ _("общих {common} из {total}", common=ac.common, total=ac.export) }}{% if ac.hub_names or ac.export_names %}. {{ _("Название в Hub – «{hub}», в выгрузке – «{export}»", hub=ac.hub_names|join(_("», «")) or _("не указано"), export=ac.export_names|join(_("», «")) or _("не указано")) }}{% endif %}.
+    {% if ac.stop %}{{ _("Похоже, номер приложения не тот. Чтение остановлено до дефектов и подробностей, в приложении ничего не изменилось.") }}{% else %}{{ _("Номер подтверждён оператором, чтение продолжено.") }}{% endif %}</p>
     {% if ac.stop and not run.closed_at %}<div class="actions">
-      <a class="btn btn-primary" id="hub-sync-app-fix" href="/projects/{{ project.id }}?open=params#project-hub-app-id">Исправить номер приложения</a>
-      <form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><input type="hidden" name="app_confirmed" value="yes"><button class="btn" id="hub-sync-app-confirm">Номер верный, продолжить</button></form>
+      <a class="btn btn-primary" id="hub-sync-app-fix" href="/projects/{{ project.id }}?open=params#project-hub-app-id">{{ _("Исправить номер приложения") }}</a>
+      <form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><input type="hidden" name="app_confirmed" value="yes"><button class="btn" id="hub-sync-app-confirm">{{ _("Номер верный, продолжить") }}</button></form>
     </div>{% endif %}
   {% elif ac.status == 'skipped' %}
-    <p class="small muted">Сверка номера приложения с выгрузкой не выполнена: {{ ac.reason }}</p>
+    <p class="small muted">{{ _("Сверка номера приложения с выгрузкой не выполнена:") }} {{ ac.reason }}</p>
   {% else %}
-    <p class="small">Номер приложения сверен с выгрузкой: общих находок {{ ac.common }} из {{ ac.export }}.{% if ac.names_differ %} <span class="text-warn">Названия различаются: в Hub – «{{ ac.hub_names|join("», «") }}», в выгрузке – «{{ ac.export_names|join("», «") }}».</span>{% endif %}</p>
+    <p class="small">{{ _("Номер приложения сверен с выгрузкой: общих находок {common} из {total}.", common=ac.common, total=ac.export) }}{% if ac.names_differ %} <span class="text-warn">{{ _("Названия различаются: в Hub – «{hub}», в выгрузке – «{export}».", hub=ac.hub_names|join(_("», «")), export=ac.export_names|join(_("», «"))) }}</span>{% endif %}</p>
   {% endif %}
   </div>
   {% endif %}
   <div class="actions">
-  {% if not progress.done %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/stop"><button class="btn" id="hub-sync-stop">Остановить</button></form>{% endif %}
-  {% if not run.closed_at and (run.state in ('stopped', 'failed', 'interrupted') or (run.state == 'ready' and progress.exceptions)) and data.inventory_complete %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/continue-preview"><button class="btn" id="hub-sync-continue">Продолжить</button></form>{% endif %}
-  {% if not run.closed_at and run.state == 'ready' %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/recompare"><button class="btn">Пересчитать расхождения</button></form>{% endif %}
-  {% if not run.closed_at %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/close"><button class="btn btn-ghost">Закрыть запуск</button></form>{% endif %}
+  {% if not progress.done %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/stop"><button class="btn" id="hub-sync-stop">{{ _("Остановить") }}</button></form>{% endif %}
+  {% if not run.closed_at and (run.state in ('stopped', 'failed', 'interrupted') or (run.state == 'ready' and progress.exceptions)) and data.inventory_complete %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/continue-preview"><button class="btn" id="hub-sync-continue">{{ _("Продолжить") }}</button></form>{% endif %}
+  {% if not run.closed_at and run.state == 'ready' %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/recompare"><button class="btn">{{ _("Пересчитать расхождения") }}</button></form>{% endif %}
+  {% if not run.closed_at %}<form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/close"><button class="btn btn-ghost">{{ _("Закрыть запуск") }}</button></form>{% endif %}
   </div>
-  {% if not run.closed_at and progress.done and not data.inventory_complete %}<p>Чтение неполное: списки прочитаны не полностью. Для продолжения закройте этот запуск и подтвердите новый полный обход. Прочитанное сохранено.</p>{% endif %}
+  {% if not run.closed_at and progress.done and not data.inventory_complete %}<p>{{ _("Чтение неполное: списки прочитаны не полностью. Для продолжения закройте этот запуск и подтвердите новый полный обход. Прочитанное сохранено.") }}</p>{% endif %}
 </section>
-{% if progress.done and progress.exceptions %}<p id="hub-sync-incomplete" role="status">Чтение неполное: исключений ответов {{ progress.exceptions }}. Причины и номера операций сохранены у объектов. Остальные объекты прочитаны; {% if run.closed_at %}запуск закрыт, для повторного чтения подтвердите новый запуск на вкладке «Дефекты»{% else %}повтор исключений требует подтверждения продолжения{% endif %}.</p>{% endif %}
-{% if incomplete_causes %}<ul id="hub-sync-causes" class="small">{% for cause in incomplete_causes %}<li>{{ cause.text }}</li>{% endfor %}</ul>{% if not run.closed_at %}<p class="small muted">Повторить эти чтения – кнопка «Продолжить» выше (если она доступна для этого запуска).</p>{% endif %}{% endif %}
-{% if data.matches_snapshot %}<p id="hub-sync-matches" role="status">Принятая база совпадает с Hub в прочитанном состоянии и указанной области веток. Чтение выполнено за указанный интервал.</p>{% endif %}
+{% if progress.done and progress.exceptions %}<p id="hub-sync-incomplete" role="status">{{ _("Чтение неполное: исключений ответов {n}. Причины и номера операций сохранены у объектов. Остальные объекты прочитаны;", n=progress.exceptions) }} {% if run.closed_at %}{{ _("запуск закрыт, для повторного чтения подтвердите новый запуск на вкладке «Дефекты»") }}{% else %}{{ _("повтор исключений требует подтверждения продолжения") }}{% endif %}.</p>{% endif %}
+{% if incomplete_causes %}<ul id="hub-sync-causes" class="small">{% for cause in incomplete_causes %}<li>{{ cause.text }}</li>{% endfor %}</ul>{% if not run.closed_at %}<p class="small muted">{{ _("Повторить эти чтения – кнопка «Продолжить» выше (если она доступна для этого запуска).") }}</p>{% endif %}{% endif %}
+{% if data.matches_snapshot %}<p id="hub-sync-matches" role="status">{{ _("Принятая база совпадает с Hub в прочитанном состоянии и указанной области веток. Чтение выполнено за указанный интервал.") }}</p>{% endif %}
 {% from "projects/_identity_summary.html" import identity_summary %}
-{% if pull.applied %}<p id="hub-sync-applied" role="status">Состояние Hub принято: объектов {{ pull.count }}. Ждёт отправки в Hub: {{ pull.pending }}. Пропущено: {{ pull.skipped|length }}. Hub не изменён.</p>
-{% if pull.saved %}<p id="hub-sync-saved">Решений приложения, заменённых состоянием Hub: {{ pull.saved }} – они в <a href="/projects/{{ project.id }}/hub-pending">истории сохранённых правок</a>, их можно вернуть в редактор.</p>{% endif %}
-{% if pull.residue %}<p class="text-warn" id="hub-sync-residue">После принятия остались отличия от Hub – это ошибка приложения: {{ pull.residue[:20]|join(", ") }}{% if pull.residue|length > 20 %} …{% endif %}.</p>{% endif %}
-{% if pull.skipped %}<p>Причины пропуска приведены в группах ниже. После их устранения подтвердите новый обход на вкладке «Дефекты» и примените новый результат.</p>{% endif %}
+{% if pull.applied %}<p id="hub-sync-applied" role="status">{{ _("Состояние Hub принято: объектов {count}. Ждёт отправки в Hub: {pending}. Пропущено: {skipped}. Hub не изменён.", count=pull.count, pending=pull.pending, skipped=pull.skipped|length) }}</p>
+{% if pull.saved %}<p id="hub-sync-saved">{{ _("Решений приложения, заменённых состоянием Hub: {n} – они в", n=pull.saved) }} <a href="/projects/{{ project.id }}/hub-pending">{{ _("истории сохранённых правок") }}</a>{{ _(", их можно вернуть в редактор.") }}</p>{% endif %}
+{% if pull.residue %}<p class="text-warn" id="hub-sync-residue">{{ _("После принятия остались отличия от Hub – это ошибка приложения:") }} {{ pull.residue[:20]|join(", ") }}{% if pull.residue|length > 20 %} …{% endif %}.</p>{% endif %}
+{% if pull.skipped %}<p>{{ _("Причины пропуска приведены в группах ниже. После их устранения подтвердите новый обход на вкладке «Дефекты» и примените новый результат.") }}</p>{% endif %}
 {{ identity_summary(pull.identity, identity_rows, "hub-sync-identity-done", table_labels) }}
-{% if pull.identity and not pull.identity.error %}<p><a href="/projects/{{ project.id }}/identity-report" id="hub-sync-identity-report-link">Отчёт перехода идентичности пакетов</a></p>{% endif %}
+{% if pull.identity and not pull.identity.error %}<p><a href="/projects/{{ project.id }}/identity-report" id="hub-sync-identity-report-link">{{ _("Отчёт перехода идентичности пакетов") }}</a></p>{% endif %}
 {% elif pull.count and not data.local_changed %}
 <form method="post" action="/projects/{{ project.id }}/hub-sync/{{ run.id }}/apply" class="panel" id="hub-sync-apply-form">
-<h2>Принять состояние Hub</h2>
-<p>В базе приложения будут приняты {{ pull.issues }} находок и {{ pull.defects }} дефектов: состояния, решения, основания, сроки, риски, поля и состав. Новые объекты будут занесены, отсутствующие получат пометку. Пропущено из-за неполных сведений: {{ pull.skipped }}.</p>
-{% if pull.replaced and pull.replaced.count %}<p id="hub-sync-replaced">Решения приложения, которые отличаются от решения Hub, будут заменены, прежние уйдут в историю сохранённых правок (их можно вернуть): {{ pull.replaced.count }} – {% for r in pull.replaced["items"] %}<a class="mono" href="{{ r.url }}">{{ r.hub_id }}</a>{{ ", " if not loop.last }}{% endfor %}{% if pull.replaced.count > pull.replaced["items"]|length %} …{% endif %}.</p>{% endif %}
+<h2>{{ _("Принять состояние Hub") }}</h2>
+<p>{{ _("В базе приложения будут приняты {issues} находок и {defects} дефектов: состояния, решения, основания, сроки, риски, поля и состав. Новые объекты будут занесены, отсутствующие получат пометку. Пропущено из-за неполных сведений: {skipped}.", issues=pull.issues, defects=pull.defects, skipped=pull.skipped) }}</p>
+{% if pull.replaced and pull.replaced.count %}<p id="hub-sync-replaced">{{ _("Решения приложения, которые отличаются от решения Hub, будут заменены, прежние уйдут в историю сохранённых правок (их можно вернуть): {n} –", n=pull.replaced.count) }} {% for r in pull.replaced["items"] %}<a class="mono" href="{{ r.url }}">{{ r.hub_id }}</a>{{ ", " if not loop.last }}{% endfor %}{% if pull.replaced.count > pull.replaced["items"]|length %} …{% endif %}.</p>{% endif %}
 {{ identity_summary(pull.identity, identity_rows, "hub-sync-identity", table_labels) }}
 <input type="hidden" name="confirmation" value="{{ pull.token }}">
-<label><input type="checkbox" name="confirm" value="yes" required> Подтверждаю изменение базы приложения для {{ pull.count }} объектов. Запросов к Hub нет, Hub не меняется.</label>
-<p><button class="btn btn-primary" id="hub-sync-apply">Принять состояние Hub</button></p>
+<label><input type="checkbox" name="confirm" value="yes" required> {{ _("Подтверждаю изменение базы приложения для {n} объектов. Запросов к Hub нет, Hub не меняется.", n=pull.count) }}</label>
+<p><button class="btn btn-primary" id="hub-sync-apply">{{ _("Принять состояние Hub") }}</button></p>
 </form>{% elif pull.error and progress.done %}<p class="hint">{{ pull.error }}</p>{% endif %}
-{% if data.local_changed %}<p role="status">Локальные данные изменились после сравнения. Ниже показан сохранённый результат; пересчитайте расхождения.</p>{% endif %}
-{% if data.bases_pending %}<p>У {{ data.bases_pending }} объектов локальные значения совпадают с Hub, принятой базы ещё нет. Примите состояние Hub кнопкой выше.</p>{% endif %}
-{% if data.reparse_missing %}<p role="status">Сырые ответы не сохранены для {{ data.reparse_missing }} чтений. Пересчёт не обращается к Hub. «Продолжить» после подтверждения повторит недостающие чтения.</p>{% endif %}
+{% if data.local_changed %}<p role="status">{{ _("Локальные данные изменились после сравнения. Ниже показан сохранённый результат; пересчитайте расхождения.") }}</p>{% endif %}
+{% if data.bases_pending %}<p>{{ _("У {n} объектов локальные значения совпадают с Hub, принятой базы ещё нет. Примите состояние Hub кнопкой выше.", n=data.bases_pending) }}</p>{% endif %}
+{% if data.reparse_missing %}<p role="status">{{ _("Сырые ответы не сохранены для {n} чтений. Пересчёт не обращается к Hub. «Продолжить» после подтверждения повторит недостающие чтения.", n=data.reparse_missing) }}</p>{% endif %}
 {#- пока идёт чтение, сравнивать не с чем: групп нет, только ход чтения -#}
-{% if not progress.done %}{% set groups = {} %}<p id="hub-sync-reading" role="status">Идёт чтение из Hub. Сравнение – после окончания чтения.</p>{% endif %}
-{% if not data.comparison_complete and progress.done %}<p>Сравнение не завершено. Сохранённые ответы доступны ниже; совпадение базы с Hub не установлено.</p>{% endif %}
-{% if groups %}<p>Каждый объект находится в одной группе по основной метке. Все его метки показаны внутри. Счётчики групп учитывают объекты без повторов.</p>{% endif %}
+{% if not progress.done %}{% set groups = {} %}<p id="hub-sync-reading" role="status">{{ _("Идёт чтение из Hub. Сравнение – после окончания чтения.") }}</p>{% endif %}
+{% if not data.comparison_complete and progress.done %}<p>{{ _("Сравнение не завершено. Сохранённые ответы доступны ниже; совпадение базы с Hub не установлено.") }}</p>{% endif %}
+{% if groups %}<p>{{ _("Каждый объект находится в одной группе по основной метке. Все его метки показаны внутри. Счётчики групп учитывают объекты без повторов.") }}</p>{% endif %}
 <form method="get" class="cluster" id="hub-sync-search">
-<label for="hub-sync-query">Поиск по ID во всём результате</label>
+<label for="hub-sync-query">{{ _("Поиск по ID во всём результате") }}</label>
 <input id="hub-sync-query" name="q" value="{{ query }}" type="search">
-<button class="btn" type="submit">Найти</button>
+<button class="btn" type="submit">{{ _("Найти") }}</button>
 </form>
-{% if query %}<p id="hub-sync-search-count">Найдено: {{ result_count }}.</p>{% endif %}
+{% if query %}<p id="hub-sync-search-count">{{ _("Найдено: {n}.", n=result_count) }}</p>{% endif %}
 {% for group, items in groups.items() %}
 {% set pagination = pages[group] %}
 <details class="panel" data-sync-group="{{ group }}"{% if pagination.open %} open{% endif %}><summary>{{ labels[group] }} ({{ pagination.total }})</summary>
-<p>Страница {{ pagination.page }} из {{ pagination.last }}. Показано {{ items|length }} из {{ pagination.total }}.</p>
-<nav aria-label="Страницы группы {{ labels[group] }}">{% if pagination.page > 1 %}<a href="{{ pagination.previous }}">Предыдущая страница</a>{% endif %} {% if pagination.page < pagination.last %}<a href="{{ pagination.next }}">Следующая страница</a>{% endif %}</nav>
-{% for item in items %}<details data-sync-item="{{ item.entity_kind }}:{{ item.entity_key }}"><summary>{{ "Находка" if item.entity_kind == "issue" else "Дефект" }} {{ item.entity_key }}</summary>
-<p>Метки: {% for tag in item.diff.groups %}{{ labels[tag] }}{% if not loop.last %}; {% endif %}{% endfor %}.</p>
-{% set dl = item.diff.delivery or {} %}{% if dl.state %}<p class="hub-sync-delivery">{{ delivery_labels[dl.state] }}{% if dl.state == "refused" and dl.error %}: {{ dl.error }}{% endif %}</p>{% endif %}
-{% for cause in item.diff.causes %}<p class="hub-sync-cause">Причина: {{ cause }}</p>{% endfor %}
-{% if item.diff.base_pending %}<p>Локальные значения совпадают с Hub. База будет принята при применении.</p>{% endif %}
-{% for pending_id in item.diff.pending_ids %}<p><a href="/projects/{{ project.id }}/hub-pending/{{ pending_id }}">Открыть сохранённую правку</a></p>{% endfor %}
-{% if item.diff.deferred %}<p>Локальное решение отложено. Прежний окончательный вердикт не действует.</p>{% endif %}
-{% if 'fixed_external' in item.diff.groups %}<p>Hub сообщает статус Fixed. При подтверждённом применении будет создана находка с происхождением API; вердикт модели не создаётся.</p>{% endif %}
-{% if item.card_url %}<p><a href="{{ item.card_url }}">{{ "Открыть карточку находки" if item.entity_kind == "issue" else "Открыть карточку дефекта" }}</a>.</p>{% else %}<p>Сопоставленной карточки нет.</p>{% endif %}
-<p>При применении состояние Hub становится принятой базой. Неотправленные правки сохраняются отдельно. После локальных правок пересчитайте расхождения; для актуальных данных Hub подтвердите новое чтение.</p>
+<p>{{ _("Страница {page} из {last}.", page=pagination.page, last=pagination.last) }} {{ _("Показано {n} из {total}.", n=items|length, total=pagination.total) }}</p>
+<nav aria-label="{{ _("Страницы группы {name}", name=labels[group]) }}">{% if pagination.page > 1 %}<a href="{{ pagination.previous }}">{{ _("Предыдущая страница") }}</a>{% endif %} {% if pagination.page < pagination.last %}<a href="{{ pagination.next }}">{{ _("Следующая страница") }}</a>{% endif %}</nav>
+{% for item in items %}<details data-sync-item="{{ item.entity_kind }}:{{ item.entity_key }}"><summary>{{ _("Находка") if item.entity_kind == "issue" else _("Дефект") }} {{ item.entity_key }}</summary>
+<p>{{ _("Метки:") }} {% for tag in item.diff.groups %}{{ labels[tag] }}{% if not loop.last %}; {% endif %}{% endfor %}.</p>
+{% set dl = item.diff.delivery or {} %}{% if dl.state %}<p class="hub-sync-delivery">{{ delivery_labels[dl.state] }}{% if dl.state == "refused" and dl.error %}: {{ hub_error_text(dl.error) }}{% endif %}</p>{% endif %}
+{% for cause in item.diff.causes %}<p class="hub-sync-cause">{{ _("Причина:") }} {{ cause }}</p>{% endfor %}
+{% if item.diff.base_pending %}<p>{{ _("Локальные значения совпадают с Hub. База будет принята при применении.") }}</p>{% endif %}
+{% for pending_id in item.diff.pending_ids %}<p><a href="/projects/{{ project.id }}/hub-pending/{{ pending_id }}">{{ _("Открыть сохранённую правку") }}</a></p>{% endfor %}
+{% if item.diff.deferred %}<p>{{ _("Локальное решение отложено. Прежний окончательный вердикт не действует.") }}</p>{% endif %}
+{% if 'fixed_external' in item.diff.groups %}<p>{{ _("Hub сообщает статус Fixed. При подтверждённом применении будет создана находка с происхождением API; вердикт модели не создаётся.") }}</p>{% endif %}
+{% if item.card_url %}<p><a href="{{ item.card_url }}">{{ _("Открыть карточку находки") if item.entity_kind == "issue" else _("Открыть карточку дефекта") }}</a>.</p>{% else %}<p>{{ _("Сопоставленной карточки нет.") }}</p>{% endif %}
+<p>{{ _("При применении состояние Hub становится принятой базой. Неотправленные правки сохраняются отдельно. После локальных правок пересчитайте расхождения; для актуальных данных Hub подтвердите новое чтение.") }}</p>
 {% for note in item.diff.notes %}<p class="text-warn">{{ note }}</p>{% endfor %}
-<p>Получено: {{ item.observed_from|ts }} – {{ item.observed_to|ts }}.</p>
+<p>{{ _("Получено:") }} {{ item.observed_from|ts }} – {{ item.observed_to|ts }}.</p>
 {% if item.diff.fields %}
-<table class="table hub-sync-fields"><caption>Сравнение полей</caption><thead><tr><th scope="col">Поле</th><th scope="col">Принятая база</th><th scope="col">Локальные данные</th><th scope="col">Прочитано из Hub</th><th scope="col">Результат</th></tr></thead><tbody>
-{% set field_names = {"status": "Статус", "reason": "Основание", "expiredAt": "Срок", "summary": "Заголовок", "command_text": "Текст дефекта", "hub_block": "Блок Hub (только чтение)", "priority": "Приоритет", "priority + priorityId": "Приоритет", "severity + severityId": "Серьёзность", "structureUnitId + appStructureUnit": "Подразделение", "severity": "Серьёзность", "assignee": "Исполнитель", "dueDate": "Срок исправления"} %}
-{% for field in item.diff.fields %}<tr><th scope="row">{{ field_names.get(field.field, field.field) }}</th>{% for side in ('B', 'L', 'H') %}<td class="break">{% if not field[side].present %}Нет сведений{% elif field[side].value is none %}Не задано{% elif field[side].value is mapping or (field[side].value is sequence and field[side].value is not string) %}<pre class="hub-text">{{ field[side].value|json_text }}</pre>{% else %}{{ field[side].value }}{% endif %}</td>{% endfor %}<td>{{ labels[field.kind] }}</td></tr>{% endfor %}
+<table class="table hub-sync-fields"><caption>{{ _("Сравнение полей") }}</caption><thead><tr><th scope="col">{{ _("Поле") }}</th><th scope="col">{{ _("Принятая база") }}</th><th scope="col">{{ _("Локальные данные") }}</th><th scope="col">{{ _("Прочитано из Hub") }}</th><th scope="col">{{ _("Результат") }}</th></tr></thead><tbody>
+{% set field_names = {"status": _("Статус"), "reason": _("Основание"), "expiredAt": _("Срок"), "summary": _("Заголовок"), "command_text": _("Текст дефекта"), "hub_block": _("Блок Hub (только чтение)"), "priority": _("Приоритет"), "priority + priorityId": _("Приоритет"), "severity + severityId": _("Серьёзность"), "structureUnitId + appStructureUnit": _("Подразделение"), "severity": _("Серьёзность"), "assignee": _("Исполнитель"), "dueDate": _("Срок исправления")} %}
+{% for field in item.diff.fields %}<tr><th scope="row">{{ field_names.get(field.field, field.field) }}</th>{% for side in ('B', 'L', 'H') %}<td class="break">{% if not field[side].present %}{{ _("Нет сведений") }}{% elif field[side].value is none %}{{ _("Не задано") }}{% elif field[side].value is mapping or (field[side].value is sequence and field[side].value is not string) %}<pre class="hub-text">{{ field[side].value|json_text }}</pre>{% else %}{{ field[side].value }}{% endif %}</td>{% endfor %}<td>{{ labels[field.kind] }}</td></tr>{% endfor %}
 </tbody></table>
 {% endif %}
-<details data-sync-raw="{{ item.raw_url }}"><summary>Исходные данные и операции</summary>
-<p data-sync-raw-status role="status">Данные загружаются из сохранённого прогона при раскрытии.</p>
+<details data-sync-raw="{{ item.raw_url }}"><summary>{{ _("Исходные данные и операции") }}</summary>
+<p data-sync-raw-status role="status">{{ _("Данные загружаются из сохранённого прогона при раскрытии.") }}</p>
 <div data-sync-raw-content></div>
-<p><a href="{{ item.raw_url }}">Открыть сохранённый JSON отдельно</a></p>
+<p><a href="{{ item.raw_url }}">{{ _("Открыть сохранённый JSON отдельно") }}</a></p>
 </details>
 </details>{% endfor %}</details>
 {% endfor %}

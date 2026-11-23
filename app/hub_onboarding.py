@@ -13,6 +13,7 @@
 
 from datetime import UTC, datetime, timedelta
 
+from app import i18n
 from app.db import loads
 from app.hub_ops import hub_base
 
@@ -31,7 +32,7 @@ def read_is_stale(read_at: str | None, now: datetime | None = None) -> bool:
 
 DONE = ("accepted", "matches")  # шаг выполнен: напоминание не показывается
 
-LABELS = {
+LABELS = i18n.Labels({
     "no_target": "Приложение в Hub не указано",
     "not_read": "Состояние Hub ещё не принималось",
     "reading": "Чтение Hub идёт",
@@ -45,7 +46,7 @@ LABELS = {
     "unapplied": "Прочитано – не принято",
     # после принятия у принятого объекта осталось отличие – ошибка приложения, объекты названы (dev15, план п. 1.5)
     "accepted_error": "Принято с ошибкой: после принятия остались отличия",
-}
+})
 
 
 def state(db, project: dict, hub_url: str, *, light: bool = False) -> dict:

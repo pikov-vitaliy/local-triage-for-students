@@ -30,6 +30,7 @@ import threading
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Protocol, runtime_checkable
 
+from app import i18n
 from app.models import LlmStats
 
 log = logging.getLogger(__name__)
@@ -39,10 +40,16 @@ class GenerationGate:
     вопрос к модели, проба и выгрузка модели в медленном режиме одной группы не идут одновременно. holder – кто держит
     право: "triage", "ask", "check", "warmup"; label – группа словами (для отказа «занято»)."""
 
-    def __init__(self, label: str = "Ollama этого компьютера и сети организации") -> None:
+    def __init__(self, label: str = i18n.N_("Ollama этого компьютера и сети организации"), host: str = "") -> None:
         self._lock = threading.Lock()
         self.holder = ""
-        self.label = label
+        self._label = label  # msgid: подпись переводится при каждом чтении (язык меняется на ходу)
+        self._host = host
+
+    @property
+    def label(self) -> str:
+        """Группа словами на языке интерфейса (для отказа «занято»)."""
+        return i18n._(self._label, host=self._host) if self._host else i18n._(self._label)
 
     def try_acquire(self, holder: str) -> bool:
         """Взять право, если оно свободно; занято – False без ожидания."""
@@ -111,7 +118,8 @@ def gate_for(executor: Any) -> GenerationGate:
     with _GATES_LOCK:
         gate = _EXTERNAL_GATES.get(key)
         if gate is None:
-            gate = _EXTERNAL_GATES[key] = GenerationGate(f"внешний провайдер {key.split(':', 1)[1].rsplit(':', 1)[0]}")
+            gate = _EXTERNAL_GATES[key] = GenerationGate(i18n.N_("внешний провайдер {host}"),
+                                                           host=key.split(':', 1)[1].rsplit(':', 1)[0])
         return gate
 RAW_KEEP = 4000  # сколько знаков неудачного ответа хранить для разбора и отдавать модели при повторе
 DETAIL_MAX = 300  # сколько знаков текста ошибки сервера сохранять

@@ -20,6 +20,8 @@ import argparse
 import sys
 import threading
 
+from app import i18n
+
 EXIT_OK = 0
 EXIT_FAILED = 1
 EXIT_LOCK_BUSY = 75
@@ -48,7 +50,8 @@ def build_server(host: str, port: int):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.serve", description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--host", default="127.0.0.1", choices=["127.0.0.1"],
-                        help="адрес прослушивания: только 127.0.0.1 – защита проверяет заголовок Host, а не адрес клиента")
+                        help=i18n._("адрес прослушивания: только 127.0.0.1 – защита проверяет заголовок Host, а не "
+                                    "адрес клиента"))
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args(argv)
     server = build_server(args.host, args.port)

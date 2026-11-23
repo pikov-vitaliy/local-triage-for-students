@@ -18,24 +18,24 @@
 import time
 from urllib.parse import urlencode
 
-from app import hub_entity_versions as versions, hub_sync_api as api, hub_sync_compare as compare
+from app import hub_entity_versions as versions, hub_ops, hub_sync_api as api, hub_sync_compare as compare, i18n
 from app.db import dumps, loads
 from app.hub_ops import hub_base
 from app.hub_status import HUB_ISSUE_TYPE
 
-READ_LABELS = {
+READ_LABELS = i18n.Labels({
     "never": "Hub не читался",
     "missing": "Нет в последнем чтении Hub",
     "stale": "Чтение Hub устарело",
     "incomplete": "Чтение Hub неполное",
-}
+})
 # отбор «Не отправлено в Hub»: решение для Hub есть, а в Hub его нет или исход не установлен
 UNSENT = ("unsent", "refused", "unconfirmed", "queued", "unsendable")
 # видимые счётчики отправки: «не отправлено» – только то, что в Hub не уходило; ждущее исполнителя, неподтверждённое
 # (запись могла состояться), отказ Hub и исправленное в Hub – своими словами (ревью кода dev15, круг 10). Общий признак
 # UNSENT – для отбора «не отправлено в Hub» и выделения строки
-COUNT_LABELS = {"unsent": "не отправлено в Hub", "queued": "ждёт исполнителя", "unconfirmed": "без подтверждения",
-                "refused": "Hub не принял", "unsendable": "в Hub исправлено и не отправится"}
+COUNT_LABELS = i18n.Labels({"unsent": "не отправлено в Hub", "queued": "ждёт исполнителя", "unconfirmed": "без подтверждения",
+                            "refused": "Hub не принял", "unsendable": "в Hub исправлено и не отправится"})
 EQUAL_GROUPS = ("matched", "coincident")
 DELIVERY_TONES = {"unsent": "warn", "refused": "warn", "unconfirmed": "warn", "queued": "warn",
                   "unsendable": "muted", "sent": "muted"}
@@ -207,7 +207,7 @@ def _state(pid, run_id, kind, key, diff, delivery, read=None, unread=False) -> d
     if dstate:
         text = compare.DELIVERY_LABELS[dstate]
         if dstate == "refused" and delivery.get("error"):
-            text += f": {delivery['error']}"
+            text += f": {hub_ops.error_text(delivery['error'])}"
         badges.append({"text": text, "tone": DELIVERY_TONES[dstate]})
     # «совпавшие изменения» – приложение и Hub изменились одинаково и равны, отстала только принятая база: для
     # оператора это совпадение, а не отличие. Совпадение – когда так у всего набора групп, а не только у основной

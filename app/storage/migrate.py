@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from app import i18n
+
 MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations" / "postgresql"
 BASELINE = MIGRATIONS_DIR / "0001_baseline.sql"
 BASELINE_SCHEMA = 33
@@ -46,20 +48,21 @@ def available() -> list[Migration]:
     for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
         match = _FILE.match(path.name)
         if not match:
-            raise MigrationError(f"Имя файла миграции не по правилу NNNN_имя.sql: {path.name}")
+            raise MigrationError(i18n._("Имя файла миграции не по правилу NNNN_имя.sql: {name}", name=path.name))
         number = int(match.group(1))
         if number == 1:
             continue
         with path.open(encoding="utf-8") as handle:
             line = _SCHEMA_LINE.match(handle.readline().strip())
         if not line:
-            raise MigrationError(f"Первая строка миграции – «-- schema: N»: {path.name}")
+            raise MigrationError(i18n._("Первая строка миграции – «-- schema: N»: {name}", name=path.name))
         found.append(Migration(number, path, int(line.group(1))))
     for expected, item in enumerate(found, start=2):
         if item.number != expected:
-            raise MigrationError(f"Пропущен номер миграции {expected:04d}.")
+            raise MigrationError(i18n._("Пропущен номер миграции {number}.", number=f"{expected:04d}"))
         if item.schema != BASELINE_SCHEMA + expected - 1:
-            raise MigrationError(f"{item.name}: схема {item.schema}, а по порядку должна быть {BASELINE_SCHEMA + expected - 1}.")
+            raise MigrationError(i18n._("{name}: схема {schema}, а по порядку должна быть {expected}.", name=item.name,
+                                         schema=item.schema, expected=BASELINE_SCHEMA + expected - 1))
     return found
 
 
@@ -73,11 +76,12 @@ def pending(conn) -> list[Migration]:
     files = available()
     for item in files:
         if item.number in applied and applied[item.number] != checksum(item.path):
-            raise MigrationError(f"Файл уже применённой миграции изменён: {item.name}.")
+            raise MigrationError(i18n._("Файл уже применённой миграции изменён: {name}.", name=item.name))
     known = {item.number for item in files} | {1}
     unknown = sorted(set(applied) - known)
     if unknown:
-        raise MigrationError(f"База новее этой сборки: применены миграции {unknown}, файлов которых нет.")
+        raise MigrationError(i18n._("База новее этой сборки: применены миграции {numbers}, файлов которых нет.",
+                                     numbers=unknown))
     return [item for item in files if item.number not in applied]
 
 

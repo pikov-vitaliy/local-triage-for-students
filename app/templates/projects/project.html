@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, progress, stat, project_tabs %}
-{% block title %}{{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}project{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span>{% if project.archived %}<a href="/projects/archive">Архив</a><span aria-hidden="true"> / </span>{% endif %}<span class="crumb-project" aria-current="page">{{ project.name }}</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span>{% if project.archived %}<a href="/projects/archive">{{ _("Архив") }}</a><span aria-hidden="true"> / </span>{% endif %}<span class="crumb-project" aria-current="page">{{ project.name }}</span>{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, review_stats.sca, "overview", counts.defects) }}{% endblock %}
 {% block content %}
-<p><a class="btn btn-small" href="/projects/{{ project.id }}/capec">Сценарии CAPEC по находкам проекта</a></p>
+<p><a class="btn btn-small" href="/projects/{{ project.id }}/capec">{{ _("Сценарии CAPEC по находкам проекта") }}</a></p>
 {% set stats = review_stats %}
 {# «Внесено в Hub» – только по решениям оператора; решения из Hub – отдельно (бэклог 98) #}
 {% set reviewed_total = (stats.reviewed_operator or 0) + (stats.sca_reviewed_operator or 0) %}
@@ -15,141 +15,141 @@
 {% set triage_total = stats.sast + stats.sca %}
 <div class="page-head">
   <div>
-    <h1>{{ project.name }}</h1>
+    <h1 data-section="{{ _("Проект") }}">{{ project.name }}</h1>
     <p class="page-sub dot-list project-meta">
-      <span>модель <span class="mono">{{ project_model }}</span>{% if model_from_settings %} – {{ model_source or "из настроек" }}{% endif %}{% if model_missing %} – <span class="text-warn">нет на сервере профиля</span>{% endif %}</span>
-      {% if run_profile %}<span>профиль <a href="#step3" id="project-meta-profile">{{ run_profile.name }}</a></span>{% endif %}
-      <span>папка <span class="mono break">{{ folder_display }}</span></span>
-      <span id="project-meta-mask">показ кода {{ "с масками" if project.mask_secrets else "без масок" }}</span>
-      <span><a href="#params">параметры проекта</a></span>
+      <span>{{ _("модель") }} <span class="mono">{{ project_model }}</span>{% if model_from_settings %} – {{ model_source or _("из настроек") }}{% endif %}{% if model_missing %} – <span class="text-warn">{{ _("нет на сервере профиля") }}</span>{% endif %}</span>
+      {% if run_profile %}<span>{{ _("профиль") }} <a href="#step3" id="project-meta-profile">{{ run_profile.name }}</a></span>{% endif %}
+      <span>{{ _("папка") }} <span class="mono break">{{ folder_display }}</span></span>
+      <span id="project-meta-mask">{{ _("показ кода с масками") if project.mask_secrets else _("показ кода без масок") }}</span>
+      <span><a href="#params">{{ _("параметры проекта") }}</a></span>
     </p>
   </div>
   {% if first_unreviewed or sca_unreviewed or counts.sca %}
   <div class="page-actions">
-    {% if first_unreviewed or sca_unreviewed %}<a class="btn{% if next_step == 'review' %} btn-primary{% endif %}" href="/projects/{{ project.id }}/continue">{{ icon("play") }}Продолжить разбор</a>{% endif %}
-    {% if counts.sca %}<a class="btn" href="/projects/{{ project.id }}/components">{{ icon("package") }}Исследовать компоненты</a>{% endif %}
+    {% if first_unreviewed or sca_unreviewed %}<a class="btn{% if next_step == 'review' %} btn-primary{% endif %}" href="/projects/{{ project.id }}/continue">{{ icon("play") }}{{ _("Продолжить разбор") }}</a>{% endif %}
+    {% if counts.sca %}<a class="btn" href="/projects/{{ project.id }}/components">{{ icon("package") }}{{ _("Исследовать компоненты") }}</a>{% endif %}
   </div>
   {% endif %}
 </div>
 
 {% if project.archived %}
 <div class="callout callout-info">
-  <p>Проект в архиве: его решения и отметки сохранены, в списке действующих проектов его нет.</p>
-  <form method="post" action="/projects/{{ project.id }}/archive"><input type="hidden" name="action" value="restore"><button type="submit" class="btn btn-small">{{ icon("refresh") }}Вернуть из архива</button></form>
+  <p>{{ _("Проект в архиве: его решения и отметки сохранены, в списке действующих проектов его нет.") }}</p>
+  <form method="post" action="/projects/{{ project.id }}/archive"><input type="hidden" name="action" value="restore"><button type="submit" class="btn btn-small">{{ icon("refresh") }}{{ _("Вернуть из архива") }}</button></form>
 </div>
 {% endif %}
 
 {% if triage_total or stats.missing %}
-<section class="panel panel-compact review-summary" aria-label="Ход разбора">
+<section class="panel panel-compact review-summary" aria-label="{{ _("Ход разбора") }}">
   <div class="stats">
-    {% if stats.sast %}{{ stat(stats.reviewed ~ " из " ~ stats.sast, "Проверено SAST", sub="модель разобрала " ~ stats.with_verdict) }}{% endif %}
-    {% if stats.sca %}{{ stat(stats.sca_reviewed ~ " из " ~ stats.sca, "Проверено SCA") }}{% endif %}
-    {% if component_stats and component_stats.total %}<a class="stat-link" id="component-stats" href="/projects/{{ project.id }}/components">{{ stat(component_stats.researched ~ " из " ~ component_stats.total, "Компоненты исследованы", sub="с решением " ~ component_stats.decided ~ (", требуют пересмотра " ~ component_stats.stale if component_stats.stale else "")) }}</a>{% endif %}
-    {% if triage_total %}{{ stat(entered_total, "Внесено в Hub", tone="ok" if entered_total and entered_total >= reviewed_total else "", sub="из " ~ reviewed_total ~ " проверенных моих решений") }}{% endif %}
-    {% if hub_total %}<span id="hub-decisions-stat">{{ stat(hub_total, "Решений из Hub", sub="приняты из Hub, не мои") }}</span>{% endif %}
-    {% if stats.missing %}{{ stat(stats.missing, "Нет в новой выгрузке", tone="warn", sub="решения по ним сохранены") }}{% endif %}
+    {% if stats.sast %}{{ stat(_("{done} из {total}", done=stats.reviewed, total=stats.sast), _("Проверено SAST"), sub=_("модель разобрала {n}", n=stats.with_verdict)) }}{% endif %}
+    {% if stats.sca %}{{ stat(_("{done} из {total}", done=stats.sca_reviewed, total=stats.sca), _("Проверено SCA")) }}{% endif %}
+    {% if component_stats and component_stats.total %}<a class="stat-link" id="component-stats" href="/projects/{{ project.id }}/components">{{ stat(_("{done} из {total}", done=component_stats.researched, total=component_stats.total), _("Компоненты исследованы"), sub=_("с решением {n}", n=component_stats.decided) ~ (_(", требуют пересмотра {n}", n=component_stats.stale) if component_stats.stale else "")) }}</a>{% endif %}
+    {% if triage_total %}{{ stat(entered_total, _("Внесено в Hub"), tone="ok" if entered_total and entered_total >= reviewed_total else "", sub=_("из {n} проверенных моих решений", n=reviewed_total)) }}{% endif %}
+    {% if hub_total %}<span id="hub-decisions-stat">{{ stat(hub_total, _("Решений из Hub"), sub=_("приняты из Hub, не мои")) }}</span>{% endif %}
+    {% if stats.missing %}{{ stat(stats.missing, _("Нет в новой выгрузке"), tone="warn", sub=_("решения по ним сохранены")) }}{% endif %}
   </div>
   {% if triage_total %}{{ progress(stats.reviewed + stats.sca_reviewed, triage_total, entered_total) }}{% endif %}
   <p class="field-hint">
-    {%- if stats.sast %}Решения по SAST: согласились {{ stats.agree }}, не согласились {{ stats.disagree }}, отложено {{ stats.later }}{% if stats.copied %}, скопировано для Hub {{ stats.copied }}{% endif %}.{% endif %}
-    {%- if stats.missing %} <a href="/projects/{{ project.id }}/findings?missing=yes">Показать находки, которых нет в новой выгрузке</a>.{% endif -%}
+    {%- if stats.sast %}{{ _("Решения по SAST: согласились {agree}, не согласились {disagree}, отложено {later}", agree=stats.agree, disagree=stats.disagree, later=stats.later) }}{% if stats.copied %}{{ _(", скопировано для Hub {n}", n=stats.copied) }}{% endif %}.{% endif %}
+    {%- if stats.missing %} <a href="/projects/{{ project.id }}/findings?missing=yes">{{ _("Показать находки, которых нет в новой выгрузке") }}</a>.{% endif -%}
   </p>
 </section>
 {% endif %}
 
 <details class="panel panel-compact params" id="params"{% if params_open %} open{% endif %}>
-  <summary>Параметры проекта</summary>
+  <summary>{{ _("Параметры проекта") }}</summary>
   <form method="post" action="/projects/{{ project.id }}/params" class="stack-form">
     <label class="field">
-      <span class="field-label">Название</span>
+      <span class="field-label">{{ _("Название") }}</span>
       <input type="text" name="name" value="{{ project.name }}" maxlength="200" required autocomplete="off">
     </label>
     <label class="field">
-      <span class="field-label">Профиль модели</span>
+      <span class="field-label">{{ _("Профиль модели") }}</span>
       <select name="provider_id" id="project-provider" data-models="/projects/{{ project.id }}/models.json">
       {% for o in provider_options %}<option value="{{ o.value }}"{% if o.selected %} selected{% endif %}{% if o.disabled %} disabled{% endif %}>{{ o.label }}</option>{% endfor %}
       </select>
-      <span class="field-hint">Где работает модель разбора кода этого проекта. Профили – в <a href="/settings/providers">«Провайдерах моделей»</a>.</span>
+      <span class="field-hint">{{ _("Где работает модель разбора кода этого проекта. Профили – в {link}.", link='<a href="/settings/providers">' ~ _("«Провайдерах моделей»") ~ '</a>')|safe }}</span>
     </label>
     <label class="field">
-      <span class="field-label">Модель проекта</span>
+      <span class="field-label">{{ _("Модель проекта") }}</span>
       <select name="model" id="project-model">
       {% for o in model_options %}<option value="{{ o.value }}"{% if o.selected %} selected{% endif %}>{{ o.label }}</option>{% endfor %}
       </select>
       <span class="field-hint" id="project-model-status" aria-live="polite"></span>
-      <span class="field-hint">Её предлагает запуск триажа в этом проекте. Модель по умолчанию для всех проектов, адрес Ollama и статусы Hub – в <a href="/settings">настройках</a>.</span>
+      <span class="field-hint">{{ _("Её предлагает запуск триажа в этом проекте. Модель по умолчанию для всех проектов, адрес Ollama и статусы Hub – в {link}.", link='<a href="/settings">' ~ _("настройках") ~ '</a>')|safe }}</span>
     </label>
 {% if not catalog_example and STAND != "npm" %}
     <label class="field">
-      <span class="field-label">Приложение в Hub (appId)</span>
+      <span class="field-label">{{ _("Приложение в Hub (appId)") }}</span>
       <input type="text" name="hub_app_id" id="project-hub-app-id" value="{{ project.hub_app_id or '' }}" maxlength="2000" autocomplete="off" aria-describedby="project-hub-app-hint">
-      <span class="field-hint" id="project-hub-app-hint">Номер приложения из адреса его страницы в Hub (…/#/appprofile/<span class="mono">номер</span>/…) – или вставьте эту ссылку целиком, номер приложение возьмёт само. Нужен для синхронизации с Hub (шаг «Состояние Hub»: при первом чтении номер сверяется с выгрузкой) и чтобы статусы и дефекты уходили в Hub через исполнителя; пусто – не уходят. Адрес Hub – в <a href="/settings#hub">«Настройках»</a>.</span>
+      <span class="field-hint" id="project-hub-app-hint">{{ _("Номер приложения из адреса его страницы в Hub ({url}) – или вставьте эту ссылку целиком, номер приложение возьмёт само. Нужен для синхронизации с Hub (шаг «Состояние Hub»: при первом чтении номер сверяется с выгрузкой) и чтобы статусы и дефекты уходили в Hub через исполнителя; пусто – не уходят. Адрес Hub – в {link}.", url='…/#/appprofile/<span class="mono">' ~ _("номер") ~ '</span>/…', link='<a href="/settings#hub">' ~ _("«Настройках»") ~ '</a>')|safe }}</span>
     </label>
 {% endif %}
     <div class="field">
       <input type="hidden" name="mask_form" value="1">
-      <label class="check"><input type="checkbox" name="mask_secrets" value="1" id="project-mask-secrets"{% if project.mask_secrets %} checked{% endif %} aria-describedby="project-mask-hint"> Маскировать секреты в коде при показе</label>
-      <span class="field-hint" id="project-mask-hint">Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются.</span>
+      <label class="check"><input type="checkbox" name="mask_secrets" value="1" id="project-mask-secrets"{% if project.mask_secrets %} checked{% endif %} aria-describedby="project-mask-hint"> {{ _("Маскировать секреты в коде при показе") }}</label>
+      <span class="field-hint" id="project-mask-hint">{{ _("Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются.") }}</span>
     </div>
     <div class="actions">
-      <button type="submit" class="btn">Сохранить параметры</button>
+      <button type="submit" class="btn">{{ _("Сохранить параметры") }}</button>
     </div>
   </form>
   <div class="field" id="external-mark">
-    <span class="field-label">Код внешнему провайдеру</span>
+    <span class="field-label">{{ _("Код внешнему провайдеру") }}</span>
     {% if project.external_allowed %}
-    <p class="small">Отметка «код не секретный» стоит с <time datetime="{{ project.external_confirmed_at }}">{{ project.external_confirmed_at|ts }}</time>: код находок этого проекта может уходить внешнему провайдеру прогоном на внешнем профиле. Обоснование: «{{ project.external_reason }}».</p>
+    <p class="small">{{ _("Отметка «код не секретный» стоит с") }} <time datetime="{{ project.external_confirmed_at }}">{{ project.external_confirmed_at|ts }}</time>{{ _(": код находок этого проекта может уходить внешнему провайдеру прогоном на внешнем профиле.") }} {{ _("Обоснование: «{reason}».", reason=external_reason_display or project.external_reason) }}</p>
     <form method="post" action="/projects/{{ project.id }}/external/clear" class="actions">
-      <button type="submit" class="btn btn-ghost" data-confirm="Снять отметку? Код проекта перестанет уходить внешнему провайдеру; идущий прогон на внешнем профиле встанет на паузу.">Снять отметку</button>
+      <button type="submit" class="btn btn-ghost" data-confirm="{{ _("Снять отметку? Код проекта перестанет уходить внешнему провайдеру; идущий прогон на внешнем профиле встанет на паузу.") }}">{{ _("Снять отметку") }}</button>
     </form>
     {% else %}
-    <p class="small">Отметки «код не секретный» нет: код проекта внешнему провайдеру не отправляется ни прогоном, ни вопросом, ни пересмотром. {{ not_for_code_note }}</p>
-    {% if external_on %}<p class="actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/external">Предпросмотр и отметка…</a></p>{% endif %}
+    <p class="small">{{ _("Отметки «код не секретный» нет: код проекта внешнему провайдеру не отправляется ни прогоном, ни вопросом, ни пересмотром.") }} {{ not_for_code_note }}</p>
+    {% if external_on %}<p class="actions"><a class="btn btn-ghost" href="/projects/{{ project.id }}/external">{{ _("Предпросмотр и отметка…") }}</a></p>{% endif %}
     {% endif %}
   </div>
   <div class="actions">
     {% if not project.archived %}
-    <form method="post" action="/projects/{{ project.id }}/archive"><input type="hidden" name="action" value="archive"><button type="submit" class="btn btn-ghost" data-confirm="Убрать проект в архив? Решения и отметки сохранятся.">{{ icon("archive") }}Убрать в архив</button></form>
+    <form method="post" action="/projects/{{ project.id }}/archive"><input type="hidden" name="action" value="archive"><button type="submit" class="btn btn-ghost" data-confirm="{{ _("Убрать проект в архив? Решения и отметки сохранятся.") }}">{{ icon("archive") }}{{ _("Убрать в архив") }}</button></form>
     {% endif %}
-    <a class="btn btn-ghost btn-danger" href="/projects/{{ project.id }}/delete">{{ icon("trash") }}Удалить проект…</a>
+    <a class="btn btn-ghost btn-danger" href="/projects/{{ project.id }}/delete">{{ icon("trash") }}{{ _("Удалить проект…") }}</a>
   </div>
 </details>
 
 <section class="step" id="step1" aria-labelledby="step1-title">
-  <div class="step-head"><span class="step-no{% if imp %} step-done{% endif %}" aria-hidden="true">{{ "✓" if imp else "1" }}</span><h2 id="step1-title">Выгрузка из AppSec.Hub</h2></div>
+  <div class="step-head"><span class="step-no{% if imp %} step-done{% endif %}" aria-hidden="true">{{ "✓" if imp else "1" }}</span><h2 id="step1-title">{{ _("Выгрузка из AppSec.Hub") }}</h2></div>
   {% if imp %}
-  <p class="step-summary"><strong>{{ imp.filename }}</strong> · {{ counts.total }} {{ counts.total|plural("находка", "находки", "находок") }}: SAST {{ counts.sast }} (срочных {{ counts.sast_urgent }}), SCA {{ counts.sca - (counts.sca_license or 0) }}{% if counts.sca_license %}, лицензии {{ counts.sca_license }}{% endif %}, DAST {{ counts.dast }}{% if imp.format == "hub" %} · {% if mismatch %}<span class="warn-text">листы расходятся со сводкой</span>{% elif summary_rows|selectattr("match", "sameas", true)|list %}листы сходятся со сводкой{% else %}отчёт AppSec.Hub{% endif %}{% else %} · таблица{% endif %}</p>
+  <p class="step-summary"><strong>{{ imp.filename }}</strong> · {{ counts.total }} {{ counts.total|plural("находка", "находки", "находок") }}: SAST {{ counts.sast }} ({{ _("срочных {n}", n=counts.sast_urgent) }}), SCA {{ counts.sca - (counts.sca_license or 0) }}{% if counts.sca_license %}, {{ _("лицензии {n}", n=counts.sca_license) }}{% endif %}, DAST {{ counts.dast }}{% if imp.format == "hub" %} · {% if mismatch %}<span class="warn-text">{{ _("листы расходятся со сводкой") }}</span>{% elif summary_rows|selectattr("match", "sameas", true)|list %}{{ _("листы сходятся со сводкой") }}{% else %}{{ _("отчёт AppSec.Hub") }}{% endif %}{% else %} · {{ _("таблица") }}{% endif %}</p>
   <p class="muted small dot-list">
-    <span>загружена <time datetime="{{ imp.created_at }}">{{ imp.created_at|ts }}</time></span>
-    {% if imp.summary.application %}<span>система в отчёте: {{ imp.summary.application }}</span>{% endif %}
-    {% if imp.summary.report_created %}<span>отчёт создан {{ imp.summary.report_created|report_date }}</span>{% endif %}
+    <span>{{ _("загружена") }} <time datetime="{{ imp.created_at }}">{{ imp.created_at|ts }}</time></span>
+    {% if imp.summary.application %}<span>{{ _("система в отчёте: {name}", name=imp.summary.application) }}</span>{% endif %}
+    {% if imp.summary.report_created %}<span>{{ _("отчёт создан") }} {{ imp.summary.report_created|report_date }}</span>{% endif %}
   </p>
-  {% if imp.stats and not first_import %}<p class="small">К прошлой загрузке: новых {{ imp.stats.new }}, изменилось {{ imp.stats.updated }}, без изменений {{ imp.stats.unchanged }}, исчезло {{ imp.stats.removed }}{% if imp.stats.returned %}, вернулось {{ imp.stats.returned }}{% endif %}{% if imp.stats.reopened %}; у {{ imp.stats.reopened }} изменились код или место – отметка «Проверено» снята{% endif %}. Решения и отметки по совпадающим ID находок сохранены.{% if counts.missing %} Нет в новой выгрузке – {{ counts.missing }}: такие находки остаются в проекте с пометкой и в разбор не попадают (<a href="/projects/{{ project.id }}/findings?missing=yes">показать</a>).{% endif %}</p>{% endif %}
+  {% if imp.stats and not first_import %}<p class="small">{{ _("К прошлой загрузке: новых {new}, изменилось {updated}, без изменений {unchanged}, исчезло {removed}", new=imp.stats.new, updated=imp.stats.updated, unchanged=imp.stats.unchanged, removed=imp.stats.removed) }}{% if imp.stats.returned %}{{ _(", вернулось {n}", n=imp.stats.returned) }}{% endif %}{% if imp.stats.reopened %}{{ _("; у {n} изменились код или место – отметка «Проверено» снята", n=imp.stats.reopened) }}{% endif %}. {{ _("Решения и отметки по совпадающим ID находок сохранены.") }}{% if counts.missing %} {{ _("Нет в новой выгрузке – {n}: такие находки остаются в проекте с пометкой и в разбор не попадают", n=counts.missing) }} (<a href="/projects/{{ project.id }}/findings?missing=yes">{{ _("показать") }}</a>).{% endif %}</p>{% endif %}
 
   {% if imp.warnings %}
   <div class="callout callout-warn">
-    <h3>Предупреждения разбора</h3>
+    <h3>{{ _("Предупреждения разбора") }}</h3>
     <ul>{% for w in imp.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
   </div>
   {% endif %}
 
   {% if summary_rows %}
   <details class="sheets"{% if mismatch %} open{% endif %}>
-    <summary>Листы выгрузки и сверка со сводкой</summary>
+    <summary>{{ _("Листы выгрузки и сверка со сводкой") }}</summary>
     <div class="table-wrap">
     <table class="table table-compact">
-      <thead><tr><th scope="col">Лист</th><th scope="col" class="num">Находок на листе</th><th scope="col" class="num">В сводке</th><th scope="col">Итог</th></tr></thead>
+      <thead><tr><th scope="col">{{ _("Лист") }}</th><th scope="col" class="num">{{ _("Находок на листе") }}</th><th scope="col" class="num">{{ _("В сводке") }}</th><th scope="col">{{ _("Итог") }}</th></tr></thead>
       <tbody>
       {% for s in summary_rows %}
         <tr>
-          <td data-label="Лист">{{ s.name }}</td>
-          <td data-label="На листе" class="num">{{ s.count }}{% if s.rows != s.count %} <span class="muted small">(строк {{ s.rows }})</span>{% endif %}</td>
-          <td data-label="В сводке" class="num">{{ s.expected if s.expected is not none else "–" }}</td>
-          <td data-label="Итог">
-            {% if s.skipped %}<span class="badge badge-muted">пропущен</span>{% if s.reason %} {{ s.reason }}{% endif %}
-            {% elif s.match is sameas false %}<span class="badge badge-warn">расходится со сводкой</span>
-            {% elif s.match is sameas true %}<span class="badge badge-ok">сходится со сводкой</span>
-            {% else %}<span class="badge badge-ok">прочитан</span>{% endif %}
+          <td data-label="{{ _("Лист") }}">{{ s.name }}</td>
+          <td data-label="{{ _("На листе") }}" class="num">{{ s.count }}{% if s.rows != s.count %} <span class="muted small">({{ _("строк {n}", n=s.rows) }})</span>{% endif %}</td>
+          <td data-label="{{ _("В сводке") }}" class="num">{{ s.expected if s.expected is not none else "–" }}</td>
+          <td data-label="{{ _("Итог") }}">
+            {% if s.skipped %}<span class="badge badge-muted">{{ _("пропущен") }}</span>{% if s.reason %} {{ _(s.reason) }}{% endif %}
+            {% elif s.match is sameas false %}<span class="badge badge-warn">{{ _("расходится со сводкой") }}</span>
+            {% elif s.match is sameas true %}<span class="badge badge-ok">{{ _("сходится со сводкой") }}</span>
+            {% else %}<span class="badge badge-ok">{{ _("прочитан") }}</span>{% endif %}
           </td>
         </tr>
       {% endfor %}
@@ -160,46 +160,46 @@
   {% endif %}
 
   <details class="reupload"{% if reupload_confirm %} open{% endif %}>
-    <summary>Загрузить другую выгрузку</summary>
-    <p class="hint">Новая выгрузка из AppSec.Hub в .xlsx или одна таблица .csv, до {{ settings.max_upload_mb }} МБ. Решения и отметки «Проверено» и «Внесено в Hub» по совпадающим ID находок сохранятся, новые находки добавятся, а исчезнувшие останутся в проекте с пометкой «нет в новой выгрузке». Если у находки изменились код или место, отметка «Проверено» снимется.</p>
+    <summary>{{ _("Загрузить другую выгрузку") }}</summary>
+    <p class="hint">{{ _("Новая выгрузка из AppSec.Hub в .xlsx или одна таблица .csv, до {mb} МБ. Решения и отметки «Проверено» и «Внесено в Hub» по совпадающим ID находок сохранятся, новые находки добавятся, а исчезнувшие останутся в проекте с пометкой «нет в новой выгрузке». Если у находки изменились код или место, отметка «Проверено» снимется.", mb=settings.max_upload_mb) }}</p>
     <form method="post" action="/projects/{{ project.id }}/import" enctype="multipart/form-data" class="stack-form upload-form">
       <label class="dropzone">
         <input type="file" name="file" accept=".xlsx,.csv" required>
-        <span class="dropzone-text">{{ icon("upload") }} Перетащите файл выгрузки или нажмите, чтобы выбрать</span>
+        <span class="dropzone-text">{{ icon("upload") }} {{ _("Перетащите файл выгрузки или нажмите, чтобы выбрать") }}</span>
         <span class="dropzone-file" aria-live="polite"></span>
       </label>
-      {% if reupload_confirm %}<label class="check" id="confirm-other-label"><input type="checkbox" name="confirm_other" value="1" id="confirm-other"> Загрузить всё равно – это выгрузка этого проекта</label>{% endif %}
-      <div class="actions"><button type="submit" class="btn" data-busy="Загружаю…">Загрузить</button></div>
+      {% if reupload_confirm %}<label class="check" id="confirm-other-label"><input type="checkbox" name="confirm_other" value="1" id="confirm-other"> {{ _("Загрузить всё равно – это выгрузка этого проекта") }}</label>{% endif %}
+      <div class="actions"><button type="submit" class="btn" data-busy="{{ _("Загружаю…") }}">{{ _("Загрузить") }}</button></div>
     </form>
   </details>
   {% else %}
-  <p class="hint">Отчёт AppSec.Hub в .xlsx (листы Summary Report, SAST, SCA Security, SCA Compliance, DAST) или одна таблица .csv, до {{ settings.max_upload_mb }} МБ. Следующие выгрузки этой системы загружайте в этот же проект: решения по находкам сохранятся.</p>
+  <p class="hint">{{ _("Отчёт AppSec.Hub в .xlsx (листы Summary Report, SAST, SCA Security, SCA Compliance, DAST) или одна таблица .csv, до {mb} МБ. Следующие выгрузки этой системы загружайте в этот же проект: решения по находкам сохранятся.", mb=settings.max_upload_mb) }}</p>
   <form method="post" action="/projects/{{ project.id }}/import" enctype="multipart/form-data" class="stack-form upload-form">
     <label class="dropzone">
       <input type="file" name="file" accept=".xlsx,.csv" required>
-      <span class="dropzone-text">{{ icon("upload") }} Перетащите файл выгрузки или нажмите, чтобы выбрать</span>
+      <span class="dropzone-text">{{ icon("upload") }} {{ _("Перетащите файл выгрузки или нажмите, чтобы выбрать") }}</span>
       <span class="dropzone-file" aria-live="polite"></span>
     </label>
-    <div class="actions"><button type="submit" class="btn btn-primary" data-busy="Загружаю…">Загрузить</button></div>
+    <div class="actions"><button type="submit" class="btn btn-primary" data-busy="{{ _("Загружаю…") }}">{{ _("Загрузить") }}</button></div>
   </form>
   {% endif %}
 </section>
 
 <section class="step" id="step2" aria-labelledby="step2-title">
   {% set step2_done = codebases and not to_clone and not unsaved %}
-  <div class="step-head"><span class="step-no{% if step2_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if step2_done else "2" }}</span><h2 id="step2-title">Репозитории</h2></div>
+  <div class="step-head"><span class="step-no{% if step2_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if step2_done else "2" }}</span><h2 id="step2-title">{{ _("Репозитории") }}</h2></div>
   {% if demo_repos_root %}
-  <div class="callout callout-info"><h3>Демонстрационные репозитории</h3><p>Сейчас подключена папка учебных примеров <span class="mono break">{{ repos_root }}</span>. Для рабочего проекта используйте отдельный корень вне папки приложения. Не помещайте рабочие клоны в демо-папку.</p><p>Перезапустите приложение из его папки с вашим корнем, например <code>.\start.ps1 -ReposRoot "D:\work\repos"</code>, затем выберите папку проекта и проверьте соответствия кодовых баз. Существующие решения и настройки папок автоматически не меняются.</p></div>
+  <div class="callout callout-info"><h3>{{ _("Демонстрационные репозитории") }}</h3><p>{{ _("Сейчас подключена папка учебных примеров") }} <span class="mono break">{{ repos_root }}</span>. {{ _("Для рабочего проекта используйте отдельный корень вне папки приложения. Не помещайте рабочие клоны в демо-папку.") }}</p><p>{{ _("Перезапустите приложение из его папки с вашим корнем, например") }} <code>.\start.ps1 -ReposRoot "D:\work\repos"</code>{{ _(", затем выберите папку проекта и проверьте соответствия кодовых баз.") }} {{ _("Существующие решения и настройки папок автоматически не меняются.") }}</p></div>
   {% else %}
-  {% if repos_source_unknown %}<p class="hint" id="repos-source">Подключённая папка: <span class="mono break">{{ repos_root }}</span>; источник не определён (приложение запущено не через start.ps1).</p>{% endif %}
-  <p class="hint">Клонируйте только кодовые базы из выгрузки – они перечислены ниже, остальные проекты группы не нужны. Приложение видит папки внутри <span class="mono">{{ repos_root }}</span> и только читает их; выберите среди них папку, в которой лежат клоны этого проекта.</p>
+  {% if repos_source_unknown %}<p class="hint" id="repos-source">{{ _("Подключённая папка:") }} <span class="mono break">{{ repos_root }}</span>{{ _("; источник не определён (приложение запущено не через start.ps1).") }}</p>{% endif %}
+  <p class="hint">{{ _("Клонируйте только кодовые базы из выгрузки – они перечислены ниже, остальные проекты группы не нужны.") }} {{ _("Приложение видит папки внутри") }} <span class="mono">{{ repos_root }}</span> {{ _("и только читает их; выберите среди них папку, в которой лежат клоны этого проекта.") }}</p>
   {% endif %}
   <div class="inline-form folder-line">
     <div class="field grow">
-      <span class="field-label">Папка проекта</span>
+      <span class="field-label">{{ _("Папка проекта") }}</span>
       <span class="mono break">{{ folder_display }}</span>
     </div>
-    <a class="btn{% if next_step == 'folder' %} btn-primary{% endif %}" href="/projects/{{ project.id }}/folders?path={{ (project.repos_dir or '')|urlencode }}">{{ icon("folder") }}Выбрать папку…</a>
+    <a class="btn{% if next_step == 'folder' %} btn-primary{% endif %}" href="/projects/{{ project.id }}/folders?path={{ (project.repos_dir or '')|urlencode }}">{{ icon("folder") }}{{ _("Выбрать папку…") }}</a>
   </div>
   {% if repos_error %}<p class="callout callout-warn">{{ repos_error }}</p>{% endif %}
   {% for notice in revision_notices %}<p class="callout callout-warn">{{ notice }}</p>{% endfor %}
@@ -208,7 +208,7 @@
     <p>{{ code_change_text }}</p>
     <form method="post" action="/projects/{{ project.id }}/code-change/clear" class="actions">
       <input type="hidden" name="shown_at" value="{{ code_change_at }}">
-      <button class="btn btn-small" type="submit">Понятно</button>
+      <button class="btn btn-small" type="submit">{{ _("Понятно") }}</button>
     </form>
   </div>
   {% endif %}
@@ -219,63 +219,60 @@
     <input type="hidden" name="confirm_reset" value="0">
     <div class="table-wrap">
     <table class="table table-codebases">
-      <caption>Кодовые базы из выгрузки</caption>
-      <thead><tr><th scope="col">Кодовая база в Hub</th><th scope="col" class="num">SAST</th><th scope="col" class="num">Всего</th><th scope="col">Папка с клоном</th><th scope="col">Состояние</th></tr></thead>
+      <caption>{{ _("Кодовые базы из выгрузки") }}</caption>
+      <thead><tr><th scope="col">{{ _("Кодовая база в Hub") }}</th><th scope="col" class="num">SAST</th><th scope="col" class="num">{{ _("Всего") }}</th><th scope="col">{{ _("Папка с клоном") }}</th><th scope="col">{{ _("Состояние") }}</th></tr></thead>
       <tbody>
       {% for c in codebases %}
         <tr>
-          <td data-label="Кодовая база"><span class="mono">{{ c.codebase }}</span><input type="hidden" name="cb-{{ loop.index }}" value="{{ c.codebase }}"></td>
+          <td data-label="{{ _("Кодовая база") }}"><span class="mono">{{ c.codebase }}</span><input type="hidden" name="cb-{{ loop.index }}" value="{{ c.codebase }}"></td>
           <td data-label="SAST" class="num">{{ c.sast }}</td>
-          <td data-label="Всего" class="num">{{ c.total }}</td>
-          <td data-label="Папка">
+          <td data-label="{{ _("Всего") }}" class="num">{{ c.total }}</td>
+          <td data-label="{{ _("Папка") }}">
             {% set loss = reset_counts.get(c.codebase, {}) %}
-            <select name="folder-{{ loop.index }}" aria-label="Папка для кодовой базы {{ c.codebase }}"
+            <select name="folder-{{ loop.index }}" aria-label="{{ _("Папка для кодовой базы {codebase}", codebase=c.codebase) }}"
                     data-saved-folder="{{ c.folder }}" data-reset-cases="{{ loss.get('cases', 0) }}"
                     data-reset-reviewed="{{ loss.get('reviewed', 0) }}">
-              <option value="">не выбрана</option>
+              <option value="">{{ _("не выбрана") }}</option>
               {% for o in c.options %}<option value="{{ o }}"{% if o == c.selected %} selected{% endif %}>{{ o }}</option>{% endfor %}
             </select>
           </td>
-          <td data-label="Состояние"><span class="badge badge-{{ c.tone }}">{{ c.state }}</span></td>
+          <td data-label="{{ _("Состояние") }}"><span class="badge badge-{{ c.tone }}">{{ c.state }}</span></td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     </div>
-    {% if unsaved %}<p class="small accent-text">Подставлены найденные по имени папки ({{ unsaved }}): проверьте их и нажмите «Сохранить соответствие».</p>{% endif %}
+    {% if unsaved %}<p class="small accent-text">{{ _("Подставлены найденные по имени папки ({n}): проверьте их и нажмите «Сохранить соответствие».", n=unsaved) }}</p>{% endif %}
     <div class="actions">
-      <button type="submit" class="btn{% if next_step == 'map' %} btn-primary{% endif %}" name="action" value="save" id="save-mapping">Сохранить соответствие</button>
-      <button type="submit" class="btn" name="action" value="auto" title="Только для пустых и подобранных автоматически строк; ручной выбор не меняется">Подобрать заново по именам</button>
-      {% if example_restorable %}<a class="btn" href="/projects/{{ project.id }}/example-mapping" id="restore-example-mapping">Восстановить соответствия примера</a>{% endif %}
+      <button type="submit" class="btn{% if next_step == 'map' %} btn-primary{% endif %}" name="action" value="save" id="save-mapping">{{ _("Сохранить соответствие") }}</button>
+      <button type="submit" class="btn" name="action" value="auto" title="{{ _("Только для пустых и подобранных автоматически строк; ручной выбор не меняется") }}">{{ _("Подобрать заново по именам") }}</button>
+      {% if example_restorable %}<a class="btn" href="/projects/{{ project.id }}/example-mapping" id="restore-example-mapping">{{ _("Восстановить соответствия примера") }}</a>{% endif %}
       {% if reset.mappings %}
-      {% set reset_prompt = "Сбросить ручные соответствия (" ~ reset.mappings
-                            ~ ") и подобрать папки по именам? " ~ reset.warning %}
+      {% set reset_prompt = _("Сбросить ручные соответствия ({n}) и подобрать папки по именам?", n=reset.mappings)
+                            ~ " " ~ reset.warning %}
       <button type="submit" class="btn btn-ghost btn-danger" name="action"
-              value="reset" data-confirm="{{ reset_prompt }}">Сбросить ручные соответствия…</button>
+              value="reset" data-confirm="{{ reset_prompt }}">{{ _("Сбросить ручные соответствия…") }}</button>
       {% endif %}
     </div>
   </form>
   {% endif %}
-  {% if nameless %}<p class="muted small">{{ nameless.total }} {{ nameless.total|plural("находка", "находки", "находок") }} без кодовой базы{% set kinds = [] %}{% if nameless.sast %}{% set kinds = kinds + ["SAST " ~ nameless.sast] %}{% endif %}{% if nameless.sca %}{% set kinds = kinds + ["SCA " ~ nameless.sca] %}{% endif %}{% if nameless.dast %}{% set kinds = kinds + ["DAST " ~ nameless.dast] %}{% endif %} ({{ kinds|join(", ") }}){% if nameless.sast %} – для SAST без кодовой базы модель увидит только строку из выгрузки{% else %} – клон не нужен{% endif %}.</p>{% endif %}
+  {% if nameless %}<p class="muted small">{{ _("{n} {findings} без кодовой базы", n=nameless.total, findings=nameless.total|plural("находка", "находки", "находок")) }}{% set kinds = [] %}{% if nameless.sast %}{% set kinds = kinds + ["SAST " ~ nameless.sast] %}{% endif %}{% if nameless.sca %}{% set kinds = kinds + ["SCA " ~ nameless.sca] %}{% endif %}{% if nameless.dast %}{% set kinds = kinds + ["DAST " ~ nameless.dast] %}{% endif %} ({{ kinds|join(", ") }}){% if nameless.sast %} – {{ _("для SAST без кодовой базы модель увидит только строку из выгрузки") }}{% else %} – {{ _("клон не нужен") }}{% endif %}.</p>{% endif %}
 
   {% if snapshots.sast %}
   {% set with_snapshot = snapshots.code + snapshots.line + snapshots.empty %}
   <div class="callout{% if snapshots.ready %} callout-ok{% endif %}" id="snapshots">
-    <h3>Срезы кода в базе</h3>
-    <p>Срез сохранён у <strong id="snapshots-count">{{ with_snapshot }} из {{ snapshots.sast }}</strong>
-      {{ snapshots.sast|plural("находки", "находок", "находок") }} SAST{% if snapshots.line %};
-      у {{ snapshots.line }} – только строка из выгрузки{% endif %}{% if snapshots.empty %};
-      у {{ snapshots.empty }} срез без строк кода{% endif %}.
-      Срез – фрагмент кода вокруг находки с замаскированными секретами: его видит модель, а вы – в карточке находки.</p>
+    <h3>{{ _("Срезы кода в базе") }}</h3>
+    <p>{{ _("Срез сохранён у {saved} {findings} SAST", saved='<strong id="snapshots-count">' ~ _("{done} из {total}", done=with_snapshot|int, total=snapshots.sast|int) ~ '</strong>', findings=snapshots.sast|plural("находки", "находок", "находок"))|safe }}{% if snapshots.line %}{{ _("; у {n} – только строка из выгрузки", n=snapshots.line) }}{% endif %}{% if snapshots.empty %}{{ _("; у {n} срез без строк кода", n=snapshots.empty) }}{% endif %}.
+      {{ _("Срез – фрагмент кода вокруг находки с замаскированными секретами: его видит модель, а вы – в карточке находки.") }}</p>
     {% if snapshots.missing %}
-    <p title="файл в клоне не найден">файла нет в клоне – разбор по строке из выгрузки: {{ snapshots.missing }}</p>
+    <p title="{{ _("файл в клоне не найден") }}">{{ _("файла нет в клоне – разбор по строке из выгрузки: {n}", n=snapshots.missing) }}</p>
     {% endif %}
     {% if snapshot_reasons and snapshot_reasons.total %}
-    <p id="snapshot-reasons">Без кода в клоне – {{ snapshot_reasons.total }}: {% for key, n in snapshot_reasons.reasons|dictsort %}{{ CODE_REASON_KEY_LABELS.get(key, key) }} – {{ n }}{% if not loop.last %}; {% endif %}{% endfor %}{% if snapshot_reasons.archive %}; внутри архива – {{ snapshot_reasons.archive }}{% endif %}{% if snapshot_reasons.no_line %}; строки выгрузки нет – {{ snapshot_reasons.no_line }}{% endif %}.</p>
+    <p id="snapshot-reasons">{{ _("Без кода в клоне – {n}:", n=snapshot_reasons.total) }} {% for key, n in snapshot_reasons.reasons|dictsort %}{{ CODE_REASON_KEY_LABELS.get(key, key) }} – {{ n }}{% if not loop.last %}; {% endif %}{% endfor %}{% if snapshot_reasons.archive %}{{ _("; внутри архива – {n}", n=snapshot_reasons.archive) }}{% endif %}{% if snapshot_reasons.no_line %}{{ _("; строки выгрузки нет – {n}", n=snapshot_reasons.no_line) }}{% endif %}.</p>
     {% endif %}
     {% if snapshots.incomplete %}
     <div class="callout callout-warn" id="snapshots-incomplete">
-      <p>Клоны не удаляйте: у {{ snapshots.incomplete }} находок полнота сохранённого кода не подтверждена</p>
+      <p>{{ _("Клоны не удаляйте: у {n} находок полнота сохранённого кода не подтверждена", n=snapshots.incomplete) }}</p>
       <ul>
       {% for item in incomplete_snapshots %}
         <li>{{ item.hub_id }} · <span class="mono break">{{ item.file }}</span> · {{ item.reason_text }}</li>
@@ -284,42 +281,42 @@
     </div>
     {% endif %}
     {% if snapshots.detached_none %}
-    <p class="warn-text" id="snapshots-detached-none">У {{ snapshots.detached_none }} {{ snapshots.detached_none|plural("находки", "находок", "находок") }} SAST отвязанных клонов нет среза: это новые находки, клоны для них не читаются. Если клоны на месте, нажмите «Подключить клоны снова», затем «Сохранить срезы кода».</p>
+    <p class="warn-text" id="snapshots-detached-none">{{ _("У {n} {findings} SAST отвязанных клонов нет среза: это новые находки, клоны для них не читаются. Если клоны на месте, нажмите «Подключить клоны снова», затем «Сохранить срезы кода».", n=snapshots.detached_none, findings=snapshots.detached_none|plural("находки", "находок", "находок")) }}</p>
     {% elif snapshots.ready %}
-    <p id="snapshots-ready">Клоны больше не нужны: карточки, решения, текст для Hub и повторный разбор берут код из базы приложения. Папки с клонами этого проекта можно удалить целиком. После этого не выбирайте проекту другую папку и не меняйте соответствия кодовых баз: другая папка – другой код, и сохранённые срезы удалятся.</p>
+    <p id="snapshots-ready">{{ _("Клоны больше не нужны: карточки, решения, текст для Hub и повторный разбор берут код из базы приложения. Папки с клонами этого проекта можно удалить целиком. После этого не выбирайте проекту другую папку и не меняйте соответствия кодовых баз: другая папка – другой код, и сохранённые срезы удалятся.") }}</p>
     {% elif snapshots.can_save %}
-    <p>Без среза – {{ snapshots.none - snapshots.unmapped }}, из них {{ snapshots.can_save }} можно сохранить из клонов сейчас, без модели. Сохраните срезы, прежде чем удалять клоны.</p>
-    <form method="post" action="/projects/{{ project.id }}/snapshots"><button type="submit" class="btn" id="save-snapshots">Сохранить срезы кода</button></form>
+    <p>{{ _("Без среза – {n}, из них {can_save} можно сохранить из клонов сейчас, без модели. Сохраните срезы, прежде чем удалять клоны.", n=snapshots.none - snapshots.unmapped, can_save=snapshots.can_save) }}</p>
+    <form method="post" action="/projects/{{ project.id }}/snapshots"><button type="submit" class="btn" id="save-snapshots">{{ _("Сохранить срезы кода") }}</button></form>
     {% elif snapshots.none - snapshots.unmapped %}
-    <p>Без среза – {{ snapshots.none - snapshots.unmapped }}: папки их клонов нет на месте. Не удаляйте остальные клоны, пока не вернёте эти и не сохраните срезы.</p>
+    <p>{{ _("Без среза – {n}: папки их клонов нет на месте. Не удаляйте остальные клоны, пока не вернёте эти и не сохраните срезы.", n=snapshots.none - snapshots.unmapped) }}</p>
     {% elif not snapshots.code %}
-    <p id="snapshots-no-code">Кода из клонов в срезах нет: модель видела только строки из выгрузки. Подключите клоны и разберите находки заново.</p>
+    <p id="snapshots-no-code">{{ _("Кода из клонов в срезах нет: модель видела только строки из выгрузки. Подключите клоны и разберите находки заново.") }}</p>
     {% endif %}
     {% if snapshots.can_upgrade and not snapshots.can_save %}
-    <p class="small">У {{ snapshots.can_upgrade }} {{ snapshots.can_upgrade|plural("находки", "находок", "находок") }} срез – только строка из выгрузки, а файл теперь есть в клоне: «Сохранить срезы кода» заменит такие срезы полноценными.</p>
-    <form method="post" action="/projects/{{ project.id }}/snapshots"><button type="submit" class="btn" id="save-snapshots">Сохранить срезы кода</button></form>
+    <p class="small">{{ _("У {n} {findings} срез – только строка из выгрузки, а файл теперь есть в клоне: «Сохранить срезы кода» заменит такие срезы полноценными.", n=snapshots.can_upgrade, findings=snapshots.can_upgrade|plural("находки", "находок", "находок")) }}</p>
+    <form method="post" action="/projects/{{ project.id }}/snapshots"><button type="submit" class="btn" id="save-snapshots">{{ _("Сохранить срезы кода") }}</button></form>
     {% endif %}
     {% if detached %}
     <form method="post" action="/projects/{{ project.id }}/clones/attach" class="inline-form">
-      <p class="small">Клоны {{ detached|join(", ") }} отвязаны: приложение их не читает, код – из срезов в базе. Клон другой выгрузки на том же месте срезы не сбросит.</p>
-      <button type="submit" class="btn btn-small" id="attach-clones" data-confirm="Подключить клоны снова? Приложение снова будет читать их папки. Если там теперь другой код (другая ревизия), сохранённые срезы этих кодовых баз удалятся, а отметки «Проверено» у их находок снимутся.">Подключить клоны снова</button>
+      <p class="small">{{ _("Клоны {names} отвязаны: приложение их не читает, код – из срезов в базе. Клон другой выгрузки на том же месте срезы не сбросит.", names=detached|join(", ")) }}</p>
+      <button type="submit" class="btn btn-small" id="attach-clones" data-confirm="{{ _("Подключить клоны снова? Приложение снова будет читать их папки. Если там теперь другой код (другая ревизия), сохранённые срезы этих кодовых баз удалятся, а отметки «Проверено» у их находок снимутся.") }}">{{ _("Подключить клоны снова") }}</button>
     </form>
     {% endif %}
-    {% if snapshots.unmapped %}<p class="small muted" id="snapshots-unmapped">Ещё {{ snapshots.unmapped }} {{ snapshots.unmapped|plural("находка", "находки", "находок") }} SAST без среза – у их кодовых баз нет папки с клоном: модель увидит только строку из выгрузки.</p>{% endif %}
+    {% if snapshots.unmapped %}<p class="small muted" id="snapshots-unmapped">{{ _("Ещё {n} {findings} SAST без среза – у их кодовых баз нет папки с клоном: модель увидит только строку из выгрузки.", n=snapshots.unmapped, findings=snapshots.unmapped|plural("находка", "находки", "находок")) }}</p>{% endif %}
   </div>
   {% endif %}
 
   {% if to_clone %}
   <div class="callout">
-    <h3>Клонировать только эти ({{ to_clone|length }})</h3>
-    <p>По этим кодовым базам в выгрузке есть находки SAST, а папки с клоном нет. {% if demo_repos_root %}Подключите отдельный рабочий корень способом выше, затем выберите папку с клонами.{% else %}Клонируйте их в <span class="mono break">{{ clone_into }}</span> или выберите папку, где они уже лежат.{% endif %} Имена в Hub и в GitLab могут отличаться. Доклонировали – обновите эту страницу, проверьте подставленные папки и нажмите «Сохранить соответствие». Без клона модель видит только строку кода из выгрузки.</p>
+    <h3>{{ _("Клонировать только эти ({n})", n=to_clone|length) }}</h3>
+    <p>{{ _("По этим кодовым базам в выгрузке есть находки SAST, а папки с клоном нет.") }} {% if demo_repos_root %}{{ _("Подключите отдельный рабочий корень способом выше, затем выберите папку с клонами.") }}{% else %}{{ _("Клонируйте их в") }} <span class="mono break">{{ clone_into }}</span> {{ _("или выберите папку, где они уже лежат.") }}{% endif %} {{ _("Имена в Hub и в GitLab могут отличаться. Доклонировали – обновите эту страницу, проверьте подставленные папки и нажмите «Сохранить соответствие». Без клона модель видит только строку кода из выгрузки.") }}</p>
     <pre class="clone-list" id="clone-list">{{ to_clone|join("\n") }}</pre>
-    <button type="button" class="btn btn-small" data-copy-target="clone-list">{{ icon("copy") }}Скопировать список</button>
+    <button type="button" class="btn btn-small" data-copy-target="clone-list">{{ icon("copy") }}{{ _("Скопировать список") }}</button>
     <span class="copy-status" role="status" aria-live="polite"></span>
   </div>
   {% endif %}
   {% else %}
-  <p class="empty">Кодовые базы появятся после загрузки выгрузки.</p>
+  <p class="empty">{{ _("Кодовые базы появятся после загрузки выгрузки.") }}</p>
   {% endif %}
 </section>
 
@@ -329,105 +326,105 @@
 {% set hs_done = hs.done %}
 {% if STAND != "npm" %}{#- учебный стенд: связи с Hub нет (ADR-0155) – шага нет -#}
 <section class="step" id="step-hub" aria-labelledby="step-hub-title">
-  <div class="step-head"><span class="step-no{% if hs_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if hs_done else "Hub" }}</span><h2 id="step-hub-title">Состояние Hub</h2></div>
-  <p class="step-summary" id="step-hub-state"><strong>{{ hs.label }}</strong>{% if hs.app_id %} · приложение №{{ hs.app_id }}{% endif %}{% if hs.run and hs.run.applied_at %} · принято <time datetime="{{ hs.run.applied_at }}">{{ hs.run.applied_at|ts }}</time>{% elif hs.run %} · чтение {{ hs.run.created_at|ts }}{% endif %}</p>
-  {% if hs.stale %}<p class="small text-warn" id="step-hub-stale">Последнее чтение Hub – {{ hs.run.created_at|ts }}, больше трёх суток назад: в Hub могли измениться статусы и дефекты. «Синхронизировать с Hub» прочитает его заново.</p>{% endif %}
+  <div class="step-head"><span class="step-no{% if hs_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if hs_done else "Hub" }}</span><h2 id="step-hub-title">{{ _("Состояние Hub") }}</h2></div>
+  <p class="step-summary" id="step-hub-state"><strong>{{ hs.label }}</strong>{% if hs.app_id %} · {{ _("приложение №{id}", id=hs.app_id) }}{% endif %}{% if hs.run and hs.run.applied_at %} · {{ _("принято") }} <time datetime="{{ hs.run.applied_at }}">{{ hs.run.applied_at|ts }}</time>{% elif hs.run %} · {{ _("чтение {when}", when=hs.run.created_at|ts) }}{% endif %}</p>
+  {% if hs.stale %}<p class="small text-warn" id="step-hub-stale">{{ _("Последнее чтение Hub – {when}, больше трёх суток назад: в Hub могли измениться статусы и дефекты. «Синхронизировать с Hub» прочитает его заново.", when=hs.run.created_at|ts) }}</p>{% endif %}
   {% if hs.state == "no_target" %}
-  <p class="small">Укажите номер приложения в Hub в <a href="/projects/{{ project.id }}?open=params#project-hub-app-id">параметрах проекта</a> (можно вставить ссылку на любую страницу приложения в Hub). После этого «Синхронизировать» занесёт дефекты, уже заведённые в Hub, их состав и статусы находок.</p>
+  <p class="small">{{ _("Укажите номер приложения в Hub в {link} (можно вставить ссылку на любую страницу приложения в Hub). После этого «Синхронизировать» занесёт дефекты, уже заведённые в Hub, их состав и статусы находок.", link='<a href="/projects/%d?open=params#project-hub-app-id">' % project.id ~ _("параметрах проекта") ~ '</a>')|safe }}</p>
   {% elif hs.state == "not_read" %}
-  <p class="small">Дефекты, уже заведённые в Hub, их состав и статусы находок приложение заносит само: «Синхронизировать», затем «Принять состояние Hub». Начинать работу лучше после этого.</p>
+  <p class="small">{{ _("Дефекты, уже заведённые в Hub, их состав и статусы находок приложение заносит само: «Синхронизировать», затем «Принять состояние Hub». Начинать работу лучше после этого.") }}</p>
   {% elif hs.state == "app_mismatch" %}
-  <p class="small text-warn">Находки приложения Hub №{{ hs.app_id }} не совпали с выгрузкой проекта: общих {{ hs.data.app_check.common }} из {{ hs.data.app_check.export }}. Проверьте номер в <a href="/projects/{{ project.id }}?open=params#project-hub-app-id">параметрах проекта</a> или подтвердите его на <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">странице чтения</a>.</p>
+  <p class="small text-warn">{{ _("Находки приложения Hub №{id} не совпали с выгрузкой проекта: общих {common} из {total}.", id=hs.app_id, common=hs.data.app_check.common, total=hs.data.app_check.export) }} {{ _("Проверьте номер в") }} <a href="/projects/{{ project.id }}?open=params#project-hub-app-id">{{ _("параметрах проекта") }}</a> {{ _("или подтвердите его на") }} <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">{{ _("странице чтения") }}</a>.</p>
   {% elif hs.state == "stopped" %}
-  <p class="small text-warn">{{ hs.data.error or "Чтение остановлено до конца." }} <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">Открыть чтение</a>.</p>
+  <p class="small text-warn">{{ hs.data.error or _("Чтение остановлено до конца.") }} <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">{{ _("Открыть чтение") }}</a>.</p>
   {% elif hs.state == "reading" %}
-  <p class="small"><a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">Ход чтения</a> – после него «Принять состояние Hub».</p>
+  <p class="small"><a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">{{ _("Ход чтения") }}</a> {{ _("– после него «Принять состояние Hub».") }}</p>
   {% elif hs.state == "ready" %}
-  <p class="small">Прочитано: к принятию {{ hs.pull.issues }} {{ hs.pull.issues|plural("находка", "находки", "находок") }} и {{ hs.pull.defects }} {{ hs.pull.defects|plural("дефект", "дефекта", "дефектов") }}{% if hs.skipped %}, пропускается {{ hs.skipped }}{% endif %}. <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}#hub-sync-apply-form">Принять состояние Hub</a>.</p>
+  <p class="small">{{ _("Прочитано: к принятию {issues} {issues_word} и {defects} {defects_word}", issues=hs.pull.issues, issues_word=hs.pull.issues|plural("находка", "находки", "находок"), defects=hs.pull.defects, defects_word=hs.pull.defects|plural("дефект", "дефекта", "дефектов")) }}{% if hs.skipped %}{{ _(", пропускается {n}", n=hs.skipped) }}{% endif %}. <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}#hub-sync-apply-form">{{ _("Принять состояние Hub") }}</a>.</p>
   {% elif hs.state == "nothing" %}
-  <p class="small text-warn">Прочитано, но принять нечего: пропускается {{ hs.skipped }} – причины на <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">странице чтения</a>.</p>
+  <p class="small text-warn">{{ _("Прочитано, но принять нечего: пропускается {n} – причины на", n=hs.skipped) }} <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">{{ _("странице чтения") }}</a>.</p>
   {% elif hs.state == "partial" %}
-  <p class="small text-warn">Принято объектов {{ hs.pull.count }}, пропущено {{ hs.skipped }} – причины на <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">странице чтения</a>.</p>
+  <p class="small text-warn">{{ _("Принято объектов {n}, пропущено {skipped} – причины на", n=hs.pull.count, skipped=hs.skipped) }} <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">{{ _("странице чтения") }}</a>.</p>
   {% elif hs.state == "accepted" %}
-  <p class="small">Дефекты, их состав и статусы находок приложения взяты из Hub.</p>
+  <p class="small">{{ _("Дефекты, их состав и статусы находок приложения взяты из Hub.") }}</p>
   {% elif hs.state == "accepted_error" %}
-  <p class="small text-warn" id="step-hub-residue">После принятия у {{ hs.residue|length }} {{ hs.residue|length|plural("объекта", "объектов", "объектов") }} остались отличия от Hub – это ошибка приложения: {{ hs.residue[:10]|join(", ") }}{% if hs.residue|length > 10 %} …{% endif %}. Подробности на <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">странице чтения</a>.</p>
+  <p class="small text-warn" id="step-hub-residue">{{ _("После принятия у {n} {objects} остались отличия от Hub – это ошибка приложения: {items}", n=hs.residue|length, objects=hs.residue|length|plural("объекта", "объектов", "объектов"), items=hs.residue[:10]|join(", ")) }}{% if hs.residue|length > 10 %} …{% endif %}. {{ _("Подробности на") }} <a href="/projects/{{ project.id }}/hub-sync/{{ hs.run.id }}">{{ _("странице чтения") }}</a>.</p>
   {% endif %}
-  {% if hs.saved %}<p class="small" id="step-hub-saved">Сохранено решений до принятия: {{ hs.saved }} – Hub заменил их своим состоянием, прежние решения в <a href="/projects/{{ project.id }}/hub-pending">истории сохранённых правок</a>.</p>{% endif %}
-  {% if hs.state in ("app_mismatch",) %}{% elif hs.data.app_check and hs.data.app_check.status == "mismatch" and hs.data.app_check.confirmed %}<p class="small muted" id="step-hub-confirmed">Номер приложения подтверждён вами: общих находок с выгрузкой не было.</p>{% elif hs.data.app_check and hs.data.app_check.status == "match" %}<p class="small muted" id="step-hub-matched">Номер приложения сверен с выгрузкой: общих находок {{ hs.data.app_check.common }} из {{ hs.data.app_check.export }}.{% if hs.data.app_check.names_differ %} <span class="text-warn" id="step-hub-names">Названия различаются: в Hub – «{{ hs.data.app_check.hub_names|join("», «") }}», в выгрузке – «{{ hs.data.app_check.export_names|join("», «") }}».</span>{% endif %}</p>{% endif %}
+  {% if hs.saved %}<p class="small" id="step-hub-saved">{{ _("Сохранено решений до принятия: {n} – Hub заменил их своим состоянием, прежние решения в", n=hs.saved) }} <a href="/projects/{{ project.id }}/hub-pending">{{ _("истории сохранённых правок") }}</a>.</p>{% endif %}
+  {% if hs.state in ("app_mismatch",) %}{% elif hs.data.app_check and hs.data.app_check.status == "mismatch" and hs.data.app_check.confirmed %}<p class="small muted" id="step-hub-confirmed">{{ _("Номер приложения подтверждён вами: общих находок с выгрузкой не было.") }}</p>{% elif hs.data.app_check and hs.data.app_check.status == "match" %}<p class="small muted" id="step-hub-matched">{{ _("Номер приложения сверен с выгрузкой: общих находок {common} из {total}.", common=hs.data.app_check.common, total=hs.data.app_check.export) }}{% if hs.data.app_check.names_differ %} <span class="text-warn" id="step-hub-names">{{ _("Названия различаются: в Hub – «{hub}», в выгрузке – «{export}».", hub=hs.data.app_check.hub_names|join(_("», «")), export=hs.data.app_check.export_names|join(_("», «"))) }}</span>{% endif %}</p>{% endif %}
   {% set ss = hub_sync_summary %}
-  {% if ss %}<p class="small{% if ss.unsent or ss.differs %} text-warn{% endif %}" id="step-hub-sync-line"><strong>Синхронизация с Hub:</strong>
-  {%- if ss.never %} Hub не читался{% if ss.unsent %}; решений, не отправленных в Hub, – {{ ss.counts.unsent }}{% if ss.counts.queued %}, ждёт исполнителя – {{ ss.counts.queued }}{% endif %}{% if ss.counts.unconfirmed %}, без подтверждения – {{ ss.counts.unconfirmed }}{% endif %}{% if ss.counts.refused %}, Hub не принял – {{ ss.counts.refused }}{% endif %} (<a href="/projects/{{ project.id }}/findings?hubsync=unsent">показать</a>){% endif %}{% if ss.counts.sent %}; отправлено в Hub – {{ ss.counts.sent }}{% endif %}.
-  {%- elif ss.all_match %} всё совпадает с Hub – чтение {{ ss.read_at|ts }}{% if ss.accepted_at %}, принято {{ ss.accepted_at|ts }}{% endif %}.
-  {%- else %} чтение {{ ss.read_at|ts }}{% if ss.accepted_at %}, принято {{ ss.accepted_at|ts }}{% else %}, не принято{% endif %}{% if not ss.complete %}, чтение неполное{% endif %}{% if ss.reading %}, идёт новое чтение{% endif %};
-  находки: не отправлено {{ ss.counts.unsent }}, Hub не принял {{ ss.counts.refused }}, без подтверждения {{ ss.counts.unconfirmed }}{% if ss.counts.queued %}, ждёт исполнителя {{ ss.counts.queued }}{% endif %}{% if ss.counts.unsendable %}, в Hub исправлено и не отправится {{ ss.counts.unsendable }}{% endif %}{% if ss.counts.sent %}, отправлено в Hub {{ ss.counts.sent }}{% endif %}, отличий {{ ss.differs }}{% if ss.defects.values()|sum %}; дефекты: не отправлено {{ ss.defects.unsent }}{% if ss.defects.queued %}, ждёт исполнителя {{ ss.defects.queued }}{% endif %}{% if ss.defects.unconfirmed %}, без подтверждения {{ ss.defects.unconfirmed }}{% endif %}{% if ss.defects.refused %}, Hub не принял {{ ss.defects.refused }}{% endif %}, отличий {{ ss.defects.differs }} (<a href="{{ ss.link }}" id="step-hub-defects-link">страница чтения</a>){% endif %}.
-  {%- if ss.unsent %} <a href="/projects/{{ project.id }}/findings?hubsync=unsent" id="step-hub-unsent-link">Не отправленные</a>{% endif %}{% if ss.differs %}{{ " ·" if ss.unsent }} <a href="/projects/{{ project.id }}/findings?hubsync=differs" id="step-hub-differs-link">С отличиями</a>{% endif %}
+  {% if ss %}<p class="small{% if ss.unsent or ss.differs %} text-warn{% endif %}" id="step-hub-sync-line"><strong>{{ _("Синхронизация с Hub:") }}</strong>
+  {%- if ss.never %} {{ _("Hub не читался") }}{% if ss.unsent %}{{ _("; решений, не отправленных в Hub, – {n}", n=ss.counts.unsent) }}{% if ss.counts.queued %}{{ _(", ждёт исполнителя – {n}", n=ss.counts.queued) }}{% endif %}{% if ss.counts.unconfirmed %}{{ _(", без подтверждения – {n}", n=ss.counts.unconfirmed) }}{% endif %}{% if ss.counts.refused %}{{ _(", Hub не принял – {n}", n=ss.counts.refused) }}{% endif %} (<a href="/projects/{{ project.id }}/findings?hubsync=unsent">{{ _("показать") }}</a>){% endif %}{% if ss.counts.sent %}{{ _("; отправлено в Hub – {n}", n=ss.counts.sent) }}{% endif %}.
+  {%- elif ss.all_match %} {{ _("всё совпадает с Hub – чтение {when}", when=ss.read_at|ts) }}{% if ss.accepted_at %}{{ _(", принято {when}", when=ss.accepted_at|ts) }}{% endif %}.
+  {%- else %} {{ _("чтение {when}", when=ss.read_at|ts) }}{% if ss.accepted_at %}{{ _(", принято {when}", when=ss.accepted_at|ts) }}{% else %}{{ _(", не принято") }}{% endif %}{% if not ss.complete %}{{ _(", чтение неполное") }}{% endif %}{% if ss.reading %}{{ _(", идёт новое чтение") }}{% endif %};
+  {{ _("находки: не отправлено {unsent}, Hub не принял {refused}, без подтверждения {unconfirmed}", unsent=ss.counts.unsent, refused=ss.counts.refused, unconfirmed=ss.counts.unconfirmed) }}{% if ss.counts.queued %}{{ _(", ждёт исполнителя {n}", n=ss.counts.queued) }}{% endif %}{% if ss.counts.unsendable %}{{ _(", в Hub исправлено и не отправится {n}", n=ss.counts.unsendable) }}{% endif %}{% if ss.counts.sent %}{{ _(", отправлено в Hub {n}", n=ss.counts.sent) }}{% endif %}{{ _(", отличий {n}", n=ss.differs) }}{% if ss.defects.values()|sum %}{{ _("; дефекты: не отправлено {n}", n=ss.defects.unsent) }}{% if ss.defects.queued %}{{ _(", ждёт исполнителя {n}", n=ss.defects.queued) }}{% endif %}{% if ss.defects.unconfirmed %}{{ _(", без подтверждения {n}", n=ss.defects.unconfirmed) }}{% endif %}{% if ss.defects.refused %}{{ _(", Hub не принял {n}", n=ss.defects.refused) }}{% endif %}{{ _(", отличий {n}", n=ss.defects.differs) }} (<a href="{{ ss.link }}" id="step-hub-defects-link">{{ _("страница чтения") }}</a>){% endif %}.
+  {%- if ss.unsent %} <a href="/projects/{{ project.id }}/findings?hubsync=unsent" id="step-hub-unsent-link">{{ _("Не отправленные") }}</a>{% endif %}{% if ss.differs %}{{ " ·" if ss.unsent }} <a href="/projects/{{ project.id }}/findings?hubsync=differs" id="step-hub-differs-link">{{ _("С отличиями") }}</a>{% endif %}
   {%- endif %}</p>{% endif %}
-  {% if hs.history %}<p class="small muted" id="step-hub-history">Ранее читалось приложение №{{ hs.history.app_id }} ({{ hs.history.created_at|ts }}) – это история, к текущему номеру не относится.</p>{% endif %}
+  {% if hs.history %}<p class="small muted" id="step-hub-history">{{ _("Ранее читалось приложение №{id} ({when}) – это история, к текущему номеру не относится.", id=hs.history.app_id, when=hs.history.created_at|ts) }}</p>{% endif %}
   {% if hs.state not in ("no_target", "reading") and not project.archived %}
-  <form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><button class="btn{% if not hs_done %} btn-primary{% endif %}" id="step-hub-sync">Синхронизировать с Hub</button></form>
+  <form method="post" action="/projects/{{ project.id }}/hub-sync/preview"><button class="btn{% if not hs_done %} btn-primary{% endif %}" id="step-hub-sync">{{ _("Синхронизировать с Hub") }}</button></form>
   {% endif %}
 </section>
 {% endif %}
 
 <section class="step" id="step3" aria-labelledby="step3-title">
   {% set step3_done = stats.sast and stats.with_verdict >= stats.sast %}
-  <div class="step-head"><span class="step-no{% if step3_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if step3_done else "3" }}</span><h2 id="step3-title">Триаж SAST моделью</h2></div>
-  <p class="hint">Модель разбирает находки SAST по одной: сначала срочные, затем по критичности; дубли идут рядом и берут готовый вердикт.{% if run_profile %} Сервер: <span class="mono" id="run-server">{{ run_profile.base_url }}</span>{% if ollama_version %}, Ollama {{ ollama_version }}{% endif %} – профили и адреса – в <a href="/settings/providers">«Провайдерах моделей»</a>.{% endif %}</p>
+  <div class="step-head"><span class="step-no{% if step3_done %} step-done{% endif %}" aria-hidden="true">{{ "✓" if step3_done else "3" }}</span><h2 id="step3-title">{{ _("Триаж SAST моделью") }}</h2></div>
+  <p class="hint">{{ _("Модель разбирает находки SAST по одной: сначала срочные, затем по критичности; дубли идут рядом и берут готовый вердикт.") }}{% if run_profile %} {{ _("Сервер:") }} <span class="mono" id="run-server">{{ run_profile.base_url }}</span>{% if ollama_version %}, Ollama {{ ollama_version }}{% endif %} – {{ _("профили и адреса – в") }} <a href="/settings/providers">{{ _("«Провайдерах моделей»") }}</a>.{% endif %}</p>
   <form method="post" action="/projects/{{ project.id }}/provider" class="inline-form" id="project-provider-form" data-autosubmit>
     <label class="field">
-      <span class="field-label">Профиль модели</span>
+      <span class="field-label">{{ _("Профиль модели") }}</span>
       <select name="provider_id" id="run-provider">
       {% for o in provider_options %}<option value="{{ o.value }}"{% if o.selected %} selected{% endif %}{% if o.disabled %} disabled{% endif %}>{{ o.label }}</option>{% endfor %}
       </select>
     </label>
-    <button type="submit" class="btn btn-ghost" id="run-provider-apply">Сменить</button>
+    <button type="submit" class="btn btn-ghost" id="run-provider-apply">{{ _("Сменить") }}</button>
   </form>
-  <p class="field-hint" id="run-provider-hint">Профиль задаёт сервер модели этого проекта; список «Модель» ниже – с его сервера. Готовые вердикты смена профиля не трогает: прогон разберёт моделью нового профиля только неразобранные находки, а чтобы разобрать всё заново – отметьте «Спросить модель заново».</p>
+  <p class="field-hint" id="run-provider-hint">{{ _("Профиль задаёт сервер модели этого проекта; список «Модель» ниже – с его сервера. Готовые вердикты смена профиля не трогает: прогон разберёт моделью нового профиля только неразобранные находки, а чтобы разобрать всё заново – отметьте «Спросить модель заново».") }}</p>
   {% if provider_options|selectattr("disabled")|list %}<p class="field-hint" id="run-provider-not-for-code">{{ not_for_code_note }}</p>{% endif %}
-  {% if ollama_error %}<p class="callout callout-err">{{ ollama_error }}</p>{% endif %}
+  {% if ollama_error %}<p class="callout callout-err">{{ ollama_error|run_error }}</p>{% endif %}
   {% if run_profile and run_profile.trust == "local" and collector.state in ("stale", "missing") %}{% from "macros.html" import collector_warning %}{{ collector_warning(collector, "run", external_on) }}{% endif %}
   {% if active_runs %}
-  <p class="callout">Есть незавершённый прогон: <a href="/runs/{{ active_runs[0].id }}">№{{ active_runs[0].id }}, {{ RUN_STATE_LABELS[active_runs[0].state] }}</a>. Новый прогон запускается после того, как он закончится или будет остановлен.</p>
+  <p class="callout">{{ _("Есть незавершённый прогон:") }} <a href="/runs/{{ active_runs[0].id }}">{{ _("№{id}, {state}", id=active_runs[0].id, state=RUN_STATE_LABELS[active_runs[0].state]) }}</a>. {{ _("Новый прогон запускается после того, как он закончится или будет остановлен.") }}</p>
   {% endif %}
   <form method="post" action="/projects/{{ project.id }}/runs" class="stack-form">
     <label class="field">
-      <span class="field-label">Модель</span>
+      <span class="field-label">{{ _("Модель") }}</span>
       <select name="model" id="model-select" required{% if not models %} disabled{% endif %}>
-      {% for m in models %}<option value="{{ m.name }}" data-info="{{ [m.params, m.quant]|select|join(', ') }}{% if vram_total_mb and m.size and m.size > vram_total_mb * 1048576 * 0.92 %} – может не поместиться в видеопамять{% endif %}{% if m.capabilities is none %} – возможности не подтверждены{% endif %}"{% if m.name == default_model %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
+      {% for m in models %}<option value="{{ m.name }}" data-info="{{ [m.params, m.quant]|select|join(', ') }}{% if vram_total_mb and m.size and m.size > vram_total_mb * 1048576 * 0.92 %} – {{ _("может не поместиться в видеопамять") }}{% endif %}{% if m.capabilities is none %} – {{ _("возможности не подтверждены") }}{% endif %}"{% if m.name == default_model %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
       </select>
       <span class="muted small" id="model-info" aria-live="polite"></span>
-      {% if run_profile %}<span class="field-hint" id="run-profile">Профиль модели: {{ run_profile.name }} – {{ {"local": "этот компьютер, код не покидает компьютер", "lan": "сервер в сети организации", "external": "внешний провайдер в интернете"}.get(run_profile.trust, run_profile.trust) }}{% if not run_profile.enabled %} – <strong>выключен</strong>, выберите другой профиль выше{% endif %}.</span>{% endif %}
+      {% if run_profile %}<span class="field-hint" id="run-profile">{{ _("Профиль модели: {name}", name=run_profile.name) }} – {{ {"local": _("этот компьютер, код не покидает компьютер"), "lan": _("сервер в сети организации"), "external": _("внешний провайдер в интернете")}.get(run_profile.trust, run_profile.trust) }}{% if not run_profile.enabled %} – <strong>{{ _("выключен") }}</strong>{{ _(", выберите другой профиль выше") }}{% endif %}.</span>{% endif %}
     </label>
-    {% if traffic_log_on %}<p class="callout callout-info small" id="traffic-log-notice">В программе ведётся полное журналирование обмена с моделью (<span class="mono">data/model-traffic</span>): по журналу можно разобрать, что ушло в модель, и проверить соблюдение конфиденциальности. В журнале остаются фрагменты кода – если нужно стереть следы кода, удалите журнал после окончания работы с проектом.</p>{% endif %}
+    {% if traffic_log_on %}<p class="callout callout-info small" id="traffic-log-notice">{{ _("В программе ведётся полное журналирование обмена с моделью ({log}): по журналу можно разобрать, что ушло в модель, и проверить соблюдение конфиденциальности. В журнале остаются фрагменты кода – если нужно стереть следы кода, удалите журнал после окончания работы с проектом.", log='<span class="mono">data/model-traffic</span>')|safe }}</p>{% endif %}
     <fieldset class="field">
-      <legend class="field-label">Охват</legend>
-      <label class="radio"><input type="radio" name="scope" value="live" checked> Живые в Hub ({{ counts.sast_live }})</label>
-      <label class="radio"><input type="radio" name="scope" value="all"> Все SAST, включая исправленные и закрытые в Hub ({{ counts.sast }}; исправлено – {{ counts.sast_fixed }}, закрыто решением – {{ counts.sast_closed }})</label>
-      <label class="radio"><input type="radio" name="scope" value="urgent"{% if not counts.sast_urgent %} disabled{% endif %}> Только срочные ({{ counts.sast_urgent }})</label>
-      <p class="hint">Выбранные находки отметьте в <a href="/projects/{{ project.id }}/findings?kind=SAST">списке находок</a> и запустите триаж оттуда.</p>
+      <legend class="field-label">{{ _("Охват") }}</legend>
+      <label class="radio"><input type="radio" name="scope" value="live" checked> {{ _("Живые в Hub ({n})", n=counts.sast_live) }}</label>
+      <label class="radio"><input type="radio" name="scope" value="all"> {{ _("Все SAST, включая исправленные и закрытые в Hub ({n}; исправлено – {fixed}, закрыто решением – {closed})", n=counts.sast, fixed=counts.sast_fixed, closed=counts.sast_closed) }}</label>
+      <label class="radio"><input type="radio" name="scope" value="urgent"{% if not counts.sast_urgent %} disabled{% endif %}> {{ _("Только срочные ({n})", n=counts.sast_urgent) }}</label>
+      <p class="hint">{{ _("Выбранные находки отметьте в") }} <a href="/projects/{{ project.id }}/findings?kind=SAST">{{ _("списке находок") }}</a> {{ _("и запустите триаж оттуда.") }}</p>
     </fieldset>
-    <label class="check"><input type="checkbox" name="fresh" value="1"> Спросить модель заново, не брать готовые вердикты (например, после обновления модели или смены профиля)</label>
+    <label class="check"><input type="checkbox" name="fresh" value="1"> {{ _("Спросить модель заново, не брать готовые вердикты (например, после обновления модели или смены профиля)") }}</label>
     <div class="actions">
-      <button type="submit" class="btn{% if next_step == 'run' %} btn-primary{% endif %}"{% if not models or not counts.sast or active_runs %} disabled{% endif %}>{{ icon("play") }}Запустить триаж</button>
+      <button type="submit" class="btn{% if next_step == 'run' %} btn-primary{% endif %}"{% if not models or not counts.sast or active_runs %} disabled{% endif %}>{{ icon("play") }}{{ _("Запустить триаж") }}</button>
     </div>
   </form>
 
   {% if runs %}
   <div class="table-wrap">
   <table class="table table-compact table-runs">
-    <caption>Прогоны</caption>
-    <thead><tr><th scope="col">Прогон</th><th scope="col">Модель</th><th scope="col">Охват</th><th scope="col">Состояние</th><th scope="col" class="num">Обработано</th><th scope="col" class="num">Ошибок</th><th scope="col">Создан</th></tr></thead>
+    <caption>{{ _("Прогоны") }}</caption>
+    <thead><tr><th scope="col">{{ _("Прогон") }}</th><th scope="col">{{ _("Модель") }}</th><th scope="col">{{ _("Охват") }}</th><th scope="col">{{ _("Состояние") }}</th><th scope="col" class="num">{{ _("Обработано") }}</th><th scope="col" class="num">{{ _("Ошибок") }}</th><th scope="col">{{ _("Создан") }}</th></tr></thead>
     <tbody>
     {% for r in runs %}
       <tr>
-        <td data-label="Прогон"><a href="/runs/{{ r.id }}">Прогон&nbsp;№{{ r.id }}</a></td>
-        <td data-label="Модель"><span class="mono">{{ r.model }}</span></td>
-        <td data-label="Охват">{{ SCOPE_LABELS.get(r.scope, r.scope) }}</td>
-        <td data-label="Состояние"><span class="state state-{{ r.state }}">{{ RUN_STATE_LABELS.get(r.state, r.state) }}</span></td>
-        <td data-label="Обработано" class="num">{{ r.done }} из {{ r.total }}</td>
-        <td data-label="Ошибок" class="num">{{ r.failed }}</td>
-        <td data-label="Создан"><time datetime="{{ r.created_at }}">{{ r.created_at|ts }}</time></td>
+        <td data-label="{{ _("Прогон") }}"><a href="/runs/{{ r.id }}">{{ _("Прогон&nbsp;№{id}", id=r.id|int)|safe }}</a></td>
+        <td data-label="{{ _("Модель") }}"><span class="mono">{{ r.model }}</span></td>
+        <td data-label="{{ _("Охват") }}">{{ SCOPE_LABELS.get(r.scope, r.scope) }}</td>
+        <td data-label="{{ _("Состояние") }}"><span class="state state-{{ r.state }}">{{ RUN_STATE_LABELS.get(r.state, r.state) }}</span></td>
+        <td data-label="{{ _("Обработано") }}" class="num">{{ _("{done} из {total}", done=r.done, total=r.total) }}</td>
+        <td data-label="{{ _("Ошибок") }}" class="num">{{ r.failed }}</td>
+        <td data-label="{{ _("Создан") }}"><time datetime="{{ r.created_at }}">{{ r.created_at|ts }}</time></td>
       </tr>
     {% endfor %}
     </tbody>

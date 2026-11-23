@@ -3,6 +3,8 @@
 import hashlib
 import json
 
+from app import i18n
+
 
 class StaleObservation(ValueError):
     """Ответ получен для уже заменённой принятой версии."""
@@ -44,7 +46,8 @@ def require_current(c, row, op_id):
     actual = current(c, row["project_id"], hub_base(row["hub_url"]), row["app_id"],
                      "defect", row["hub_defect_id"])
     if expected != actual:
-        raise StaleObservation("Принятая база изменилась или версия чтения неизвестна: повторите чтение Hub.")
+        # текст уходит в пояснение строки дефекта в базе: русский, перевод при показе (ADR-0158)
+        raise StaleObservation(i18n.N_("Принятая база изменилась или версия чтения неизвестна: повторите чтение Hub."))
 
 
 def capture_issues(c, op, request):

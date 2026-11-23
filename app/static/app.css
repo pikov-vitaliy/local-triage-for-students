@@ -2245,22 +2245,13 @@ h3 { font-weight: 600; }
 body[data-page="delete"] main > h1::before,
 body[data-page="error"] main > h1::before,
 .finding-head::before { display: block; margin: 0 0 6px; color: var(--muted); font-size: var(--fs-sm); font-weight: 400; letter-spacing: 0; }
-body[data-page="projects"] .page-head h1::before { content: "Рабочее место" / ""; }
-body[data-page="project"] .page-head h1::before { content: "Проект" / ""; }
-body[data-page="findings"] .page-head h1::before { content: "Разбор находок" / ""; }
-body[data-page="sca"] .page-head h1::before { content: "Сторонние библиотеки" / ""; }
-body[data-page="components"] .page-head h1::before { content: "Компоненты" / ""; }
-body[data-page="run"] .page-head h1::before { content: "Прогон модели" / ""; }
-body[data-page="settings"] .page-head h1::before { content: "Параметры" / ""; }
-body[data-page="feeds"] .page-head h1::before { content: "Базы уязвимостей" / ""; }
-body[data-page="cwe"] .page-head h1::before { content: "Классы слабостей" / ""; }
-body[data-page="capec"] .page-head h1::before { content: "Сценарии атак" / ""; }
-body[data-page="bdu"] .page-head h1::before { content: "База данных угроз" / ""; }
-body[data-page="folders"] .page-head h1::before { content: "Клоны кодовых баз" / ""; }
-body[data-page="delete"] main > h1::before { content: "Удаление" / ""; }
-body[data-page="error"] main > h1::before { content: "Ошибка" / ""; }
-body[data-page="finding"] .finding-head::before { content: "Карточка находки" / ""; margin-top: 14px; }
-body[data-page="sca-finding"] .finding-head::before { content: "Карточка находки SCA" / ""; margin-top: 14px; }
+/* подпись берётся из атрибута data-section заголовка (шаблон, через перевод – ADR-0158): текста в CSS нет */
+.page-head h1[data-section]::before,
+body[data-page="delete"] main > h1[data-section]::before,
+body[data-page="error"] main > h1[data-section]::before,
+.finding-head[data-section]::before { content: attr(data-section) / ""; }
+body[data-page="finding"] .finding-head::before,
+body[data-page="sca-finding"] .finding-head::before { margin-top: 14px; }
 .finding-title { font-size: 28px; line-height: 1.15; margin-top: 0; }
 
 /* поверхности: белые карточки на сером полотне, без тени */
@@ -2545,7 +2536,7 @@ body[data-page="finding"] .finding-where { flex: 1 0 100%; margin: 0; }
 .route-step.is-done .route-no { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-ink); }
 .route-step.is-done .route-link::after { content: "✓" / ""; color: var(--ok-ink); font-weight: 700; }
 .route-step.is-na .route-link { color: var(--muted); }
-.route-step.is-na .route-link::after { content: "не применяется" / ""; color: var(--muted); font-weight: 400; }
+.route-step.is-na .route-link::after { content: attr(data-na-label) / ""; color: var(--muted); font-weight: 400; }
 
 /* шаги: номер и название видны всегда */
 .step-panel { margin: var(--s-3) 0; padding: var(--s-4) var(--s-5); scroll-margin-top: calc(var(--route-h) + 8px); }
@@ -2822,7 +2813,7 @@ body[data-page="finding"] .action-bar .bar-status { order: 3; }
 .table-defects th { font-size: var(--fs-sm); }
 .table-defects .col-id { width: 1%; white-space: nowrap; font-size: var(--fs-md); font-weight: 650; }
 .table-defects .col-kind .badge { font-size: var(--fs-sm); }
-.table-defects td[data-label="Заголовок"] > a:first-child { font-size: var(--fs-md); font-weight: 600; }
+.table-defects td.col-id + td.break > a:first-child { font-size: var(--fs-md); font-weight: 600; }
 .table-defects { table-layout: auto; }
 .table-defects .col-id a { font-size: var(--fs-md); }
 .table-defects .col-kind { width: 1%; white-space: nowrap; }
@@ -2851,3 +2842,8 @@ body[data-page="finding"] .action-bar .bar-status { order: 3; }
 .start-steps { margin: 0; padding-left: 1.4em; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .start-steps .inline-form { margin-top: 6px; }
 .help-toc ol { margin: 0; padding-left: 1.4em; columns: 2 220px; }
+
+/* язык интерфейса (ADR-0158) */
+.language-form{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
+.language-choice{display:flex;flex-wrap:wrap;gap:8px 20px;border:0;margin:0;padding:0}
+.language-choice label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}

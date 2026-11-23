@@ -41,11 +41,13 @@ from xml.parsers import expat
 
 import psycopg
 
+from app import i18n
 from app.storage import PostgresStore, conninfo_for
 
 log = logging.getLogger("local_triage.feeds")
 
-KINDS = {"bdu": "БДУ ФСТЭК России", "cwe": "Каталог CWE", "capec": "Каталог CAPEC"}
+# подписи справочников (ADR-0158): ключи – виды справочников, значения переводятся при чтении
+KINDS = i18n.Labels({"bdu": "БДУ ФСТЭК России", "cwe": "Каталог CWE", "capec": "Каталог CAPEC"})
 
 CHUNK = 1024 * 1024
 FEED_PIECE = 64 * 1024  # кусок, которым поток подаётся разборщику: события проверяются после каждого
@@ -99,8 +101,8 @@ class FeedError(ValueError):
     """Файл справочника не принят. Текст – по-русски, для показа на странице."""
 
 
-BUSY = "Справочник уже загружается: дождитесь окончания."
-CANCELLED = "Загрузка остановлена: прежний справочник не изменился."
+BUSY = i18n.N_("Справочник уже загружается: дождитесь окончания.")
+CANCELLED = i18n.N_("Загрузка остановлена: прежний справочник не изменился.")
 IMPORT_LOCK = 7133001  # владение feeds_imp между процессами: pg_try_advisory_lock
 _IMPORT_SLOT = threading.Lock()  # одна загрузка за раз во всём приложении
 
@@ -111,15 +113,15 @@ def _member(archive: zipfile.ZipFile, kind: str) -> zipfile.ZipInfo:
     """Файл XML в архиве: единственный .xml (у БДУ – export/vulxml.xml)."""
     infos = archive.infolist()
     if len(infos) > MAX_MEMBERS:
-        raise FeedError(f"В архиве больше {MAX_MEMBERS} файлов: это не выгрузка {KINDS[kind]}.")
+        raise FeedError(i18n._("В архиве больше {limit} файлов: это не выгрузка {feed}.", limit=MAX_MEMBERS, feed=KINDS[kind]))
     xml = [i for i in infos if not i.is_dir() and i.filename.lower().endswith(".xml")]
     if len(xml) != 1:
-        raise FeedError(f"В архиве нужен ровно один файл XML ({KINDS[kind]}), найдено: {len(xml)}.")
+        raise FeedError(i18n._("В архиве нужен ровно один файл XML ({feed}), найдено: {count}.", feed=KINDS[kind], count=len(xml)))
     info = xml[0]
     if info.file_size > MAX_XML_BYTES:
-        raise FeedError("Файл XML в архиве слишком большой.")
+        raise FeedError(i18n._("Файл XML в архиве слишком большой."))
     if info.compress_size and info.file_size / info.compress_size > MAX_RATIO:
-        raise FeedError("Файл XML в архиве сжат подозрительно сильно – архив не принят.")
+        raise FeedError(i18n._("Файл XML в архиве сжат подозрительно сильно – архив не принят."))
     return info
 
 
@@ -136,16 +138,16 @@ def guarded_chunks(stream: BinaryIO, limit: int = MAX_XML_BYTES, compressed: int
         if first:
             head = chunk[:200]
             if head.startswith((b"\xff\xfe", b"\xfe\xff")) or b"\x00" in head:
-                raise FeedError("Поддерживается только XML в кодировке UTF-8.")
+                raise FeedError(i18n._("Поддерживается только XML в кодировке UTF-8."))
             first = False
         total += len(chunk)
         if total > limit:
-            raise FeedError("Файл XML больше допустимого размера.")
+            raise FeedError(i18n._("Файл XML больше допустимого размера."))
         if compressed and total > 64 * CHUNK and total / compressed > MAX_RATIO:
-            raise FeedError("Файл XML в архиве сжат подозрительно сильно – архив не принят.")
+            raise FeedError(i18n._("Файл XML в архиве сжат подозрительно сильно – архив не принят."))
         window = tail + chunk
         if _FORBIDDEN.search(window):
-            raise FeedError("В XML есть объявление DOCTYPE или ENTITY – такие файлы не принимаются.")
+            raise FeedError(i18n._("В XML есть объявление DOCTYPE или ENTITY – такие файлы не принимаются."))
         tail = window[-_OVERLAP:]
         yield chunk
 
@@ -190,20 +192,20 @@ class _RecordBuilder:
     @staticmethod
     def _attrs(tag: str, attrs: dict[str, str]) -> dict[str, str]:
         if len(tag) > MAX_TAG_CHARS:
-            raise FeedError("В XML слишком длинное имя элемента – файл не принят.")
+            raise FeedError(i18n._("В XML слишком длинное имя элемента – файл не принят."))
         if len(attrs) > MAX_ATTRS:
-            raise FeedError("У элемента XML слишком много атрибутов – файл не принят.")
+            raise FeedError(i18n._("У элемента XML слишком много атрибутов – файл не принят."))
         for name, value in attrs.items():
             if len(name) + len(value) > MAX_ATTR_CHARS:
-                raise FeedError("В XML слишком длинный атрибут – файл не принят.")
+                raise FeedError(i18n._("В XML слишком длинный атрибут – файл не принят."))
         return attrs
 
     def _spend(self, chars: int) -> None:
         """Знаки, сохраняемые в текущей записи (текст, имена элементов, атрибуты), – в общий бюджет записи."""
         self.text += chars
         if self.text > MAX_RECORD_TEXT:
-            raise FeedError("Запись справочника слишком большая (текста и атрибутов больше допустимого) – "
-                            "файл не принят.")
+            raise FeedError(i18n._("Запись справочника слишком большая (текста и атрибутов больше допустимого) "
+                                   "– файл не принят."))
 
     def start(self, tag: str, attrs: dict[str, str]) -> None:
         self.events += 1
@@ -211,7 +213,7 @@ class _RecordBuilder:
         size = len(tag) + sum(len(k) + len(v) for k, v in attrs.items())
         self.depth += 1
         if self.depth > MAX_DEPTH:
-            raise FeedError("В XML слишком глубокая вложенность элементов – файл не принят.")
+            raise FeedError(i18n._("В XML слишком глубокая вложенность элементов – файл не принят."))
         if not self.seen_root:
             self.seen_root = True
             if self.on_root is not None:
@@ -220,7 +222,7 @@ class _RecordBuilder:
             parent = self.frames[-1]
             self.elements += 1
             if self.elements > MAX_RECORD_ELEMENTS:
-                raise FeedError("В записи справочника слишком много элементов – файл не принят.")
+                raise FeedError(i18n._("В записи справочника слишком много элементов – файл не принят."))
             self._spend(size)
             parent.close_tail()
             elem = ET.SubElement(parent.elem, tag, attrs)
@@ -258,7 +260,7 @@ class _RecordBuilder:
 
 
 def _forbid(*_args: Any) -> None:
-    raise FeedError("В XML есть объявление DOCTYPE или ENTITY – такие файлы не принимаются.")
+    raise FeedError(i18n._("В XML есть объявление DOCTYPE или ENTITY – такие файлы не принимаются."))
 
 
 def iter_records(chunks: Iterable[bytes], record_tags: set[str],
@@ -290,8 +292,8 @@ def iter_records(chunks: Iterable[bytes], record_tags: set[str],
                 parser.Parse(piece, False)
                 silent = silent + len(piece) if builder.events == before else 0
                 if silent > MAX_SILENT_BYTES:
-                    raise FeedError("В XML слишком длинная конструкция (атрибут, имя элемента или комментарий) – "
-                                    "файл не принят.")
+                    raise FeedError(i18n._("В XML слишком длинная конструкция (атрибут, имя элемента или "
+                                           "комментарий) – файл не принят."))
                 if builder.ready:
                     ready, builder.ready = builder.ready, []
                     yield from ready
@@ -299,7 +301,7 @@ def iter_records(chunks: Iterable[bytes], record_tags: set[str],
         ready, builder.ready = builder.ready, []
         yield from ready
     except expat.ExpatError as e:
-        raise FeedError(f"XML повреждён или обрывается (строка {e.lineno}).") from None
+        raise FeedError(i18n._("XML повреждён или обрывается (строка {line}).", line=e.lineno)) from None
     finally:
         # обработчики держат ссылки на построитель: разрываем, чтобы не держать память
         parser.StartElementHandler = parser.EndElementHandler = parser.CharacterDataHandler = None
@@ -547,7 +549,7 @@ def _fit(record: dict) -> dict:
             return record
         step()
     if size() > MAX_RECORD_JSON:
-        raise FeedError(f"Запись {record.get('id', '')} слишком большая для справочника – файл не принят.")
+        raise FeedError(i18n._("Запись {id} слишком большая для справочника – файл не принят.", id=record.get('id', '')))
     return record
 
 
@@ -577,7 +579,7 @@ def _fit_cwe(record: dict) -> dict:
             return record
         step()
     if size() > MAX_CWE_RECORD_JSON:
-        raise FeedError(f"Запись {record.get('id', '')} слишком большая для справочника – файл не принят.")
+        raise FeedError(i18n._("Запись {id} слишком большая для справочника – файл не принят.", id=record.get('id', '')))
     return record
 
 
@@ -894,7 +896,7 @@ class FeedStore:
         """Проверка ДО записи need байт: справочники вместе с идущей загрузкой – не больше MAX_DB_BYTES. Свободное место на диске сервера
         приложению не видно: его нехватка – отказ PostgreSQL, откат и понятная ошибка загрузки."""
         if self._used_bytes() + need > MAX_DB_BYTES:
-            raise FeedError(f"Справочники выросли бы больше {_mb(MAX_DB_BYTES)} МБ – загрузка остановлена.")
+            raise FeedError(i18n._("Справочники выросли бы больше {limit} МБ – загрузка остановлена.", limit=_mb(MAX_DB_BYTES)))
 
     # ------------------------------------------------------------------ чтение
 
@@ -912,9 +914,9 @@ class FeedStore:
             return ""
         with self.snapshot():
             if not self._conn.execute("SELECT 1 FROM feeds.feed_meta WHERE kind=?", (kind,)).fetchone():
-                return f"каталог {kind.upper()} не загружен"
+                return i18n._("каталог {catalog} не загружен", catalog=kind.upper())
             found = self._conn.execute(f"SELECT 1 FROM feeds.{kind} WHERE id=?", (key,)).fetchone()
-        return "" if found else "нет в загруженном каталоге"
+        return "" if found else i18n._("нет в загруженном каталоге")
 
     def cwe_info(self, ids: Iterable[str]) -> dict[str, dict]:
         """Классы CWE: {«CWE-89»: {id, name, description, extended, kind, name_ru}}; name_ru – русское название
@@ -1024,9 +1026,9 @@ class FeedStore:
         справочники больше предела; вторая загрузка во время первой, в том числе другим процессом, – FeedError(BUSY). При любом исходе
         feeds_imp очищается, прежний справочник остаётся."""
         if kind not in KINDS:
-            raise FeedError("Неизвестный справочник.")
+            raise FeedError(i18n._("Неизвестный справочник."))
         if not _IMPORT_SLOT.acquire(blocking=False):
-            raise FeedError(BUSY)
+            raise FeedError(i18n._(BUSY))
         self._cancel.clear()
         started = datetime.now(UTC)
         limit = MAX_IMPORT_SECONDS if deadline_s is None else deadline_s
@@ -1034,11 +1036,12 @@ class FeedStore:
 
         def check() -> None:
             if self._cancel.is_set():
-                raise FeedError(CANCELLED)
+                raise FeedError(i18n._(CANCELLED))
             if time.monotonic() > deadline:
                 minutes = limit / 60
-                shown = f"{minutes:.0f} мин" if minutes >= 1 else f"{limit:g} с"
-                raise FeedError(f"Загрузка не уложилась в {shown} и остановлена: прежний справочник не изменился.")
+                shown = i18n._("{minutes:.0f} мин", minutes=minutes) if minutes >= 1 else i18n._("{limit:g} с", limit=limit)
+                raise FeedError(i18n._("Загрузка не уложилась в {shown} и остановлена: прежний справочник не "
+                                       "изменился.", shown=shown))
 
         owner = None
         try:
@@ -1046,7 +1049,7 @@ class FeedStore:
             try:
                 archive = zipfile.ZipFile(archive_path)
             except (zipfile.BadZipFile, OSError):
-                raise FeedError("Это не архив ZIP: загрузите файл .zip как он скачан с сайта.") from None
+                raise FeedError(i18n._("Это не архив ZIP: загрузите файл .zip как он скачан с сайта.")) from None
             with archive:
                 info = _member(archive, kind)
                 self._check_space()
@@ -1062,7 +1065,8 @@ class FeedStore:
             self._swap(kind, meta)
             return meta
         except psycopg.errors.DiskFull:
-            raise FeedError("На диске базы закончилось место: загрузка остановлена, прежний справочник не изменился.") from None
+            raise FeedError(i18n._("На диске базы закончилось место: загрузка остановлена, прежний справочник "
+                                   "не изменился.")) from None
         finally:
             try:
                 if owner is not None:
@@ -1082,7 +1086,7 @@ class FeedStore:
         conn = psycopg.connect(self._store.conninfo, autocommit=True, application_name="local-triage-feeds")
         if not conn.execute("SELECT pg_try_advisory_lock(%s)", (IMPORT_LOCK,)).fetchone()[0]:
             conn.close()
-            raise FeedError(BUSY)
+            raise FeedError(i18n._(BUSY))
         return conn
 
     def _swap(self, kind: str, meta: dict) -> None:
@@ -1123,12 +1127,14 @@ class FeedStore:
         pattern = r"[0-9]{1,6}(?:\.[0-9]{1,6}){0,5}"
         if old != new:
             if re.fullmatch(pattern, old) and not re.fullmatch(pattern, new):
-                raise FeedError(f"Нельзя сравнить версию {kind.upper()} «{new or 'не указана'}» с «{old}». Текущий каталог сохранён.")
+                raise FeedError(i18n._("Нельзя сравнить версию {kind} «{new}» с «{old}». Текущий каталог сохранён.",
+                                       kind=kind.upper(), new=new or i18n._("не указана"), old=old))
             if re.fullmatch(pattern, old) and re.fullmatch(pattern, new):
                 before, after = (tuple(map(int, v.split('.'))) for v in (old, new))
                 width = max(len(before), len(after))
                 if after + (0,) * (width-len(after)) < before + (0,) * (width-len(before)):
-                    raise FeedError(f"Версия {kind.upper()} {new} старее загруженной {old}. Текущий каталог сохранён.")
+                    raise FeedError(i18n._("Версия {catalog} {new} старее загруженной {old}. Текущий каталог "
+                                           "сохранён.", catalog=kind.upper(), new=new, old=old))
         dates = []
         for item in (current, incoming):
             value = str(item.get("source_date", ""))
@@ -1137,9 +1143,11 @@ class FeedStore:
             except ValueError:
                 dates.append(None)
         if dates[0] and not dates[1]:
-            raise FeedError(f"Нельзя сравнить дату {kind.upper()} с загруженным каталогом. Текущий каталог сохранён.")
+            raise FeedError(i18n._("Нельзя сравнить дату {catalog} с загруженным каталогом. Текущий каталог "
+                                   "сохранён.", catalog=kind.upper()))
         if dates[0] and dates[1] and dates[1] < dates[0]:
-            raise FeedError(f"Дата источника {kind.upper()} {dates[1]} старее загруженной {dates[0]}. Текущий каталог сохранён.")
+            raise FeedError(i18n._("Дата источника {catalog} {date} старее загруженной {loaded}. Текущий "
+                                   "каталог сохранён.", catalog=kind.upper(), date=dates[1], loaded=dates[0]))
 
     def _fill(self, kind: str, archive: zipfile.ZipFile, info: zipfile.ZipInfo, check: Callable[[], None]) -> dict:
         if kind == 'capec':
@@ -1194,7 +1202,7 @@ class FeedStore:
                 else:
                     records += 1
                 if records + ref_records > MAX_RECORDS[kind]:
-                    raise FeedError(f"Записей больше {MAX_RECORDS[kind]}: это не похоже на выгрузку {KINDS[kind]}.")
+                    raise FeedError(i18n._("Записей больше {limit}: это не похоже на выгрузку {feed}.", limit=MAX_RECORDS[kind], feed=KINDS[kind]))
                 if kind == "bdu":
                     latest = max(latest, record["updated"] or record["published"])
                     bdu_rows.append((record["id"], json.dumps(record, ensure_ascii=False)))
@@ -1224,7 +1232,7 @@ class FeedStore:
         batch[:] = [(sql, rows) for sql, rows in batch if rows]
         flush()
         if not records:
-            raise FeedError(f"В файле нет записей {KINDS[kind]}: проверьте, что загружен нужный архив.")
+            raise FeedError(i18n._("В файле нет записей {feed}: проверьте, что загружен нужный архив.", feed=KINDS[kind]))
         version = str(root_attrs.get("Version") or "")[:40]
         source_date = str(root_attrs.get("Date") or "")[:40] if kind == "cwe" else latest
         # число ссылок каталога (External_References) в счёт записей не идёт, но в meta остаётся

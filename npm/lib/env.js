@@ -3,7 +3,7 @@
 //
 // Приложению передаётся не копия окружения оболочки, а перечень: системные переменные, без которых не работают Python
 // и сеть, плюс явные значения стенда. Унаследованные PGHOSTADDR, PGSERVICE, VIRTUAL_ENV, TRIAGE_MAINTENANCE,
-// TRUSTED_HOSTS, LLM_EXTERNAL, OLLAMA_URL до приложения не доходят. initdb и pg_ctl получают тот же перечень без
+// TRUSTED_HOSTS, LLM_EXTERNAL, OLLAMA_URL, TRIAGE_LANG до приложения не доходят (язык передаётся явным значением). initdb и pg_ctl получают тот же перечень без
 // единой переменной PG*. Установка Python – окружение оболочки без переменных, которые меняют выбор интерпретатора
 // и пакетов (VIRTUAL_ENV, CONDA_*, PYTHON*, PIP_* и UV_* кроме адреса индекса): прокси для скачивания проходят.
 
@@ -65,7 +65,7 @@ function pythonInstallEnv(tmpDir, env = process.env) {
 }
 
 /** Окружение приложения: перечень и явные значения стенда (раздел 3.5). */
-function appEnv({ dataDir, tmpDir, codeDir, codeReal = '', libpq, external, build = {}, token, env = process.env,
+function appEnv({ dataDir, tmpDir, codeDir, codeReal = '', libpq, external, build = {}, token, lang = '', env = process.env,
   platform = process.platform }) {
   return {
     ...withoutPg(systemEnv(env, platform)),
@@ -82,6 +82,8 @@ function appEnv({ dataDir, tmpDir, codeDir, codeReal = '', libpq, external, buil
     LT_BUILD_TIME: String(build.time || ''),
     TRIAGE_STAND: 'npm',
     TRIAGE_STAND_TOKEN: token,
+    // язык интерфейса – только явно выбранный в окне стенда (--lang, TRIAGE_LANG); без него – настройка приложения
+    ...(lang === 'en' || lang === 'ru' ? { TRIAGE_LANG: lang } : {}),
   };
 }
 

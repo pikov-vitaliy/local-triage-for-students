@@ -24,6 +24,7 @@ import time
 from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
+from app import i18n
 from app.llm import RAW_KEEP, LlmError, answer_schema, check_answer, estimate_tokens, extract_answer, retry_message
 from app.llm_chat import (MAX_SENDS, ChatCompletionsClient, TurnResult, _scrub_error, _scrub_value, message_tokens,
                           track_sent, tracked, usage_stats)
@@ -201,8 +202,8 @@ class MessagesClient(ChatCompletionsClient):
     def version(self) -> str:
         models = self._models_once()
         if self.models_unavailable:
-            return "Messages API, список моделей недоступен – имя из профиля"
-        return f"Messages API, моделей: {len(models)}"
+            return i18n._("Messages API, список моделей недоступен – имя из профиля")
+        return i18n._("Messages API, моделей: {n}", n=len(models))
 
     @tracked
     def list_models(self) -> list[dict[str, Any]]:

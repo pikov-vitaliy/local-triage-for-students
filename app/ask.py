@@ -18,7 +18,7 @@ import logging
 from collections.abc import Callable, Iterable
 from typing import Any
 
-from app import model_traffic
+from app import i18n, model_traffic
 from app.config import Settings
 from app.db import QUESTION_UNKNOWN, Database
 from app.executors import (REMOTE_KINDS, ProfileError, applied_think, choose_profile, client_for, execution_values,
@@ -38,16 +38,21 @@ log = logging.getLogger("local_triage.ask")
 MAX_QUESTION = 2000  # знаков в вопросе
 ASK_NUM_PREDICT = 1536  # предел длины ответа, токенов: ответ на вопрос короче разбора
 MIN_CODE_LINES = 9  # меньше строк вокруг строки срабатывания срез для вопроса не сокращается
-PROMPT_DOUBT = ("Вопрос с кодом, по счёту модели, не поместился в окно контекста вместе с ответом: начало могло быть "
-                "обрезано, ответ не принят. Сократите вопрос или увеличьте окно контекста в настройках.")
+# тексты ошибок вопроса, которые пишутся в базу (questions.error), – русские канонические; перевод – при показе
+# (run_errors.shown_error по STORED_TEXTS), как у ошибок прогона (ADR-0158)
+PROMPT_DOUBT = i18n.N_("Вопрос с кодом, по счёту модели, не поместился в окно контекста вместе с ответом: начало могло "
+                       "быть обрезано, ответ не принят. Сократите вопрос или увеличьте окно контекста в настройках.")
+REMOTE_WINDOW = i18n.N_("{error} Увеличьте «Окно контекста модели» или уменьшите «Предел ответа» в профиле провайдера.")
+ANSWER_FAILED = i18n.N_("Не удалось получить ответ модели")
+STORED_TEXTS = (PROMPT_DOUBT, REMOTE_WINDOW, ANSWER_FAILED)
 
 # К модели – по одному обращению на процесс (ADR-0099): вопрос, пока модель отвечает на другой вопрос или разбирает
 # находку в прогоне, получает понятный отказ; текст вопроса остаётся в форме
-ASK_BUSY = "Модель ещё отвечает на предыдущий вопрос – дождитесь ответа и спросите снова."
-RUN_BUSY = ("Модель сейчас разбирает находки в прогоне – спросите, когда прогон закончится или встанет на паузу. "
-            "Текст вопроса сохранён в форме.")
-REANALYZED = ("Пока вопрос ждал модель, разбор находки обновился: проверьте вопрос по новому разбору и спросите "
-              "снова.")
+ASK_BUSY = i18n.N_("Модель ещё отвечает на предыдущий вопрос – дождитесь ответа и спросите снова.")
+RUN_BUSY = i18n.N_("Модель сейчас разбирает находки в прогоне – спросите, когда прогон закончится или встанет на "
+                   "паузу. Текст вопроса сохранён в форме.")
+REANALYZED = i18n.N_("Пока вопрос ждал модель, разбор находки обновился: проверьте вопрос по новому разбору и "
+                     "спросите снова.")
 
 
 class AskError(Exception):
@@ -126,9 +131,10 @@ def fit_messages(f: Finding, ctx: CodeContext, verdict: Verdict, question: str,
         return messages
     # size задан только у удалённого API (executors.prompt_size): окно и предел ответа – из профиля провайдера, а не
     # из настроек Ollama (ревью Codex, круг 19)
-    where = ("увеличьте «Окно контекста модели» или уменьшите «Предел ответа» в профиле провайдера" if size is not None
-             else "увеличьте окно контекста в настройках")
-    raise AskError(f"Вопрос вместе с кодом находки не помещается в окно контекста модели: сократите вопрос или {where}.")
+    where = (i18n._("увеличьте «Окно контекста модели» или уменьшите «Предел ответа» в профиле провайдера")
+             if size is not None else i18n._("увеличьте окно контекста в настройках"))
+    raise AskError(i18n._("Вопрос вместе с кодом находки не помещается в окно контекста модели: сократите вопрос или "
+                          "{where}.", where=where))
 
 
 def history_for(questions: Iterable[dict], verdict_id: Any) -> list[tuple[str, str]]:
@@ -151,18 +157,18 @@ def ask_question(db: Database, settings: Settings, client: OllamaClient | Callab
     клиента по адресу (как у прогона) или готовый клиент (тесты)."""
     text = clean_question(question)
     if not text:
-        raise AskError("Напишите вопрос.")
+        raise AskError(i18n._("Напишите вопрос."))
     if len(text) > MAX_QUESTION:
-        raise AskError(f"Вопрос слишком длинный: не больше {MAX_QUESTION} знаков.")
+        raise AskError(i18n._("Вопрос слишком длинный: не больше {limit} знаков.", limit=MAX_QUESTION))
     name = str(model or "").strip()
     if not name or any(ord(ch) < 32 for ch in name):
-        raise AskError("Не выбрана модель.")
+        raise AskError(i18n._("Не выбрана модель."))
     case = db.get_case(project_id, hub_id)
     source = db.case_input(project_id, hub_id)
     if source is None:
-        raise AskError("Находка не найдена.", 404)
+        raise AskError(i18n._("Находка не найдена."), 404)
     if case is None or not case.get("verdict"):
-        raise AskError("Модель эту находку ещё не разбирала: сначала запустите разбор, потом задавайте вопросы.",
+        raise AskError(i18n._("Модель эту находку ещё не разбирала: сначала запустите разбор, потом задавайте вопросы."),
                        409)
     f = Finding.from_dict(source["data"])
     ctx = CodeContext.from_dict(case["context"])  # ровно тот срез, который видела модель
@@ -201,7 +207,7 @@ def ask_question(db: Database, settings: Settings, client: OllamaClient | Callab
         # вопрос к прежнему разбору не задаётся
         now = db.get_case(project_id, hub_id) or {}
         if now.get("verdict_id") != case["verdict_id"] or now.get("case_hash") != case["case_hash"]:
-            raise AskError(REANALYZED, 409)
+            raise AskError(i18n._(REANALYZED), 409)
         question_id = db.add_question(project_id, hub_id, text, name, case_hash=case["case_hash"],
                                       verdict_id=case["verdict_id"], execution=execution)
         saved = db.get_question(question_id) or {}
@@ -224,8 +230,7 @@ def ask_question(db: Database, settings: Settings, client: OllamaClient | Callab
         except PromptOverflowError as e:
             # по счёту модели промпт одной из попыток длиннее окна: начало могло быть обрезано – ответу не доверяем;
             # у удалённого API это отказ его клиента до отправки по окну профиля – совет про профиль (ревью круг 18)
-            text = (f"{e} Увеличьте «Окно контекста модели» или уменьшите «Предел ответа» в профиле провайдера."
-                    if remote and not getattr(e, "sent", False) else PROMPT_DOUBT)
+            text = (REMOTE_WINDOW.format(error=e) if remote and not getattr(e, "sent", False) else PROMPT_DOUBT)
             db.finish_question(question_id, error=text, stats=e.stats.to_dict() if e.stats else None)
         except LlmError as e:
             # К11: вопрос ушёл внешнему провайдеру без ответа – «результат неизвестен», повторно не отправляется
@@ -234,7 +239,7 @@ def ask_question(db: Database, settings: Settings, client: OllamaClient | Callab
                                stats=e.stats.to_dict() if e.stats else None)
         except Exception as e:  # сбой разбора или записи – ошибка этого вопроса, без текста вопроса в журнале
             eid = log_failure(log, "вопрос к модели не обработан", e)
-            db.finish_question(question_id, error=failure_text("Не удалось получить ответ модели", e, eid))
+            db.finish_question(question_id, error=failure_text(ANSWER_FAILED, e, eid))
         else:
             db.finish_question(question_id, answer=answer["answer"], answer_data=answer, stats=stats.to_dict())
         return db.get_question(question_id) or {}
@@ -261,24 +266,24 @@ def question_profile(db: Database, settings: Settings, project_id: int, verdict_
             profile = db.get_provider(int(execution["provider_id"]))
             if profile is None or not profile.get("enabled"):
                 name = (profile or {}).get("name") or execution.get("base_url")
-                raise AskError(f"Разбор получен моделью профиля «{name}», а он выключен: включите профиль на странице "
-                               "«Настройки» или пересмотрите находку на действующем профиле. Текст вопроса сохранён "
-                               "в форме.", 409)
+                raise AskError(i18n._("Разбор получен моделью профиля «{name}», а он выключен: включите профиль на "
+                                      "странице «Настройки» или пересмотрите находку на действующем профиле. Текст "
+                                      "вопроса сохранён в форме.", name=name), 409)
             return choose_profile(db, settings, db.get_project(project_id), int(profile["id"]))
         return choose_profile(db, settings, db.get_project(project_id))
     except ProfileError as e:
-        raise AskError(f"{e} Текст вопроса сохранён в форме.", 409) from None
+        raise AskError(i18n._("{error} Текст вопроса сохранён в форме.", error=e), 409) from None
 
 
 def busy_text(gate: Any) -> str:
     """Почему вопрос не задан: кто держит право на генерацию группы (ADR-0104 п. 6) – словами."""
     holder = gate.busy()
     if holder == "triage":
-        return RUN_BUSY
+        return i18n._(RUN_BUSY)
     if holder == "ask":
-        return ASK_BUSY
-    return (f"Модель ({gate.label}) сейчас занята проверкой или прогревом – спросите через минуту. Текст вопроса "
-            "сохранён в форме.")
+        return i18n._(ASK_BUSY)
+    return i18n._("Модель ({label}) сейчас занята проверкой или прогревом – спросите через минуту. Текст вопроса "
+                  "сохранён в форме.", label=gate.label)
 
 
 def card_executor(db: Database, settings: Settings, project_id: int, verdict_id: int | None) -> Any:

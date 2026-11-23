@@ -27,7 +27,7 @@ from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from app.config import DEFAULT_STATUS_MAP
-from app import cvss
+from app import cvss, i18n
 from app.ecosystem import canon_ecosystem
 from app.hub_import import decode_text, parse_cves  # noqa: F401 – decode_text: общий декодер
 from app.models import Finding, ScaAnswer
@@ -36,18 +36,21 @@ from app.textsafe import hub_clean, strip_invisible
 ANSWER_FORMAT = "local-triage/sca-answers/1"
 DEFAULT_SOURCE = "внешний агент"
 
-CONCLUSION_LABELS = {"update": "обновить", "not_applicable": "не применимо", "unclear": "неясно"}
+CONCLUSION_LABELS = i18n.Labels({"update": "обновить", "not_applicable": "не применимо", "unclear": "неясно"})
 # Подписи вывода в выборе решения человека: «не применимо» – ложное срабатывание (docs/hub-format.md). Текст для Hub,
 # отборы и ответ агента остаются с CONCLUSION_LABELS
-DECISION_LABELS = {**CONCLUSION_LABELS,
-                   "not_applicable": "ложное срабатывание (компонент или уязвимость определены ошибочно)"}
+DECISION_LABELS = i18n.Labels({"update": "обновить",
+                               "not_applicable": "ложное срабатывание (компонент или уязвимость определены ошибочно)",
+                               "unclear": "неясно"})
 CONCLUSION_VERDICT = {"update": "true_positive", "not_applicable": "false_positive", "unclear": "uncertain"}
 VERDICT_CONCLUSION = {verdict: conclusion for conclusion, verdict in CONCLUSION_VERDICT.items()}
 
-# Отборы на странице SCA: (ключ из ?show=, подпись)
-FILTERS = (("", "Все"), ("urgent", "Срочные"), ("no_answer", "Без ответа агента"), ("update", "Обновить"),
-           ("not_applicable", "Совет агента: не применимо"), ("unclear", "Неясно"), ("unreviewed", "Непроверенные"),
-           ("not_entered", "Не внесены в Hub"), ("todo", "К разбору"), ("in_defect", "В дефекте"), ("no_defect", "Без дефекта"))
+# Отборы на странице SCA: (ключ из ?show=, подпись – msgid, перевод при построении страницы)
+FILTERS = (("", i18n.N_("Все")), ("urgent", i18n.N_("Срочные")), ("no_answer", i18n.N_("Без ответа агента")),
+           ("update", i18n.N_("Обновить")), ("not_applicable", i18n.N_("Совет агента: не применимо")),
+           ("unclear", i18n.N_("Неясно")), ("unreviewed", i18n.N_("Непроверенные")),
+           ("not_entered", i18n.N_("Не внесены в Hub")), ("todo", i18n.N_("К разбору")),
+           ("in_defect", i18n.N_("В дефекте")), ("no_defect", i18n.N_("Без дефекта")))
 FILTER_KEYS = tuple(key for key, _ in FILTERS)
 
 # Пределы разбора ответа агента и соответствия AST → CVE
@@ -100,7 +103,7 @@ class ScaInputError(ValueError):
     """Ответ агента или соответствие AST → CVE не прочитать. Текст – по-русски, для показа в интерфейсе."""
 
 
-TOO_DEEP = "В JSON слишком глубокая вложенность: это не ответ по схеме из задания."
+TOO_DEEP = i18n.N_("В JSON слишком глубокая вложенность: это не ответ по схеме из задания.")
 
 
 # ============================================================================ текст
@@ -149,13 +152,10 @@ def short_text(text: Any, limit: int) -> str:
 
 
 def plural(count: int, one: str, few: str, many: str) -> str:
-    """Форма слова для числа: 1 библиотека, 2 библиотеки, 5 библиотек."""
-    n = abs(int(count))
-    if n % 10 == 1 and n % 100 != 11:
-        return one
-    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
-        return few
-    return many
+    """Форма слова для числа: 1 библиотека, 2 библиотеки, 5 библиотек; при английском языке – из каталога."""
+    from app.i18n import plural as _plural
+
+    return _plural(count, one, few, many)
 
 
 # ============================================================================ идентификаторы и ссылки
@@ -332,7 +332,7 @@ def check_links(vuln_id: str) -> list[tuple[str, str]]:
         return [("GitHub", f"https://github.com/advisories/{vuln_id}"),
                 ("OSV", f"https://osv.dev/vulnerability/{vuln_id}")]
     if upper.startswith("BDU:"):
-        return [("БДУ ФСТЭК России", f"https://bdu.fstec.ru/vul/{vuln_id[4:]}")]
+        return [(i18n._("БДУ ФСТЭК России"), f"https://bdu.fstec.ru/vul/{vuln_id[4:]}")]
     if re.split(r"[-:]", upper, maxsplit=1)[0] in ("PYSEC", "GO", "RUSTSEC", "OSV", "GSD"):
         return [("OSV", f"https://osv.dev/vulnerability/{vuln_id}")]
     return []
@@ -470,28 +470,28 @@ def answer_notes(version: str, answer: Mapping[str, Any] | None, hub_safe: Itera
     target = str(answer.get("recommended_version") or "")
     conclusion = answer.get("conclusion") or ""
     if not answer.get("links"):
-        notes.append({"tone": "warn", "text": "нет ссылок на источники"})
+        notes.append({"tone": "warn", "text": i18n._("нет ссылок на источники")})
     if not conclusion:
-        notes.append({"tone": "warn", "text": "вывод не указан"})
+        notes.append({"tone": "warn", "text": i18n._("вывод не указан")})
     if conclusion == "update" and not target:
-        notes.append({"tone": "warn", "text": "нет версии для обновления"})
+        notes.append({"tone": "warn", "text": i18n._("нет версии для обновления")})
     if target:
         order = compare_versions(target, version)
         if order == 0:
-            notes.append({"tone": "warn", "text": "рекомендуемая версия совпадает с текущей"})
+            notes.append({"tone": "warn", "text": i18n._("рекомендуемая версия совпадает с текущей")})
         elif order == -1:
-            notes.append({"tone": "warn", "text": "рекомендуемая версия ниже текущей"})
+            notes.append({"tone": "warn", "text": i18n._("рекомендуемая версия ниже текущей")})
         elif major_change(version, target):
-            notes.append({"tone": "accent", "text": "смена старшей версии"})
+            notes.append({"tone": "accent", "text": i18n._("смена старшей версии")})
         safe = first_version(", ".join(hub_safe))
         if safe and compare_versions(target, safe) == -1:
-            notes.append({"tone": "warn", "text": f"ниже версии исправления по данным Hub ({safe})"})
+            notes.append({"tone": "warn", "text": i18n._("ниже версии исправления по данным Hub ({safe})", safe=safe)})
     return notes
 
 
 # ============================================================================ исследование компонента как ответ агента
 
-RESEARCH_SOURCE = "исследование компонента"
+RESEARCH_SOURCE = i18n.N_("исследование компонента")
 # применимость уязвимости к версии из исследования → вывод ответа агента (ADR-0108)
 APPLIES_CONCLUSION = {"yes": "update", "no": "not_applicable", "unknown": "unclear"}
 RESEARCH_EXPLANATION = 1200  # предел пояснения по одной уязвимости; в текст для Hub оно идёт ещё короче
@@ -524,7 +524,8 @@ def research_answer(research: Mapping[str, Any] | None, key: tuple[str, str, str
                if u.startswith(("https://", "http://"))]
         parts = [one_line(item.get("description"), RESEARCH_EXPLANATION)]
         if one_line(item.get("conditions"), RESEARCH_EXPLANATION):
-            parts.append("Условия: " + one_line(item.get("conditions"), RESEARCH_EXPLANATION))
+            parts.append(i18n._("Условия: {conditions}", conditions=one_line(item.get("conditions"),
+                                                                            RESEARCH_EXPLANATION)))
         records.append(([n.casefold() for n in (vuln_id, *aliases)],
                         {"conclusion": APPLIES_CONCLUSION.get(str(item.get("applies") or ""), "unclear"),
                          "explanation": " ".join(p for p in parts if p), "links": _dedupe(own)}))
@@ -535,10 +536,11 @@ def research_answer(research: Mapping[str, Any] | None, key: tuple[str, str, str
     applicable = sum(1 for item in findings if item.get("applies") == "yes")
     updated = str(research.get("observed_at") or research.get("imported_at") or "")
     answer = {"id": f"research-{research.get('id')}", "ecosystem": eco, "component": name, "version": version,
-              "source": f"{RESEARCH_SOURCE}, ревизия {int(research.get('revision') or 0)}",
+              "source": i18n._("{source}, ревизия {revision}", source=i18n._(RESEARCH_SOURCE),
+                               revision=int(research.get("revision") or 0)),
               "recommended_version": target, "conclusion": "",
-              "explanation": f"Исследование компонента: применимых к версии уязвимостей {applicable} из "
-                             f"{len(findings)}.",
+              "explanation": i18n._("Исследование компонента: применимых к версии уязвимостей {applicable} из "
+                                    "{total}.", applicable=applicable, total=len(findings)),
               # синонимы исследования в «ids» не идут: по ним aliases_for дописал бы GHSA к номерам находки в текстах
               # для Hub, и отметки «Внесено в Hub» по уже сохранённым решениям стали бы «текст изменился» (ревью
               # Codex, круг 21); охват (vulnerabilities) синонимы включает
@@ -692,15 +694,20 @@ def component_views(components: Iterable[dict], latest: Mapping[tuple[str, str, 
         uncovered = uncovered_ids(ids, answer)
         by_component = (answer or {}).get("by_component") or []
         if answer and not answer.get("vulnerabilities") and ids:
-            notes.append({"tone": "warn", "text": "охват ответа неизвестен (ответ загружен до обновления) – "
-                                                  "нужен новый ответ"})
+            notes.append({"tone": "warn", "text": i18n._("охват ответа неизвестен (ответ загружен до обновления) – "
+                                                         "нужен новый ответ")})
         elif by_component:
-            notes.append({"tone": "accent", "text": "исследование не опознаёт внутренний номер "
-                          + ", ".join(by_component[:3]) + (" и другие" if len(by_component) > 3 else "")
-                          + " – за него вывод по компоненту"})
+            shown = ", ".join(by_component[:3])
+            notes.append({"tone": "accent", "text": (
+                i18n._("исследование не опознаёт внутренний номер {ids} и другие – за него вывод по компоненту",
+                       ids=shown) if len(by_component) > 3
+                else i18n._("исследование не опознаёт внутренний номер {ids} – за него вывод по компоненту",
+                            ids=shown))})
         elif uncovered:
-            notes.append({"tone": "warn", "text": "ответ не про " + ", ".join(uncovered[:3])
-                          + (" и другие" if len(uncovered) > 3 else "") + " – нужен новый ответ"})
+            shown = ", ".join(uncovered[:3])
+            notes.append({"tone": "warn", "text": (
+                i18n._("ответ не про {ids} и другие – нужен новый ответ", ids=shown) if len(uncovered) > 3
+                else i18n._("ответ не про {ids} – нужен новый ответ", ids=shown))})
         views.append({**c, "ids": ids, "aliases": aliases_for(ids, ast_map, answer), "answer": answer,
                       "conclusion": (answer or {}).get("conclusion") or "", "uncovered": uncovered,
                       "ecosystem": group_ecosystem(c), "notes": notes})
@@ -714,7 +721,18 @@ def research_conflict(answer: Mapping[str, Any] | None, status: str, status_labe
         return ""
     if status != "vulnerable" and int(applicable or 0) <= 0:
         return ""
-    return f"исследование компонента: {status_label}, применимых уязвимостей {int(applicable or 0)}"
+    return i18n._("исследование компонента: {status}, применимых уязвимостей {n}", status=status_label,
+                  n=int(applicable or 0))
+
+
+def filter_label(key: str, label: str) -> str:
+    """Подпись отбора из FILTERS на языке интерфейса. У отбора «Обновить» – вывод агента «обновить», а не кнопка
+    «Обновить» (Refresh): msgid один, смысл разный, поэтому подпись берётся из CONCLUSION_LABELS – по-русски та же
+    «Обновить» (ADR-0158)."""
+    if key == "update":
+        text = CONCLUSION_LABELS["update"]
+        return text[:1].upper() + text[1:]
+    return i18n._(label)
 
 
 def filter_views(views: Iterable[dict], show: str) -> list[dict]:
@@ -766,7 +784,8 @@ def cvss_versions(views: Iterable[dict]) -> list[tuple[str, str]]:
     Неизвестная версия имеет значение «?», отличное от «все версии вместе»."""
     found = {part["version"] for v in views for part in cvss.breakdown(v)}
     return [(cvss.UNKNOWN_CHOICE if version == cvss.UNKNOWN else version,
-             cvss.VERSION_LABELS[version] + (" (нет оценок)" if version not in found else ""))
+             i18n._("{label} (нет оценок)", label=cvss.VERSION_LABELS[version]) if version not in found
+             else cvss.VERSION_LABELS[version])
             for version in (*cvss.VERSIONS, cvss.UNKNOWN)]
 
 
@@ -826,13 +845,13 @@ def package_exclusion(component: str, version: str, prefixes: Iterable[str] = ()
     внутренней системы."""
     prefix = internal_prefix(component, prefixes)
     if prefix:
-        return f"внутренний компонент (префикс «{prefix}»)"
+        return i18n._("внутренний компонент (префикс «{prefix}»)", prefix=prefix)
     if looks_like_path(component):
-        return "имя похоже на путь к файлу или папке"
+        return i18n._("имя похоже на путь к файлу или папке")
     if not _COMPONENT_OK.fullmatch(component) or component.count("/") > 3 or "//" in component:
-        return "имя не похоже на имя пакета (путь, код или пробелы)"
+        return i18n._("имя не похоже на имя пакета (путь, код или пробелы)")
     if version and not _VERSION_OK.fullmatch(version):
-        return "версия не похожа на номер версии"
+        return i18n._("версия не похожа на номер версии")
     return ""
 
 
@@ -850,14 +869,14 @@ _GEM_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 _COMPOSER_NAME = re.compile(r"[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*")
 ECOSYSTEM_RULES: dict[str, tuple[re.Pattern, str]] = {}
 for _names, _rule, _hint in (
-    (("maven", "gradle", "sbt", "ivy"), _MAVEN_NAME, "у maven ожидается groupId:artifactId без «/»"),
-    (("npm", "yarn", "pnpm"), _NPM_NAME, "у npm ожидается имя пакета или @scope/имя"),
-    (("pypi", "pip", "poetry", "conda"), _PYPI_NAME, "у PyPI ожидается имя пакета без «/» и «:»"),
-    (("nuget",), _NUGET_NAME, "у NuGet ожидается имя вида Company.Package"),
-    (("go", "golang"), _GO_NAME, "у Go ожидается путь модуля с доменом (example.org/org/repo)"),
-    (("cargo", "crates"), _CARGO_NAME, "у Cargo ожидается имя пакета без «/» и «.»"),
-    (("rubygems", "gem", "bundler"), _GEM_NAME, "у RubyGems ожидается имя пакета без «/» и «:»"),
-    (("composer", "packagist"), _COMPOSER_NAME, "у Composer ожидается vendor/package в нижнем регистре"),
+    (("maven", "gradle", "sbt", "ivy"), _MAVEN_NAME, i18n.N_("у maven ожидается groupId:artifactId без «/»")),
+    (("npm", "yarn", "pnpm"), _NPM_NAME, i18n.N_("у npm ожидается имя пакета или @scope/имя")),
+    (("pypi", "pip", "poetry", "conda"), _PYPI_NAME, i18n.N_("у PyPI ожидается имя пакета без «/» и «:»")),
+    (("nuget",), _NUGET_NAME, i18n.N_("у NuGet ожидается имя вида Company.Package")),
+    (("go", "golang"), _GO_NAME, i18n.N_("у Go ожидается путь модуля с доменом (example.org/org/repo)")),
+    (("cargo", "crates"), _CARGO_NAME, i18n.N_("у Cargo ожидается имя пакета без «/» и «.»")),
+    (("rubygems", "gem", "bundler"), _GEM_NAME, i18n.N_("у RubyGems ожидается имя пакета без «/» и «:»")),
+    (("composer", "packagist"), _COMPOSER_NAME, i18n.N_("у Composer ожидается vendor/package в нижнем регистре")),
 ):
     for _name in _names:
         ECOSYSTEM_RULES[_name] = (_rule, _hint)
@@ -875,11 +894,11 @@ def package_doubt(component: str, version: str, ecosystems: Iterable[str] = ()) 
     if known:
         failed = [ECOSYSTEM_RULES[e][1] for e in known if not ECOSYSTEM_RULES[e][0].fullmatch(name)]
         if len(failed) == len(known):
-            return f"имя не похоже на пакет своей экосистемы ({failed[0]})"
+            return i18n._("имя не похоже на пакет своей экосистемы ({rule})", rule=i18n._(failed[0]))
     elif "/" in name and not _NPM_SCOPED.fullmatch(name) and "." not in name.split("/", 1)[0]:
-        return "имя похоже на «папку/имя», а не на координаты пакета"
+        return i18n._("имя похоже на «папку/имя», а не на координаты пакета")
     if _INTERNAL_WORDS.search(name):
-        return "имя похоже на внутреннее название"
+        return i18n._("имя похоже на внутреннее название")
     return ""
 
 
@@ -1045,7 +1064,8 @@ TASK_INTRO = """\
 def task_text(rows: list[dict]) -> str:
     """Задание для внешнего агента по-русски вместе с заготовкой ответа."""
     count = len(rows)
-    word = plural(count, "библиотека", "библиотеки", "библиотек")
+    with i18n.use("ru"):  # задание агенту – по-русски, как промпт (ADR-0158): форма числа тоже русская
+        word = plural(count, "библиотека", "библиотеки", "библиотек")
     return (TASK_INTRO + f"\n## Заготовка ответа: {count} {word}\n\n```json\n" + template_json(rows)
             + "\n```\n").translate(_DASHES)
 
@@ -1074,8 +1094,9 @@ class AnswersReport:
     without_answer: list[str] = field(default_factory=list)  # библиотеки проекта, по которым ответа нет
 
 
-RESEARCH_ANSWER_NOTE = ("Это ответ по контракту исследования компонентов (local-triage/sca-answer): загрузите его на "
-                        "странице «Компоненты» кнопкой «Загрузить ответ», а не в форму ответа агента по находкам.")
+RESEARCH_ANSWER_NOTE = i18n.N_("Это ответ по контракту исследования компонентов (local-triage/sca-answer): загрузите "
+                               "его на странице «Компоненты» кнопкой «Загрузить ответ», а не в форму ответа агента по "
+                               "находкам.")
 
 
 def _answer_items(value: Any) -> list[dict] | None:
@@ -1083,7 +1104,7 @@ def _answer_items(value: Any) -> list[dict] | None:
     Ответ контракта исследования (поле contract «local-triage/sca-answer/…», rows вместо components) – ScaInputError
     с подсказкой, куда его загружать (хвост SCA-IMP)."""
     if isinstance(value, dict) and str(value.get("contract") or "").startswith("local-triage/sca-answer"):
-        raise ScaInputError(RESEARCH_ANSWER_NOTE)
+        raise ScaInputError(i18n._(RESEARCH_ANSWER_NOTE))
     if isinstance(value, dict):
         for key in ("components", "answers", "results", "items"):
             if isinstance(value.get(key), list):
@@ -1123,13 +1144,14 @@ def _json_error(text: str) -> str:
     try:
         json.JSONDecoder().raw_decode(text)
     except RecursionError:
-        return TOO_DEEP
+        return i18n._(TOO_DEEP)
     except json.JSONDecodeError as e:
         if e.pos >= len(text.rstrip()) - 1 or e.msg.startswith("Unterminated string"):
-            return ("JSON обрывается на середине: похоже, ответ обрезан. Попросите агента продолжить или ответить "
-                    "частями и загрузите части по очереди.")
-        return f"В JSON ошибка: строка {e.lineno}, позиция {e.colno}. Проверьте, что ответ вставлен целиком."
-    return "В ответе нет списка библиотек: нужен объект с полем components, как в заготовке из задания."
+            return i18n._("JSON обрывается на середине: похоже, ответ обрезан. Попросите агента продолжить или "
+                          "ответить частями и загрузите части по очереди.")
+        return i18n._("В JSON ошибка: строка {line}, позиция {column}. Проверьте, что ответ вставлен целиком.",
+                      line=e.lineno, column=e.colno)
+    return i18n._("В ответе нет списка библиотек: нужен объект с полем components, как в заготовке из задания.")
 
 
 def extract_answers(text: str) -> tuple[list[dict], str]:
@@ -1137,19 +1159,19 @@ def extract_answers(text: str) -> tuple[list[dict], str]:
     первый подходящий объект JSON в тексте. ScaInputError – ответа не найти."""
     text = str(text or "").replace(BOM, "").strip()
     if not text:
-        raise ScaInputError("Вставьте ответ агента или выберите файл.")
+        raise ScaInputError(i18n._("Вставьте ответ агента или выберите файл."))
     values: list[Any] = []
     try:
         values.append(json.loads(text))
     except RecursionError:
-        raise ScaInputError(TOO_DEEP) from None
+        raise ScaInputError(i18n._(TOO_DEEP)) from None
     except ValueError:
         for m in _FENCE.finditer(text):
             block = m.group(1).strip()
             try:
                 values.append(json.loads(block))
             except RecursionError:
-                raise ScaInputError(TOO_DEEP) from None
+                raise ScaInputError(i18n._(TOO_DEEP)) from None
             except ValueError:
                 found = _scan(block)
                 if found is not None:
@@ -1170,12 +1192,13 @@ def extract_answers(text: str) -> tuple[list[dict], str]:
     if not items:
         starts = [i for i in (text.find("{"), text.find("[")) if i >= 0]
         if not starts:
-            raise ScaInputError("В тексте нет JSON. Вставьте ответ агента целиком – вместе с блоком JSON.")
+            raise ScaInputError(i18n._("В тексте нет JSON. Вставьте ответ агента целиком – вместе с блоком JSON."))
         fence = _FENCE.search(text)
         candidate = fence.group(1) if fence else text[min(starts):]
         raise ScaInputError(_json_error(candidate.strip()))
     if len(items) > MAX_ANSWERS:
-        raise ScaInputError(f"Слишком много записей в ответе: {len(items)}, допустимо до {MAX_ANSWERS}.")
+        raise ScaInputError(i18n._("Слишком много записей в ответе: {n}, допустимо до {limit}.", n=len(items),
+                                   limit=MAX_ANSWERS))
     return items, source
 
 
@@ -1288,10 +1311,11 @@ def parse_answers(text: str, components: Iterable[dict], source: str = "",
         if len(hits) > 1 and len({(k[1], k[2]) for k in hits}) > 1:
             hits = []  # имя без версии подходит к нескольким версиям: однозначно выбрать нельзя (как и раньше)
         if len(hits) > 1:
-            ecosystems = ", ".join(sorted({k[0] or "без экосистемы" for k in hits}))
+            ecosystems = ", ".join(sorted({k[0] or i18n._("без экосистемы") for k in hits}))
             report.ambiguous.append(f"{component}@{version}" if version else component)
-            report.warnings.append(f"{component}@{version}: в проекте несколько экосистем ({ecosystems}), а ecosystem "
-                                   "в ответе не указана – ответ не сохранён. Верните ecosystem из заготовки.")
+            report.warnings.append(i18n._("{name}: в проекте несколько экосистем ({ecosystems}), а ecosystem в ответе "
+                                          "не указана – ответ не сохранён. Верните ecosystem из заготовки.",
+                                          name=f"{component}@{version}", ecosystems=ecosystems))
             continue
         key = hits[0] if hits else None
         if key is None:
@@ -1299,7 +1323,7 @@ def parse_answers(text: str, components: Iterable[dict], source: str = "",
             continue
         label = f"{key[1]}@{key[2]}" if key[2] else key[1]
         if key in chosen:
-            report.warnings.append(f"{label}: ответ повторяется – взят последний.")
+            report.warnings.append(i18n._("{name}: ответ повторяется – взят последний.", name=label))
         raw_conclusion = item.get("conclusion", item.get("verdict", item.get("decision")))
         conclusion = norm_conclusion(raw_conclusion)
         recommended = one_line(item.get("recommended_version") or item.get("fixed_version")
@@ -1324,17 +1348,20 @@ def parse_answers(text: str, components: Iterable[dict], source: str = "",
         chosen[key] = answer
         if not conclusion:
             shown = one_line(raw_conclusion, 40)
-            report.warnings.append(f"{label}: вывод {'«' + shown + '» не распознан' if shown else 'не указан'} – "
-                                   "ответ сохранён без вывода.")
+            report.warnings.append(
+                i18n._("{name}: вывод «{value}» не распознан – ответ сохранён без вывода.", name=label, value=shown)
+                if shown else i18n._("{name}: вывод не указан – ответ сохранён без вывода.", name=label))
         for note in answer_notes(key[2], answer.to_dict(), candidates[key].get("fixed_versions") or []):
-            if note["tone"] == "warn" and note["text"] != "вывод не указан":
+            if note["tone"] == "warn" and note["text"] != i18n._("вывод не указан"):
                 report.warnings.append(f"{label}: {note['text']}.")
         if dropped:
-            report.warnings.append(f"{label}: отброшено ссылок – {dropped} (принимаются только адреса http и https).")
+            report.warnings.append(i18n._("{name}: отброшено ссылок – {n} (принимаются только адреса http и https).",
+                                          name=label, n=dropped))
         if cut:
-            report.warnings.append(f"{label}: пояснение обрезано до {MAX_EXPLANATION} знаков.")
+            report.warnings.append(i18n._("{name}: пояснение обрезано до {limit} знаков.", name=label,
+                                          limit=MAX_EXPLANATION))
     if nameless:
-        report.warnings.append(f"Записей без имени библиотеки (component) пропущено: {nameless}.")
+        report.warnings.append(i18n._("Записей без имени библиотеки (component) пропущено: {n}.", n=nameless))
     report.answers = list(chosen.values())
     report.without_answer = [f"{k[1]}@{k[2]}" if k[2] else k[1] for k in known if k not in chosen]
     return report
@@ -1385,14 +1412,14 @@ def parse_ast_map(text: str) -> MapReport:
     строка заголовка пропускается. ScaInputError – соответствий в файле нет."""
     text = str(text or "").replace(BOM, "")
     if not text.strip():
-        raise ScaInputError("Вставьте соответствие AST → CVE или выберите файл CSV.")
+        raise ScaInputError(i18n._("Вставьте соответствие AST → CVE или выберите файл CSV."))
     report = MapReport()
     seen: set[tuple[str, str]] = set()
     try:
         rows = csv.reader(io.StringIO(text, newline=""), delimiter=_guess_delimiter(text))
         for lineno, cells in enumerate(rows, start=1):
             if lineno > MAX_MAP_ROWS:
-                raise ScaInputError(f"Слишком много строк: допустимо до {MAX_MAP_ROWS}.")
+                raise ScaInputError(i18n._("Слишком много строк: допустимо до {limit}.", limit=MAX_MAP_ROWS))
             if not any(c.strip() for c in cells):
                 continue
             source, targets = _map_row(cells)
@@ -1407,9 +1434,10 @@ def parse_ast_map(text: str) -> MapReport:
                     seen.add((source, target))
                     report.pairs.append((source, target))
     except csv.Error:
-        raise ScaInputError("Файл не похож на CSV: нужны две колонки – AST-… и CVE-….") from None
+        raise ScaInputError(i18n._("Файл не похож на CSV: нужны две колонки – AST-… и CVE-….")) from None
     if not report.pairs:
-        raise ScaInputError("Соответствий не найдено: нужны две колонки – идентификатор AST-… и CVE-… или GHSA-….")
+        raise ScaInputError(i18n._("Соответствий не найдено: нужны две колонки – идентификатор AST-… и CVE-… или "
+                                   "GHSA-…."))
     return report
 
 
@@ -1450,7 +1478,7 @@ def suggested_comment(f: Finding, answer: Mapping[str, Any] | None, aliases: Map
     версия исправления из выгрузки Hub – справка, а не основание, и в тексте для Hub не называется безопасной
     (ADR-0100). target – целевая версия, та же, что у дефекта (карточка, sca_text.resolve_target); None – версия из ответа
     агента, "" – версию не называть. Нечего предложить – ""."""
-    component = one_line(f.package_display_name, MAX_COMPONENT) or "библиотека"
+    component = one_line(f.package_display_name, MAX_COMPONENT) or i18n._("библиотека")
     version = one_line(f.version, MAX_VERSION)
     named = f"{component} {version}".strip()
     ids = public_ids_text(finding_ids(f), aliases)  # без внутренних номеров AST (ADR-0101)
@@ -1460,14 +1488,21 @@ def suggested_comment(f: Finding, answer: Mapping[str, Any] | None, aliases: Map
     target = one_line((answer or {}).get("recommended_version") if target is None else target, MAX_VERSION)
     lines: list[str] = []
     if conclusion == "update":
-        head = f"Обновить {component}" + (f" с версии {version}" if version else "")
-        lines.append(head + (f" до {target}." if target else "."))
+        if version and target:
+            lines.append(i18n._("Обновить {component} с версии {version} до {target}.", component=component,
+                                version=version, target=target))
+        elif version:
+            lines.append(i18n._("Обновить {component} с версии {version}.", component=component, version=version))
+        elif target:
+            lines.append(i18n._("Обновить {component} до {target}.", component=component, target=target))
+        else:
+            lines.append(i18n._(SUGGESTION_UPDATE, component=component))
         if ids:
-            lines.append(f"{'Уязвимости' if ', ' in ids else 'Уязвимость'}: {ids}.")
+            lines.append(i18n._("Уязвимости: {ids}.", ids=ids) if ", " in ids else i18n._("Уязвимость: {ids}.", ids=ids))
     elif conclusion == "not_applicable":
-        lines.append(f"Не применимо: {ids or 'уязвимость'} не затрагивает {named}.")
+        lines.append(i18n._(SUGGESTION_NOT_APPLICABLE, ids=ids or i18n._("уязвимость"), named=named))
     elif conclusion == "unclear":
-        lines.append(f"Требуется проверка: {ids or 'уязвимость'} в {named}.")
+        lines.append(i18n._(SUGGESTION_UNCLEAR, ids=ids or i18n._("уязвимость"), named=named))
     else:
         return ""
     from app.sca_text import strip_internal_ids
@@ -1479,8 +1514,30 @@ def suggested_comment(f: Finding, answer: Mapping[str, Any] | None, aliases: Map
     links = [link for link in (norm_link(x) for x in ((answer or {}).get("links") or []))
              if link and is_primary_source(link) and not _AST_ID.search(link) and comment_link_fits(link, target)][:COMMENT_LINKS]
     if links:
-        lines.append("Источники: " + ", ".join(links))
+        lines.append(i18n._("Источники: {links}", links=", ".join(links)))
     return "\n".join(lines).translate(_DASHES)
+
+
+# Заготовки комментария агента (suggested_comment) узнаются по началу текста на обоих языках (comment_origin):
+# msgid, поле, с которого начинается переменная часть, и вывод
+SUGGESTION_UPDATE = i18n.N_("Обновить {component}.")
+SUGGESTION_NOT_APPLICABLE = i18n.N_("Не применимо: {ids} не затрагивает {named}.")
+SUGGESTION_UNCLEAR = i18n.N_("Требуется проверка: {ids} в {named}.")
+_SUGGESTION_HEADS = ((SUGGESTION_UPDATE, "{component}", "true_positive"),
+                     (SUGGESTION_NOT_APPLICABLE, "{ids}", "false_positive"),
+                     (SUGGESTION_UNCLEAR, "{ids}", "uncertain"))
+
+
+def suggestion_prefixes() -> list[tuple[str, str]]:
+    """Начала заготовок комментария агента и их выводы – по-русски («Обновить », «Не применимо: », «Требуется
+    проверка: ») и по-английски, независимо от текущего языка: сохранённая заготовка могла быть собрана на любом."""
+    out: list[tuple[str, str]] = []
+    for msgid, field_name, verdict in _SUGGESTION_HEADS:
+        for lang in ("ru", "en"):
+            prefix = i18n.translate(msgid, lang).split(field_name)[0]
+            if prefix.strip() and (prefix, verdict) not in out:
+                out.append((prefix, verdict))
+    return out
 
 
 def fallback_comment(f: Finding, verdict: str, aliases: Mapping[str, dict] | None = None) -> str:
@@ -1509,7 +1566,7 @@ def sca_comment(f: Finding, verdict: str, comment: str, aliases: Mapping[str, di
     version = hub_clean(one_line(f.version, MAX_VERSION))
     named = f"{component} {version}".strip()
     ids = describe_ids(finding_ids(f), aliases or {}) or "уязвимость"
-    reason = defect.reason_text(comment, clean=True)  # прежний формат: прежняя чистка, отпечатки не меняются
+    reason = defect.reason_text(comment, clean=True, legacy=True)  # прежний формат: прежняя чистка, отпечатки не меняются
     # безопасная версия из выгрузки – только символы обозначения версии: разметка и мусор после неё в текст не идут
     found = re.match(r"[0-9A-Za-z][0-9A-Za-z.+~:_-]*", hub_clean(first_version(f.fixed_version)))
     hub_safe = found.group(0) if found else ""
@@ -1594,7 +1651,7 @@ def _short_head(f: Finding, reason: str, aliases: Mapping[str, dict] | None) -> 
         return ""
     named = " ".join(x for x in (one_line(f.package_display_name, MAX_COMPONENT), one_line(f.version, MAX_VERSION))
                      if x)
-    return f"{', '.join(ids)} в {named}" if ids and named else (", ".join(ids) or named)
+    return i18n._("{ids} в {named}", ids=", ".join(ids), named=named) if ids and named else (", ".join(ids) or named)
 
 
 def hub_text_v4(f: Finding, verdict: str, comment: str, status_map: Mapping[str, str] | None = None,
@@ -1629,7 +1686,7 @@ def hub_text_v3(f: Finding, verdict: str, comment: str, status_map: Mapping[str,
     from app import defect
     if verdict not in SHORT_OUTCOMES:
         return ""
-    return defect._finish(defect.reason_text(comment, clean=True), clean=True)
+    return defect._finish(defect.reason_text(comment, clean=True, legacy=True), clean=True)
 
 
 def hub_text_v2(f: Finding, verdict: str, comment: str, status_map: Mapping[str, str] | None = None,

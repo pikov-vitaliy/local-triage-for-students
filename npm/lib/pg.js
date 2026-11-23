@@ -10,6 +10,7 @@ const fsx = require('./fsx');
 const { spawnSync } = require('node:child_process');
 
 const { StandError } = require('./paths');
+const { t } = require('./lang');
 
 const PG_MAJOR = '17';
 const PG_RELEASE = '17.12';
@@ -28,10 +29,10 @@ const LOG_KEEP_DAYS = 14;
 
 function platformPackage(platform = process.platform, arch = process.arch) {
   if (platform === 'win32' && arch === 'arm64') {
-    throw new StandError('Windows на ARM64 стенд не поддерживает: для неё нет ни сборки PostgreSQL, ни колеса psycopg-binary.');
+    throw new StandError(t('Windows на ARM64 стенд не поддерживает: для неё нет ни сборки PostgreSQL, ни колеса psycopg-binary.', 'The stand does not support Windows on ARM64: there is neither a PostgreSQL build nor a psycopg-binary wheel for it.'));
   }
   const name = PLATFORM_PACKAGES[`${platform}-${arch}`];
-  if (!name) throw new StandError(`Платформа ${platform}-${arch} не поддерживается: есть сборки для Windows x64, Linux x64 и arm64, macOS.`);
+  if (!name) throw new StandError(t(`Платформа ${platform}-${arch} не поддерживается: есть сборки для Windows x64, Linux x64 и arm64, macOS.`, `Platform ${platform}-${arch} is not supported: builds exist for Windows x64, Linux x64 and arm64, macOS.`));
   return name;
 }
 
@@ -51,9 +52,11 @@ function nativeDir(packageDir, platform = process.platform, arch = process.arch)
   }
   // npm cache clean дерево npx не трогает; удалить можно только дерево npx, а не проект пользователя (ревью круга 8)
   // путь для удаления не подсказывается: вычисленная папка может оказаться проектом студента (ревью кругов 8–10)
-  throw new StandError(`Не найден пакет ${name}: установка npm неполная (платформенный пакет не скачался). Запуск через ` +
+  throw new StandError(t(`Не найден пакет ${name}: установка npm неполная (платформенный пакет не скачался). Запуск через ` +
     'npx: очистите кэш npx командой npm cache npx rm --force (npm 11) и запустите стенд снова. Из клона или проекта: ' +
-    'npm install без --omit=optional.');
+    'npm install без --omit=optional.', `Package ${name} not found: the npm installation is incomplete (the platform package was not downloaded). When running via ` +
+    'npx: clear the npx cache with npm cache npx rm --force (npm 11) and start the stand again. From a clone or project: ' +
+    'npm install without --omit=optional.'));
 }
 
 function exe(binDir, name, platform = process.platform) {
@@ -140,13 +143,15 @@ function checkMajor(dir, required = false) {
   } catch (error) {
     // версии нет у незаконченной копии – её можно убрать; каталог, который станет рабочим, обязан быть целым
     if (error.code === 'ENOENT' && !required) return;
-    throw new StandError(`Версию PostgreSQL каталога ${dir} прочитать не удалось (${error.code}): стенд его не меняет, ` +
-      'оба каталога и метки оставлены как были. Пришлите журнал преподавателю.');
+    throw new StandError(t(`Версию PostgreSQL каталога ${dir} прочитать не удалось (${error.code}): стенд его не меняет, ` +
+      'оба каталога и метки оставлены как были. Пришлите журнал преподавателю.', `Could not read the PostgreSQL version of directory ${dir} (${error.code}): the stand does not change it, ` +
+      'both directories and the markers are left as they were. Send the log to your teacher.'));
   }
   if (required) checkCluster(dir);
   if (major !== PG_MAJOR) {
-    throw new StandError(`Каталог ${dir} создан PostgreSQL ${major}, а в стенде – ${PG_RELEASE}: стенд его не меняет. ` +
-      'Запустите версию стенда, которая создала эту базу.');
+    throw new StandError(t(`Каталог ${dir} создан PostgreSQL ${major}, а в стенде – ${PG_RELEASE}: стенд его не меняет. ` +
+      'Запустите версию стенда, которая создала эту базу.', `Directory ${dir} was created by PostgreSQL ${major}, but the stand has ${PG_RELEASE}: the stand does not change it. ` +
+      'Run the stand version that created this database.'));
   }
 }
 
@@ -202,11 +207,12 @@ function ensurePassword(secretsDir, clusterExists) {
       restrictToUser(file);
       return { file, password: value, created: false };
     }
-    if (clusterExists) throw new StandError(`Файл пароля базы ${file} повреждён, а кластер на месте: к базе не подключиться.`);
+    if (clusterExists) throw new StandError(t(`Файл пароля базы ${file} повреждён, а кластер на месте: к базе не подключиться.`, `The database password file ${file} is damaged, but the cluster is in place: cannot connect to the database.`));
     fs.rmSync(file, { force: true });
   } else if (clusterExists) {
-    throw new StandError(`Кластер базы на месте, а файла пароля ${file} нет: без него к базе не подключиться. Верните файл ` +
-      'из копии служебной папки или начните с новой базы ключом --new-database (прежняя база останется в pg/backups).');
+    throw new StandError(t(`Кластер базы на месте, а файла пароля ${file} нет: без него к базе не подключиться. Верните файл ` +
+      'из копии служебной папки или начните с новой базы ключом --new-database (прежняя база останется в pg/backups).', `The database cluster is in place, but the password file ${file} is missing: without it the database cannot be reached. ` +
+      'Restore the file from a copy of the stand home folder or start with a new database using --new-database (the previous database stays in pg/backups).'));
   }
   fs.mkdirSync(secretsDir, { recursive: true, mode: 0o700 });
   restrictToUser(secretsDir);
@@ -233,8 +239,9 @@ function restrictToUser(target, platform = process.platform) {
     try { fs.chmodSync(target, fs.statSync(target).isDirectory() ? 0o700 : 0o600); } catch { /* проверка ниже */ }
     const mode = fs.statSync(target).mode;
     if (mode & 0o077) {
-      throw new StandError(`Права ${target} не ограничить владельцем (сейчас ${(mode & 0o777).toString(8)}): файл принадлежит ` +
-        'другому пользователю? Исправьте владельца или права и запустите стенд снова.');
+      throw new StandError(t(`Права ${target} не ограничить владельцем (сейчас ${(mode & 0o777).toString(8)}): файл принадлежит ` +
+        'другому пользователю? Исправьте владельца или права и запустите стенд снова.', `Cannot restrict ${target} to its owner (currently ${(mode & 0o777).toString(8)}): does the file belong to ` +
+        'another user? Fix the owner or permissions and start the stand again.'));
     }
     return;
   }
@@ -255,8 +262,9 @@ function restrictToUser(target, platform = process.platform) {
   const run = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
     { windowsHide: true, encoding: 'latin1', timeout: 60000, env: { ...process.env, LT_TARGET: target } });
   if (run.status !== 0) {
-    throw new StandError(`Не удалось закрыть ${target} от других пользователей (код ${run.status}). Укажите служебную папку в ` +
-      'своём профиле ключом --home.');
+    throw new StandError(t(`Не удалось закрыть ${target} от других пользователей (код ${run.status}). Укажите служебную папку в ` +
+      'своём профиле ключом --home.', `Could not restrict ${target} from other users (code ${run.status}). Choose a stand home folder in ` +
+      'your own profile using --home.'));
   }
 }
 
@@ -275,13 +283,15 @@ function checkCluster(dataDir) {
     }
   });
   if (bad.length) {
-    throw new StandError(`Каталог базы ${dataDir} неполный или повреждён (${bad.join(', ')}). Он не удаляется автоматически; ` +
-      'перенесите его в сторону и запустите стенд с ключом --new-database.');
+    throw new StandError(t(`Каталог базы ${dataDir} неполный или повреждён (${bad.join(', ')}). Он не удаляется автоматически; ` +
+      'перенесите его в сторону и запустите стенд с ключом --new-database.', `Database directory ${dataDir} is incomplete or damaged (${bad.join(', ')}). It is not deleted automatically; ` +
+      'move it aside and start the stand with --new-database.'));
   }
   const major = fs.readFileSync(path.join(dataDir, 'PG_VERSION'), 'utf8').trim();
   if (major !== PG_MAJOR) {
-    throw new StandError(`Каталог базы ${dataDir} создан PostgreSQL ${major}, а в стенде – ${PG_RELEASE}. Обновления ` +
-      'мажорной версии в стенде нет: запустите версию стенда, которая создала базу.');
+    throw new StandError(t(`Каталог базы ${dataDir} создан PostgreSQL ${major}, а в стенде – ${PG_RELEASE}. Обновления ` +
+      'мажорной версии в стенде нет: запустите версию стенда, которая создала базу.', `Database directory ${dataDir} was created by PostgreSQL ${major}, but the stand has ${PG_RELEASE}. The stand ` +
+      'has no major version upgrade: run the stand version that created the database.'));
   }
 }
 

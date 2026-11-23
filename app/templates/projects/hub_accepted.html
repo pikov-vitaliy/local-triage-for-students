@@ -1,10 +1,10 @@
 {% if pull_state and (pull_state.accepted or pull_state.pending) %}
 <section class="panel" id="hub-accepted-state">
-<h2>Принятое состояние Hub</h2>
+<h2>{{ _("Принятое состояние Hub") }}</h2>
 {% if pull_state.accepted %}
-<p>Состояние, принятое при синхронизации {{ pull_state.accepted.applied_at|ts }}. <a href="/projects/{{ project.id }}/hub-sync/{{ pull_state.accepted.run_id }}">Результат и интервал чтения</a></p>
-{% if pull_state.accepted.presence == 'absent' %}<p class="text-warn">Отсутствует в полном списке Hub. Запись сохранена; удаление не утверждается.</p>
-{% else %}<dl>{% for name, value in pull_state['values'].items() %}<dt>{{ {'status':'Статус','reason':'Основание','expiredAt':'Срок','summary':'Заголовок','command_text':'Текст дефекта'}.get(name,name) }}</dt><dd class="break">{% if value is mapping %}{{ value|tojson }}{% else %}{{ value if value is not none else 'Не задано' }}{% endif %}</dd>{% endfor %}</dl>{% endif %}
+<p>{{ _("Состояние, принятое при синхронизации {at}.", at=pull_state.accepted.applied_at|ts) }} <a href="/projects/{{ project.id }}/hub-sync/{{ pull_state.accepted.run_id }}">{{ _("Результат и интервал чтения") }}</a></p>
+{% if pull_state.accepted.presence == 'absent' %}<p class="text-warn">{{ _("Отсутствует в полном списке Hub. Запись сохранена; удаление не утверждается.") }}</p>
+{% else %}<dl>{% for name, value in pull_state['values'].items() %}<dt>{{ {'status':_('Статус'),'reason':_('Основание'),'expiredAt':_('Срок'),'summary':_('Заголовок'),'command_text':_('Текст дефекта')}.get(name,name) }}</dt><dd class="break">{% if value is mapping %}{{ value|tojson }}{% else %}{{ value if value is not none else _('Не задано') }}{% endif %}</dd>{% endfor %}</dl>{% endif %}
 {% endif %}
-{% if pull_state.pending %}<h3>Ждёт отправки в Hub</h3><p>Принятое состояние Hub показано выше. Ваши правки сохранены отдельно.</p><ul>{% for p in pull_state.pending %}<li><a href="/projects/{{ project.id }}/hub-pending/{{ p.id }}">Неотправленная правка от {{ p.created_at|ts }}</a></li>{% endfor %}</ul>{% endif %}
+{% if pull_state.pending %}<h3>{{ _("Ждёт отправки в Hub") }}</h3><p>{{ _("Принятое состояние Hub показано выше. Ваши правки сохранены отдельно.") }}</p><ul>{% for p in pull_state.pending %}<li><a href="/projects/{{ project.id }}/hub-pending/{{ p.id }}">{{ _("Неотправленная правка от {at}", at=p.created_at|ts) }}</a></li>{% endfor %}</ul>{% endif %}
 </section>{% endif %}

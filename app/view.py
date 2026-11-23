@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import math
 import re
@@ -20,6 +21,8 @@ from app.build_info import asset_version, build_info
 from app.config import stand_mode
 from app.defect import GOST_STATUS_BASIS, GOST_STATUS_NOTES
 from app.feeds import cwe_key
+from app import i18n
+from app.i18n import Labels
 from app.sca import norm_link, prerelease_versions
 from app.textsafe import mark_invisible
 
@@ -35,32 +38,32 @@ def is_test_path(path: Any) -> bool:
     return any(part.lower() in TEST_DIRS for part in parts)
 
 
-VERDICT_LABELS = {"true_positive": "истинная", "false_positive": "ложная", "uncertain": "неясно"}
-DECISION_LABELS = {"hub": "принято из Hub", "agree": "согласен", "disagree": "не согласен", "later": "отложено",
-                   "risk_accepted": "риск принят"}
-SEVERITY_LABELS = {"critical": "критическая", "high": "высокая", "medium": "средняя", "low": "низкая",
-                   "info": "информационная"}
-KIND_LABELS = {"SAST": "SAST", "SCA": "SCA", "SCA-license": "SCA, лицензии", "DAST": "DAST"}
-RUN_STATE_LABELS = {"queued": "в очереди", "running": "идёт", "paused": "на паузе", "stopped": "остановлен",
-                    "done": "завершён", "error": "ошибка"}
-SCOPE_LABELS = {"live": "живые в Hub", "all": "все SAST", "urgent": "только срочные", "selected": "выбранные"}
-ITEM_STATE_LABELS = {"pending": "ждёт", "done": "готово", "cached": "готовый", "skipped": "пропущено",
-                     "error": "ошибка"}
-CONTEXT_LABELS = {"ok": "код из клона", "export_line_only": "только строка из выгрузки",
+VERDICT_LABELS = Labels({"true_positive": "истинная", "false_positive": "ложная", "uncertain": "неясно"})
+DECISION_LABELS = Labels({"hub": "принято из Hub", "agree": "согласен", "disagree": "не согласен", "later": "отложено",
+                   "risk_accepted": "риск принят"})
+SEVERITY_LABELS = Labels({"critical": "критическая", "high": "высокая", "medium": "средняя", "low": "низкая",
+                   "info": "информационная"})
+KIND_LABELS = Labels({"SAST": "SAST", "SCA": "SCA", "SCA-license": "SCA, лицензии", "DAST": "DAST"})
+RUN_STATE_LABELS = Labels({"queued": "в очереди", "running": "идёт", "paused": "на паузе", "stopped": "остановлен",
+                    "done": "завершён", "error": "ошибка"})
+SCOPE_LABELS = Labels({"live": "живые в Hub", "all": "все SAST", "urgent": "только срочные", "selected": "выбранные"})
+ITEM_STATE_LABELS = Labels({"pending": "ждёт", "done": "готово", "cached": "готовый", "skipped": "пропущено",
+                     "error": "ошибка"})
+CONTEXT_LABELS = Labels({"ok": "код из клона", "export_line_only": "только строка из выгрузки",
                   "file_missing": "файл не найден в клоне", "no_repo": "нет клона", "too_large": "файл слишком большой",
-                  "binary": "двоичный файл"}
+                  "binary": "двоичный файл"})
 # Причина отсутствия кода в срезе (бэклог 103, план dev18): по `reason` среза (app/context.py), статус не участвует –
 # при строке выгрузки статус всегда `export_line_only`. Только представление: модели уходят прежние тексты.
-CODE_REASON_LABELS = {"no_repo": "клон не подключён", "ambiguous": "файл найден неоднозначно или обход клона не завершён",
+CODE_REASON_LABELS = Labels({"no_repo": "клон не подключён", "ambiguous": "файл найден неоднозначно или обход клона не завершён",
                       "unreadable": "файл не прочитан", "empty": "файл пуст",
                       "line_out_of_range": "строка за пределами файла", "binary": "двоичный файл",
-                      "too_large": "файл слишком большой"}
+                      "too_large": "файл слишком большой"})
 _ARCHIVE_PART = re.compile(r"\.(?:jar|war|ear|aar|zip)(?:!?/)", re.IGNORECASE)
 
 
 CODE_REASON_KEYS = ("file_missing", "no_file", *CODE_REASON_LABELS, "unknown")
-CODE_REASON_KEY_LABELS = {"file_missing": "файла нет в клоне", "no_file": "в находке не указан файл",
-                          **CODE_REASON_LABELS, "unknown": "причина не записана"}
+CODE_REASON_KEY_LABELS = Labels({"file_missing": "файла нет в клоне", "no_file": "в находке не указан файл",
+                                 **CODE_REASON_LABELS, "unknown": "причина не записана"})
 
 
 def code_reason_key(status: str | None, reason: str | None, file: str | None) -> str:
@@ -87,17 +90,28 @@ def code_reason(status: str | None, reason: str | None, file: str | None, lines:
         return ""
     label = CODE_REASON_KEY_LABELS[key]
     if in_archive(reason, file):
-        label += ", внутри архива"
+        label += i18n._(", внутри архива")
     if not lines:
-        label += ", строки выгрузки нет"
+        label += i18n._(", строки выгрузки нет")
     return label
 
 
-MASKED_LABELS = {"SECRET": "секретов", "EMAIL": "адресов почты", "PHONE": "телефонов", "INN": "ИНН", "SNILS": "СНИЛС",
-                 "PASSPORT": "паспортов"}
-PHASE_LABELS = {"context": "собирается контекст", "model": "запрос модели",
+MASKED_LABELS = Labels({"SECRET": "секретов", "EMAIL": "адресов почты", "PHONE": "телефонов", "INN": "ИНН", "SNILS": "СНИЛС",
+                 "PASSPORT": "паспортов"})
+PHASE_LABELS = Labels({"context": "собирается контекст", "model": "запрос модели",
                 "waiting":"ожидание первого фрагмента", "generating":"модель формирует ответ",
-                "validating":"проверяется ответ", "saving":"сохраняется результат"}
+                "validating":"проверяется ответ", "saving":"сохраняется результат"})
+# откуда имя модели в списке выбора, если сервер не отдал список моделей (ADR-0106 п. 7)
+MODEL_ORIGIN_LABELS = Labels({"profile": "имя из профиля, список моделей сервер не отдаёт",
+                              "verdict": "модель прежнего разбора, список моделей сервер не отдаёт"})
+
+
+def context_note(text: Any) -> str:
+    """Заметка среза кода (CodeContext.note) на языке интерфейса. В срезе она хранится русским каноническим текстом:
+    уходит в промпт и в отпечаток случая (ADR-0158), поэтому переводится только при показе."""
+    from app.context import NOTE_TEXTS
+    from app.run_errors import known_parts
+    return known_parts(text, NOTE_TEXTS)
 
 
 # ============================================================================ числа и время
@@ -117,7 +131,8 @@ def fmt_num(value: Any, digits: int = 1) -> str:
     number = num(value)
     if number is None:
         return "–"
-    return f"{number:.{digits}f}".replace(".", ",")
+    text = f"{number:.{digits}f}"
+    return text.replace(".", ",") if i18n.current() == "ru" else text  # десятичный знак – по языку интерфейса
 
 
 def fmt_size(value: Any) -> str:
@@ -126,7 +141,7 @@ def fmt_size(value: Any) -> str:
     if number is None or number <= 0:
         return "–"
     mib = number / (1024 * 1024)
-    return f"{fmt_num(mib / 1024)} ГБ" if mib >= 1024 else f"{round(mib)} МБ"
+    return i18n._("{size} ГБ", size=fmt_num(mib / 1024)) if mib >= 1024 else i18n._("{size} МБ", size=round(mib))
 
 
 def model_option(model: Any) -> str:
@@ -137,13 +152,12 @@ def model_option(model: Any) -> str:
     caps = m.get("capabilities")
     parts = [fmt_size(m.get("size")), str(m.get("params") or "")]
     if isinstance(caps, (list, tuple)):
-        parts.append("с рассуждением" if "thinking" in caps else "без рассуждения")
+        parts.append(i18n._("с рассуждением") if "thinking" in caps else i18n._("без рассуждения"))
     extra = ", ".join(p for p in parts if p and p != "–")
     name = str(m.get("name") or "")
     label = f"{name} ({extra})" if extra else name
     # сервер не отдал список моделей (ADR-0106 п. 7): откуда имя – видно в списке, есть ли модель у сервера, не проверено
-    origin = {"profile": "имя из профиля, список моделей сервер не отдаёт",
-              "verdict": "модель прежнего разбора, список моделей сервер не отдаёт"}.get(str(m.get("source") or ""))
+    origin = MODEL_ORIGIN_LABELS.get(str(m.get("source") or ""))
     return f"{label} – {origin}" if origin else label
 
 
@@ -151,7 +165,8 @@ def fmt_mib(value: Any) -> str:
     number = num(value)
     if number is None:
         return "–"
-    return f"{fmt_num(number / 1024)} ГБ" if number >= 1024 else f"{round(number)} МБ"
+    return i18n._("{size} ГБ", size=fmt_num(number / 1024)) if number >= 1024 else i18n._("{size} МБ",
+                                                                                           size=round(number))
 
 
 def fmt_duration(value: Any) -> str:
@@ -160,12 +175,12 @@ def fmt_duration(value: Any) -> str:
         return "–"
     seconds = max(0, int(round(number)))
     if seconds < 60:
-        return f"{seconds} с"
+        return i18n._("{sec} с", sec=seconds)
     minutes, seconds = divmod(seconds, 60)
     if minutes < 60:
-        return f"{minutes} мин {seconds:02d} с"
+        return i18n._("{min} мин {sec} с", min=minutes, sec=f"{seconds:02d}")
     hours, minutes = divmod(minutes, 60)
-    return f"{hours} ч {minutes:02d} мин"
+    return i18n._("{hours} ч {min} мин", hours=hours, min=f"{minutes:02d}")
 
 
 def fmt_ts(value: Any) -> str:
@@ -188,18 +203,13 @@ def fmt_report_date(value: Any) -> str:
 
 
 def plural(count: Any, one: str, few: str, many: str) -> str:
-    """Форма слова для числа: 1 находка, 2 находки, 5 находок, 21 находка."""
-    n = abs(int(count or 0))
-    if n % 10 == 1 and n % 100 != 11:
-        return one
-    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
-        return few
-    return many
+    """Форма слова для числа: 1 находка, 2 находки, 5 находок; при английском языке – из каталога (app/i18n.py)."""
+    return i18n.plural(count, one, few, many)
 
 
 def findings_genitive(count: int) -> str:
-    """«у 1 находки», «у 2 находок», «у 21 находки»."""
-    return "находки" if count % 10 == 1 and count % 100 != 11 else "находок"
+    """«у 1 находки», «у 2 находок», «у 21 находки»; при английском – finding / findings."""
+    return i18n.plural(count, "находки", "находок", "находок")
 
 
 def masked_summary(masked: dict[str, int]) -> str:
@@ -211,8 +221,8 @@ def masked_summary(masked: dict[str, int]) -> str:
 
 def reopened_note(count: int) -> str:
     """Пояснение к сообщению: у скольких находок снята отметка «Проверено» из-за смены папки с кодом."""
-    return (f"У {count} {findings_genitive(count)} снята отметка «Проверено»: код для них теперь берётся из другой "
-            "папки, посмотрите их заново.")
+    return i18n._("У {count} {findings} снята отметка «Проверено»: код для них теперь берётся из другой папки, "
+                  "посмотрите их заново.", count=count, findings=findings_genitive(count))
 
 
 def revision_note(notice: dict | None) -> str:
@@ -221,10 +231,12 @@ def revision_note(notice: dict | None) -> str:
         return ""
     names = ", ".join(str(name) for name in notice["codebases"])
     count = int(notice.get("reopened") or 0)
-    text = (f"Сменилась ревизия клона ({names}): код в папке другой, чем при прошлой сверке (git pull, другая ветка "
-            "или другая папка с репозиториями). Срезы кода этих кодовых баз сброшены – запустите для них прогон заново")
+    text = i18n._("Сменилась ревизия клона ({names}): код в папке другой, чем при прошлой сверке (git pull, другая "
+                  "ветка или другая папка с репозиториями). Срезы кода этих кодовых баз сброшены – запустите для них "
+                  "прогон заново", names=names)
     if count:
-        text += f"; у {count} {findings_genitive(count)} снята отметка «Проверено», посмотрите их ещё раз"
+        text += i18n._("; у {count} {findings} снята отметка «Проверено», посмотрите их ещё раз", count=count,
+                       findings=findings_genitive(count))
     return text + "."
 
 
@@ -240,24 +252,27 @@ def code_change_note(notice: dict | None, reviewed: int | None = None) -> str:
     complete = not notice.get("legacy") and not notice.get("truncated")
     if ids and complete and reviewed is not None and reviewed >= len(ids):
         return ""
-    names = ", ".join(str(name) for name in notice.get("codebases") or [] if name) or "без кодовой базы"
+    names = ", ".join(str(name) for name in notice.get("codebases") or [] if name) or i18n._("без кодовой базы")
     count = int(notice["reopened"])
     rebuilt = min(int(notice.get("rebuilt") or 0), count)
     unclear = min(int(notice.get("unclear") or 0), count - rebuilt)
     changed = count - rebuilt - unclear
     parts = []
     if changed:
-        parts.append(f"код в клоне изменился без смены ревизии у {changed} {findings_genitive(changed)} – правки в "
-                     "рабочей копии или папка без .git")
+        parts.append(i18n._("код в клоне изменился без смены ревизии у {count} {findings} – правки в рабочей копии или "
+                            "папка без .git", count=changed, findings=findings_genitive(changed)))
     if rebuilt:
-        parts.append(f"у {rebuilt} {findings_genitive(rebuilt)} срез пересобран новой версией приложения, код в клоне "
-                     "тот же – изменились метки маскирования или сверка строки из выгрузки")
+        parts.append(i18n._("у {count} {findings} срез пересобран новой версией приложения, код в клоне тот же – "
+                            "изменились метки маскирования или сверка строки из выгрузки", count=rebuilt,
+                            findings=findings_genitive(rebuilt)))
     if unclear:
-        parts.append(f"у {unclear} {findings_genitive(unclear)} код сейчас не тот, по которому принято решение: "
-                     "изменился код в клоне или срез пересобран новой версией приложения")
+        parts.append(i18n._("у {count} {findings} код сейчас не тот, по которому принято решение: изменился код в "
+                            "клоне или срез пересобран новой версией приложения", count=unclear,
+                            findings=findings_genitive(unclear)))
     # без «Модель разобрала эти находки заново»: отметку снимает и сверка срезов, когда модель недоступна (ревью
     # Codex ветки долга, круг 5)
-    return f"Снята отметка «Проверено» ({names}): {'; '.join(parts)}. Посмотрите эти находки ещё раз."
+    return i18n._("Снята отметка «Проверено» ({names}): {parts}. Посмотрите эти находки ещё раз.", names=names,
+                  parts="; ".join(parts))
 
 
 # ============================================================================ текст модели
@@ -278,8 +293,8 @@ def _link_lines(escaped: str, shown: set[int] | None) -> str:
         n = int(m.group(2))
         if n in shown:
             return f'<a class="line-ref" href="#L{n}">{m.group(0)}</a>'
-        return (f'<span class="line-ref-missing" title="Строки {n} нет в показанном коде – ссылка не подтверждена">'
-                f'{m.group(0)}</span>')
+        title = html.escape(i18n._("Строки {n} нет в показанном коде – ссылка не подтверждена", n=n), quote=True)
+        return f'<span class="line-ref-missing" title="{title}">{m.group(0)}</span>'
 
     return _LINE_REF.sub(repl, escaped)
 
@@ -354,7 +369,7 @@ def hub_text(value) -> str:
 
 
 TEXT_CHANGES_MAX_LINES = 2000
-TEXT_CHANGES_TOO_LONG = "Описание слишком длинное, перечень не построен: сравните колонки «Было» и «Станет»."
+TEXT_CHANGES_TOO_LONG = i18n.N_("Описание слишком длинное, перечень не построен: сравните колонки «Было» и «Станет».")
 
 
 def text_changes(before, after) -> list[str]:
@@ -369,7 +384,7 @@ def text_changes(before, after) -> list[str]:
     # сравнение целых строк, без посимвольного разбора; страница строится при каждом открытии, поэтому объём ограничен
     old, new = lines(before), lines(after)
     if len(old) + len(new) > TEXT_CHANGES_MAX_LINES:
-        return [TEXT_CHANGES_TOO_LONG]
+        return [i18n._(TEXT_CHANGES_TOO_LONG)]
     out: list[str] = []
     for tag, i1, i2, j1, j2 in SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
         if tag != "equal":
@@ -381,14 +396,14 @@ def number_key(key: str) -> str:
     """Ключ номера дефекта словами: «sca:v3|[…]» – экосистема · компонент · версия (и набор), «sast:<ID>» – находка."""
     text = str(key or "")
     if text.startswith("sast:"):
-        return "находка " + text[5:]
+        return i18n._("находка {id}", id=text[5:])
     if text.startswith("sca:") and "|" in text:
         body, _, set_no = text.split("|", 1)[1].partition("#")
         try:
             parts = json.loads(body)
         except ValueError:
             return text
-        return " · ".join(str(p) for p in parts) + (f" · набор {set_no}" if set_no else "")
+        return " · ".join(str(p) for p in parts) + (i18n._(" · набор {number}", number=set_no) if set_no else "")
     return text
 
 
@@ -403,10 +418,21 @@ def make_templates() -> Jinja2Templates:
                        model_option=model_option, list_anchor=list_anchor,
                        report_date=fmt_report_date, model_text=model_text, fix_text=fix_text,
                        reveal_labels=reveal_labels,
-                       masked_summary=masked_summary, plural=plural,
+                       masked_summary=masked_summary, plural=plural, context_note=context_note,
                        code_text=mark_invisible, norm_link=norm_link, hub_text=hub_text,
                        json_text=json_text, number_key=number_key, text_changes=text_changes,
                        prerelease_versions=prerelease_versions)
+    # язык интерфейса (ADR-0158): _() – перевод, lang() – код языка для <html lang>, js_catalog() – строки сценариев
+    from app.hub_ops import error_text as hub_error_text  # хранимые ошибки операций Hub – при показе (ADR-0158)
+    from app.defect_drafts import conflict_text
+    from app.run_errors import shown_error
+    from app.sca_research_net import reason_text as research_reason
+    # хранимые русские тексты (канонические, по ним идёт классификация) – на языке интерфейса при показе (ADR-0158)
+    from app.examples import rule_text
+    env.filters.update(conflict_text=conflict_text, run_error=shown_error, research_reason=research_reason,
+                       rule_text=rule_text, tr=i18n._,
+                       hub_error=hub_error_text)
+    env.globals.update(hub_error_text=hub_error_text, _=i18n._, N_=i18n.N_, lang=i18n.html_lang, js_catalog=i18n.js_catalog, plural=plural)
     env.globals.update(VERDICT_LABELS=VERDICT_LABELS, DECISION_LABELS=DECISION_LABELS,
                        SEVERITY_LABELS=SEVERITY_LABELS, KIND_LABELS=KIND_LABELS, RUN_STATE_LABELS=RUN_STATE_LABELS,
                        SCOPE_LABELS=SCOPE_LABELS, ITEM_STATE_LABELS=ITEM_STATE_LABELS,

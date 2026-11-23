@@ -19,13 +19,14 @@ const { getJson } = require('./lib/http');
 const paths = require('./lib/paths');
 const pg = require('./lib/pg');
 const { appVersionOf } = require('./lib/version');
+const { t, setLang, lang, normalize: normalizeLang } = require('./lib/lang');
 
 const PACKAGE_DIR = path.resolve(__dirname, '..');
 const PKG = JSON.parse(fs.readFileSync(path.join(PACKAGE_DIR, 'package.json'), 'utf8'));
 const WAIT_INSTALL_MS = 15 * 60000;
 const WAIT_START_MS = 2 * 60000;
 
-const HELP = `Учебный стенд «Локальный триаж» ${PKG.version}
+const HELP_RU = `Учебный стенд «Локальный триаж» ${PKG.version}
 
   npx local-triage [ключи]
 
@@ -37,14 +38,41 @@ const HELP = `Учебный стенд «Локальный триаж» ${PKG.
   --local-only      внешние провайдеры моделей выключены; Ollama и подтверждённые серверы локальной сети остаются
   --new-database    начать с новой базы (прежняя остаётся в pg/backups служебной папки)
   --reinstall       заново поставить окружение Python этой версии
+  --lang en|ru      язык окна стенда и интерфейса (по умолчанию английский; или TRIAGE_LANG=ru)
   --where           показать папки стенда и выйти
   --doctor          проверить окружение и выйти
   --version         версия стенда
   --help            эта справка`;
 
+const HELP_EN = `Local Triage training stand ${PKG.version}
+
+  npx local-triage [options]
+
+Options:
+  --port N          app port (default: the first free port from 8765)
+  --no-open         do not open the browser
+  --home FOLDER     stand home folder (database, Python, logs) – a separate new folder; another folder is another stand
+  --code-dir FOLDER code folder with the examples for your IDE (set on the first run, cannot be changed later)
+  --local-only      external model providers are disabled; Ollama and confirmed local network servers remain
+  --new-database    start with a new database (the previous one stays in pg/backups of the home folder)
+  --reinstall       reinstall the Python environment of this version
+  --lang en|ru      language of the stand window and the interface (default: English; also TRIAGE_LANG=ru)
+  --where           show the stand folders and exit
+  --doctor          check the environment and exit
+  --version         stand version
+  --help            this help`;
+
+/** Язык до разбора ключей: и сообщение об ошибке в ключах выходит на выбранном языке. */
+function presetLang(argv) {
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === '--lang' && i + 1 < argv.length) setLang(argv[i + 1]);
+    else if (argv[i].startsWith('--lang=')) setLang(argv[i].slice('--lang='.length));
+  }
+}
+
 function parseArgs(argv) {
   const opts = { port: 0, portGiven: false, open: true, home: '', codeDir: '', local: false, newDatabase: false, reinstall: false,
-    where: false, doctor: false, version: false, help: false };
+    where: false, doctor: false, version: false, help: false, lang: '' };
   for (let i = 0; i < argv.length; i += 1) {
     let arg = argv[i];
     let inline = null;
@@ -52,16 +80,18 @@ function parseArgs(argv) {
     const value = () => {
       if (inline !== null) return inline;
       i += 1;
-      if (i >= argv.length) throw new paths.StandError(`Ключу ${arg} нужно значение.`);
+      if (i >= argv.length) throw new paths.StandError(t(`Ключу ${arg} нужно значение.`, `Option ${arg} needs a value.`));
       return argv[i];
     };
     const flag = () => {
-      if (inline !== null) throw new paths.StandError(`Ключ ${arg} пишется без значения (без «=${inline}»).`);
+      if (inline !== null) throw new paths.StandError(t(`Ключ ${arg} пишется без значения (без «=${inline}»).`,
+        `Option ${arg} takes no value (without "=${inline}").`));
       return true;
     };
     const path_ = () => {
       const v = String(value()).trim();
-      if (!v) throw new paths.StandError(`Ключу ${arg} нужна папка – пустое значение не принимается.`);
+      if (!v) throw new paths.StandError(t(`Ключу ${arg} нужна папка – пустое значение не принимается.`,
+        `Option ${arg} needs a folder – an empty value is not accepted.`));
       return v;
     };
     if (arg === '--port') {
@@ -71,6 +101,11 @@ function parseArgs(argv) {
     }
     else if (arg === '--home') opts.home = path_();
     else if (arg === '--code-dir') opts.codeDir = path_();
+    else if (arg === '--lang') {
+      const raw = String(value()).trim();
+      opts.lang = normalizeLang(raw);
+      if (!opts.lang) throw new paths.StandError(t(`--lang: нужен язык en или ru, а не «${raw}».`, `--lang: expected en or ru, not "${raw}".`));
+    }
     else if (arg === '--no-open') opts.open = !flag();
     else if (arg === '--local-only') opts.local = flag();
     else if (arg === '--new-database') opts.newDatabase = flag();
@@ -79,10 +114,11 @@ function parseArgs(argv) {
     else if (arg === '--doctor') opts.doctor = flag();
     else if (arg === '--version' || arg === '-v') opts.version = flag();
     else if (arg === '--help' || arg === '-h') opts.help = flag();
-    else throw new paths.StandError(`Неизвестный ключ ${argv[i]}. Список ключей: npx local-triage --help`);
+    else throw new paths.StandError(t(`Неизвестный ключ ${argv[i]}. Список ключей: npx local-triage --help`,
+      `Unknown option ${argv[i]}. List of options: npx local-triage --help`));
   }
   if (opts.portGiven && (!Number.isInteger(opts.port) || opts.port < 1024 || opts.port > 65535)) {
-    throw new paths.StandError('--port: нужен номер порта от 1024 до 65535.');
+    throw new paths.StandError(t('--port: нужен номер порта от 1024 до 65535.', '--port: expected a port number from 1024 to 65535.'));
   }
   return opts;
 }
@@ -140,10 +176,14 @@ async function waitOther(port, expect) {
     if (now.state === 'busy') continue;
     if (closing && now.state === 'free') return AGAIN; // дождались закрытия – запускаемся сами
     if (now.state !== 'ours' || !sameStand(now.status, expect)) {
-      throw new paths.StandError('Стенд в другом окне остановился или сменился. Запустите стенд снова.');
+      throw new paths.StandError(t('Стенд в другом окне остановился или сменился. Запустите стенд снова.',
+        'The stand in the other window stopped or changed. Start the stand again.'));
     }
     const { phase, url, message } = now.status;
-    if (phase === 'failed') throw new paths.StandError(`Стенд в другом окне не запустился: ${message || 'подробности – в том окне'}.`);
+    if (phase === 'failed') {
+      throw new paths.StandError(t(`Стенд в другом окне не запустился: ${message || 'подробности – в том окне'}.`,
+        `The stand in the other window did not start: ${message || 'see the details in that window'}.`));
+    }
     // готовность держателя – и ответ самого приложения: база могла пропасть после первой готовности (ревью круга 6)
     const appOk = phase === 'ready' && url && !now.status.stopping &&
       (await getJson(now.status.app_port, '/healthz', 3000).then((r) => r.state === 'ok' && r.data &&
@@ -152,16 +192,20 @@ async function waitOther(port, expect) {
         Boolean(now.status.app_token) && r.data.stand && r.data.stand.token === now.status.app_token));
     if (appOk) {
       if (expect.port && now.status.app_port !== expect.port) {
-        throw new paths.StandError(`Стенд в другом окне работает на порту ${now.status.app_port}, а --port ${expect.port} ` +
-          'действует только при новом запуске. Закройте окно стенда и запустите команду снова.');
+        throw new paths.StandError(t(`Стенд в другом окне работает на порту ${now.status.app_port}, а --port ${expect.port} ` +
+          'действует только при новом запуске. Закройте окно стенда и запустите команду снова.',
+          `The stand in the other window runs on port ${now.status.app_port}, and --port ${expect.port} ` +
+          'applies only to a new start. Close the stand window and run the command again.'));
       }
       return url;
     }
     const shown = now.status.stopping || phase === 'stopping' ? 'stopping' : phase;
     if (shown !== last) {
-      const text = { installing: 'Стенд в другом окне ещё устанавливается – жду…',
-        stopping: 'Стенд в другом окне останавливается – жду, пока он закроется, и запущу его снова…',
-        restarting: 'Стенд в другом окне перезапускает приложение – жду…' }[shown] || 'Стенд в другом окне запускается – жду…';
+      const text = { installing: t('Стенд в другом окне ещё устанавливается – жду…', 'The stand in the other window is still installing – waiting…'),
+        stopping: t('Стенд в другом окне останавливается – жду, пока он закроется, и запущу его снова…',
+          'The stand in the other window is stopping – waiting for it to close, then I will start it again…'),
+        restarting: t('Стенд в другом окне перезапускает приложение – жду…', 'The stand in the other window is restarting the app – waiting…') }[shown]
+        || t('Стенд в другом окне запускается – жду…', 'The stand in the other window is starting – waiting…');
       console.log(text);
       if (shown !== 'installing') deadline = Math.min(deadline, Date.now() + WAIT_START_MS);
       closing = shown === 'stopping';
@@ -169,7 +213,8 @@ async function waitOther(port, expect) {
     }
     await new Promise((r) => setTimeout(r, 1000));
   }
-  throw new paths.StandError('Стенд в другом окне не стал готов вовремя: посмотрите сообщения в том окне.');
+  throw new paths.StandError(t('Стенд в другом окне не стал готов вовремя: посмотрите сообщения в том окне.',
+    'The stand in the other window did not become ready in time: check the messages in that window.'));
 }
 
 function portBusy(port) {
@@ -183,18 +228,25 @@ function portBusy(port) {
 
 async function doctor(home, codeDir, lockPort, local = false) {
   const margin = paths.pathMargin(codeDir);
-  console.log(`Стенд ${PKG.version}, Node ${process.version}, ${process.platform}-${process.arch}`);
-  try { console.log(`PostgreSQL: пакет ${pg.platformPackage()} ${pg.PACKAGE_VERSION}`); } catch (e) { console.log(e.message); }
-  console.log(`Служебная папка: ${home}\nПапка кода: ${margin.path} (запас длины пути – ${margin.margin} знаков)`);
-  console.log(`Служебный порт стенда: ${lockPort}`);
+  console.log(t(`Стенд ${PKG.version}, Node ${process.version}, ${process.platform}-${process.arch}`,
+    `Stand ${PKG.version}, Node ${process.version}, ${process.platform}-${process.arch}`));
+  try { console.log(t(`PostgreSQL: пакет ${pg.platformPackage()} ${pg.PACKAGE_VERSION}`, `PostgreSQL: package ${pg.platformPackage()} ${pg.PACKAGE_VERSION}`)); } catch (e) { console.log(e.message); }
+  console.log(t(`Служебная папка: ${home}\nПапка кода: ${margin.path} (запас длины пути – ${margin.margin} знаков)`,
+    `Home folder: ${home}\nCode folder: ${margin.path} (path length margin – ${margin.margin} characters)`));
+  console.log(t(`Служебный порт стенда: ${lockPort}`, `Stand service port: ${lockPort}`));
   let saved = {};
   try { saved = JSON.parse(fs.readFileSync(path.join(home, 'stand.json'), 'utf8')); } catch { saved = {}; }
-  for (const [what, port] of [['базы', saved.pg_port], ['приложения', saved.app_port]]) {
-    if (port) console.log(`Порт ${what} из прошлого запуска: ${port} (${(await portBusy(port)) ? 'сейчас занят' : 'сейчас свободен'})`);
+  for (const [what, port] of [[t('базы', 'database'), saved.pg_port], [t('приложения', 'app'), saved.app_port]]) {
+    if (!port) continue;
+    const busy = await portBusy(port);
+    console.log(t(`Порт ${what} из прошлого запуска: ${port} (${busy ? 'сейчас занят' : 'сейчас свободен'})`,
+      `${what[0].toUpperCase()}${what.slice(1)} port from the previous run: ${port} (${busy ? 'busy now' : 'free now'})`));
   }
   try {
     const stat = fs.statfsSync(home);
-    console.log(`Свободно на диске служебной папки: ${Math.round((stat.bavail * stat.bsize) / 2 ** 30)} ГБ (нужно около 2 ГБ)`);
+    const free = Math.round((stat.bavail * stat.bsize) / 2 ** 30);
+    console.log(t(`Свободно на диске служебной папки: ${free} ГБ (нужно около 2 ГБ)`,
+      `Free space on the home folder disk: ${free} GB (about 2 GB needed)`));
   } catch { /* statfs нет – пропускаем */ }
   return new Promise((resolve) => {
     const req = http.get({ host: '127.0.0.1', port: 11434, path: '/api/version', timeout: 2000 }, (res) => {
@@ -204,24 +256,31 @@ async function doctor(home, codeDir, lockPort, local = false) {
         let version = '';
         try { version = res.statusCode === 200 ? String(JSON.parse(body).version || '') : ''; } catch { version = ''; }
         // ответ любого HTTP-сервиса – не Ollama: нужен успешный /api/version с версией (ревью круга 7)
-        console.log(version ? `Ollama на этом компьютере отвечает (версия ${version}).${local ? ' Внешние провайдеры выключены (--local-only).' : ''}`
-          : `На порту 11434 отвечает не Ollama (HTTP ${res.statusCode}).`);
+        console.log(version
+          ? t(`Ollama на этом компьютере отвечает (версия ${version}).${local ? ' Внешние провайдеры выключены (--local-only).' : ''}`,
+            `Ollama on this computer responds (version ${version}).${local ? ' External providers are disabled (--local-only).' : ''}`)
+          : t(`На порту 11434 отвечает не Ollama (HTTP ${res.statusCode}).`, `Something other than Ollama responds on port 11434 (HTTP ${res.statusCode}).`));
         resolve();
       });
     });
     req.on('timeout', () => req.destroy(new Error('timeout')));
     req.on('error', () => {
-      console.log('Ollama на этом компьютере (127.0.0.1:11434) не отвечает. ' + (local
+      console.log(t('Ollama на этом компьютере (127.0.0.1:11434) не отвечает. ' + (local
         ? 'Внешние провайдеры выключены (--local-only); остаются серверы моделей в локальной сети с подтверждённым адресом.'
-        : 'Серверы моделей в локальной сети и внешние провайдеры – по настройкам профиля.'));
+        : 'Серверы моделей в локальной сети и внешние провайдеры – по настройкам профиля.'),
+      'Ollama on this computer (127.0.0.1:11434) does not respond. ' + (local
+        ? 'External providers are disabled (--local-only); model servers on the local network with a confirmed address remain.'
+        : 'Model servers on the local network and external providers – according to the profile settings.')));
       resolve();
     });
   });
 }
 
 async function main() {
+  presetLang(process.argv.slice(2));
   const opts = parseArgs(process.argv.slice(2));
-  if (opts.help) { console.log(HELP); return 0; }
+  if (opts.lang) setLang(opts.lang);
+  if (opts.help) { console.log(t(HELP_RU, HELP_EN)); return 0; }
   if (opts.version) { console.log(PKG.version); return 0; }
   pg.platformPackage(); // Windows на ARM64 и прочие платформы – отказ до установки
   const resolved = paths.resolveHome({ override: opts.home });
@@ -233,10 +292,12 @@ async function main() {
   const codeDir = paths.resolveCodeDir({ override: opts.codeDir || saved });
   const lockPort = paths.lockPortOf(home);
   if (resolved.how !== 'as-is') {
-    console.log(`Путь ${resolved.requested} содержит буквы не из латиницы: служебная папка стенда – ${home}.`);
+    console.log(t(`Путь ${resolved.requested} содержит буквы не из латиницы: служебная папка стенда – ${home}.`,
+      `Path ${resolved.requested} contains non-Latin letters: the stand home folder is ${home}.`));
   }
   if (opts.where) {
-    console.log(`Служебная папка: ${home}\nПапка кода: ${codeDir}\nЖурналы: ${path.join(home, 'logs')}`);
+    console.log(t(`Служебная папка: ${home}\nПапка кода: ${codeDir}\nЖурналы: ${path.join(home, 'logs')}`,
+      `Home folder: ${home}\nCode folder: ${codeDir}\nLogs: ${path.join(home, 'logs')}`));
     return 0;
   }
   if (opts.doctor) { await doctor(home, codeDir, lockPort, Boolean(opts.local)); return 0; }
@@ -248,7 +309,8 @@ async function main() {
     const code = other.state === 'free' ? await runHolder(ctx) : await joinOther(other, ctx);
     if (code !== AGAIN) return code;
   }
-  console.log('Стенд в другом окне несколько раз закрывался и открывался заново. Запустите стенд ещё раз.');
+  console.log(t('Стенд в другом окне несколько раз закрывался и открывался заново. Запустите стенд ещё раз.',
+    'The stand in the other window closed and reopened several times. Start the stand once more.'));
   return 1;
 }
 
@@ -258,8 +320,11 @@ async function runHolder(ctx) {
   const { lockPort, home, codeDir, appVersion, opts } = ctx;
   let build = {};
   try { build = JSON.parse(fs.readFileSync(path.join(PACKAGE_DIR, 'npm', 'build.json'), 'utf8')); } catch { build = {}; }
+  // язык окна – держателю для его сообщений; приложению – только явно заданный (--lang или TRIAGE_LANG), иначе
+  // приложение берёт сохранённую настройку или английский (ADR-0158)
+  const appLang = opts.lang || normalizeLang(process.env.TRIAGE_LANG);
   const supervisorOpts = { home, codeDir, packageDir: PACKAGE_DIR, appVersion, lockPort, port: opts.port, local: opts.local,
-    newDatabase: opts.newDatabase, reinstall: opts.reinstall, build };
+    newDatabase: opts.newDatabase, reinstall: opts.reinstall, build, lang: lang(), appLang };
   const child = spawn(process.execPath, [path.join(__dirname, 'lib', 'supervisor.js'), JSON.stringify(supervisorOpts)],
     { cwd: home, detached: true, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
   child.stdin.on('error', () => {});
@@ -267,7 +332,7 @@ async function runHolder(ctx) {
   const stop = () => {
     if (stopping) return;
     stopping = true;
-    console.log('\nОстанавливаю стенд…');
+    console.log(t('\nОстанавливаю стенд…', '\nStopping the stand…'));
     try { child.stdin.end(); } catch { /* держатель уже вышел */ }
   };
   for (const sig of SIGNALS) {
@@ -277,7 +342,8 @@ async function runHolder(ctx) {
     if (line.startsWith('@@ready ')) {
       const url = line.slice(8).trim();
       if (shouldOpen(opts)) openBrowser(url);
-      console.log(`\nСтенд открыт: ${url}\nОстановить – Ctrl+C в этом окне или закрыть окно.${os.EOL}`);
+      console.log(t(`\nСтенд открыт: ${url}\nОстановить – Ctrl+C в этом окне или закрыть окно.${os.EOL}`,
+        `\nThe stand is open: ${url}\nTo stop it, press Ctrl+C in this window or close the window.${os.EOL}`));
     } else if (!line.startsWith('@@')) {
       console.log(line);
     }
@@ -308,50 +374,60 @@ function sameStand(s, expect) {
 async function joinOther(other, { lockPort, home, codeDir, appVersion, opts, explicitCodeDir }) {
   if (other.state === 'free') return AGAIN; // держатель другого окна только что вышел
   if (other.state === 'busy') {
-    console.log(`Служебный порт стенда ${lockPort} не отвечает: стенд в другом окне занят долгой операцией. Подождите и ` +
-      'запустите стенд снова.');
+    console.log(t(`Служебный порт стенда ${lockPort} не отвечает: стенд в другом окне занят долгой операцией. Подождите и ` +
+      'запустите стенд снова.', `The stand service port ${lockPort} does not respond: the stand in the other window is busy with ` +
+      'a long operation. Wait and start the stand again.'));
     return 1;
   }
   if (other.state === 'ours') {
     const s = other.status;
     const mode = opts.local ? 'local-only' : 'external';
     if (paths.canonical(s.home || '') !== paths.canonical(home)) {
-      console.log(`Служебный порт ${lockPort} занят стендом с другой служебной папкой (${s.home}). Запустите этот стенд с ` +
-        'другой служебной папкой (--home) или закройте окно того стенда.');
+      console.log(t(`Служебный порт ${lockPort} занят стендом с другой служебной папкой (${s.home}). Запустите этот стенд с ` +
+        'другой служебной папкой (--home) или закройте окно того стенда.',
+        `Service port ${lockPort} is used by a stand with a different home folder (${s.home}). Start this stand with ` +
+        'a different home folder (--home) or close the window of that stand.'));
       return 1;
     }
     if (s.version !== appVersion || s.mode !== mode) {
-      console.log(`Работает версия ${s.version} в режиме ${s.mode}. Закройте её окно и запустите снова.`);
+      console.log(t(`Работает версия ${s.version} в режиме ${s.mode}. Закройте её окно и запустите снова.`,
+        `Version ${s.version} is running in ${s.mode} mode. Close its window and start again.`));
       return 1;
     }
     // папку кода выбирает первый запуск: без --code-dir окно присоединяется к той, что у работающего стенда
     const wanted = explicitCodeDir ? codeDir : s.code_dir || codeDir;
     if (!sameCodeDir(s, wanted)) {
-      console.log(`Папка кода этого стенда – ${s.code_dir}, сменить её нельзя. Запустите стенд без --code-dir; другая папка ` +
-        'кода – это другой стенд (ключ --home).');
+      console.log(t(`Папка кода этого стенда – ${s.code_dir}, сменить её нельзя. Запустите стенд без --code-dir; другая папка ` +
+        'кода – это другой стенд (ключ --home).',
+        `The code folder of this stand is ${s.code_dir}, it cannot be changed. Start the stand without --code-dir; another code ` +
+        'folder means another stand (--home).'));
       return 1;
     }
     // --port: пока приложение не поднято (app_port 0), порт сверяется в готовности
     // --port сверяется только в готовности (waitOther): при запуске и перезапуске порт приложения ещё не окончателен
     const unused = [opts.newDatabase && '--new-database', opts.reinstall && '--reinstall'].filter(Boolean);
     if (unused.length) {
-      console.log(`Стенд уже работает в другом окне, а ${unused.join(', ')} ${unused.length === 1 ? 'действует' : 'действуют'} только при новом запуске. Закройте окно ` +
-        'стенда и запустите команду снова.');
+      console.log(t(`Стенд уже работает в другом окне, а ${unused.join(', ')} ${unused.length === 1 ? 'действует' : 'действуют'} только при новом запуске. Закройте окно ` +
+        'стенда и запустите команду снова.',
+        `The stand is already running in another window, and ${unused.join(', ')} ${unused.length === 1 ? 'applies' : 'apply'} only to a new start. Close the stand ` +
+        'window and run the command again.'));
       return 1;
     }
     const url = await waitOther(lockPort, { home, id: s.id, version: appVersion, mode, codeDir: wanted,
       stopping: Boolean(s.stopping || s.phase === 'stopping'), port: opts.portGiven ? opts.port : 0 });
     if (url === AGAIN) return AGAIN;
-    console.log(`Стенд уже работает в другом окне: ${url}`);
+    console.log(t(`Стенд уже работает в другом окне: ${url}`, `The stand is already running in another window: ${url}`));
     if (shouldOpen(opts)) openBrowser(url);
     return 0;
   }
-  console.log(`Служебный порт стенда ${lockPort} занят другой программой. Запустите стенд с другой служебной папкой: ` +
-    'npx local-triage --home <папка>.');
+  console.log(t(`Служебный порт стенда ${lockPort} занят другой программой. Запустите стенд с другой служебной папкой: ` +
+    'npx local-triage --home <папка>.', `The stand service port ${lockPort} is used by another program. Start the stand with a different ` +
+    'home folder: npx local-triage --home <folder>.'));
   return 1;
 }
 
 main().then((code) => process.exit(code), (error) => {
-  console.error(error instanceof paths.StandError ? error.message : `Сбой стенда: ${error && error.stack ? error.stack : error}`);
+  console.error(error instanceof paths.StandError ? error.message
+    : t(`Сбой стенда: ${error && error.stack ? error.stack : error}`, `Stand failure: ${error && error.stack ? error.stack : error}`));
   process.exit(1);
 });

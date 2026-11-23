@@ -17,7 +17,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
-from app import worklists
+from app import i18n, worklists
 from app.feeds import FeedStore, cwe_id
 from app.routes.common import query, render
 from app.routes.references import missing_reference
@@ -26,9 +26,9 @@ router = APIRouter()
 
 PAGE_SIZE = 200  # записей каталога на страницу списка
 KIND_FILTERS = {"weakness": "Weakness", "category": "Category"}
-CWE_NOT_LOADED = "Каталог CWE не загружен. Загрузите архив cwec_latest.xml.zip на странице «Справочники»."
-CWE_NO_SUCH = "Такого класса в каталоге нет."
-BDU_NOT_LOADED = "Выгрузка БДУ ФСТЭК России не загружена. Загрузите архив vulxml.zip на странице «Справочники»."
+CWE_NOT_LOADED = i18n.N_("Каталог CWE не загружен. Загрузите архив cwec_latest.xml.zip на странице «Справочники».")
+CWE_NO_SUCH = i18n.N_("Такого класса в каталоге нет.")
+BDU_NOT_LOADED = i18n.N_("Выгрузка БДУ ФСТЭК России не загружена. Загрузите архив vulxml.zip на странице «Справочники».")
 TERMS_URL = "https://cwe.mitre.org/about/termsofuse.html"
 
 _CVE = re.compile(r"CVE-\d{4}-\d{4,}")
@@ -100,10 +100,10 @@ def detail_context(request: Request, number: str) -> dict[str, Any]:
 
 def _detail(store: FeedStore, number: str) -> dict[str, Any]:
     if not store.status().get("cwe"):
-        raise HTTPException(status_code=404, detail=CWE_NOT_LOADED)
+        raise HTTPException(status_code=404, detail=i18n._(CWE_NOT_LOADED))
     page = store.cwe_page(number)
     if page is None:
-        raise HTTPException(status_code=404, detail=CWE_NO_SUCH)
+        raise HTTPException(status_code=404, detail=i18n._(CWE_NO_SUCH))
     record = dict(page["record"])
     record['attack_patterns'] = sorted(store.capec_for_cwes([record['id']]), key=lambda x:int(x.split('-')[1]))
     # запись прежней версии приложения хранит расширенное описание строкой, полная – списком абзацев;
@@ -132,14 +132,14 @@ def bdu_context(request: Request, cve: str) -> dict[str, Any]:
     """Записи БДУ по CVE: то, что выгрузка содержит по этому идентификатору."""
     key = str(cve or "").strip().upper()[:40]
     if not _CVE.fullmatch(key):
-        raise HTTPException(status_code=404, detail="Это не номер уязвимости CVE.")
+        raise HTTPException(status_code=404, detail=i18n._("Это не номер уязвимости CVE."))
     with store_of(request).snapshot() as store:
         meta = store.status().get("bdu")
         found = store.bdu_by_cve([key]).get(key, []) if meta else []
     if not meta:
-        raise HTTPException(status_code=404, detail=BDU_NOT_LOADED)
+        raise HTTPException(status_code=404, detail=i18n._(BDU_NOT_LOADED))
     if not found:
-        raise HTTPException(status_code=404, detail=f"В выгрузке БДУ нет записей по {key}.")
+        raise HTTPException(status_code=404, detail=i18n._("В выгрузке БДУ нет записей по {cve}.", cve=key))
     return {"cve": key, "records": found, "meta": meta}
 
 

@@ -2,7 +2,7 @@
 
 from app import defect_drafts, defect_fields, hub_entity_versions as versions
 from app import hub_sync, hub_sync_api as api, hub_sync_compare as compare
-from app import package_identity, package_transition
+from app import i18n, package_identity, package_transition
 from app.db import dumps, loads, now_iso, finding_data_sig, review_signature, _group2_columns
 from app.hub_defects import NO_NUMBER, _read_of, defect_link, level_name, linked_pairs
 from app.hub_status import HUB_ISSUE_TYPE
@@ -252,10 +252,10 @@ def settle_saved_in(c, row, accepted_keys, before=None):
             continue  # история остаётся историей; закрывается, только когда Hub принял то же решение
         fixed = kind == "issue" and compare.issue_values(accepted, key).get("status") == "Fixed"
         live = not equal and not fixed and values == pending_values(kind, local)
-        reason = ("Совпадает с принятым состоянием Hub." if equal
-                  else "То же решение действует в редакторе и ждёт отправки – отдельно оно не считается." if live
-                  else "В Hub находка исправлена (Fixed): решение не отправляется." if fixed
-                  else "Заменена состоянием Hub при принятии; её можно восстановить.")
+        reason = (i18n.N_("Совпадает с принятым состоянием Hub.") if equal
+                  else i18n.N_("То же решение действует в редакторе и ждёт отправки – отдельно оно не считается.") if live
+                  else i18n.N_("В Hub находка исправлена (Fixed): решение не отправляется.") if fixed
+                  else i18n.N_("Заменена состоянием Hub при принятии; её можно восстановить."))
         payload.setdefault("history", []).append({"event": "settled", "at": stamp, "run_id": row["id"],
                                                    "reason": reason, "previous_state": p["state"]})
         c.execute("UPDATE hub_sync_pending SET state=?,resolved_at=?,payload_json=? WHERE id=?",
@@ -359,7 +359,8 @@ def reconcile_plan(c, row, context=None, keys=None):
         dirty = dirty or bool(payload.get("restored"))
         if not equal and dirty:
             continue
-        reason = "Совпадает с принятым состоянием Hub." if equal else "Нет доказательства правки оператора после принятой базы."
+        reason = (i18n.N_("Совпадает с принятым состоянием Hub.") if equal
+                  else i18n.N_("Нет доказательства правки оператора после принятой базы."))
         out.append((p, "delivered" if equal else "discarded", reason, accepted))
     return out
 
@@ -656,7 +657,7 @@ def accept_defect(c, row, item, hub, local):
                           (row["project_id"], key, owner["number"]))
             c.execute("UPDATE hub_defects SET error=?,targets_json='[]',number_keys_json='[]',effects_done=1"
                       " WHERE draft_owner_id=?",
-                      ("Отсутствует в принятом списке Hub; запись и история сохранены.", owner["id"]))
+                      (i18n.N_("Отсутствует в принятом списке Hub; запись и история сохранены."), owner["id"]))
             defect_drafts.history(c, owner, "hub_sync", details={**history, "presence": "absent",
                                                                  "number_keys_before": sorted(keys)})
         return owner["id"] if owner else None
@@ -741,10 +742,10 @@ def accept_defect(c, row, item, hub, local):
 def plan_in(c, row):
     data = hub_sync.passport(row)
     if row["state"] != "ready" or row["closed_at"] or not data.get("inventory_complete"):
-        raise ValueError("Применение доступно после полного чтения списков Hub.")
+        raise ValueError(i18n._("Применение доступно после полного чтения списков Hub."))
     items = [dict(r) for r in c.execute("SELECT * FROM hub_sync_items WHERE run_id=? ORDER BY entity_kind DESC,entity_key", (row["id"],))]
     if hub_sync.local_keys(c, row) - {(i["entity_kind"], i["entity_key"]) for i in items}:
-        raise ValueError("Локальные объекты изменились после сравнения: пересчитайте расхождения.")
+        raise ValueError(i18n._("Локальные объекты изменились после сравнения: пересчитайте расхождения."))
     context = compare.ComparisonContext(c, row)
     selected, skipped = [], []
     for item in items:
@@ -752,29 +753,30 @@ def plan_in(c, row):
         if key.startswith("local:"):
             continue
         if key.startswith("UNMAPPED:"):
-            skipped.append({"kind": kind, "key": key, "reasons": ["Нет сопоставления с API Hub."]})
+            skipped.append({"kind": kind, "key": key, "reasons": [i18n._("Нет сопоставления с API Hub.")]})
             continue
         groups = set(loads(item["diff_json"], {}).get("groups", []))
         current = context.current(kind, key)
         sources = loads(item["source_ops_json"], {})
         local = context.issue_local(key) if kind == "issue" else context.defect_local(key)
         if versions.digest(local) != item["local_signature"]:
-            raise ValueError("Локальные данные изменились: пересчитайте расхождения перед применением.")
+            raise ValueError(i18n._("Локальные данные изменились: пересчитайте расхождения перед применением."))
         if any(s["base_epoch"] != current["accepted_epoch"] or s["base_hash"] != current["accepted_hash"] for s in sources.values()):
-            raise ValueError("Принятая база изменилась после чтения: нужен новый обход Hub.")
+            raise ValueError(i18n._("Принятая база изменилась после чтения: нужен новый обход Hub."))
         hub = loads(item["hub_json"], {})
         problems = (api.blocking(api.evidence_problems(hub, key, row["app_id"], api.Adapter(**data["adapter"])))
                     if kind == "issue" and not absent(item) else [])
         if problems and "incomplete" not in groups:
-            raise ValueError("Пригодность решения изменилась: пересчитайте расхождения. " + "; ".join(problems))
+            raise ValueError(i18n._("Пригодность решения изменилась: пересчитайте расхождения. {problems}",
+                                    problems="; ".join(i18n._(p) for p in problems)))
         if "stale" in groups or (not absent(item) and (groups & {"incomplete", "unmapped"} or problems)):
             # Несопоставленный состав дефекта сохраняется полностью, без выдуманных локальных находок.
             if kind != "defect" or groups & {"incomplete", "stale"}:
                 # все блокирующие причины: противоречие Hub не вытесняет ошибку чтения и устаревание – по ним шаг
                 # «Состояние Hub» решает, только ли противоречия Hub держат пропуск (ревью Codex dev14, круг 7)
-                reasons = list(dict.fromkeys([*problems, *loads(item["diff_json"], {}).get("notes", [])]))
+                reasons = list(dict.fromkeys([*(i18n._(p) for p in problems), *loads(item["diff_json"], {}).get("notes", [])]))
                 if groups & {"stale", "unmapped"}:
-                    reasons.append("Группа сравнения: " + ", ".join(sorted(groups & {"stale", "unmapped"})) + ".")
+                    reasons.append(i18n._("Группа сравнения: {groups}.", groups=", ".join(sorted(groups & {"stale", "unmapped"}))))
                 skipped.append({"kind": kind, "key": key, "reasons": reasons})
                 continue
         selected.append(item)
@@ -785,7 +787,7 @@ def preview(db, row):
     if row["applied_at"]:
         return {"applied": True, **loads(row["result_json"], {})}
     if row["state"] != "ready" or row["closed_at"] or not hub_sync.passport(row).get("inventory_complete"):
-        return {"error": "Применение доступно после полного чтения списков Hub."}
+        return {"error": i18n._("Применение доступно после полного чтения списков Hub.")}
     selected, skipped = [], []
     # Страница использует уже сохранённое сравнение; полная проверка повторяется в транзакции применения.
     for item in db._all("SELECT * FROM hub_sync_items WHERE run_id=?", (row["id"],)):
@@ -980,7 +982,7 @@ def pending_context(db, row, pending_id, *, reconcile=True):
     pending = db._one("SELECT * FROM hub_sync_pending WHERE id=? AND project_id=? AND hub_url=? AND app_id=?",
                       (pending_id, *scope(row)))
     if not pending:
-        raise ValueError("Неотправленная правка не найдена в текущем назначении Hub.")
+        raise ValueError(i18n._("Неотправленная правка не найдена в текущем назначении Hub."))
     def current(c):
         ctx = compare.ComparisonContext(c, row)
         return ctx.issue_local(pending["entity_key"]) if pending["entity_kind"] == "issue" else ctx.defect_local(pending["entity_key"])
@@ -1003,7 +1005,7 @@ def restore(db, row, pending_id, token, *, discard=False, check=None):
         p, payload = ctx["pending"], ctx["payload"]
         allowed = ("pending", "saved", "restored") if discard else ("pending", "saved")
         if p["state"] not in allowed or token != ctx["confirmation"]:
-            raise ValueError("Правка или карточка изменились: откройте подтверждение заново.")
+            raise ValueError(i18n._("Правка или карточка изменились: откройте подтверждение заново."))
         local = ctx["current"]
         if discard:
             note = ""
@@ -1013,21 +1015,21 @@ def restore(db, row, pending_id, token, *, discard=False, check=None):
                                                        **({"reason": note} if note else {})})
             c.execute("UPDATE hub_sync_pending SET state='discarded',resolved_at=?,payload_json=? WHERE id=?",
                       (now_iso(), dumps(payload), pending_id))
-            return note
+            return i18n._(note) if note else note
         original = payload["local"]
         if p["entity_kind"] == "issue":
             f, r = local.get("finding"), original.get("review") or {}
             if not f:
-                raise ValueError("Сопоставленной находки нет. Намерение сохранено.")
+                raise ValueError(i18n._("Сопоставленной находки нет. Намерение сохранено."))
             accepted = loads((local.get("state") or {}).get("confirmed_json"), {})
             if compare.issue_values(accepted, p["entity_key"]).get("status") == "Fixed":
                 # отправить решение по исправленной находке нельзя – Hub не меняет её статус (dev15, план п. 1.4)
-                raise ValueError("В Hub находка исправлена (Fixed): решение отправить нельзя, правка остаётся в истории.")
+                raise ValueError(i18n._("В Hub находка исправлена (Fixed): решение отправить нельзя, правка остаётся в истории."))
             current = local.get("review") or {}
             # решение из Hub или снятое в Hub (решения нет) правку не держит; держит только своё решение оператора
             if (current.get("decision_origin") not in ("hub_sync", defect_drafts.HUB_DEFECT_ORIGIN)
                     and (current.get("decision") or current.get("final_verdict"))):
-                raise ValueError("В редакторе уже есть локальное решение. Сначала сохраните его применением синхронизации.")
+                raise ValueError(i18n._("В редакторе уже есть локальное решение. Сначала сохраните его применением синхронизации."))
             # «Проверено» и привязка к вердикту модели – прикладные данные: возврат правки их не сбрасывает
             db._save_review_in(c, row["project_id"], f["hub_id"], decision=r.get("decision", ""),
                                final_verdict=r.get("final_verdict", ""), final_comment=r.get("final_comment", ""),
@@ -1039,13 +1041,13 @@ def restore(db, row, pending_id, token, *, discard=False, check=None):
         else:
             owner = local.get("owner")
             if not owner:
-                raise ValueError("Сопоставленного дефекта нет. Намерение сохранено.")
+                raise ValueError(i18n._("Сопоставленного дефекта нет. Намерение сохранено."))
             problem = defect_drafts.edit_problem(c, owner)
             if problem:
                 raise ValueError(problem)
             base = loads(owner["confirmed_object_json"], {})
             if pending_values("defect", local) != hub_values("defect", {"detail": base}):
-                raise ValueError("В редакторе уже есть локальная правка. Сначала сохраните её применением синхронизации.")
+                raise ValueError(i18n._("В редакторе уже есть локальная правка. Сначала сохраните её применением синхронизации."))
             draft = original["owner"]
             basis = defect_fields.basis_of(owner)
             basis["references"] = defect_fields.basis_of(draft)["references"]
@@ -1081,13 +1083,13 @@ def _discard_restored_in(c, row, p, payload, local):
     kind, key = p["entity_kind"], p["entity_key"]
     mark = payload.get("restored") or {}
     if not mark or _editor_mark(c, row, kind, key) != mark:
-        return "В редакторе уже другое решение – оно не изменено; отброшена только сохранённая правка."
+        return i18n.N_("В редакторе уже другое решение – оно не изменено; отброшена только сохранённая правка.")
     stamp = now_iso()
     if kind == "issue":
         ident = key.split(":", 1)[1]
         intent = local.get("status_intent") or {}
         if intent.get("state") in ("queued", "taken", "unknown"):
-            raise ValueError("Отправка этого решения в Hub не завершена: дождитесь её исхода, затем отбросьте правку.")
+            raise ValueError(i18n._("Отправка этого решения в Hub не завершена: дождитесь её исхода, затем отбросьте правку."))
         state = local.get("state") or {}
         application = c.execute("SELECT accepted_epoch,accepted_hash FROM hub_sync_applications WHERE run_id=?"
                                 " AND entity_kind='issue' AND entity_key=?", (state.get("confirmed_run_id"), key)).fetchone()
@@ -1096,7 +1098,8 @@ def _discard_restored_in(c, row, p, payload, local):
         if intent.get("state") == "done" or moved:
             # восстановленное решение отправлено, или Hub с тех пор подтвердил другое состояние: принятое наблюдение
             # устарело – редактор не откатывается к нему (ревью кода dev15, круг 2)
-            return "Решение уже отправлено в Hub или Hub подтвердил новое состояние – в редакторе оставлено как есть; отброшена только сохранённая правка."
+            return i18n.N_("Решение уже отправлено в Hub или Hub подтвердил новое состояние – в редакторе оставлено как есть; "
+                           "отброшена только сохранённая правка.")
         accepted = loads(state.get("confirmed_json"), {})
         values = compare.issue_values(accepted, key)
         verdict = {"False Positive": "false_positive", "Accepted risk": "risk_accepted"}.get(values.get("status"), "")
@@ -1127,7 +1130,7 @@ def _discard_restored_in(c, row, p, payload, local):
     owner = local.get("owner") or {}
     # та же проверка, что у обычной правки и восстановления: при незавершённой отправке черновик не меняется
     # (ревью кода dev15, круг 1)
-    problem = defect_drafts.edit_problem(c, owner) if owner else "Сопоставленного дефекта нет."
+    problem = defect_drafts.edit_problem(c, owner) if owner else i18n._("Сопоставленного дефекта нет.")
     if problem:
         raise ValueError(problem)
     obj = loads(owner.get("confirmed_object_json"), {})
@@ -1147,7 +1150,7 @@ def apply(db, run_id, token, *, check=None):
         if row["applied_at"]:
             result = loads(row["result_json"], {})
             if token != result.get("token"):
-                raise ValueError("Подтверждение относится к другому результату.")
+                raise ValueError(i18n._("Подтверждение относится к другому результату."))
             if reconcile_pending_in(c, row):
                 compare.compare_in(c, row)
             return loads(hub_sync.run_in(c, run_id)["result_json"], {})
@@ -1155,15 +1158,15 @@ def apply(db, run_id, token, *, check=None):
         if token != apply_token(row, package_transition.transition_fingerprint(c, row["project_id"])):
             # точная причина, если она есть: локальные данные или принятая база изменились – пересчитать расхождения
             plan_in(c, row)
-            raise ValueError("Итог изменился: откройте подтверждение применения заново.")
+            raise ValueError(i18n._("Итог изменился: откройте подтверждение применения заново."))
         # чтение модели шаблона – диагностика без последствий (ADR-0139): применение не ждёт его
         if c.execute("SELECT 1 FROM hub_ops WHERE project_id=? AND hub_url=? AND app_id=? AND purpose!='sync_read'"
                      " AND state IN ('queued','taken','unknown')"
                      " AND NOT (purpose = 'read' AND targets_json LIKE '%DEFECT_TEMPLATE_MODEL%') LIMIT 1", scope(row)).fetchone():
-            raise ValueError("Есть незавершённая операция Hub: сначала установите её результат.")
+            raise ValueError(i18n._("Есть незавершённая операция Hub: сначала установите её результат."))
         selected, skipped = plan_in(c, row)
         if not selected:
-            raise ValueError("Нет пригодных объектов для применения.")
+            raise ValueError(i18n._("Нет пригодных объектов для применения."))
         context = compare.ComparisonContext(c, row)
         saved_ids, before = set(), {}
         import_id = _import_row(c, row, selected)

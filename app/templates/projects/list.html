@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, progress, tabs, empty_state %}
-{% block title %}{% if archived %}Архив · {% endif %}Проекты · Локальный триаж{% endblock %}
+{% block title %}{% if archived %}{{ _("Архив") }} · {% endif %}{{ _("Проекты") }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}projects{% endblock %}
-{% block crumbs %}{% if archived %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><span aria-current="page">Архив</span>{% endif %}{% endblock %}
+{% block crumbs %}{% if archived %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Архив") }}</span>{% endif %}{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>{% if archived %}Архив проектов{% else %}Проекты{% endif %}</h1>
-    <p class="page-sub">{% if archived %}Решения и отметки архивных проектов сохранены: проект можно вернуть в любой момент.{% elif STAND == "npm" %}Проект – учебное приложение из «Примеров» с находками SAST и SCA. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.{% else %}Проект – выгрузка AppSec.Hub и папка с клонами её кодовых баз. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.{% endif %}</p>
+    <h1 data-section="{{ _("Рабочее место") }}">{% if archived %}{{ _("Архив проектов") }}{% else %}{{ _("Проекты") }}{% endif %}</h1>
+    <p class="page-sub">{% if archived %}{{ _("Решения и отметки архивных проектов сохранены: проект можно вернуть в любой момент.") }}{% elif STAND == "npm" %}{{ _("Проект – учебное приложение из «Примеров» с находками SAST и SCA. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.") }}{% else %}{{ _("Проект – выгрузка AppSec.Hub и папка с клонами её кодовых баз. Всё сохраняется: можно уйти и вернуться к той находке, где остановились.") }}{% endif %}</p>
   </div>
   {% if not archived and projects %}
-  <div class="page-actions"><a class="btn" href="#new-project">{{ icon("plus") }}Новый проект</a></div>
+  <div class="page-actions"><a class="btn" href="#new-project">{{ icon("plus") }}{{ _("Новый проект") }}</a></div>
   {% endif %}
 </div>
 
-{{ tabs([("active", "Действующие", "/", active_count), ("archive", "Архив", "/projects/archive", archive_count)], "archive" if archived else "active", label="Проекты") }}
+{{ tabs([("active", _("Действующие"), "/", active_count), ("archive", _("Архив"), "/projects/archive", archive_count)], "archive" if archived else "active", label=_("Проекты")) }}
 
 {% if projects %}
-<section class="panel" aria-label="{% if archived %}Проекты в архиве{% else %}Действующие проекты{% endif %}">
+<section class="panel" aria-label="{% if archived %}{{ _("Проекты в архиве") }}{% else %}{{ _("Действующие проекты") }}{% endif %}">
   <ul class="item-list project-list" data-rows>
   {% for p in projects %}
     <li class="item" id="project-{{ p.id }}">
@@ -25,68 +25,68 @@
         <div>
           <div class="item-title"><a class="project-name" href="/projects/{{ p.id }}">{{ p.name }}</a></div>
           <div class="item-meta dot-list">
-            <span>модель <span class="mono">{{ p.model or p.model_shown or settings.default_model }}</span>{% if not p.model %} – {{ p.model_source or "из настроек" }}{% endif %}</span>
-            {% if p.last_activity %}<span>активность <time datetime="{{ p.last_activity }}" data-relative>{{ p.last_activity|ts }}</time></span>{% endif %}
-            {% if p.missing %}<span>нет в новой выгрузке: {{ p.missing }}</span>{% endif %}
-            {% if archived and p.archived_at %}<span>в архиве с <time datetime="{{ p.archived_at }}">{{ p.archived_at|ts }}</time></span>{% endif %}
+            <span>{{ _("модель") }} <span class="mono">{{ p.model or p.model_shown or settings.default_model }}</span>{% if not p.model %} – {{ p.model_source or _("из настроек") }}{% endif %}</span>
+            {% if p.last_activity %}<span>{{ _("активность") }} <time datetime="{{ p.last_activity }}" data-relative>{{ p.last_activity|ts }}</time></span>{% endif %}
+            {% if p.missing %}<span>{{ _("нет в новой выгрузке: {n}", n=p.missing) }}</span>{% endif %}
+            {% if archived and p.archived_at %}<span>{{ _("в архиве с") }} <time datetime="{{ p.archived_at }}">{{ p.archived_at|ts }}</time></span>{% endif %}
           </div>
         </div>
         {% if p.total %}
         <div class="project-progress">
           {{ progress(p.done, p.total, p.entered_total) }}
-          <div class="item-meta">{% if p.sast %}SAST {{ p.reviewed }} из {{ p.sast }}{% endif %}{% if p.sast and p.sca %} · {% endif %}{% if p.sca %}SCA {{ p.sca_reviewed }} из {{ p.sca }}{% endif %}</div>
+          <div class="item-meta">{% if p.sast %}SAST {{ _("{done} из {total}", done=p.reviewed, total=p.sast) }}{% endif %}{% if p.sast and p.sca %} · {% endif %}{% if p.sca %}SCA {{ _("{done} из {total}", done=p.sca_reviewed, total=p.sca) }}{% endif %}</div>
         </div>
         {% elif p.action == "upload" %}
-        <div class="item-meta">Выгрузка не загружена.</div>
+        <div class="item-meta">{{ _("Выгрузка не загружена.") }}</div>
         {% else %}
-        <div class="item-meta">Находок SAST и SCA в выгрузке нет.</div>
+        <div class="item-meta">{{ _("Находок SAST и SCA в выгрузке нет.") }}</div>
         {% endif %}
       </div>
       <div class="item-aside">
       {% if archived %}
-        <form method="post" action="/projects/{{ p.id }}/archive"><input type="hidden" name="action" value="restore"><button class="btn btn-small" type="submit">{{ icon("refresh") }}Вернуть</button></form>
+        <form method="post" action="/projects/{{ p.id }}/archive"><input type="hidden" name="action" value="restore"><button class="btn btn-small" type="submit">{{ icon("refresh") }}{{ _("Вернуть") }}</button></form>
       {% else %}
-        {% if p.action == "continue" %}<a class="btn btn-small btn-primary" href="/projects/{{ p.id }}/continue">{{ icon("play") }}Продолжить</a>
-        {% elif p.action == "upload" %}<a class="btn btn-small" href="/projects/{{ p.id }}#step1">{{ icon("upload") }}Загрузить выгрузку</a>
-        {% else %}<a class="btn btn-small" href="/projects/{{ p.id }}">Открыть</a>{% endif %}
-        <form method="post" action="/projects/{{ p.id }}/archive"><input type="hidden" name="action" value="archive"><button class="btn btn-small btn-ghost" type="submit" data-confirm="Убрать проект «{{ p.name }}» в архив? Решения и отметки сохранятся, вернуть проект можно из раздела «Архив».">{{ icon("archive") }}В архив</button></form>
+        {% if p.action == "continue" %}<a class="btn btn-small btn-primary" href="/projects/{{ p.id }}/continue">{{ icon("play") }}{{ _("Продолжить") }}</a>
+        {% elif p.action == "upload" %}<a class="btn btn-small" href="/projects/{{ p.id }}#step1">{{ icon("upload") }}{{ _("Загрузить выгрузку") }}</a>
+        {% else %}<a class="btn btn-small" href="/projects/{{ p.id }}">{{ _("Открыть") }}</a>{% endif %}
+        <form method="post" action="/projects/{{ p.id }}/archive"><input type="hidden" name="action" value="archive"><button class="btn btn-small btn-ghost" type="submit" data-confirm="{{ _("Убрать проект «{name}» в архив? Решения и отметки сохранятся, вернуть проект можно из раздела «Архив».", name=p.name) }}">{{ icon("archive") }}{{ _("В архив") }}</button></form>
       {% endif %}
-        <a class="btn btn-small btn-ghost btn-danger" href="/projects/{{ p.id }}/delete">{{ icon("trash") }}Удалить…</a>
+        <a class="btn btn-small btn-ghost btn-danger" href="/projects/{{ p.id }}/delete">{{ icon("trash") }}{{ _("Удалить…") }}</a>
       </div>
     </li>
   {% endfor %}
   </ul>
 </section>
 {% elif archived %}
-{{ empty_state("В архиве пусто", "Проект убирается сюда кнопкой «В архив» в списке проектов: решения и отметки сохраняются, вернуть его можно в любой момент.", icon_name="archive") }}
+{{ empty_state(_("В архиве пусто"), _("Проект убирается сюда кнопкой «В архив» в списке проектов: решения и отметки сохраняются, вернуть его можно в любой момент."), icon_name="archive") }}
 {% elif STAND == "npm" %}
-{% call empty_state("Проектов пока нет", "Начните с вкладки «Примеры»: в блоке «Начало работы» подключите модель, затем на карточке учебного приложения нажмите «Создать проект». Самый простой пример – Demo Library: он уже на компьютере и не скачивается.", icon_name="inbox") %}
-  <a class="btn btn-primary" href="/examples#start" id="open-examples">{{ icon("package") }}Открыть «Примеры»</a>
+{% call empty_state(_("Проектов пока нет"), _("Начните с вкладки «Примеры»: в блоке «Начало работы» подключите модель, затем на карточке учебного приложения нажмите «Создать проект». Самый простой пример – Demo Library: он уже на компьютере и не скачивается."), icon_name="inbox") %}
+  <a class="btn btn-primary" href="/examples#start" id="open-examples">{{ icon("package") }}{{ _("Открыть «Примеры»") }}</a>
 {% endcall %}
 {% else %}
-{% call empty_state("Проектов пока нет", "Создайте проект, загрузите в него выгрузку из AppSec.Hub и выберите папку с клонами – дальше модель разберёт находки SAST, а вы проверите её вердикты. Можно начать с демо на выдуманных данных.", icon_name="inbox") %}
-  <form method="post" action="/projects/demo"><button type="submit" class="btn" id="create-demo" data-busy="Создаю демо-проект…">{{ icon("play") }}Создать демо-проект</button></form>
-  <a class="btn" href="#new-project">{{ icon("plus") }}Новый проект</a>
+{% call empty_state(_("Проектов пока нет"), _("Создайте проект, загрузите в него выгрузку из AppSec.Hub и выберите папку с клонами – дальше модель разберёт находки SAST, а вы проверите её вердикты. Можно начать с демо на выдуманных данных."), icon_name="inbox") %}
+  <form method="post" action="/projects/demo"><button type="submit" class="btn" id="create-demo" data-busy="{{ _("Создаю демо-проект…") }}">{{ icon("play") }}{{ _("Создать демо-проект") }}</button></form>
+  <a class="btn" href="#new-project">{{ icon("plus") }}{{ _("Новый проект") }}</a>
 {% endcall %}
 {% endif %}
 
 {% if not archived %}
 <section class="panel" id="new-project" aria-labelledby="new-title">
-  <h2 id="new-title">Новый проект</h2>
+  <h2 id="new-title">{{ _("Новый проект") }}</h2>
   <form method="post" action="/projects" class="inline-form">
     <label class="field grow">
-      <span class="field-label">Название</span>
-      <input type="text" name="name" maxlength="200" required placeholder="Например, Demo Library – октябрь" autocomplete="off">
+      <span class="field-label">{{ _("Название") }}</span>
+      <input type="text" name="name" maxlength="200" required placeholder="{{ _("Например, Demo Library – октябрь") }}" autocomplete="off">
     </label>
     <input type="hidden" name="mask_form" value="1">
-    <label class="check" title="Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются."><input type="checkbox" name="mask_secrets" value="1" id="new-project-mask"> Маскировать секреты при показе</label>
-    <button type="submit" class="btn{% if not projects %} btn-primary{% endif %}">Создать</button>
+    <label class="check" title="{{ _("Снято – в карточках находок видны настоящий код, строка выгрузки и поля без масок, чтобы проверить, например, жёстко заданные пароли. Модели код уходит с масками всегда. Менять можно в любой момент: решения и отметки «Проверено» не меняются.") }}"><input type="checkbox" name="mask_secrets" value="1" id="new-project-mask"> {{ _("Маскировать секреты при показе") }}</label>
+    <button type="submit" class="btn{% if not projects %} btn-primary{% endif %}">{{ _("Создать") }}</button>
   </form>
-  <p class="field-hint">Выгрузку, папку с репозиториями и модель проекта укажете на его странице.</p>
+  <p class="field-hint">{{ _("Выгрузку, папку с репозиториями и модель проекта укажете на его странице.") }}</p>
   {% if projects %}
   <form method="post" action="/projects/demo" class="cluster demo-form">
-    <button type="submit" class="btn btn-small" id="create-demo" data-busy="Создаю демо-проект…">{{ icon("play") }}Создать демо-проект</button>
-    <span class="hint">выдуманная система Demo Library: две кодовые базы, находки SAST и SCA</span>
+    <button type="submit" class="btn btn-small" id="create-demo" data-busy="{{ _("Создаю демо-проект…") }}">{{ icon("play") }}{{ _("Создать демо-проект") }}</button>
+    <span class="hint">{{ _("выдуманная система Demo Library: две кодовые базы, находки SAST и SCA") }}</span>
   </form>
   {% endif %}
 </section>

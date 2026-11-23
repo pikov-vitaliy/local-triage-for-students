@@ -24,6 +24,22 @@ from app.llm_http import ServerClient, _scrub_error, _scrub_value, track_sent, t
 from app.llm_net import (ALLOWED_HOSTS, CONNECT_TIMEOUT_S, MAX_RESPONSE_BYTES, _ip, _os_error_text,
                          _PinnedHTTPSConnection, _Target, _TooLarge, lan_address_ok)
 from app.models import LlmStats
+from app.i18n import N_
+
+# Частые ошибки соединения с Ollama (ADR-0158): текст – русский канонический (уходит в LlmError, ошибки прогонов
+# классифицируются по нему), шаблоны – msgid каталога: на языке интерфейса их показывает run_errors.shown_error
+OLLAMA_NOT_JSON = N_("Ответ сервера {base} на {path} – не JSON: по этому адресу, похоже, не Ollama.")
+OLLAMA_TIMEOUT = N_("Нет ответа от Ollama ({base}) за {seconds} на {path}.")
+OLLAMA_TOO_LARGE = N_("Ответ Ollama ({base}) на {path} слишком большой.")
+OLLAMA_REFUSED = N_("Ollama не отвечает по адресу {base}: соединение отклонено. Запустите Ollama и проверьте адрес "
+                    "Ollama на странице «Настройки».")
+OLLAMA_DROPPED = N_("Связь с Ollama ({base}) прервана на {path}: сервер закрыл соединение, не дослав ответ.")
+OLLAMA_NO_VERSION = N_("В ответе /api/version нет версии: по адресу {url}, похоже, не Ollama.")
+OLLAMA_NO_MODELS = N_("В ответе /api/tags нет списка моделей: по адресу {url}, похоже, не Ollama.")
+OLLAMA_CONNECT_TIMEOUT = N_("Ollama не отвечает по адресу {base}: соединение не установлено за {seconds}. Проверьте "
+                            "адрес Ollama на странице «Настройки» и что Ollama запущена.")
+SHOWN_TEXTS = (OLLAMA_CONNECT_TIMEOUT, OLLAMA_NOT_JSON, OLLAMA_TIMEOUT, OLLAMA_TOO_LARGE, OLLAMA_REFUSED, OLLAMA_DROPPED, OLLAMA_NO_VERSION,
+               OLLAMA_NO_MODELS)
 
 PS_TIMEOUT_S = 5.0  # /api/ps опрашивается часто (метрики), долго ждать нельзя
 UNLOAD_TIMEOUT_S = 30.0  # /api/generate с keep_alive 0 отвечает сразу, но выгрузка большой модели не мгновенна
@@ -176,9 +192,7 @@ class OllamaClient(ServerClient):
 
     @staticmethod
     def _connect_timeout_error(t: _Target, timeout: float) -> LlmError:
-        return LlmError(f"Ollama не отвечает по адресу {t.base}: соединение не установлено за "
-                        f"{_seconds(min(timeout, CONNECT_TIMEOUT_S))}. Проверьте адрес Ollama на странице "
-                        "«Настройки» и что Ollama запущена.")
+        return LlmError(OLLAMA_CONNECT_TIMEOUT.format(base=t.base, seconds=_seconds(min(timeout, CONNECT_TIMEOUT_S))))
 
     @staticmethod
     def _finish(t: _Target, path: str, status: int, body: bytes, secrets: tuple[str, ...],
@@ -194,22 +208,20 @@ class OllamaClient(ServerClient):
         try:
             return _scrub_value(json.loads(body.decode("utf-8")), secrets) if body.strip() else {}
         except (ValueError, RecursionError):
-            raise LlmError(f"Ответ сервера {t.base} на {path} – не JSON: по этому адресу, похоже, не Ollama.") from None
+            raise LlmError(OLLAMA_NOT_JSON.format(base=t.base, path=path)) from None
 
     @staticmethod
     def _transport_error(error: BaseException, t: _Target, path: str, timeout: float, expired: bool) -> LlmError:
         """Сбой на уровне соединения -> LlmError по-русски."""
         if expired or isinstance(error, TimeoutError):
-            return LlmError(f"Нет ответа от Ollama ({t.base}) за {_seconds(timeout)} на {path}.")
+            return LlmError(OLLAMA_TIMEOUT.format(base=t.base, seconds=_seconds(timeout), path=path))
         if isinstance(error, _TooLarge):
-            return LlmError(f"Ответ Ollama ({t.base}) на {path} слишком большой.")
+            return LlmError(OLLAMA_TOO_LARGE.format(base=t.base, path=path))
         if isinstance(error, ConnectionRefusedError):
-            return LlmError(f"Ollama не отвечает по адресу {t.base}: соединение отклонено. Запустите Ollama и "
-                            "проверьте адрес Ollama на странице «Настройки».")
+            return LlmError(OLLAMA_REFUSED.format(base=t.base))
         if isinstance(error, (ConnectionResetError, ConnectionAbortedError, BrokenPipeError,
                               http.client.HTTPException)):
-            return LlmError(f"Связь с Ollama ({t.base}) прервана на {path}: сервер закрыл соединение, не дослав "
-                            "ответ.")
+            return LlmError(OLLAMA_DROPPED.format(base=t.base, path=path))
         return LlmError(f"Ollama не отвечает по адресу {t.base} ({path}): {_os_error_text(error)}.")
 
     # ---------------------------------------------------------------- сведения о сервере
@@ -219,14 +231,14 @@ class OllamaClient(ServerClient):
         data = self._request("/api/version")
         value = data.get("version") if isinstance(data, dict) else None
         if not isinstance(value, str) or not value.strip():
-            raise LlmError(f"В ответе /api/version нет версии: по адресу {self.check_url()}, похоже, не Ollama.")
+            raise LlmError(OLLAMA_NO_VERSION.format(url=self.check_url()))
         return value.strip()
 
     def _tags(self) -> list[dict[str, Any]]:
         data = self._request("/api/tags")
         models = data.get("models") if isinstance(data, dict) else None
         if not isinstance(models, list):
-            raise LlmError(f"В ответе /api/tags нет списка моделей: по адресу {self.check_url()}, похоже, не Ollama.")
+            raise LlmError(OLLAMA_NO_MODELS.format(url=self.check_url()))
         # имя модели – только строка: иное значение (объект, число) сервером подставлено и в запросы не уходит
         return [m for m in models if isinstance(m, dict) and isinstance(m.get("name") or m.get("model"), str)
                 and str(m.get("name") or m.get("model")).strip()]

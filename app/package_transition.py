@@ -23,7 +23,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping
 
-from app import package_identity
+from app import i18n, package_identity
 from app.db import Database, dumps, loads, now_iso, review_signature
 from app.defect import defect_key_sca
 from app.defect_drafts import UNMATCHED_TARGETS, unmatched_targets
@@ -31,8 +31,9 @@ from app.sca_contract import input_ref
 
 SCA = "SCA"
 SCA_KINDS = ("SCA", "SCA-license")
-MERGE_REASON = "после слияния пакетов: место в наборах выбрать заново"
-NO_SINGLE_SET = "После перехода идентичности пакетов цели не определяют единственный набор SCA."
+# хранимые тексты (причины в архиве и в наборах, конфликты дефекта) пишутся по-русски; перевод – при показе (ADR-0158)
+MERGE_REASON = i18n.N_("после слияния пакетов: место в наборах выбрать заново")
+NO_SINGLE_SET = i18n.N_("После перехода идентичности пакетов цели не определяют единственный набор SCA.")
 # таблицы, все строки проекта которых входят в отпечаток входов перехода (токен подтверждения, план п. 4.5)
 FINGERPRINT_TABLES = ("findings", "reviews", "sca_set_members", "sca_defect_sets", "sca_package_texts",
                       "sca_applicability", "sca_answers", "sca2_research", "sca2_decisions", "defects", "hub_defects")
@@ -419,7 +420,7 @@ def rebind_packages(c, project_id: int, run_id: int | None, before: dict[int, di
                         why += f" (прежнее место – «без дефекта»: {member['no_defect_reason'] or 'обоснование не указано'})"
                     if member is not None:
                         _archive(c, project_id, run_id, "sca_set_members", {"hub_id": hub_id}, member, counter,
-                                 moved_to=target, reason="слияние с другой группой")
+                                 moved_to=target, reason=i18n.N_("слияние с другой группой"))
                         c.execute("UPDATE sca_set_members SET input_ref = ?, set_no = ?, no_defect_reason = '',"
                                   " pending_reason = ?, updated_at = ? WHERE project_id = ? AND hub_id = ?",
                                   (target, new_no, why, stamp, project_id, hub_id))
@@ -439,7 +440,7 @@ def rebind_packages(c, project_id: int, run_id: int | None, before: dict[int, di
                 if change and old_no is None:
                     # «без дефекта» относилось к другому пакету – в архив, находка получает место по умолчанию
                     _archive(c, project_id, run_id, "sca_set_members", {"hub_id": hub_id}, member, counter,
-                             reason="изменение пакета: «без дефекта» относилось к прежнему пакету")
+                             reason=i18n.N_("изменение пакета: «без дефекта» относилось к прежнему пакету"))
                     c.execute("DELETE FROM sca_set_members WHERE project_id = ? AND hub_id = ?", (project_id, hub_id))
                     continue
                 c.execute("UPDATE sca_set_members SET input_ref = ?, updated_at = ? WHERE project_id = ? AND hub_id = ?",
@@ -466,12 +467,12 @@ INACTIVE = ("failed", "cancelled", "deleted")  # строка дефекта, к
 # семейства не определить – ключ набора пуст, причина названа (ревью Codex шага 4, круг 2); сообщение и проверка –
 # общие с defect_drafts.sca_identity (остаток шага 4: тот же расчёт во всех фазах)
 # подписи таблиц перехода для подтверждения и итога (п. 4.5)
-TABLE_LABELS = {"sca2_research": "исследования компонента", "sca2_decisions": "решения по компоненту",
-                "sca_answers": "ответы агента", "sca_applicability": "решения о применимости",
-                "sca_package_texts": "тексты наборов дефекта", "sca_set_members": "места находок в наборах",
-                "sca_defect_sets": "наборы дефекта", "sca_defect_sets_new": "новые наборы дефекта (созданы)",
-                "defects": "ключи и резервы номеров дефектов",
-                "reviews": "решения по находкам"}
+TABLE_LABELS = i18n.Labels({"sca2_research": "исследования компонента", "sca2_decisions": "решения по компоненту",
+                            "sca_answers": "ответы агента", "sca_applicability": "решения о применимости",
+                            "sca_package_texts": "тексты наборов дефекта", "sca_set_members": "места находок в наборах",
+                            "sca_defect_sets": "наборы дефекта", "sca_defect_sets_new": "новые наборы дефекта (созданы)",
+                            "defects": "ключи и резервы номеров дефектов",
+                            "reviews": "решения по находкам"})
 
 
 class TransitionConflict(ValueError):
@@ -564,7 +565,7 @@ def _rebind_defects(c, project_id: int, run_id, p: Plan, counter: _Counter) -> d
             source = moved_bases.get(split_key(key)[0])
             counter.current = source.ref if source is not None else None  # в строке группы ключа (ревью Codex)
             _archive(c, project_id, run_id, "defects", {"defect_key": key}, row, counter,
-                     reason="ключ номера дефекта после перехода идентичности")
+                     reason=i18n.N_("ключ номера дефекта после перехода идентичности"))
             counter.current = None
             c.execute("DELETE FROM defects WHERE project_id = ? AND defect_key = ? AND number = ?",
                       (project_id, key, number))
@@ -577,10 +578,10 @@ def _rebind_defects(c, project_id: int, run_id, p: Plan, counter: _Counter) -> d
                       " VALUES (?, ?, ?, ?, ?)", (project_id, key, number, now_iso(), now_iso()))
             out["keys_rewritten"] += 1
         elif int(taken["number"]) != number:
-            raise TransitionConflict(
-                f"Переход сведений о библиотеках не выполнен: после него дефекту ID{number} нужен ключ номера, который "
-                f"занят дефектом ID{int(taken['number'])}. Ничего не изменено; разберите номера этих дефектов и примите "
-                "состояние Hub заново.")
+            raise TransitionConflict(i18n._(
+                "Переход сведений о библиотеках не выполнен: после него дефекту ID{number} нужен ключ номера, который "
+                "занят дефектом ID{taken}. Ничего не изменено; разберите номера этих дефектов и примите состояние Hub "
+                "заново.", number=number, taken=int(taken["number"])))
     # резервы: строки defects групп, которые ушли, с номером, который не держит ни одно семейство
     for base, g in sorted(moved_bases.items()):
         counter.current = g.ref  # резерв – в строке своей группы
@@ -603,7 +604,7 @@ def _rebind_defects(c, project_id: int, run_id, p: Plan, counter: _Counter) -> d
                     counter.move("defects")
                     continue
             _archive(c, project_id, run_id, "defects", {"defect_key": r["defect_key"]}, r, counter,
-                     reason="резерв номера группы, которая расщепилась или слилась")
+                     reason=i18n.N_("резерв номера группы, которая расщепилась или слилась"))
             c.execute("DELETE FROM defects WHERE project_id = ? AND defect_key = ?", (project_id, r["defect_key"]))
             out["reserves_archived"] += 1
     counter.current = None
@@ -714,13 +715,17 @@ def _groups_summary(p: Plan, research_moved: Mapping[str, bool], counter: _Count
                    pending: list[dict] | None = None) -> list[dict]:
     """Таблица групп итога: было → стало, вид перехода, находки, исследование и числа по сущностям группы
     (перенесено / в архив), новые номера наборов при слиянии (п. 4.5)."""
-    kinds = {"move": "перенос", "partial": "частичное расщепление", "split": "расщепление", "merge-in": "слияние"}
+    # итог хранится в hub_defect_sync_runs.result_json – подписи по-русски (msgid), перевод при показе
+    kinds = {"move": i18n.N_("перенос"), "partial": i18n.N_("частичное расщепление"), "split": i18n.N_("расщепление"),
+             "merge-in": i18n.N_("слияние")}
     out = []
     for ref, g in sorted(p.groups.items(), key=lambda kv: label(kv[1].triple)):
         out.append({"from": label(g.triple), "to": sorted(label(p.targets[t]["triple"]) for t in g.dest),
-                    "kind": kinds[g.kind], "change": {"refine": "уточнение", "change": "изменение"}.get(g.change, ""),
-                    "findings": len(g.members) - len(g.stays), "research": "перенесено" if research_moved.get(ref) else
-                    ("остаётся" if g.kind == "partial" else "в архив"),
+                    "kind": kinds[g.kind],
+                    "change": {"refine": i18n.N_("уточнение"), "change": i18n.N_("изменение")}.get(g.change, ""),
+                    "findings": len(g.members) - len(g.stays),
+                    "research": i18n.N_("перенесено") if research_moved.get(ref) else
+                    (i18n.N_("остаётся") if g.kind == "partial" else i18n.N_("в архив")),
                     "moved": dict(counter.by_group[ref]["moved"]) if counter is not None else {},
                     "archived": dict(counter.by_group[ref]["archived"]) if counter is not None else {},
                     "new_sets": sorted({(x["target"], x["set_no"]) for x in pending or [] if x.get("source") == ref})})
@@ -770,7 +775,7 @@ def marks_summary(after: Mapping[int, dict]) -> dict:
 # ============================================================================ смена назначения Hub (п. 4.5)
 
 HUB_DECISIONS = ("hub_sync", "hub_defect")  # решения – проекции принятого состояния Hub (своего назначения)
-ASSIGNMENT_REASON = "смена назначения Hub: решение из Hub прежнего назначения"
+ASSIGNMENT_REASON = i18n.N_("смена назначения Hub: решение из Hub прежнего назначения")
 
 
 def assignment_affects(c, project_id: int) -> bool:

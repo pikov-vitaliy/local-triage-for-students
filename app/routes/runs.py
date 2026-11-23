@@ -22,7 +22,8 @@ from app.executors import executor_label
 from app.routes.common import (MAX_NAME, collector_of, db_of, metrics_of, project_or_404, redirect, render,
                                runner_of)
 from app.routes.projects import project_response
-from app.run_errors import error_label, group_run_errors
+from app import i18n
+from app.run_errors import error_label, group_run_errors, shown_error
 from app.triage import TriageError
 from app.view import ITEM_STATE_LABELS, PHASE_LABELS, RUN_STATE_LABELS, VERDICT_LABELS
 
@@ -46,10 +47,12 @@ def run_notice(run: dict) -> str:
     stopped сообщения нет, для paused – только если паузу поставил сам прогон (Ollama не отвечает или
     приложение перезапускалось), а не последняя ошибка находки.
     """
+    # last_error – русский канонический текст (ADR-0158): признак паузы ищется на обоих языках, перевод – при показе
+    text = str(run["last_error"] or "")
     if run["state"] == "error":
-        return run["last_error"] or "Прогон завершился ошибкой."
-    if run["state"] == "paused" and ("на паузе" in run["last_error"] or "на паузу" in run["last_error"]):
-        return run["last_error"]
+        return shown_error(text) or i18n._("Прогон завершился ошибкой.")
+    if run["state"] == "paused" and ("на паузе" in text or "на паузу" in text or "pause" in text.casefold()):
+        return shown_error(text)
     return ""
 
 
@@ -62,6 +65,9 @@ def status_payload(request: Request, run_id: int) -> dict | None:
     pid = status["run"]["project_id"]
     status["run"]["state_label"] = RUN_STATE_LABELS.get(status["run"]["state"], status["run"]["state"])
     status["run"]["notice"] = run_notice(status["run"])
+    from app.examples import rule_text
+    if status["current"] and status["current"].get("rule"):
+        status["current"]["rule"] = rule_text(status["current"]["rule"])
     if status["current"]:
         status["current"]["phase_label"] = PHASE_LABELS.get(status["current"]["phase"], "")
         fid = status["current"].get("finding_id")
@@ -71,7 +77,12 @@ def status_payload(request: Request, run_id: int) -> dict | None:
         item["verdict_label"] = VERDICT_LABELS.get(item.get("verdict") or "", "")
         item["state_label"] = ITEM_STATE_LABELS.get(item["state"], item["state"])
         item["error_label"] = error_label(item["error"]) if item.get("error") else ""
+        item["error"] = shown_error(item.get("error"))  # видимый текст – на языке интерфейса, в базе – русский
+        if item.get("rule"):  # категория учебных примеров – на языке интерфейса, в базе – как в выгрузке
+            item["rule"] = rule_text(item["rule"])
     status["errors"] = group_run_errors(db_of(request).run_errors(run_id), pid)
+    if status.get("slow_model"):  # строка медленного режима хранится в журнале прогона по-русски
+        status["slow_model"]["text"] = shown_error(status["slow_model"].get("text"))
     run_row = db_of(request).get_run(run_id)
     # метрики сервера, на котором идёт этот прогон (снимок исполнителя); прогон до 0.9.12 – профиль приложения
     status["metrics"] = metrics_of(request, db_of(request).get_execution((run_row or {}).get("execution_id")))
@@ -84,7 +95,7 @@ def status_payload(request: Request, run_id: int) -> dict | None:
 def run_or_404(request: Request, run_id: int) -> dict:
     run = db_of(request).get_run(run_id)
     if run is None:
-        raise HTTPException(status_code=404, detail="Прогон не найден.")
+        raise HTTPException(status_code=404, detail=i18n._("Прогон не найден."))
     return run
 
 
@@ -170,14 +181,14 @@ def _retry_errors(request: Request, run_id: int, include_unknown: bool):
     run = run_or_404(request, run_id)
     if run["state"] not in ("done", "stopped", "error", "paused"):
         return redirect(f"/runs/{run_id}?error=" + quote(
-            "Повторить ошибочные можно после завершения прогона или на паузе."))
+            i18n._("Повторить ошибочные можно после завершения прогона или на паузе.")))
     db = db_of(request)
     hub_ids = [row["hub_id"] for row in db.run_errors(run_id)
                if row["retryable"] and (include_unknown or not row["unknown"])]
     if not hub_ids:
         return redirect(f"/runs/{run_id}?error=" + quote(
-            "В этом прогоне нет находок SAST с ошибкой, которые есть в текущей выгрузке и идут в повтор без отдельной "
-            "отметки: повторять нечего."))
+            i18n._("В этом прогоне нет находок SAST с ошибкой, которые есть в текущей выгрузке и идут в повтор без "
+                   "отдельной отметки: повторять нечего.")))
     # Снимок исполнителя переносится, если профиль включён и адрес не менялся; иначе – отказ до остановки прежнего
     # прогона; прогон до 0.9.12 – новый прогон на профиле проекта (ADR-0102 п. 5). Прежний прогон на паузе
     # останавливается той же транзакцией, что создаёт новый.

@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Решение на отмеченные · {{ project.name }}{% endblock %}
-{% block crumbs %}<a href="/projects/{{ project.id }}/findings">Находки</a><span> / </span><span aria-current="page">Решение на отмеченные</span>{% endblock %}
+{% block title %}{{ _("Решение на отмеченные") }} · {{ project.name }}{% endblock %}
+{% block crumbs %}<a href="/projects/{{ project.id }}/findings">{{ _("Находки") }}</a><span> / </span><span aria-current="page">{{ _("Решение на отмеченные") }}</span>{% endblock %}
 {% block content %}
-<h1>Решение на отмеченные</h1>
-<p>Один вывод и один текст сохранятся у каждой находки состава вместе с отметкой «Проверено». В Hub ничего не уходит: перенос – как обычно, из карточки, вкладки «Дефекты» или «Отправить выбранные в Hub».</p>
+<h1>{{ _("Решение на отмеченные") }}</h1>
+<p>{{ _("Один вывод и один текст сохранятся у каждой находки состава вместе с отметкой «Проверено». В Hub ничего не уходит: перенос – как обычно, из карточки, вкладки «Дефекты» или «Отправить выбранные в Hub».") }}</p>
 {% if error %}<p class="text-err" role="alert" id="decide-error">{{ error }}</p>{% endif %}
-<section class="panel"><h2>Состав</h2>
-<h3>Войдут ({{ ready | length }})</h3>
-<ul id="decide-included">{% for r in ready %}<li><a href="{{ r.url }}">{{ r.hub_id }}</a> · {{ r.finding.rule }} · {{ r.finding.file }}:{{ r.finding.line or '–' }}{% if r.snapshot.code.stale_verdict %} · <span class="muted stale-slice">срез, который разбирала модель, не совпадает с текущим кодом</span>{% endif %}</li>{% else %}<li>Нет находок.</li>{% endfor %}</ul>
-<h3>Исключены ({{ excluded | length }})</h3>
-<ul id="decide-excluded">{% for r in excluded %}<li>{% if r.url %}<a href="{{ r.url }}">{{ r.hub_id }}</a>{% else %}{{ r.hub_id }}{% endif %}: {{ r.why }}</li>{% else %}<li>Нет исключений.</li>{% endfor %}</ul>
+<section class="panel"><h2>{{ _("Состав") }}</h2>
+<h3>{{ _("Войдут ({n})", n=ready | length) }}</h3>
+<ul id="decide-included">{% for r in ready %}<li><a href="{{ r.url }}">{{ r.hub_id }}</a> · {{ r.finding.rule|rule_text }} · {{ r.finding.file }}:{{ r.finding.line or '–' }}{% if r.snapshot.code.stale_verdict %} · <span class="muted stale-slice">{{ _("срез, который разбирала модель, не совпадает с текущим кодом") }}</span>{% endif %}</li>{% else %}<li>{{ _("Нет находок.") }}</li>{% endfor %}</ul>
+<h3>{{ _("Исключены ({n})", n=excluded | length) }}</h3>
+<ul id="decide-excluded">{% for r in excluded %}<li>{% if r.url %}<a href="{{ r.url }}">{{ r.hub_id }}</a>{% else %}{{ r.hub_id }}{% endif %}: {{ r.why }}</li>{% else %}<li>{{ _("Нет исключений.") }}</li>{% endfor %}</ul>
 </section>
 <form method="post" action="/projects/{{ project.id }}/hub/decide-selected" class="stack-form" id="decide-form">
 {% for hub_id in selected %}<input type="hidden" name="hub_id" value="{{ hub_id }}">{% endfor %}
@@ -17,25 +17,25 @@
 <input type="hidden" name="snapshot" value="{{ snapshot }}"><input type="hidden" name="outcome" value="{{ outcome }}">
 <input type="hidden" name="comment" value="{{ comment }}"><input type="hidden" name="fix" value="{{ fix }}">
 <section class="panel"><h2>{{ outcomes[outcome] }}: {{ ready | length }}</h2>
-<p class="field-label">{{ "Комментарий для Hub" if outcome == "false_positive" else "Обоснование" }}</p>
+<p class="field-label">{{ _("Комментарий для Hub") if outcome == "false_positive" else _("Обоснование") }}</p>
 <pre class="hub-text" id="decide-comment-shown">{{ comment }}</pre>
-{% if outcome == "true_positive" %}<p class="field-label">Рекомендация</p><pre class="hub-text" id="decide-fix-shown">{{ fix }}</pre>{% endif %}
-{% if replacements %}<div id="decide-replacements"><h3>Будут заменены решения</h3>
-{% for r in replacements %}<details open><summary>{{ r.hub_id }} · редакция {{ r.revision }} · {{ VERDICT_LABELS.get(r.outcome, DECISION_LABELS.get(r.outcome, r.outcome)) }}</summary><pre class="hub-text">{{ r.comment }}
+{% if outcome == "true_positive" %}<p class="field-label">{{ _("Рекомендация") }}</p><pre class="hub-text" id="decide-fix-shown">{{ fix }}</pre>{% endif %}
+{% if replacements %}<div id="decide-replacements"><h3>{{ _("Будут заменены решения") }}</h3>
+{% for r in replacements %}<details open><summary>{{ r.hub_id }} · {{ _("редакция {n}", n=r.revision) }} · {{ VERDICT_LABELS.get(r.outcome, DECISION_LABELS.get(r.outcome, r.outcome)) }}</summary><pre class="hub-text">{{ r.comment }}
 {{ r.fix }}</pre></details>{% endfor %}
-<label class="check"><input type="checkbox" name="overwrite" value="1" id="decide-overwrite" required> Подтверждаю замену перечисленных решений показанным текстом</label></div>{% endif %}
-<label class="check"><input type="checkbox" name="confirm" value="1" id="decide-confirm" required> Подтверждаю состав, общее решение и отметки «Проверено»</label>
-<div class="actions"><button type="submit" name="action" value="apply" class="btn btn-primary" id="decide-apply">Сохранить на {{ ready | length }}</button>
-<button type="submit" name="action" value="edit" class="btn" formnovalidate id="decide-edit">Изменить текст</button></div>
+<label class="check"><input type="checkbox" name="overwrite" value="1" id="decide-overwrite" required> {{ _("Подтверждаю замену перечисленных решений показанным текстом") }}</label></div>{% endif %}
+<label class="check"><input type="checkbox" name="confirm" value="1" id="decide-confirm" required> {{ _("Подтверждаю состав, общее решение и отметки «Проверено»") }}</label>
+<div class="actions"><button type="submit" name="action" value="apply" class="btn btn-primary" id="decide-apply">{{ _("Сохранить на {n}", n=ready | length) }}</button>
+<button type="submit" name="action" value="edit" class="btn" formnovalidate id="decide-edit">{{ _("Изменить текст") }}</button></div>
 </section>
 {% else %}
-<fieldset class="field" id="decide-outcome"><legend class="field-label">Решение</legend>
+<fieldset class="field" id="decide-outcome"><legend class="field-label">{{ _("Решение") }}</legend>
 {% for key, label in outcomes.items() %}<label class="check"><input type="radio" name="outcome" value="{{ key }}"{% if outcome == key %} checked{% endif %}> {{ label }}</label>{% endfor %}
 </fieldset>
-<label class="field"><span class="field-label">Комментарий для Hub или обоснование дефекта</span><textarea name="comment" id="decide-comment" rows="6">{{ comment }}</textarea></label>
-<label class="field"><span class="field-label">Рекомендация: только для «Подтверждаю дефект», по пункту в строке</span><textarea name="fix" id="decide-fix" rows="6">{{ fix }}</textarea></label>
-<p class="field-hint">Следующий шаг покажет состав, текст и заменяемые решения. Сохранения ещё нет.</p>
-<button type="submit" name="action" value="preview" class="btn btn-primary" id="decide-preview">Проверить состав и текст</button>
+<label class="field"><span class="field-label">{{ _("Комментарий для Hub или обоснование дефекта") }}</span><textarea name="comment" id="decide-comment" rows="6">{{ comment }}</textarea></label>
+<label class="field"><span class="field-label">{{ _("Рекомендация: только для «Подтверждаю дефект», по пункту в строке") }}</span><textarea name="fix" id="decide-fix" rows="6">{{ fix }}</textarea></label>
+<p class="field-hint">{{ _("Следующий шаг покажет состав, текст и заменяемые решения. Сохранения ещё нет.") }}</p>
+<button type="submit" name="action" value="preview" class="btn btn-primary" id="decide-preview">{{ _("Проверить состав и текст") }}</button>
 {% endif %}
 </form>
 {% endblock %}

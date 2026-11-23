@@ -33,55 +33,49 @@
 
   function num(value, digits) {
     if (value === null || value === undefined || value === "" || isNaN(Number(value))) return "–";
-    return Number(value).toFixed(digits === undefined ? 1 : digits).replace(".", ",");
+    var text = Number(value).toFixed(digits === undefined ? 1 : digits);
+    return ltLang() === "ru" ? text.replace(".", ",") : text;
   }
   function pad(n) { return n < 10 ? "0" + n : String(n); }
   function duration(value) {
     if (value === null || value === undefined || isNaN(Number(value))) return "–";
     var s = Math.max(0, Math.round(Number(value)));
-    if (s < 60) return s + " с";
+    if (s < 60) return ltT("{s} с", {s: s});
     var m = Math.floor(s / 60);
     s = s % 60;
-    if (m < 60) return m + " мин " + pad(s) + " с";
+    if (m < 60) return ltT("{m} мин {s} с", {m: m, s: pad(s)});
     var h = Math.floor(m / 60);
-    return h + " ч " + pad(m % 60) + " мин";
+    return ltT("{h} ч {m} мин", {h: h, m: pad(m % 60)});
   }
   function mib(value) {
     if (value === null || value === undefined || isNaN(Number(value))) return "–";
     var v = Number(value);
-    return v >= 1024 ? num(v / 1024) + " ГБ" : Math.round(v) + " МБ";
+    return v >= 1024 ? ltT("{n} ГБ", {n: num(v / 1024)}) : ltT("{n} МБ", {n: Math.round(v)});
   }
   function localTime(iso) {
     var d = new Date(iso);
     if (isNaN(d.getTime())) return iso || "";
-    return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  }
-  function plural(n, one, few, many) {
-    var a = Math.abs(n) % 100;
-    var b = a % 10;
-    if (b === 1 && a !== 11) return one;
-    if (b >= 2 && b <= 4 && (a < 12 || a > 14)) return few;
-    return many;
+    return d.toLocaleString(ltLocale(), { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
   }
   // «только что», «5 минут назад», «сегодня, 12:30», «вчера, 12:30», «3 дня назад», «12 октября»
   function relativeTime(date) {
     var now = new Date();
     var seconds = (now.getTime() - date.getTime()) / 1000;
-    var time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-    if (seconds < 45) return "только что";
+    var time = date.toLocaleTimeString(ltLocale(), { hour: "2-digit", minute: "2-digit" });
+    if (seconds < 45) return ltT("только что");
     if (seconds < 3600) {
       var minutes = Math.max(1, Math.round(seconds / 60));
-      return minutes + " " + plural(minutes, "минуту", "минуты", "минут") + " назад";
+      return ltT("{n} {unit} назад", {n: minutes, unit: ltPlural(minutes, "минуту", "минуты", "минут")});
     }
-    if (now.toDateString() === date.toDateString()) return "сегодня, " + time;
+    if (now.toDateString() === date.toDateString()) return ltT("сегодня, {time}", {time: time});
     var yesterday = new Date(now.getTime());
     yesterday.setDate(now.getDate() - 1);
-    if (yesterday.toDateString() === date.toDateString()) return "вчера, " + time;
+    if (yesterday.toDateString() === date.toDateString()) return ltT("вчера, {time}", {time: time});
     var days = Math.floor(seconds / 86400);
-    if (days < 7) return days + " " + plural(days, "день", "дня", "дней") + " назад";
+    if (days < 7) return ltT("{n} {unit} назад", {n: days, unit: ltPlural(days, "день", "дня", "дней")});
     var options = { day: "numeric", month: "long" };
     if (date.getFullYear() !== now.getFullYear()) options.year = "numeric";
-    return date.toLocaleDateString("ru-RU", options);
+    return date.toLocaleDateString(ltLocale(), options);
   }
 
   // ------------------------------------------------------------------ время
@@ -200,7 +194,7 @@
     close.type = "button";
     close.className = "toast-close";
     close.tabIndex = -1;
-    close.setAttribute("aria-label", "Закрыть");
+    close.setAttribute("aria-label", ltT("Закрыть"));
     close.appendChild(makeIcon("x"));
     close.addEventListener("click", function () { dismissToast(item); });
     item.appendChild(close);
@@ -267,12 +261,12 @@
       var status = button.parentNode ? $(".copy-status", button.parentNode) : null;
       copyText(text || "").then(function (ok) {
         if (ok) {
-          say(status, "Скопировано");
-          toast(button.getAttribute("data-copy-done") || "Скопировано", { announce: !status });
+          say(status, ltT("Скопировано"));
+          toast(button.getAttribute("data-copy-done") || ltT("Скопировано"), { announce: !status });
         } else {
           if (target) selectContents(target);
-          say(status, "Не скопировано: выделите текст и нажмите Ctrl+C", true, true);
-          toast("Не скопировано: выделите текст и нажмите Ctrl+C", { tone: "err", announce: !status });
+          say(status, ltT("Не скопировано: выделите текст и нажмите Ctrl+C"), true, true);
+          toast(ltT("Не скопировано: выделите текст и нажмите Ctrl+C"), { tone: "err", announce: !status });
         }
       });
     });
@@ -289,8 +283,8 @@
   function errorText(answer, status) {
     var text = answer && (answer.detail || answer.message);
     if (typeof text === "string" && text) return text;
-    if (status === 409) return "Данные изменились: обновите страницу.";
-    return "Ошибка " + status + ": обновите страницу и повторите.";
+    if (status === 409) return ltT("Данные изменились: обновите страницу.");
+    return ltT("Ошибка {status}: обновите страницу и повторите.", {status: status});
   }
   // Адрес этого же приложения: «/путь», но не «//хост» и не «/\хост»
   function localUrl(value) {
@@ -319,7 +313,7 @@
       var type = response.headers.get("content-type") || "";
       if (type.indexOf("application/json") < 0) {
         if (!response.ok) throw requestError(errorText(null, response.status), response.status, null);
-        if (!follow) throw requestError("Неожиданный ответ приложения: обновите страницу.", response.status, null);
+        if (!follow) throw requestError(ltT("Неожиданный ответ приложения: обновите страницу."), response.status, null);
         var page = response.url || "";
         try {
           var parsed = new URL(page, window.location.href);
@@ -335,7 +329,7 @@
         return answer && typeof answer === "object" ? answer : {};
       });
     }, function () {
-      throw requestError("Нет связи с приложением: проверьте, что оно запущено, и повторите.", 0, null);
+      throw requestError(ltT("Нет связи с приложением: проверьте, что оно запущено, и повторите."), 0, null);
     });
   }
 
@@ -442,7 +436,7 @@
       } else {  // строки нет в показанном коде: довод не подтверждён – помечается, как в app/view.py
         link = document.createElement("span");
         link.className = "line-ref-missing";
-        link.title = "Строки " + n + " нет в показанном коде – ссылка не подтверждена";
+        link.title = ltT("Строки {n} нет в показанном коде – ссылка не подтверждена", {n: n});
       }
       link.textContent = text.slice(start, match.index + match[0].length);
       el.appendChild(link);
@@ -506,9 +500,7 @@
           }
         });
         if (cases && (!event.submitter || event.submitter.value === "save")) {
-          form.setAttribute("data-confirm", "Будет удалено срезов кода: " + cases
-            + "; отметок «Проверено»: " + reviewed
-            + ". После удаления клонов это единственная копия кода. Подтвердите удаление.");
+          form.setAttribute("data-confirm", ltT("Будет удалено срезов кода: {cases}; отметок «Проверено»: {reviewed}. После удаления клонов это единственная копия кода. Подтвердите удаление.", {cases: cases, reviewed: reviewed}));
         } else if (event.submitter && event.submitter.value === "reset") {
           form.setAttribute("data-confirm", event.submitter.getAttribute("data-confirm"));
         } else form.removeAttribute("data-confirm");
@@ -658,7 +650,7 @@
       var ticket = ++asked;
       var params = new URLSearchParams();
       params.append("provider_id", provider.value);
-      say("Загружаю список моделей профиля…");
+      say(ltT("Загружаю список моделей профиля…"));
       hold(true);  // новый профиль со старым списком не сохраняется
       request("GET", url, params, { follow: false }).then(function (answer) {
         if (ticket !== asked) return;
@@ -677,13 +669,12 @@
         });
         if (found) select.value = keep;
         say(answer.error ? String(answer.error)
-          : "Модели – с сервера профиля «" + String(answer.profile || "") + "». Профиль и модель станут профилем и " +
-            "моделью проекта после «Сохранить параметры».");
+          : ltT("Модели – с сервера профиля «{profile}». Профиль и модель станут профилем и моделью проекта после «Сохранить параметры».", {profile: String(answer.profile || "")}));
       }, function (error) {
         if (ticket !== asked) return;
         provider.value = shown;  // список в форме – прежнего профиля: и профиль прежний
         hold(false);
-        say(error.message + " Профиль оставлен прежним.");
+        say(error.message + " " + ltT("Профиль оставлен прежним."));
       });
     });
   }
@@ -711,7 +702,7 @@
           schedule(every);
         }, function (error) {
           failures += 1;
-          if (failures === 3) toast(error.status === 0 ? error.message : "Состояние не обновляется: " + error.message, { tone: "err" });
+          if (failures === 3) toast(error.status === 0 ? error.message : ltT("Состояние не обновляется: {error}", {error: error.message}), { tone: "err" });
           schedule(Math.min(every * (failures + 1), 15000));
         });
       }
@@ -802,7 +793,7 @@
       var showUntil = function () {
         var day = expires.value;
         untilPreview.hidden = !/^\d{4}-\d{2}-\d{2}$/.test(day);
-        untilPreview.textContent = untilPreview.hidden ? "" : "до " + localTime(day + "T23:59:59Z") + " по вашему времени";
+        untilPreview.textContent = untilPreview.hidden ? "" : ltT("до {time} по вашему времени", {time: localTime(day + "T23:59:59Z")});
       };
       expires.addEventListener("change", showUntil);
       expires.addEventListener("input", showUntil);
@@ -827,10 +818,11 @@
         var bad = (input.getAttribute("accept") || "").indexOf(".zip") >= 0 && files.some(function (file) {
           return !/\.zip$/i.test(file.name);
         });
-        if (bad) { out.textContent = "Выбран файл " + names + " – это не архив .zip. Выберите архив .zip."; return; }
+        if (bad) { out.textContent = ltT("Выбран файл {names} – это не архив .zip. Выберите архив .zip.", {names: names}); return; }
         var mb = files.reduce(function (sum, file) { return sum + file.size; }, 0) / 1048576;
-        out.textContent = "Выбран файл " + names + " (" + mb.toFixed(1).replace(".", ",") + " МБ). Теперь нажмите «"
-          + (button ? button.textContent.trim() : "Загрузить") + "».";
+        var size = ltLang() === "ru" ? mb.toFixed(1).replace(".", ",") : mb.toFixed(1);
+        out.textContent = ltT("Выбран файл {names} ({size} МБ). Теперь нажмите «{button}».",
+          {names: names, size: size, button: button ? button.textContent.trim() : ltT("Загрузить")});
       };
       input.addEventListener("change", show);
       ["dragenter", "dragover"].forEach(function (type) {
@@ -850,7 +842,8 @@
     var start = Date.now() - (Number(el.getAttribute("data-elapsed")) || 0) * 1000;
     function draw() {
       var s = Math.max(0, Math.floor((Date.now() - start) / 1000));
-      el.textContent = s < 60 ? s + " с" : Math.floor(s / 60) + " мин " + String(s % 60).padStart(2, "0") + " с";
+      el.textContent = s < 60 ? ltT("{s} с", {s: s})
+        : ltT("{m} мин {s} с", {m: Math.floor(s / 60), s: String(s % 60).padStart(2, "0")});
     }
     draw();
     window.setInterval(draw, 1000);
@@ -874,7 +867,7 @@
         filled += 1;
       });
       var status = byId(button.getAttribute("data-fill-status") || "");
-      if (status) status.textContent = "Подставлено полей: " + filled + ". Нажмите «Сохранить» внизу страницы.";
+      if (status) status.textContent = ltT("Подставлено полей: {n}. Нажмите «Сохранить» внизу страницы.", {n: filled});
     });
   }
 
@@ -905,7 +898,7 @@
           if (done.length) storageSet(key, JSON.stringify(done));
           else storageRemove(key);
         }
-        if (counter) counter.textContent = "Отмечено " + done.length + " из " + boxes.length;
+        if (counter) counter.textContent = ltT("Отмечено {done} из {total}", {done: done.length, total: boxes.length});
       };
       boxes.forEach(function (box) { box.addEventListener("change", function () { update(true); }); });
       update(false);
@@ -1106,7 +1099,7 @@
     if (f.body && f.body.hidden && (!row || f.body.contains(row))) setCodeFolded(false);
   }
   function codeMissing(n) {
-    var text = "Строки " + n + " нет в показанном коде: модель или ссылка указали строку вне окна кода.";
+    var text = ltT("Строки {n} нет в показанном коде: модель или ссылка указали строку вне окна кода.", {n: n});
     var note = byId("code-missing");
     if (note) { note.textContent = text; note.hidden = false; }
     toast(text, { tone: "warn" });
@@ -1298,7 +1291,7 @@
       } catch (e) { return null; }
     }
     offerPackageReload = function (text) {
-      offerReload(text || "Другие находки этой версии изменились: обновите карточку.");
+      offerReload(text || ltT("Другие находки этой версии изменились: обновите карточку."));
     };
     function offerReload(text) {
       answerBlocked = true;
@@ -1310,7 +1303,7 @@
         reload.type = "button";
         reload.className = "btn btn-small";
         reload.id = "reload-card";
-        reload.textContent = "Обновить карточку";
+        reload.textContent = ltT("Обновить карточку");
         reload.addEventListener("click", function () { draftSave(); window.location.reload(); });
         holder.appendChild(reload);
       }
@@ -1399,13 +1392,12 @@
       var n = comment.value.trim().length;
       var d = decision();
       var parts = [];
-      if (n) parts.push(n + " " + (n % 10 === 1 && n % 100 !== 11 ? "знак"
-        : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? "знака" : "знаков")));
+      if (n) parts.push(n + " " + ltPlural(n, "знак", "знака", "знаков"));
       if (d === "false_positive") parts.push(commentCount.getAttribute("data-fp-hint") || "");
       // Р8: комментарий ложного срабатывания длиннее 250 знаков в списке Hub обрежется –
       // предупреждение, сохранение не запрещается
       var warn = d === "false_positive" && n > HUB_COMMENT_WARN;
-      if (warn) parts.push("Длиннее " + HUB_COMMENT_WARN + " знаков – в списке Hub комментарий обрежется.");
+      if (warn) parts.push(ltT("Длиннее {n} знаков – в списке Hub комментарий обрежется.", {n: HUB_COMMENT_WARN}));
       commentCount.textContent = parts.join(" · ");
       commentCount.classList.toggle("text-warn", warn);
     }
@@ -1458,7 +1450,7 @@
       // пустой вариант называет, что за ним стоит: у «Подтверждено» – «анализ не завершён», у «Риск принят» выбор обязателен
       var empty = kapo.options[0];
       if (empty && !empty.value) {
-        empty.textContent = outcome === "risk_accepted" ? "выберите состояние…" : "по выводу (сейчас: анализ не завершён)";
+        empty.textContent = outcome === "risk_accepted" ? ltT("выберите состояние…") : ltT("по выводу (сейчас: анализ не завершён)");
       }
     }
     // Решение изменено, но не сохранено: текст для Hub ещё прежний, а уход со страницы браузер переспросит.
@@ -1492,8 +1484,8 @@
       }
       if (unreviewedNote) {
         unreviewedNote.hidden = !d || reviewedBox.checked;
-        unreviewedNote.textContent = d === "later" ? "Отложено: находка останется непроверенной"
-          : "Находка останется непроверенной";
+        unreviewedNote.textContent = d === "later" ? ltT("Отложено: находка останется непроверенной")
+          : ltT("Находка останется непроверенной");
       }
       if (unreviewedWarn) unreviewedWarn.hidden = !d || d === "later" || reviewedBox.checked;
     }
@@ -1567,7 +1559,7 @@
           }
         } else if (radio.value === "risk_accepted" && comment) {
           // «Риск принят» сохраняется только с обоснованием
-          if (!comment.value.trim()) comment.placeholder = "Почему риск принимается и при каком условии решение пересматривается – без обоснования решение не сохранится";
+          if (!comment.value.trim()) comment.placeholder = ltT("Почему риск принимается и при каком условии решение пересматривается – без обоснования решение не сохранится");
         }
         syncReviewed(true);
         syncKapo();
@@ -1617,7 +1609,7 @@
     }
     $all("[data-take-outcome]").forEach(function (button) {
       button.addEventListener("click", function () {
-        if (dirty && !window.confirm("Заменить несохранённое решение и текст данными соседней находки?")) return;
+        if (dirty && !window.confirm(ltT("Заменить несохранённое решение и текст данными соседней находки?"))) return;
         showTaken(true);
         var radio = radios.filter(function (r) { return r.value === button.getAttribute("data-take-outcome"); })[0];
         if (radio && !radio.checked) {
@@ -1646,7 +1638,7 @@
         var joined = current ? current + "\n" + points : points;
         var limit = parseInt(fixBox.getAttribute("maxlength") || "0", 10);
         if (limit && joined.length > limit) {
-          toast("Пункты не перенесены: вместе с вашим текстом рекомендация длиннее " + limit + " знаков.", { tone: "err" });
+          toast(ltT("Пункты не перенесены: вместе с вашим текстом рекомендация длиннее {n} знаков.", {n: limit}), { tone: "err" });
           return;
         }
         fixBox.value = joined;
@@ -1654,9 +1646,9 @@
         if (decision() === "true_positive") {
           fixBox.scrollIntoView({ block: "center", behavior: reducedMotion() ? "auto" : "smooth" });
           try { fixBox.focus({ preventScroll: true }); } catch (e) { fixBox.focus(); }
-          toast("Пункты прежнего разбора перенесены в рекомендацию. Проверьте и поправьте их.", { tone: "ok" });
+          toast(ltT("Пункты прежнего разбора перенесены в рекомендацию. Проверьте и поправьте их."), { tone: "ok" });
         } else {
-          toast("Пункты перенесены в рекомендацию шага 5 – она уходит в Hub только при решении «Подтверждаю дефект».",
+          toast(ltT("Пункты перенесены в рекомендацию шага 5 – она уходит в Hub только при решении «Подтверждаю дефект»."),
             { tone: "info" });
         }
       });
@@ -1669,7 +1661,7 @@
         var joined = current ? current + "\n" + points : points;
         var limit = parseInt(fixBox.getAttribute("maxlength") || "0", 10);
         if (limit && joined.length > limit) {  // не обрезать введённое: пункты не переносятся, причина – в сообщении
-          toast("Пункты модели не перенесены: вместе с вашим текстом рекомендация длиннее " + limit + " знаков.",
+          toast(ltT("Пункты модели не перенесены: вместе с вашим текстом рекомендация длиннее {n} знаков.", {n: limit}),
             { tone: "err" });
           return;
         }
@@ -1677,8 +1669,8 @@
         fixBox.dispatchEvent(new Event("input", { bubbles: true }));
         fixBox.focus();
         toast(takeModelFix.getAttribute("data-code-dropped")
-          ? "Пункты модели перенесены, пример кода – нет. Проверьте и поправьте пункты."
-          : "Пункты модели перенесены. Проверьте и поправьте их.", { tone: "ok" });
+          ? ltT("Пункты модели перенесены, пример кода – нет. Проверьте и поправьте пункты.")
+          : ltT("Пункты модели перенесены. Проверьте и поправьте их."), { tone: "ok" });
       });
     }
     syncSast(false);
@@ -1716,10 +1708,10 @@
     // Обязательное поле не заполнено: сохранение не уходит, курсор – в это поле (сервер проверяет то же).
     // Подробная причина – у самого поля (связана с ним через aria-describedby, поле – aria-invalid), в нижней
     // панели – коротко; когда условие выполнено (поле заполнено, решение сменилось), ошибка гаснет сама
-    var SHORT_MISSING = {"comment": "Не сохранено: нужен комментарий – обоснование решения",
-      "final-verdict": "Не сохранено: выберите итоговый вердикт", "kapo-state": "Не сохранено: уточните состояние по ГОСТ Р КАПО"};
+    var SHORT_MISSING = {"comment": ltT("Не сохранено: нужен комментарий – обоснование решения"),
+      "final-verdict": ltT("Не сохранено: выберите итоговый вердикт"), "kapo-state": ltT("Не сохранено: уточните состояние по ГОСТ Р КАПО")};
     // Текст для Hub – решение человека: без выбранного решения ответ модели не копируется (сервер проверяет то же)
-    var NO_DECISION = "Не скопировано: выберите решение – ответ модели ещё не принят";
+    var NO_DECISION = ltT("Не скопировано: выберите решение – ответ модели ещё не принят");
     function stopIfNoDecision() {
       if (!radios.length || decision()) return false;
       say(status, NO_DECISION, true, true);
@@ -1768,7 +1760,7 @@
       fixPreview.hidden = !points.length;
       // по пункту в строке, пробелы видны (white-space: pre-wrap в app.css): отступ – перед номером, как в тексте
       // дефекта (defect._point)
-      fixPreview.textContent = points.length ? "В Hub уйдут пункты:\n" + points.map(function (p, i) {
+      fixPreview.textContent = points.length ? ltT("В Hub уйдут пункты:") + "\n" + points.map(function (p, i) {
         var text = p.replace(/^ +/, "");
         return p.slice(0, p.length - text.length) + (i + 1) + ") " + text;
       }).join("\n") : "";
@@ -1839,7 +1831,7 @@
       if (!missing) return false;
       var field = missing[0];
       var box = fieldError(field);
-      box.textContent = missing[1] || "Заполните обязательное поле";
+      box.textContent = missing[1] || ltT("Заполните обязательное поле");
       box.hidden = false;
       var ids = (field.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
       if (ids.indexOf(box.id) < 0) field.setAttribute("aria-describedby", ids.concat(box.id).join(" "));
@@ -1897,13 +1889,13 @@
       var label = $("#progress-label", box);
       if (bar) { bar.max = Math.max(1, progress.total); bar.value = progress.reviewed; }
       if (label) {
-        label.textContent = "Проверено " + progress.reviewed + " из " + progress.total + " · осталось "
-          + Math.max(0, progress.total - progress.reviewed);
+        label.textContent = ltT("Проверено {done} из {total} · осталось {left}",
+          {done: progress.reviewed, total: progress.total, left: Math.max(0, progress.total - progress.reviewed)});
       }
     }
     function markCopied(copiedAt) {
       var note = $("#copied-at");
-      if (note && copiedAt) renderTimestamp(note, {prefix: "Скопировано для Hub ", datetime: copiedAt, suffix: "."});
+      if (note && copiedAt) renderTimestamp(note, {prefix: ltT("Скопировано для Hub") + " ", datetime: copiedAt, suffix: "."});
     }
     // отметка «скопировано» по ответу сервера: снятая отметка (текст изменился) убирается и со страницы
     function syncCopied(answer) {
@@ -1976,7 +1968,7 @@
       var box = $("#hub-send-replace-box");
       if (box) { box.required = active; if (!active) box.checked = false; }
       var button = $("#hub-send-button");
-      if (button) button.textContent = active ? "Обновить комментарий в Hub" : "Отправить в Hub";
+      if (button) button.textContent = active ? ltT("Обновить комментарий в Hub") : ltT("Отправить в Hub");
       // строка последней операции (отказ «already has…») – по текущему решению; операции в работе опрашиваются
       if (typeof mode.status_text === "string") {
         var line = $("#hub-send-status");
@@ -2015,12 +2007,12 @@
       if (button && button.firstChild && button.firstChild.nodeType === 3) {
         // у SAST – что сделано в Hub при сохранённом исходе (с 0.9.2 – «точная подпись»): у дефекта
         // статус находки не меняется; у SCA – прежняя надпись
-        button.firstChild.nodeValue = commentLabel && decision() === "true_positive" ? "Отметить: дефект создан в Hub "
-          : "Отметить: статус и комментарий внесены в Hub ";
+        button.firstChild.nodeValue = commentLabel && decision() === "true_positive" ? ltT("Отметить: дефект создан в Hub") + " "
+          : ltT("Отметить: статус и комментарий внесены в Hub") + " ";
       }
       var badgeText = $("#entered-badge");
       if (badgeText && commentLabel) {
-        badgeText.textContent = decision() === "true_positive" ? "✓ дефект создан в Hub" : "✓ статус и комментарий в Hub";
+        badgeText.textContent = decision() === "true_positive" ? ltT("✓ дефект создан в Hub") : ltT("✓ статус и комментарий в Hub");
       }
     }
     // После копирования: «Отметить: внесено в Hub» показывается и получает акцент; без неё – сразу «Дальше»
@@ -2093,11 +2085,11 @@
     function copyForHub() {
       if (!copyButton || copyButton.disabled || answerBlocked || copyBusy) return;
       if (fixField && decision() === "true_positive") {  // у дефекта – полный текст из раздела «Дефект для Hub»
-        say(status, "Для подтверждённого дефекта сохраните решение и скопируйте текст дефекта (f)", true, true);
+        say(status, ltT("Для подтверждённого дефекта сохраните решение и скопируйте текст дефекта (f)"), true, true);
         return;
       }
       if (fixField && decision() === "later") {
-        say(status, "Отложенная находка в Hub не переносится: выберите решение", true, true);
+        say(status, ltT("Отложенная находка в Hub не переносится: выберите решение"), true, true);
         return;
       }
       if (stopIfNoDecision() || stopIfMissing()) return;  // копирование сохраняет решение: те же обязательные поля
@@ -2106,8 +2098,7 @@
       // окном подтверждения браузера (О7): окно перекрывало карточку и подтверждалось клавишей Enter не глядя
       checkComment();
       if (staleComment() && confirmBox && !confirmBox.checked) {
-        say(status, "Комментарий написан моделью к другому вердикту, а в Hub уйдёт итоговый: поправьте текст или "
-          + "отметьте «Текст проверен» и скопируйте ещё раз (c)", true, true);
+        say(status, ltT("Комментарий написан моделью к другому вердикту, а в Hub уйдёт итоговый: поправьте текст или отметьте «Текст проверен» и скопируйте ещё раз (c)"), true, true);
         confirmBox.focus();
         return;
       }
@@ -2120,7 +2111,7 @@
         .then(function (answer) {
           // текст копируется, только если сервер подтвердил запись и разрешил копирование (находка есть в выгрузке)
           if (!answer || answer.copy_allowed !== true || typeof answer.hub_text !== "string") {
-            say(status, "Текст не скопирован: сервер не подтвердил копирование. Обновите страницу.", true, true);
+            say(status, ltT("Текст не скопирован: сервер не подтвердил копирование. Обновите страницу."), true, true);
             return null;
           }
           if (preview) preview.textContent = answer.hub_text;
@@ -2149,7 +2140,7 @@
           // строка «итог разбора» под заголовком – по подтверждённому ответу сервера (ревью dev28)
           var summaryDecision = $("#finding-summary-decision");
           if (summaryDecision && typeof answer.summary_decision === "string") {
-            summaryDecision.textContent = answer.summary_decision + (answer.reviewed ? ", проверено" : "");
+            summaryDecision.textContent = answer.summary_decision + (answer.reviewed ? ", " + ltT("проверено") : "");
             var summaryDraft = $("#finding-summary-draft");
             if (summaryDraft && edits === sent) summaryDraft.hidden = true;
           }
@@ -2162,31 +2153,32 @@
           // Номер ответа агента в форме не меняется, пока человек не увидел новый ответ: сервер сообщает answer_moved и
           // возвращает прежний номер. Иначе следующее «Проверено» стало бы согласием с ответом, которого он не видел
           if (answer.answer_moved) {
-            offerReload(answer.notice || "Пришёл новый ответ агента: обновите карточку и сверьте решение с ним.");
+            offerReload(answer.notice || ltT("Пришёл новый ответ агента: обновите карточку и сверьте решение с ним."));
           }
           return copyText(answer.hub_text).then(function (ok) {
             if (!ok) {
               if (previewBox) previewBox.open = true;
               if (preview) selectContents(preview);
               if (manualButton) manualButton.hidden = false;
-              say(status, "Не скопировано в буфер: текст выделен – нажмите Ctrl+C, затем «Скопировал вручную»",
+              say(status, ltT("Не скопировано в буфер: текст выделен – нажмите Ctrl+C, затем «Скопировал вручную»"),
                 true, true);
               return;
             }
             // пакетное решение (Б8): сохранено и для других находок версии – сведения, а не предупреждение
             var also = answer.applied && answer.applied.length
-              ? " Решение сохранено и для находок: " + answer.applied.join(", ") + "." : "";
+              ? " " + ltT("Решение сохранено и для находок: {ids}.", {ids: answer.applied.join(", ")}) : "";
             if (answer.notice) {  // сохранено с оговоркой из ответа сервера
               say(status, answer.notice + also, true, true);
             } else if (edits === sent) {  // и пока шло копирование, форму тоже не меняли
               say(status, (decision() === "false_positive"
-                ? "Решение сохранено, комментарий скопирован – вставьте его при смене статуса на «Ложное срабатывание» в Hub"
-                : "Решение сохранено, короткий текст скопирован – вставьте его в комментарий к смене статуса в Hub") + also,
+                ? ltT("Решение сохранено, комментарий скопирован – вставьте его при смене статуса на «{status}» в Hub",
+                  {status: "Ложное срабатывание"})  // название статуса в Hub – значение Hub, не переводится
+                : ltT("Решение сохранено, короткий текст скопирован – вставьте его в комментарий к смене статуса в Hub")) + also,
                 true);
-              if (!narrowCard()) toast("Комментарий для Hub скопирован", { announce: false });
+              if (!narrowCard()) toast(ltT("Комментарий для Hub скопирован"), { announce: false });
               if (!accentEntered(answer)) accentNext();
             } else {  // в буфере – сохранённая редакция, а на экране уже другая: акцент остаётся на копировании
-              say(status, "Скопирована сохранённая редакция, а форма с тех пор изменилась – скопируйте ещё раз",
+              say(status, ltT("Скопирована сохранённая редакция, а форма с тех пор изменилась – скопируйте ещё раз"),
                 true, true);
             }
             setCopyBusy(false);  // буфер уже записан; отметка «скопировано» – отдельно, кнопки её не ждут
@@ -2195,7 +2187,8 @@
         })
         .catch(function (error) {
           if (preview) preview.classList.add("is-stale");
-          var failure = "Не скопировано: " + (error && error.message ? error.message : "решение не сохранено – обновите страницу");
+          var failure = ltT("Не скопировано: {reason}",
+            {reason: error && error.message ? error.message : ltT("решение не сохранено – обновите страницу")});
           // находка в дефекте, созданном в Hub (ADR-0121): решение меняется только с подтверждением – флажок в форме,
           // текст отказа рядом; повторное копирование уйдёт с ним
           if (error && error.answer && error.answer.reason === "defect") {
@@ -2212,8 +2205,7 @@
             if (reviewedBox) reviewedBox.checked = false;
             syncReviewed(false);
             setDirty(true);
-            offerReload(failure + " Решение, ответ модели или код изменились – проверьте решение заново. "
-              + "Отметка «Проверено» снята.");
+            offerReload(failure + " " + ltT("Решение, ответ модели или код изменились – проверьте решение заново. Отметка «Проверено» снята."));
             return;
           }
           say(status, failure, true, true);
@@ -2251,14 +2243,13 @@
         confirmCopied().then(function (ok) {
           defectManual.disabled = false;
           if (!ok) {
-            sayDefect("Отметка «скопировано» не поставлена: решение изменилось – обновите карточку и скопируйте "
-              + "текст дефекта заново", true);
+            sayDefect(ltT("Отметка «скопировано» не поставлена: решение изменилось – обновите карточку и скопируйте текст дефекта заново"), true);
             return;
           }
           setEnteredHash(answer);
           if (typeof answer.entered === "boolean") syncEntered(answer);
           defectManual.hidden = true;
-          sayDefect("Отмечено: текст дефекта скопирован вручную – вставьте его в Hub (описание дефекта).", false);
+          sayDefect(ltT("Отмечено: текст дефекта скопирован вручную – вставьте его в Hub (описание дефекта)."), false);
           if (!accentEntered(answer) && byId("route")) accentNext();  // отметка уже действует – фокус на главной
           manualDefect = null;
         });
@@ -2310,8 +2301,7 @@
         if (flag) flag.checked = !!(confirmBox && confirmBox.checked);
         if (!dirty) return;
         event.preventDefault();
-        say(status, "Решение изменено, но не сохранено: сохраните его, перенесите в Hub актуальный текст и затем "
-          + "поставьте отметку «Внесено в Hub»", true, true);
+        say(status, ltT("Решение изменено, но не сохранено: сохраните его, перенесите в Hub актуальный текст и затем поставьте отметку «Внесено в Hub»"), true, true);
       });
       // отказ из-за комментария модели к другому вердикту: показать отметку «Текст проверен», курсор – в комментарий
       enteredForm.addEventListener("lt:error", function (event) {
@@ -2335,8 +2325,8 @@
         // «Скопировать» тоже сохраняет решение (copyBusy) – ждём его ответа
         if (!dirty && !saving && !copyBusy) return;
         event.preventDefault();
-        say(status, saving || copyBusy ?"Решение ещё сохраняется: дождитесь ответа и затем отправьте в Hub"
-          : "Решение изменено, но не сохранено: сохраните его и затем отправьте в Hub", true, true);
+        say(status, saving || copyBusy ?ltT("Решение ещё сохраняется: дождитесь ответа и затем отправьте в Hub")
+          : ltT("Решение изменено, но не сохранено: сохраните его и затем отправьте в Hub"), true, true);
       });
       hubSendForm.addEventListener("lt:error", function (event) {
         var answer = event.detail && event.detail.answer;
@@ -2369,7 +2359,7 @@
           return;
         }
         if (dirty) {
-          sayDefect("Сначала сохраните решение: дефект строится по сохранённому решению", true);
+          sayDefect(ltT("Сначала сохраните решение: дефект строится по сохранённому решению"), true);
           defectFromBar = false;
           return;
         }
@@ -2421,21 +2411,21 @@
               if (part === "body" && !routeTitleStale && !routeTitleText) routeTitleSkipped = true;
               routeAccent();
             }
-            var label = part === "body" ? "Полный текст дефекта" : "Заголовок дефекта";
             return copyText(text || "").then(function (ok) {
               if (!ok) {
                 var box = $("#defect-preview");
                 if (box) box.open = true;
                 selectContents(part === "body" ? bodyBox : titleBox);
-                sayDefect("Не скопировано в буфер: текст выделен – нажмите Ctrl+C" + (part === "body" && defectManual && answer.revision
-                  ? ", затем «Скопировал текст дефекта вручную»" : ""), true);
+                sayDefect(part === "body" && defectManual && answer.revision
+                  ? ltT("Не скопировано в буфер: текст выделен – нажмите Ctrl+C, затем «Скопировал текст дефекта вручную»")
+                  : ltT("Не скопировано в буфер: текст выделен – нажмите Ctrl+C"), true);
                 // карточка SCA: подтверждения копирования нет, идёт ручной путь – этап «создание» не скрывает отметку
                 var failedBar = part === "body" && !byId("route") ? $(".action-bar") : null;
                 if (failedBar) failedBar.removeAttribute("data-stage");
                 // ручное копирование заголовка: Ctrl+C по выделенному заголовку подтверждает этот заголовок
                 if (part === "title" && byId("route")) {
                   watchManualTitleCopy(titleBox, answer.title || "", function () {
-                    sayDefect("Заголовок дефекта скопирован – вставьте его в Hub (название дефекта).", false);
+                    sayDefect(ltT("Заголовок дефекта скопирован – вставьте его в Hub (название дефекта)."), false);
                   });
                 }
                 // ручное копирование тела: подтверждение – той редакции и того текста, что выданы этим ответом
@@ -2445,14 +2435,17 @@
                 }
                 return;
               }
-              sayDefect(label + " скопирован – вставьте его в Hub" + (part === "body" ? " (описание дефекта)."
-                : " (название дефекта).") + (answer.note ? " " + answer.note : ""), !!answer.note);
+              sayDefect((part === "body"
+                ? ltT("Полный текст дефекта скопирован – вставьте его в Hub (описание дефекта).")
+                : ltT("Заголовок дефекта скопирован – вставьте его в Hub (название дефекта)."))
+                + (answer.note ? " " + answer.note : ""), !!answer.note);
               // О2: заголовок скопирован – следующий этап маршрута «Скопировать текст дефекта», фокус на нём
               if (part === "title" && byId("route")) {
                 titleConfirmed(answer.title || "");
                 routeFocusPrimary = true;  // фокус – после снятия блокировки копирования (кнопки ещё выключены)
               }
-              if (!narrowCard()) toast(label + " скопирован", { announce: false });
+              if (!narrowCard()) toast(part === "body" ? ltT("Полный текст дефекта скопирован") : ltT("Заголовок дефекта скопирован"),
+                { announce: false });
               // текст дефекта в буфере: отметка «скопировано» – к выданной редакции решения, отметка «Внесено в Hub»
               // сверит отпечаток этого текста; акцент – на «Отметить: внесено в Hub»
               if (part === "body") {
@@ -2485,7 +2478,7 @@
             }
             // решение изменили в другой вкладке: выдавать дефект по прежней редакции нельзя – обновить карточку
             if (error && error.answer && error.answer.reload === true) {
-              offerReload(error.answer.detail || "Решение изменили в другой вкладке: обновите карточку.");
+              offerReload(error.answer.detail || ltT("Решение изменили в другой вкладке: обновите карточку."));
             }
             // комментарий модели к другому вердикту: показать отметку «Текст проверен» и перейти к комментарию
             if (error && error.answer && error.answer.reason === "comment") {
@@ -2495,7 +2488,8 @@
               if (ownConfirm) ownConfirm.hidden = false;
               if (comment) comment.focus();
             }
-            sayDefect("Не скопировано: " + (error && error.message ? error.message : "обновите страницу"), true);
+            sayDefect(ltT("Не скопировано: {reason}", {reason: error && error.message ? error.message : ltT("обновите страницу")}),
+              true);
           })
           .then(function () {
             setCopyBusy(false);
@@ -2514,11 +2508,11 @@
         confirmCopied().then(function (ok) {
           manualButton.disabled = false;
           if (!ok) {
-            say(status, "Отметка не поставлена: решение изменилось после копирования – скопируйте ещё раз", true, true);
+            say(status, ltT("Отметка не поставлена: решение изменилось после копирования – скопируйте ещё раз"), true, true);
             return;
           }
           manualButton.hidden = true;
-          say(status, "Отмечено как скопированное – вставьте текст в Hub", true);
+          say(status, ltT("Отмечено как скопированное – вставьте текст в Hub"), true);
           if (!dirty && !accentEntered(null)) accentNext();
         });
       });
@@ -2554,15 +2548,17 @@
       syncScaCopy();
       refreshCharCounts();
       setDirty(true);
-      say(status, pending.basisChanged ? "Карточка обновлена. Черновик восстановлен. "
-        + (pending.revisionChanged ? "Решение, ответ " + ($("#sast-form") ? "модели" : "агента")
-          + " или код изменились после черновика"
-          : "Ответ " + ($("#sast-form") ? "модели" : "агента") + " или код изменились после черновика")
-        + " – проверьте решение заново"
-        : reviewedChanged ? "Отметка «Проверено» не сохранена – нажмите «Сохранить»"
-        : "Карточка обновлена. Черновик восстановлен: ваш вариант решения подставлен, но не сохранён. "
-          + "Сверьте его с показанными "
-          + "фактами и ответом " + ($("#sast-form") ? "модели" : "агента") + " и сохраните.", true, false);
+      var byModel = !!$("#sast-form");  // у SAST ответ даёт модель, у SCA – агент
+      say(status, pending.basisChanged
+        ? (pending.revisionChanged
+          ? (byModel ? ltT("Карточка обновлена. Черновик восстановлен. Решение, ответ модели или код изменились после черновика – проверьте решение заново")
+            : ltT("Карточка обновлена. Черновик восстановлен. Решение, ответ агента или код изменились после черновика – проверьте решение заново"))
+          : (byModel ? ltT("Карточка обновлена. Черновик восстановлен. Ответ модели или код изменились после черновика – проверьте решение заново")
+            : ltT("Карточка обновлена. Черновик восстановлен. Ответ агента или код изменились после черновика – проверьте решение заново")))
+        : reviewedChanged ? ltT("Отметка «Проверено» не сохранена – нажмите «Сохранить»")
+        : byModel ? ltT("Карточка обновлена. Черновик восстановлен: ваш вариант решения подставлен, но не сохранён. Сверьте его с показанными фактами и ответом модели и сохраните.")
+        : ltT("Карточка обновлена. Черновик восстановлен: ваш вариант решения подставлен, но не сохранён. Сверьте его с показанными фактами и ответом агента и сохраните."),
+        true, false);
     }
     card = { form: form, next: nextButton, copy: copyForHub };
   }
@@ -2829,16 +2825,17 @@
       }
       function show() {
         var n = field.value.length;
-        var text = n + " из " + max + " знаков";
+        var text = ltT("{n} из {max} знаков", {n: n, max: max});
         var short = warnAt > 0 ? statusComment() : true;
         var extra = hasOwnId(field.value) || !short ? 0 : prefix;
-        if (extra && n > 0) text += " · в Hub уйдёт около " + (n + extra) + " с номером и компонентом";
+        if (extra && n > 0) text += " · " + ltT("в Hub уйдёт около {n} с номером и компонентом", {n: n + extra});
         var long = warnAt > 0 && short && n > 0 && n + extra > warnAt;
-        if (cut) text += ". Вставлено " + cut + " знаков – лишнее обрезано, проверьте конец названия";
-        else if (n >= max) text += ". Предел: дальше текст не вводится";
-        else if (n >= max - 10) text += ". Осталось " + (max - n);
-        else if (long) text += ". Текст для Hub длиннее " + warnAt + " знаков" + (extra ? " (с номером и компонентом)" : "")
-          + " – в списке Hub комментарий обрежется";
+        if (cut) text += ". " + ltT("Вставлено {n} знаков – лишнее обрезано, проверьте конец названия", {n: cut});
+        else if (n >= max) text += ". " + ltT("Предел: дальше текст не вводится");
+        else if (n >= max - 10) text += ". " + ltT("Осталось {n}", {n: max - n});
+        else if (long) text += ". " + (extra
+          ? ltT("Текст для Hub длиннее {n} знаков (с номером и компонентом) – в списке Hub комментарий обрежется", {n: warnAt})
+          : ltT("Текст для Hub длиннее {n} знаков – в списке Hub комментарий обрежется", {n: warnAt}));
         out.textContent = text;
         out.classList.toggle("text-warn", !!cut || n >= max - 10 || long);
       }
@@ -3067,12 +3064,12 @@
       var fixedBar = $(".action-bar[data-fixed-fp='all']");
       if (key === "h" && fixedBar) {
         event.preventDefault();
-        toast("У находки в Hub статус «Fixed»: менять в Hub нечего, отметка не нужна", { tone: "info" });
+        toast(ltT("У находки в Hub статус «Fixed»: менять в Hub нечего, отметка не нужна"), { tone: "info" });
         return;
       }
       if (key === "h" && $("#mark-entered") && badge && badge.hidden) {
         event.preventDefault();
-        toast("Сначала выберите и сохраните решение – отметка «Внесено в Hub» относится к нему", { tone: "info" });
+        toast(ltT("Сначала выберите и сохраните решение – отметка «Внесено в Hub» относится к нему"), { tone: "info" });
         return;
       }
       if ((key === "j" || key === "k") && moveRow(key === "j" ? 1 : -1)) event.preventDefault();
@@ -3134,8 +3131,8 @@
         box.dispatchEvent(new Event("input", { bubbles: true }));
         box.focus();
         toast(btn.getAttribute("data-code-dropped")
-          ? "Пункты модели перенесены, пример кода – нет. Проверьте и поправьте текст."
-          : "Текст модели перенесён. Проверьте и поправьте его.", { tone: "ok" });
+          ? ltT("Пункты модели перенесены, пример кода – нет. Проверьте и поправьте текст.")
+          : ltT("Текст модели перенесён. Проверьте и поправьте его."), { tone: "ok" });
       });
       if (anchorInput) {
         anchorInput.addEventListener("change", function () {
@@ -3171,7 +3168,7 @@
     tdId.appendChild(idNode);
 
     var tdResult = document.createElement("td");
-    tdResult.setAttribute("data-label", "Вердикт");
+    tdResult.setAttribute("data-label", ltT("Вердикт"));
     if (item.verdict) {
       var label = item.verdict_label || item.verdict;
       if (item.confidence !== null && item.confidence !== undefined) label += " · " + item.confidence + "%";
@@ -3179,7 +3176,7 @@
       if (item.state === "cached") {
         var cached = document.createElement("span");
         cached.className = "muted small";
-        cached.textContent = " готовый";
+        cached.textContent = " " + ltT("готовый");
         tdResult.appendChild(cached);
       }
     } else {
@@ -3197,17 +3194,17 @@
     }
 
     var tdRule = document.createElement("td");
-    tdRule.setAttribute("data-label", "Правило");
+    tdRule.setAttribute("data-label", ltT("Правило"));
     tdRule.className = "small";
     tdRule.textContent = item.rule || "";
 
     var tdTime = document.createElement("td");
-    tdTime.setAttribute("data-label", "Время");
+    tdTime.setAttribute("data-label", ltT("Время"));
     tdTime.className = "num";
     tdTime.textContent = item.seconds === null || item.seconds === undefined ? "–" : duration(item.seconds);
 
     var tdTps = document.createElement("td");
-    tdTps.setAttribute("data-label", "ток/с");
+    tdTps.setAttribute("data-label", ltT("ток/с"));
     tdTps.className = "num";
     tdTps.textContent = num(item.eval_tps);
 
@@ -3255,7 +3252,7 @@
       var details = document.createElement("details");
       details.className = "error-detail";
       var summary = document.createElement("summary");
-      summary.textContent = "Подробности";
+      summary.textContent = ltT("Подробности");
       var text = document.createElement("p");
       text.className = "small mono";
       text.textContent = item.detail;
@@ -3302,10 +3299,10 @@
       var relabel = function () {  // с отметкой – и «результат неизвестен» (новый платный запрос)
         var s = form._retryState;
         var selected = s.retryable + (box && box.checked ? s.unknown : 0);
-        setText("retry-errors-button", "Повторить ошибочные (" + selected + ")");
-        var message = "Запустить новый прогон по находкам с ошибкой (" + selected + ")? Прежний прогон "
-          + "останется в истории";
-        message += s.paused ? "; он на паузе и будет остановлен." : ".";
+        setText("retry-errors-button", ltT("Повторить ошибочные ({n})", {n: selected}));
+        var message = s.paused
+          ? ltT("Запустить новый прогон по находкам с ошибкой ({n})? Прежний прогон останется в истории; он на паузе и будет остановлен.", {n: selected})
+          : ltT("Запустить новый прогон по находкам с ошибкой ({n})? Прежний прогон останется в истории.", {n: selected});
         form.setAttribute("data-confirm", message);
       };
       if (canRetry) relabel();
@@ -3317,11 +3314,11 @@
 
   function progressText(s) {
     var run = s.run;
-    var parts = ["Обработано " + run.done + " из " + run.total];
-    if (s.new_verdicts) parts.push("новых вердиктов " + s.new_verdicts);
-    if (run.cached) parts.push("готовых " + run.cached);
-    if (run.skipped) parts.push("пропущено " + run.skipped);
-    if (run.failed) parts.push("ошибок " + run.failed);
+    var parts = [ltT("Обработано {done} из {total}", {done: run.done, total: run.total})];
+    if (s.new_verdicts) parts.push(ltT("новых вердиктов {n}", {n: s.new_verdicts}));
+    if (run.cached) parts.push(ltT("готовых {n}", {n: run.cached}));
+    if (run.skipped) parts.push(ltT("пропущено {n}", {n: run.skipped}));
+    if (run.failed) parts.push(ltT("ошибок {n}", {n: run.failed}));
     return parts.join(" · ");
   }
 
@@ -3343,7 +3340,7 @@
     var finished = run.state === "done" || run.state === "stopped" || run.state === "error";
     // на паузе оценки нет – «оценка после трёх ответов» при большем числе готовых вводила в заблуждение
     setText("eta", s.eta_s !== null && s.eta_s !== undefined ? "~" + duration(s.eta_s)
-      : (finished ? "–" : run.state === "paused" ? "на паузе" : "оценка после трёх ответов"));
+      : (finished ? "–" : run.state === "paused" ? ltT("на паузе") : ltT("оценка после трёх ответов")));
     setText("elapsed", duration(s.elapsed_s));
     setText("avg-call", duration(s.avg_call_s));
 
@@ -3362,7 +3359,7 @@
     var control = $("#control-note");
     if (control) {
       control.hidden = !s.control;
-      control.textContent = s.control === "stop" ? "Остановка после текущей находки…" : "Пауза после текущей находки…";
+      control.textContent = s.control === "stop" ? ltT("Остановка после текущей находки…") : ltT("Пауза после текущей находки…");
     }
     var notice = $("#run-notice");
     if (notice) {
@@ -3390,13 +3387,13 @@
     var partial = $("#m-tps-partial");
     if (partial) {
       partial.hidden = !run.partial_stats;
-      partial.textContent = run.partial_stats ? " · замеры неполные: " + run.partial_stats : "";
+      partial.textContent = run.partial_stats ? " · " + ltT("замеры неполные: {stats}", {stats: run.partial_stats}) : "";
     }
     var m = s.metrics || {};
     var gpu = m.gpu || null;
     setText("m-vram", mib(m.vram_used_mb));
-    setText("m-vram-total", m.vram_total_mb ? "из " + mib(m.vram_total_mb)
-      : (m.vram_source === "ollama" ? "по данным Ollama" : ""));
+    setText("m-vram-total", m.vram_total_mb ? ltT("из {total}", {total: mib(m.vram_total_mb)})
+      : (m.vram_source === "ollama" ? ltT("по данным Ollama") : ""));
     var vramBar = $("#m-vram-bar");
     if (vramBar) {
       vramBar.hidden = !m.vram_total_mb;
@@ -3406,18 +3403,19 @@
       }
     }
     setText("m-util", gpu && gpu.util_pct !== null && gpu.util_pct !== undefined ? num(gpu.util_pct, 0) + "%" : "–");
-    setText("m-power", gpu && gpu.power_w !== null && gpu.power_w !== undefined ? num(gpu.power_w, 0) + " Вт" : "");
+    setText("m-power", gpu && gpu.power_w !== null && gpu.power_w !== undefined ? ltT("{n} Вт", {n: num(gpu.power_w, 0)}) : "");
     setText("m-temp", gpu && gpu.temp_c !== null && gpu.temp_c !== undefined ? num(gpu.temp_c, 0) + " °C" : "–");
     // «ещё не измерено» – наблюдение этот сервер пока не измерило; у сервера в сети видеокарты этого компьютера нет
-    setText("m-gpu-name", gpu ? gpu.name : m.pending ? "измерение ещё не готово"
-      : (m.server && m.server.local === false ? "видеокарта сервера в сети не показывается" : "nvidia-smi недоступна"));
+    setText("m-gpu-name", gpu ? gpu.name : m.pending ? ltT("измерение ещё не готово")
+      : (m.server && m.server.local === false ? ltT("видеокарта сервера в сети не показывается") : ltT("nvidia-smi недоступна")));
     // запись /api/ps именно для модели прогона (сервер выбирает её по имени); другие загруженные – отдельно
     var loaded = s.run_model || null;
     var others = (m.models || []).filter(function (x) { return !loaded || x.name !== loaded.name; })
       .map(function (x) { return x.name; });
-    setText("m-model", loaded ? loaded.name : (m.pending ? "ещё не измерено" : "не загружена"));
+    setText("m-model", loaded ? loaded.name : (m.pending ? ltT("ещё не измерено") : ltT("не загружена")));
     setText("m-model-vram", loaded && loaded.vram_pct !== null && loaded.vram_pct !== undefined
-      ? loaded.vram_pct + "% в видеопамяти" : (others.length ? "в памяти: " + others.join(", ") : ""));
+      ? ltT("{pct}% в видеопамяти", {pct: loaded.vram_pct})
+      : (others.length ? ltT("в памяти: {models}", {models: others.join(", ")}) : ""));
 
     // Существующие строки сохраняют ID, узел ссылки и фокус при появлении следующего результата.
     var feed = $("#feed");
@@ -3436,7 +3434,7 @@
         var td = document.createElement("td");
         td.colSpan = 5;
         td.className = "muted";
-        td.textContent = "Пока ничего не обработано.";
+        td.textContent = ltT("Пока ничего не обработано.");
         empty.appendChild(td);
         feed.appendChild(empty);
       }
@@ -3498,8 +3496,8 @@
       function show() {
         if (finished) return;
         lost.textContent = source.readyState === EventSource.CLOSED
-          ? "Нет связи с приложением: данные на странице могут быть устаревшими. Обновите страницу."
-          : "Нет связи с приложением: данные на странице могут быть устаревшими. Переподключение…";
+          ? ltT("Нет связи с приложением: данные на странице могут быть устаревшими. Обновите страницу.")
+          : ltT("Нет связи с приложением: данные на странице могут быть устаревшими. Переподключение…");
         lost.hidden = false;
       }
       if (closed) {
@@ -3605,8 +3603,8 @@
       if (r.later_saved && !later && badge) {
         later = document.createElement("span");
         later.className = "badge badge-muted"; later.setAttribute("data-later-saved", "");
-        later.title = "строка сохранена более поздним получением; в доисследование не идёт";
-        later.textContent = "исследована позже";
+        later.title = ltT("строка сохранена более поздним получением; в доисследование не идёт");
+        later.textContent = ltT("исследована позже");
         badge.insertAdjacentElement("afterend", later); badge.insertAdjacentText("afterend", " ");
       } else if (!r.later_saved && later) {
         later.remove();
@@ -3621,7 +3619,7 @@
       live.hidden = !s.live;
       if (s.live) {
         live.querySelector("[data-live-ref]").textContent = s.live.input_ref;
-        live.querySelector("[data-live-text]").textContent = s.live.text || "обращение к модели…";
+        live.querySelector("[data-live-text]").textContent = s.live.text || ltT("обращение к модели…");
       }
     }
     root.querySelectorAll('[data-count="failed"]').forEach(function (el) { el.textContent = failed; });
@@ -3688,19 +3686,19 @@
       const row = document.createElement('fieldset');
       row.className = 'external-bug';
       row.dataset.bugIndex = String(index);
-      const legend = document.createElement('legend'); legend.textContent = 'Внешний дефект'; row.append(legend);
+      const legend = document.createElement('legend'); legend.textContent = ltT('Внешний дефект'); row.append(legend);
       const order = document.createElement('input'); order.type = 'hidden'; order.name = 'bug_order'; order.value = String(index); row.append(order);
       for (const prop of ['product', 'displayName', 'link']) {
         const label = document.createElement('label'); label.className = 'field'; label.append(document.createTextNode(prop));
         const input = document.createElement('input'); input.name = `bug_${index}_${prop}_value`; label.append(input); row.append(label);
-        const presenceLabel = document.createElement('label'); presenceLabel.className = 'field'; presenceLabel.append(document.createTextNode(`Присутствие ${prop}`));
+        const presenceLabel = document.createElement('label'); presenceLabel.className = 'field'; presenceLabel.append(document.createTextNode(ltT('Присутствие {prop}', {prop: prop})));
         const select = document.createElement('select'); select.name = `bug_${index}_${prop}_mode`;
-        for (const [value, text] of [['set', 'Установить строку'], ['remove', 'Свойство отсутствует']]) {
+        for (const [value, text] of [['set', ltT('Установить строку')], ['remove', ltT('Свойство отсутствует')]]) {
           const option = document.createElement('option'); option.value = value; option.textContent = text; select.append(option);
         }
         presenceLabel.append(select); row.append(presenceLabel);
       }
-      for (const [action, text] of [['up', 'Выше'], ['down', 'Ниже'], ['remove', 'Удалить строку']]) {
+      for (const [action, text] of [['up', ltT('Выше')], ['down', ltT('Ниже')], ['remove', ltT('Удалить строку')]]) {
         const control = document.createElement('button'); control.type = 'button'; control.className = 'btn';
         control.dataset.bugAction = action; control.textContent = text; row.append(control);
       }
@@ -3741,7 +3739,7 @@
       return;
     }
     if (!dirty()) return;
-    if (!window.confirm('Есть несохранённые изменения дефекта. Действие использует сохранённый черновик. Продолжить без сохранения ввода?')) {
+    if (!window.confirm(ltT('Есть несохранённые изменения дефекта. Действие использует сохранённый черновик. Продолжить без сохранения ввода?'))) {
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
@@ -3760,7 +3758,7 @@ for (const details of document.querySelectorAll('details[data-sync-raw]')) {
     if (!details.open || loading || loaded) return;
     loading = true;
     const status = details.querySelector('[data-sync-raw-status]');
-    status.textContent = 'Загрузка сохранённых данных…';
+    status.textContent = ltT('Загрузка сохранённых данных…');
     try {
       const response = await fetch(details.dataset.syncRaw, {headers: {'Accept': 'application/json'}});
       if (!response.ok) throw new Error(String(response.status));
@@ -3775,9 +3773,9 @@ for (const details of document.querySelectorAll('details[data-sync-raw]')) {
         content.append(heading, pre);
       }
       loaded = true;
-      status.textContent = 'Сохранённые данные загружены.';
+      status.textContent = ltT('Сохранённые данные загружены.');
     } catch {
-      status.textContent = 'Не удалось загрузить данные. Закройте и раскройте блок для повтора.';
+      status.textContent = ltT('Не удалось загрузить данные. Закройте и раскройте блок для повтора.');
     } finally {
       loading = false;
     }

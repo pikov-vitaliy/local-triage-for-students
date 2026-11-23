@@ -3,38 +3,38 @@
 {% macro identity_summary(identity, entity_rows, id_prefix="identity", labels={}) %}
 {% if identity %}
 <section class="panel" id="{{ id_prefix }}-summary" aria-labelledby="{{ id_prefix }}-title">
-  <h3 id="{{ id_prefix }}-title">Идентичность пакетов</h3>
+  <h3 id="{{ id_prefix }}-title">{{ _("Идентичность пакетов") }}</h3>
   {% if identity.error %}<p class="text-warn" id="{{ id_prefix }}-error">{{ identity.error }}</p>{% else %}
   <dl class="terms">
-    <dt>Находок с другим пакетом</dt><dd>{{ identity.findings or 0 }} (уточнение – {{ identity.refine or 0 }}, изменение – {{ identity.change or 0 }})</dd>
-    <dt>Уточнена экосистема</dt><dd>{{ identity.ecosystem_refined or 0 }}</dd>
-    <dt>Дополнены координаты</dt><dd>{{ identity.coordinates_added or 0 }}</dd>
-    <dt>Добавлена область npm</dt><dd>{{ identity.scope_added or 0 }}</dd>
-    <dt>Имя заменено</dt><dd>{{ identity.name_replaced or 0 }}</dd>
-    <dt>Не разрешено</dt><dd>{{ identity.unresolved or 0 }}</dd>
-    <dt>Сведений нет</dt><dd>{{ identity.no_library or 0 }}</dd>
-    <dt>Расхождений версии</dt><dd>{{ identity.version_mismatch or 0 }}</dd>
-    {% if identity.decisions %}<dt>Снято «Проверено»</dt><dd>{{ identity.decisions.reviewed_removed or 0 }}</dd>
-    <dt>Подпись решения переписана</dt><dd>{{ identity.decisions.sig_rewritten or 0 }}</dd>
-    <dt>Решений по другой версии находки</dt><dd>{{ identity.decisions.other_version or 0 }}</dd>
-    <dt>Согласий без действующего ответа</dt><dd>{{ identity.decisions.agree_stale or 0 }}</dd>{% endif %}
-    {% if identity.defects %}<dt>Дефектов с пересчитанными ключами номеров</dt><dd>{{ identity.defects.families or 0 }}</dd>
-    <dt>Резервов номеров перенесено / в архив</dt><dd>{{ identity.defects.reserves_moved or 0 }} / {{ identity.defects.reserves_archived or 0 }}</dd>
-    <dt>Дефектов без единственного набора</dt><dd>{{ identity.defects.without_set_key_total if identity.defects.without_set_key_total is defined else (identity.defects.without_set_key or [])|length }}</dd>{% endif %}
-    {% if identity.pending_total %}<dt>Мест в наборах выбрать заново</dt><dd>{{ identity.pending_total }}</dd>{% endif %}
+    <dt>{{ _("Находок с другим пакетом") }}</dt><dd>{{ _("{n} (уточнение – {refine}, изменение – {change})", n=identity.findings or 0, refine=identity.refine or 0, change=identity.change or 0) }}</dd>
+    <dt>{{ _("Уточнена экосистема") }}</dt><dd>{{ identity.ecosystem_refined or 0 }}</dd>
+    <dt>{{ _("Дополнены координаты") }}</dt><dd>{{ identity.coordinates_added or 0 }}</dd>
+    <dt>{{ _("Добавлена область npm") }}</dt><dd>{{ identity.scope_added or 0 }}</dd>
+    <dt>{{ _("Имя заменено") }}</dt><dd>{{ identity.name_replaced or 0 }}</dd>
+    <dt>{{ _("Не разрешено") }}</dt><dd>{{ identity.unresolved or 0 }}</dd>
+    <dt>{{ _("Сведений нет") }}</dt><dd>{{ identity.no_library or 0 }}</dd>
+    <dt>{{ _("Расхождений версии") }}</dt><dd>{{ identity.version_mismatch or 0 }}</dd>
+    {% if identity.decisions %}<dt>{{ _("Снято «Проверено»") }}</dt><dd>{{ identity.decisions.reviewed_removed or 0 }}</dd>
+    <dt>{{ _("Подпись решения переписана") }}</dt><dd>{{ identity.decisions.sig_rewritten or 0 }}</dd>
+    <dt>{{ _("Решений по другой версии находки") }}</dt><dd>{{ identity.decisions.other_version or 0 }}</dd>
+    <dt>{{ _("Согласий без действующего ответа") }}</dt><dd>{{ identity.decisions.agree_stale or 0 }}</dd>{% endif %}
+    {% if identity.defects %}<dt>{{ _("Дефектов с пересчитанными ключами номеров") }}</dt><dd>{{ identity.defects.families or 0 }}</dd>
+    <dt>{{ _("Резервов номеров перенесено / в архив") }}</dt><dd>{{ identity.defects.reserves_moved or 0 }} / {{ identity.defects.reserves_archived or 0 }}</dd>
+    <dt>{{ _("Дефектов без единственного набора") }}</dt><dd>{{ identity.defects.without_set_key_total if identity.defects.without_set_key_total is defined else (identity.defects.without_set_key or [])|length }}</dd>{% endif %}
+    {% if identity.pending_total %}<dt>{{ _("Мест в наборах выбрать заново") }}</dt><dd>{{ identity.pending_total }}</dd>{% endif %}
   </dl>
   {% if entity_rows %}
   <div class="table-wrap"><table class="table" id="{{ id_prefix }}-entities">
-    <thead><tr><th scope="col">Что</th><th scope="col">Перенесено</th><th scope="col">В архив</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Что") }}</th><th scope="col">{{ _("Перенесено") }}</th><th scope="col">{{ _("В архив") }}</th></tr></thead>
     <tbody>{% for e in entity_rows %}<tr><td>{{ e.label }}</td><td>{{ e.moved }}</td><td>{{ e.archived }}</td></tr>{% endfor %}</tbody>
   </table></div>
   {% endif %}
   {% if identity.groups %}
   <div class="table-wrap"><table class="table" id="{{ id_prefix }}-groups">
-    <thead><tr><th scope="col">Было</th><th scope="col">Стало</th><th scope="col">Вид</th><th scope="col">Находок</th><th scope="col">Исследование</th><th scope="col">Перенесено / в архив</th><th scope="col">Новые места в наборах</th></tr></thead>
-    <tbody>{% for g in identity.groups %}<tr><td class="mono">{{ g["from"] }}</td><td class="mono">{{ g["to"]|join(", ") }}</td><td>{{ g.kind }}{% if g.change %} ({{ g.change }}){% endif %}</td><td>{{ g.findings }}</td><td>{{ g.research }}</td><td>{% for table, n in (g.moved or {}).items() %}{{ labels.get(table, table) }}: перенесено {{ n }}; {% endfor %}{% for table, n in (g.archived or {}).items() %}{{ labels.get(table, table) }}: в архив {{ n }}; {% endfor %}{% if not g.moved and not g.archived %}–{% endif %}</td><td>{% for t, n in g.new_sets %}набор {{ n }}{% if not loop.last %}, {% endif %}{% else %}–{% endfor %}</td></tr>{% endfor %}</tbody>
+    <thead><tr><th scope="col">{{ _("Было") }}</th><th scope="col">{{ _("Стало") }}</th><th scope="col">{{ _("Вид") }}</th><th scope="col">{{ _("Находок") }}</th><th scope="col">{{ _("Исследование") }}</th><th scope="col">{{ _("Перенесено / в архив") }}</th><th scope="col">{{ _("Новые места в наборах") }}</th></tr></thead>
+    <tbody>{% for g in identity.groups %}<tr><td class="mono">{{ g["from"] }}</td><td class="mono">{{ g["to"]|join(", ") }}</td><td>{{ _(g.kind) }}{% if g.change %} ({{ _(g.change) }}){% endif %}</td><td>{{ g.findings }}</td><td>{{ _(g.research) if g.research is string else g.research }}</td><td>{% for table, n in (g.moved or {}).items() %}{{ _("{table}: перенесено {n};", table=labels.get(table, table), n=n) }} {% endfor %}{% for table, n in (g.archived or {}).items() %}{{ _("{table}: в архив {n};", table=labels.get(table, table), n=n) }} {% endfor %}{% if not g.moved and not g.archived %}–{% endif %}</td><td>{% for t, n in g.new_sets %}{{ _("набор {n}", n=n) }}{% if not loop.last %}, {% endif %}{% else %}–{% endfor %}</td></tr>{% endfor %}</tbody>
   </table></div>
-  {% if identity.groups|length >= 200 %}<p class="hint">Показаны первые 200 групп.</p>{% endif %}
+  {% if identity.groups|length >= 200 %}<p class="hint">{{ _("Показаны первые 200 групп.") }}</p>{% endif %}
   {% endif %}
   {% endif %}
 </section>

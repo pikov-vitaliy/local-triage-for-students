@@ -16,6 +16,8 @@ from typing import Any
 
 from markupsafe import Markup, escape
 
+from app import i18n
+
 # Заполнители Хангыль: выглядят как пробел, но буквами считаются
 _FILLERS = frozenset((0x115F, 0x1160, 0x3164, 0xFFA0))
 FILLER_CHARS = tuple(chr(code) for code in sorted(_FILLERS))
@@ -74,7 +76,7 @@ def mark_invisible(text: Any) -> Markup:
     for ch in source:
         if is_invisible(ch):
             cp = code_point(ch)
-            out.append(f'<span class="invis" title="Невидимый знак {cp}">⟨{cp}⟩</span>')
+            out.append(f'<span class="invis" title="{escape(i18n._("Невидимый знак {cp}", cp=cp))}">⟨{cp}⟩</span>')
         else:
             out.append(str(escape(ch)))
     return Markup("".join(out))

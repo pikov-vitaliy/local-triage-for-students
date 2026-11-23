@@ -23,14 +23,14 @@ from psycopg import ClientCursor, errors, pq
 from psycopg.adapt import Loader
 from psycopg_pool import ConnectionPool, PoolClosed, PoolTimeout
 
-from app import timing
+from app import i18n, timing
 from app.storage.sql import PlaceholderError, translate
 
 log = logging.getLogger(__name__)
 
-BUSY_TEXT = "База данных занята: запрос не выполнен, данные не изменились. Повторите через несколько секунд."
-MAINTENANCE_TEXT = "Приложение в режиме обслуживания: запись закрыта, данные не изменились."
-DOWN_TEXT = "База данных недоступна: запрос не выполнен. Проверьте, что сервис базы запущен, и повторите."
+BUSY_TEXT = i18n.N_("База данных занята: запрос не выполнен, данные не изменились. Повторите через несколько секунд.")
+MAINTENANCE_TEXT = i18n.N_("Приложение в режиме обслуживания: запись закрыта, данные не изменились.")
+DOWN_TEXT = i18n.N_("База данных недоступна: запрос не выполнен. Проверьте, что сервис базы запущен, и повторите.")
 
 IntegrityError = psycopg.IntegrityError
 SerializationFailure = errors.SerializationFailure
@@ -480,7 +480,7 @@ class PostgresStore:
                                f"{state.kind}; проверка и запись должны идти в одной транзакции записи")
         with self._writers:
             if self._closing:
-                raise DatabaseBusy("Приложение останавливается, запись не принята.")
+                raise DatabaseBusy(i18n._("Приложение останавливается, запись не принята."))
             self._writing += 1
         try:
             conn = self._start("BEGIN")
@@ -514,8 +514,8 @@ class PostgresStore:
             try:
                 conn.execute("ROLLBACK" if discard else "COMMIT")
             except (psycopg.OperationalError, psycopg.InterfaceError) as e:
-                raise CommitUnknown("Соединение с базой оборвалось во время подтверждения записи: результат неизвестен. "
-                                    "Обновите страницу и проверьте данные.") from e
+                raise CommitUnknown(i18n._("Соединение с базой оборвалось во время подтверждения записи: результат "
+                                           "неизвестен. Обновите страницу и проверьте данные.")) from e
         except BaseException:
             if not conn.closed and conn.info.transaction_status != pq.TransactionStatus.IDLE:
                 try:
@@ -541,7 +541,7 @@ class PostgresStore:
                                connect_timeout=10)
         if not conn.execute(f"SELECT pg_try_advisory_lock({INSTANCE_LOCK})").fetchone()[0]:
             conn.close()
-            raise RuntimeError("С этой базой уже работает другой экземпляр приложения. Остановите его и запустите снова.")
+            raise RuntimeError(i18n._("С этой базой уже работает другой экземпляр приложения. Остановите его и запустите снова."))
         self._instance = conn
         self._instance_pid = conn.info.backend_pid
 
@@ -569,5 +569,5 @@ class PostgresStore:
         try:
             self._instance.execute("SELECT 1")
         except psycopg.Error as e:
-            raise LockLost("Потеряно соединение, которое держит базу за этим экземпляром. Запись остановлена: "
-                           "перезапустите приложение.") from e
+            raise LockLost(i18n._("Потеряно соединение, которое держит базу за этим экземпляром. Запись остановлена: "
+                                  "перезапустите приложение.")) from e

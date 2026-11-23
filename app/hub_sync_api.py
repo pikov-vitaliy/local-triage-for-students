@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from urllib.parse import urlencode
 
+from app import i18n
 from app.hub_sync_contract import SYNC_PROTOCOL
 
 DETAIL_PATHS = {"SAST": "sast", "SCA_S": "sca/security", "SCA_L": "sca/compliance", "DAST": "dast"}
@@ -42,8 +43,8 @@ class Adapter:
         if (type(self.issue_sort) is not int or type(self.first_page) is not int
                 or self.serialization != "flat" or not self.evidence
                 or self.manual_absent is None):
-            raise ValueError("Контракт полного чтения Hub ещё не подтверждён (ADR-0127 §12.1). "
-                             "Параметры сортировки, веток и отсутствия решений требуют проверки.")
+            raise ValueError(i18n.N_("Контракт полного чтения Hub ещё не подтверждён (ADR-0127 §12.1). "
+                                 "Параметры сортировки, веток и отсутствия решений требуют проверки."))
 
 
 ADAPTER = Adapter(version="hub-sync/3-observed-2026-10-30", issue_sort=0, first_page=0,
@@ -73,7 +74,7 @@ def application_id(obj, kind):
         elif isinstance(actual, dict):
             actual = actual.get("id")
         if isinstance(obj.get("app"), dict) and obj["app"].get("id") != actual:
-            raise ValueError("app и appId объекта противоречат друг другу.")
+            raise ValueError(i18n.N_("app и appId объекта противоречат друг другу."))
     return actual
 
 
@@ -87,13 +88,13 @@ def detail(kind, key, branch=None):
 
 def identifier(obj, app_id, kind):
     if not isinstance(obj, dict) or type(obj.get("id")) is not int or not 0 < obj["id"] < 10**12:
-        raise ValueError("Объект без допустимого ID.")
+        raise ValueError(i18n.N_("Объект без допустимого ID."))
     actual = application_id(obj, kind)
     if type(actual) is not int or actual != app_id:
-        raise ValueError("Объект другого приложения или без appId.")
+        raise ValueError(i18n.N_("Объект другого приложения или без appId."))
     if kind == "issue":
         if not isinstance(obj.get("type"), str) or not obj["type"]:
-            raise ValueError("У находки не указан тип.")
+            raise ValueError(i18n.N_("У находки не указан тип."))
         return f"{obj['type']}:{obj['id']}"
     return str(obj["id"])
 
@@ -106,21 +107,21 @@ class ShortPage(ValueError):
 
 def read_page(body, app_id, kind, previous_total, seen, size):
     if not isinstance(body, dict) or not isinstance(body.get("filteredEntities"), list):
-        raise ValueError("В странице нет массива filteredEntities.")
+        raise ValueError(i18n.N_("В странице нет массива filteredEntities."))
     total, objects = body.get("totalEntitiesCount"), body["filteredEntities"]
     if type(total) is not int or total < 0 or (previous_total is not None and total != previous_total):
-        raise ValueError("Число объектов Hub изменилось или некорректно. Полнота обхода не установлена.")
+        raise ValueError(i18n.N_("Число объектов Hub изменилось или некорректно. Полнота обхода не установлена."))
     keys = [identifier(obj, app_id, kind) for obj in objects]
     if len(set(keys)) != len(keys):
-        raise ValueError("Повтор ключа внутри страницы.")
+        raise ValueError(i18n.N_("Повтор ключа внутри страницы."))
     if len(seen) + len(objects) > total or len(objects) > size:
-        raise ValueError("Размер страницы не соответствует заявленному числу объектов.")
+        raise ValueError(i18n.N_("Размер страницы не соответствует заявленному числу объектов."))
     if len(seen) + len(objects) < total and len(objects) != size:
         if objects:
             raise ShortPage(len(objects))
-        raise ValueError("Неполная промежуточная страница: продолжение по индексу не подтверждено.")
+        raise ValueError(i18n.N_("Неполная промежуточная страница: продолжение по индексу не подтверждено."))
     if set(keys) & seen:
-        raise ValueError("Повтор ключа между страницами.")
+        raise ValueError(i18n.N_("Повтор ключа между страницами."))
     return total, list(zip(keys, objects, strict=True))
 
 
@@ -138,16 +139,16 @@ def expired(value):
 def composition_problems(detail):
     """Ни одна связь не теряется при преобразовании полного состава в множество."""
     if not isinstance(detail, dict) or not isinstance(detail.get("linkedIssues"), list):
-        return ["В подробном дефекте отсутствует состав linkedIssues."]
+        return [i18n.N_("В подробном дефекте отсутствует состав linkedIssues.")]
     seen = set()
     for link in detail["linkedIssues"]:
         if (not isinstance(link, dict) or type(link.get("id")) is not int
                 or not 0 < link["id"] < 10**12 or not isinstance(link.get("type"), str)
                 or link["type"] not in DETAIL_PATHS):
-            return ["Состав linkedIssues содержит связь без допустимого ID или типа."]
+            return [i18n.N_("Состав linkedIssues содержит связь без допустимого ID или типа.")]
         pair = (link["id"], link["type"])
         if pair in seen:
-            return ["Состав linkedIssues содержит повтор одной связи."]
+            return [i18n.N_("Состав linkedIssues содержит повтор одной связи.")]
         seen.add(pair)
     return []
 
@@ -157,13 +158,13 @@ def composition_problems(detail):
 # записи), пометка показывается у находки и не является отличием. Остальные проблемы – неполное чтение: объект не
 # принимается до нового чтения (после принятия расхождений быть не должно).
 HUB_NOTES = (
-    "Подробный статус и ручная запись противоречат друг другу.",
-    "Ручная запись относится к другой находке.",
-    "Применимость ручного решения к ветке или условию не установлена.",
-    "Срок ручного решения истёк или некорректен.",
-    "Основание ложного срабатывания отсутствует.",
-    "Сведения о принятом риске отсутствуют.",
-    "Риск не подтверждён как действующий для этой находки.",
+    i18n.N_("Подробный статус и ручная запись противоречат друг другу."),
+    i18n.N_("Ручная запись относится к другой находке."),
+    i18n.N_("Применимость ручного решения к ветке или условию не установлена."),
+    i18n.N_("Срок ручного решения истёк или некорректен."),
+    i18n.N_("Основание ложного срабатывания отсутствует."),
+    i18n.N_("Сведения о принятом риске отсутствуют."),
+    i18n.N_("Риск не подтверждён как действующий для этой находки."),
 )
 
 
@@ -204,38 +205,38 @@ def evidence_problems(hub, key, app_id, adapter):
     brief, details = hub.get("brief", {}), hub.get("detail") or {}
     manual, risk = hub.get("manual"), hub.get("risk")
     if not isinstance(details, dict) or not isinstance(details.get("status"), str):
-        return ["Текущий подробный статус не получен."]
+        return [i18n.N_("Текущий подробный статус не получен.")]
     if brief.get("currentBranch") is not None and brief["currentBranch"] != details.get("currentBranch"):
-        problems.append("Ветка основного подробного ответа не совпала с currentBranch списка.")
+        problems.append(i18n.N_("Ветка основного подробного ответа не совпала с currentBranch списка."))
     if manual is not None:
         if not isinstance(manual, dict):
-            return ["Ручная запись имеет неверный формат."]
+            return [i18n.N_("Ручная запись имеет неверный формат.")]
         if manual.get("issueId") != int(issue_id) or not same_issue_type(manual.get("issueType"), issue_type):
-            problems.append("Ручная запись относится к другой находке.")
+            problems.append(i18n.N_("Ручная запись относится к другой находке."))
         if manual.get("status") != details["status"]:
-            problems.append("Подробный статус и ручная запись противоречат друг другу.")
+            problems.append(i18n.N_("Подробный статус и ручная запись противоречат друг другу."))
         if brief.get("issueChangeStatusInfoId") is not None and brief["issueChangeStatusInfoId"] != manual.get("id"):
-            problems.append("ID ручной записи изменился после чтения списка.")
+            problems.append(i18n.N_("ID ручной записи изменился после чтения списка."))
         if not adapter.manual_scope or any(manual.get(k) is not None for k in ("conditionalCategory", "branch", "isConditional")):
-            problems.append("Применимость ручного решения к ветке или условию не установлена.")
+            problems.append(i18n.N_("Применимость ручного решения к ветке или условию не установлена."))
         if expired(manual.get("expiredAt")):
-            problems.append("Срок ручного решения истёк или некорректен.")
+            problems.append(i18n.N_("Срок ручного решения истёк или некорректен."))
     elif details["status"] == "False Positive":
         # ручная запись читается после подробностей всегда (hub_sync.consume_object): нет ключа – её чтение не
         # завершилось (неполное чтение), null – Hub подтвердил, что записи нет (пометка Hub, ревью плана dev15)
-        problems.append("Основание ложного срабатывания отсутствует." if "manual" in hub
-                        else "Ручная запись находки не прочитана.")
+        problems.append(i18n.N_("Основание ложного срабатывания отсутствует.") if "manual" in hub
+                        else i18n.N_("Ручная запись находки не прочитана."))
     if any(isinstance(obj, dict) and obj.get("status") == "Accepted risk"
            for name, obj in hub.items() if name in ("detail", "manual") or name.startswith("branch:")):
         # как у ручной записи: ключа нет – не прочитано, null – Hub подтвердил отсутствие (пометка), иное – неверный
         # формат (ревью dev15: мусорный ответ не должен проходить пометкой)
         if "risk" not in hub:
-            problems.append("Сведения о принятом риске не прочитаны.")
+            problems.append(i18n.N_("Сведения о принятом риске не прочитаны."))
         elif risk is None:
-            problems.append("Сведения о принятом риске отсутствуют.")
+            problems.append(i18n.N_("Сведения о принятом риске отсутствуют."))
         elif not isinstance(risk, dict):
-            problems.append("Запись риска имеет неверный формат.")
+            problems.append(i18n.N_("Запись риска имеет неверный формат."))
         elif not risk_valid(risk, key, app_id):
-            problems.append("Риск не подтверждён как действующий для этой находки.")
+            problems.append(i18n.N_("Риск не подтверждён как действующий для этой находки."))
     # Дополнительные ветки сохраняются отдельно; их статус не подменяет выбранную ветку.
     return problems

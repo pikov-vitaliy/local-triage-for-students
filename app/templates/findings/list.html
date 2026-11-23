@@ -1,42 +1,42 @@
 {% extends "base.html" %}
 {% from "worklists.html" import pager, controls, groups, sort_heading %}
-{% block title %}Находки · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Находки") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}findings{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">Находки</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Находки") }}</span>{% endblock %}
 {% block subnav %}{% from "macros.html" import project_tabs %}{{ project_tabs(project, counts.total, review_stats.sca, "findings", counts.defects) }}{% endblock %}
 {% block content %}
 {% from "macros.html" import verdict_badge, severity, marks, chip, empty_state, icon, sca_conclusion, cwe_tags, test_code_badge with context %}
 {% include "projects/hub_step_note.html" %}
 <div class="page-head">
   <div>
-    <h1>Находки</h1>
-    <p class="muted">{% if worklist.overview %}Показано групп: {{ worklist.groups|length }} из {{ total }}{% else
-      %}Показано {{ rows|length }} из {{ total }}{% endif %}{% if review_stats and review_stats.sast
-      %} · проверено {{ review_stats.reviewed }} из {{ review_stats.sast }} SAST · внесено в Hub {{ review_stats.entered
+    <h1 data-section="{{ _("Разбор находок") }}">{{ _("Находки") }}</h1>
+    <p class="muted">{% if worklist.overview %}{{ _("Показано групп: {shown} из {total}", shown=worklist.groups|length, total=total) }}{% else
+      %}{{ _("Показано {shown} из {total}", shown=rows|length, total=total) }}{% endif %}{% if review_stats and review_stats.sast
+      %} · {{ _("проверено {reviewed} из {sast} SAST", reviewed=review_stats.reviewed, sast=review_stats.sast) }} · {{ _("внесено в Hub {n}", n=review_stats.entered)
       }}{% endif %}{% if review_stats and review_stats.missing
-      %} · нет в новой выгрузке {{ review_stats.missing }}{% endif %}</p>
+      %} · {{ _("нет в новой выгрузке {n}", n=review_stats.missing) }}{% endif %}</p>
   </div>
-  {% if first_unreviewed %}<div class="page-actions"><a class="btn btn-primary" href="/projects/{{ project.id }}/findings/{{ first_unreviewed }}{{ queue_query }}">{% if walk_all %}Первая в выборке{% else %}{{ icon("play") }}Продолжить разбор{% endif %}</a></div>{% elif sca_unreviewed and not has_filters %}<div class="page-actions"><a class="btn btn-primary" id="continue-sca" href="/projects/{{ project.id }}/sca/findings/{{ sca_unreviewed }}">{{ icon("play") }}Продолжить разбор: SCA ({{ sca_left }})</a></div>{% endif %}
+  {% if first_unreviewed %}<div class="page-actions"><a class="btn btn-primary" href="/projects/{{ project.id }}/findings/{{ first_unreviewed }}{{ queue_query }}">{% if walk_all %}{{ _("Первая в выборке") }}{% else %}{{ icon("play") }}{{ _("Продолжить разбор") }}{% endif %}</a></div>{% elif sca_unreviewed and not has_filters %}<div class="page-actions"><a class="btn btn-primary" id="continue-sca" href="/projects/{{ project.id }}/sca/findings/{{ sca_unreviewed }}">{{ icon("play") }}{{ _("Продолжить разбор: SCA ({n})", n=sca_left) }}</a></div>{% endif %}
 </div>
 
-{% if group_anchor %}<p class="selection small" id="group-filter">Одна группа SAST: та же категория, тот же файл и та же строка, что у находки <a class="mono" href="/projects/{{ project.id }}/findings/{{ group_anchor.id }}">{{ group_anchor.hub_id }}</a>, во всех кодовых базах – с этим и другим кодом. <a href="{{ group_clear }}">Снять отбор группы</a></p>{% elif group_lost %}<p class="selection small text-warn" id="group-filter">Отбор одной группы: находки, по которой он задан, в проекте нет – список пуст. <a href="{{ group_clear }}">Снять отбор группы</a></p>{% endif %}
+{% if group_anchor %}<p class="selection small" id="group-filter">{{ _("Одна группа SAST: та же категория, тот же файл и та же строка, что у находки") }} <a class="mono" href="/projects/{{ project.id }}/findings/{{ group_anchor.id }}">{{ group_anchor.hub_id }}</a>{{ _(", во всех кодовых базах – с этим и другим кодом.") }} <a href="{{ group_clear }}">{{ _("Снять отбор группы") }}</a></p>{% elif group_lost %}<p class="selection small text-warn" id="group-filter">{{ _("Отбор одной группы: находки, по которой он задан, в проекте нет – список пуст.") }} <a href="{{ group_clear }}">{{ _("Снять отбор группы") }}</a></p>{% endif %}
 
-<nav class="presets" aria-label="Готовые отборы" data-sticky-strip>
+<nav class="presets" aria-label="{{ _("Готовые отборы") }}" data-sticky-strip>
   {% for label, query, active in presets %}<a href="/projects/{{ project.id }}/findings?{{ query }}"{% if active %} aria-current="true" class="is-active"{% endif %}>{{ label }}</a>{% endfor %}
-  <a href="/projects/{{ project.id }}/findings"{% if not has_filters %} aria-current="true" class="is-active"{% endif %}>Все</a>
-  <button type="button" class="btn btn-small strip-filters" data-strip-open="findings-filters" hidden>Все фильтры{% if active_filters %} · выбрано {{ active_filters }}{% endif %}</button>
+  <a href="/projects/{{ project.id }}/findings"{% if not has_filters %} aria-current="true" class="is-active"{% endif %}>{{ _("Все") }}</a>
+  <button type="button" class="btn btn-small strip-filters" data-strip-open="findings-filters" hidden>{{ _("Все фильтры") }}{% if active_filters %} · {{ _("выбрано {n}", n=active_filters) }}{% endif %}</button>
 </nav>
 
 <form method="get" action="/projects/{{ project.id }}/findings/by-id" class="actions">
-  <label for="hub-id">ID находки</label>
+  <label for="hub-id">{{ _("ID находки") }}</label>
   <input id="hub-id" name="hub_id" type="text" required>
-  <button type="submit" class="btn">Открыть</button>
+  <button type="submit" class="btn">{{ _("Открыть") }}</button>
 </form>
 
 <details class="filters-more" id="findings-filters"{% if filters_open %} open{% endif %}>
-<summary>Все фильтры{% if active_filters %} · выбрано {{ active_filters }}{% endif %}</summary>
-<section class="filters filter-panel" aria-label="Фильтры">
+<summary>{{ _("Все фильтры") }}{% if active_filters %} · {{ _("выбрано {n}", n=active_filters) }}{% endif %}</summary>
+<section class="filters filter-panel" aria-label="{{ _("Фильтры") }}">
   {% for g in filter_groups %}
   <div class="filter-group">
     <span class="filter-label" id="filter-{{ g.key }}">{{ g.label }}</span>
@@ -44,19 +44,19 @@
   </div>
   {% endfor %}
   <div class="filter-group">
-    <span class="filter-label" id="filter-flags">Ещё</span>
+    <span class="filter-label" id="filter-flags">{{ _("Ещё") }}</span>
     <nav class="chips" aria-labelledby="filter-flags">{% for c in filter_flags %}{{ chip(c.href, c.label, c.active) }}{% endfor %}</nav>
   </div>
   <form method="get" class="filter-group" data-autosubmit>
     {% for key, value in other_filters %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
-    <label class="filter-label" for="filter-cb">Кодовая база</label>
+    <label class="filter-label" for="filter-cb">{{ _("Кодовая база") }}</label>
     <div class="filter-actions">
       <select name="cb" id="filter-cb">
-        <option value="">все</option>
-        {% for c in codebases %}{% set v = c.codebase if c.codebase else "~" %}<option value="{{ v }}"{% if filters.cb == v %} selected{% endif %}>{{ c.codebase or "без кодовой базы" }} ({{ c.total }})</option>{% endfor %}
+        <option value="">{{ _("все") }}</option>
+        {% for c in codebases %}{% set v = c.codebase if c.codebase else "~" %}<option value="{{ v }}"{% if filters.cb == v %} selected{% endif %}>{{ c.codebase or _("без кодовой базы") }} ({{ c.total }})</option>{% endfor %}
       </select>
-      <button type="submit" class="btn btn-small no-js-only">Показать</button>
-      {% if has_filters %}<a class="btn btn-small btn-ghost" href="/projects/{{ project.id }}/findings">{{ icon("x") }}Сбросить фильтры</a>{% endif %}
+      <button type="submit" class="btn btn-small no-js-only">{{ _("Показать") }}</button>
+      {% if has_filters %}<a class="btn btn-small btn-ghost" href="/projects/{{ project.id }}/findings">{{ icon("x") }}{{ _("Сбросить фильтры") }}</a>{% endif %}
     </div>
   </form>
 </section>
@@ -66,21 +66,21 @@
 {{ pager(worklist) }}
 {% if worklist.groups %}{{ groups(worklist, sticky=True) }}
 {% elif rows %}
-<p class="muted small select-hint" id="select-hint">Отметьте находки SAST галочками, чтобы запустить триаж только для них.<span class="keys-help"> Клавиши <kbd>j</kbd> и <kbd>k</kbd> ходят по строкам, <kbd>Enter</kbd> открывает находку.</span></p>
+<p class="muted small select-hint" id="select-hint">{{ _("Отметьте находки SAST галочками, чтобы запустить триаж только для них.") }}<span class="keys-help"> {{ _("Клавиши {j} и {k} ходят по строкам, {enter} открывает находку.", j="<kbd>j</kbd>", k="<kbd>k</kbd>", enter="<kbd>Enter</kbd>")|safe }}</span></p>
 <form method="post" action="/projects/{{ project.id }}/runs" id="selected-run">
   <input type="hidden" name="scope" value="selected">
   <div class="table-wrap">
   <table class="table table-findings table-sticky-head" data-rows>
     <thead>
       <tr>
-        <th scope="col" class="col-check"><input type="checkbox" class="check-all" aria-label="Отметить все SAST на странице"></th>
+        <th scope="col" class="col-check"><input type="checkbox" class="check-all" aria-label="{{ _("Отметить все SAST на странице") }}"></th>
         <th scope="col" class="col-id">ID</th>
-        <th scope="col" class="col-kind">Вид</th>
-        <th scope="col" class="col-sev"{% if worklist.sort == "severity_desc" %} aria-sort="descending"{% elif worklist.sort == "severity_asc" %} aria-sort="ascending"{% endif %}>{{ sort_heading(worklist,"severity","Критичность") }}</th>
-        <th scope="col">Правило или компонент</th>
-        <th scope="col" class="col-place">Место</th>
-        <th scope="col" class="col-model">Модель</th>
-        <th scope="col" class="col-decision">Моё решение</th>
+        <th scope="col" class="col-kind">{{ _("Вид") }}</th>
+        <th scope="col" class="col-sev"{% if worklist.sort == "severity_desc" %} aria-sort="descending"{% elif worklist.sort == "severity_asc" %} aria-sort="ascending"{% endif %}>{{ sort_heading(worklist,"severity",_("Критичность")) }}</th>
+        <th scope="col">{{ _("Правило или компонент") }}</th>
+        <th scope="col" class="col-place">{{ _("Место") }}</th>
+        <th scope="col" class="col-model">{{ _("Модель") }}</th>
+        <th scope="col" class="col-decision">{{ _("Моё решение") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -89,36 +89,36 @@
       {# компонент SCA открывается в своей карточке – на вкладке SCA проекта #}
       {% set url = ("/projects/" ~ project.id ~ "/sca/findings/" ~ r.id ~ "?back=" ~ (worklist.url(page=worklist.page)|urlencode)) if r.kind == "SCA" else ("/projects/" ~ project.id ~ "/findings/" ~ r.id ~ card_query) %}
       <tr id="finding-{{ r.id }}" class="{{ (('is-reviewed' if r.reviewed else '') ~ (' is-missing' if r.missing else ''))|trim }}">
-        <td class="col-check">{% if r.kind == "SAST" and not r.missing %}<input type="checkbox" name="hub_id" value="{{ r.hub_id }}" class="row-check" aria-label="Отметить {{ r.hub_id }}">{% endif %}</td>
-        <td class="col-id" data-label="ID"><a href="{{ url }}" class="mono">{{ r.hub_id }}</a>{% if r.urgent %} <span class="badge badge-urgent">срочная</span>{% endif %}{% if r.missing %} <span class="badge badge-warn" title="Находки нет в последней загруженной выгрузке">нет в выгрузке</span>{% endif %}</td>
-        <td class="col-kind" data-label="Вид">{{ KIND_LABELS.get(r.kind, r.kind) }}</td>
-        <td class="col-sev" data-label="Критичность">
+        <td class="col-check">{% if r.kind == "SAST" and not r.missing %}<input type="checkbox" name="hub_id" value="{{ r.hub_id }}" class="row-check" aria-label="{{ _("Отметить {id}", id=r.hub_id) }}">{% endif %}</td>
+        <td class="col-id" data-label="ID"><a href="{{ url }}" class="mono">{{ r.hub_id }}</a>{% if r.urgent %} <span class="badge badge-urgent">{{ _("срочная") }}</span>{% endif %}{% if r.missing %} <span class="badge badge-warn" title="{{ _("Находки нет в последней загруженной выгрузке") }}">{{ _("нет в выгрузке") }}</span>{% endif %}</td>
+        <td class="col-kind" data-label="{{ _("Вид") }}">{{ KIND_LABELS.get(r.kind, r.kind) }}</td>
+        <td class="col-sev" data-label="{{ _("Критичность") }}">
           {% if r.kind in ("SCA", "SCA-license") %}
             {% if r.cvss is not none %}<span>CVSS {{ r.cvss|num }}</span>{% endif %}
-            {% if d.policy_severity %}<span class="muted small block">политика Hub: {{ d.policy_severity }}</span>{% endif %}
+            {% if d.policy_severity %}<span class="muted small block">{{ _("политика Hub: {value}", value=d.policy_severity) }}</span>{% endif %}
           {% else %}{{ severity(r.severity) }}{% endif %}
         </td>
-        <td class="col-rule" data-label="Правило">
+        <td class="col-rule" data-label="{{ _("Правило") }}">
           {% if r.kind in ("SCA", "SCA-license") %}<a href="{{ url }}" class="mono rule-link">{{ d.component }}{% if d.version %}@{{ d.version }}{% endif %}</a>{% if d.cve %}<span class="muted small block">{{ d.cve|join(", ") }}</span>{% endif %}
-          {% else %}<a href="{{ url }}" class="rule-link">{{ d.rule or "правило не указано" }}</a>{% if d.cwe %}<span class="muted small block">{{ cwe_tags(d.cwe, ", ") }}</span>{% endif %}{% endif %}
+          {% else %}<a href="{{ url }}" class="rule-link">{{ d.rule|rule_text or _("правило не указано") }}</a>{% if d.cwe %}<span class="muted small block">{{ cwe_tags(d.cwe, ", ") }}</span>{% endif %}{% endif %}
         </td>
-        <td class="col-place" data-label="Место">
+        <td class="col-place" data-label="{{ _("Место") }}">
           {% if d.file %}{% set parts = d.file.rsplit("/", 1) %}
           <span class="mono place-file" title="{{ d.file }}{% if d.line is not none %}:{{ d.line }}{% endif %}">{{ parts[-1] }}{% if d.line is not none %}:{{ d.line }}{% endif %}</span>{{ test_code_badge(d.file) }}
           <span class="place-dir small muted" title="{{ r.codebase }}{{ ' · ' if r.codebase and parts|length > 1 }}{{ parts[0] if parts|length > 1 }}">{{ r.codebase }}{% if r.codebase and parts|length > 1 %} · {% endif %}{% if parts|length > 1 %}{{ parts[0] }}{% endif %}</span>
           {% elif d.location %}<span class="mono place-file break">{{ d.location }}</span>{% if r.codebase %}<span class="place-dir small muted">{{ r.codebase }}</span>{% endif %}
           {% elif r.codebase %}<span class="place-dir small muted">{{ r.codebase }}</span>{% endif %}
         </td>
-        <td class="col-model{% if r.kind != "SAST" %} is-empty{% endif %}" data-label="Модель">{% if r.kind == "SAST" %}{{ verdict_badge(r.model_verdict, r.model_confidence) }}{% set ac = answer_counts.get(r.hub_id) %}{% if ac and ac.kinds > 1 %} <span class="badge badge-warn" title="Модели по этому коду дали разные вердикты: сравните разборы в карточке">модели расходятся</span>{% elif ac and ac.answers > 1 %} <span class="badge badge-muted" title="Разборов моделью по этой находке – подробности в карточке">разборов: {{ ac.answers }}</span>{% endif %}{% if r.model_verdict and r.ctx_status and r.ctx_status != "ok" %} <span class="badge badge-warn" title="{% if r.ctx_lines %}Модель видела только строку из выгрузки{% else %}Кода из клона нет{% endif %}: {{ code_reason(r.ctx_status, r.ctx_reason, r.ctx_file, r.ctx_lines) }}">без клона</span>{% endif %}{% if r.steering %} <span class="badge badge-err" title="В коде или сведениях находки есть текст, похожий на указания для модели">указания</span>{% endif %}{% else %}<span class="muted">–</span>{% endif %}</td>
-        <td class="col-decision{% if not (r.decision or r.reviewed or r.entered_hub) %} is-empty{% endif %}" data-label="Моё решение">
-          {% if r.decision and r.kind == "SAST" and r.decision in ("agree", "disagree") and r.final_verdict in ("true_positive", "false_positive") %}<span class="decision decision-{{ r.decision }}">{{ {"true_positive": "подтверждён дефект", "false_positive": "ложное срабатывание"}[r.final_verdict] }}</span>{% elif r.decision %}<span class="decision decision-{{ r.decision }}">{{ DECISION_LABELS.get(r.decision, r.decision) }}</span>{% endif %}
+        <td class="col-model{% if r.kind != "SAST" %} is-empty{% endif %}" data-label="{{ _("Модель") }}">{% if r.kind == "SAST" %}{{ verdict_badge(r.model_verdict, r.model_confidence) }}{% set ac = answer_counts.get(r.hub_id) %}{% if ac and ac.kinds > 1 %} <span class="badge badge-warn" title="{{ _("Модели по этому коду дали разные вердикты: сравните разборы в карточке") }}">{{ _("модели расходятся") }}</span>{% elif ac and ac.answers > 1 %} <span class="badge badge-muted" title="{{ _("Разборов моделью по этой находке – подробности в карточке") }}">{{ _("разборов: {n}", n=ac.answers) }}</span>{% endif %}{% if r.model_verdict and r.ctx_status and r.ctx_status != "ok" %} <span class="badge badge-warn" title="{% if r.ctx_lines %}{{ _("Модель видела только строку из выгрузки") }}{% else %}{{ _("Кода из клона нет") }}{% endif %}: {{ code_reason(r.ctx_status, r.ctx_reason, r.ctx_file, r.ctx_lines) }}">{{ _("без клона") }}</span>{% endif %}{% if r.steering %} <span class="badge badge-err" title="{{ _("В коде или сведениях находки есть текст, похожий на указания для модели") }}">{{ _("указания") }}</span>{% endif %}{% else %}<span class="muted">–</span>{% endif %}</td>
+        <td class="col-decision{% if not (r.decision or r.reviewed or r.entered_hub) %} is-empty{% endif %}" data-label="{{ _("Моё решение") }}">
+          {% if r.decision and r.kind == "SAST" and r.decision in ("agree", "disagree") and r.final_verdict in ("true_positive", "false_positive") %}<span class="decision decision-{{ r.decision }}">{{ {"true_positive": _("подтверждён дефект"), "false_positive": _("ложное срабатывание")}[r.final_verdict] }}</span>{% elif r.decision %}<span class="decision decision-{{ r.decision }}">{{ DECISION_LABELS.get(r.decision, r.decision) }}</span>{% endif %}
           {% if r.final_verdict and r.decision != "later" and not (r.kind == "SAST" and r.decision in ("agree", "disagree") and r.final_verdict in ("true_positive", "false_positive")) %}{% if r.kind == "SCA" %} {{ sca_conclusion({"true_positive": "update", "false_positive": "not_applicable", "uncertain": "unclear"}.get(r.final_verdict, "")) }}{% elif r.decision != "agree" %} {{ verdict_badge(r.final_verdict) }}{% endif %}{% endif %}
           {{ marks(r.reviewed, r.entered_hub, r.reviewed_at or "", r.entered_hub_at or "") }}
           {%- set hst = hub_states.get(r.hub_id) if hub_states else none %}{% if hst %}{% for b in hst.badges %} <a class="badge badge-{{ b.tone }} hub-state" id="hub-state-{{ r.hub_id }}{% if not loop.first %}-{{ loop.index }}{% endif %}" href="{{ hst.target }}" title="{{ (hst.causes + hst.notes)|join(' ') or b.text }}">{{ b.text }}</a>{% endfor %}{% endif %}
-          {% if r.defect_dropped %} <span class="badge badge-warn" title="Находка выбыла из дефекта в Hub: нужно решение">выбыла из дефекта</span>{% endif %}
+          {% if r.defect_dropped %} <span class="badge badge-warn" title="{{ _("Находка выбыла из дефекта в Hub: нужно решение") }}">{{ _("выбыла из дефекта") }}</span>{% endif %}
           
-          {% for d in r.defects %} <a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="Карточка дефекта: {{ d.label }}">{{ d.word }} {{ d.text }}</a>{% endfor %}
-          {% if not r.entered_hub and r.reviewed and r.copied_at %} <span class="badge badge-muted" title="Текст скопирован, отметки «Внесено в Hub» нет">скопировано</span>{% elif not r.entered_hub and r.reviewed %} <span class="badge badge-warn" title="Текст для Hub не копировали">не в Hub</span>{% endif %}
+          {% for d in r.defects %} <a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="{{ _("Карточка дефекта: {label}", label=d.label) }}">{{ d.word }} {{ d.text }}</a>{% endfor %}
+          {% if not r.entered_hub and r.reviewed and r.copied_at %} <span class="badge badge-muted" title="{{ _("Текст скопирован, отметки «Внесено в Hub» нет") }}">{{ _("скопировано") }}</span>{% elif not r.entered_hub and r.reviewed %} <span class="badge badge-warn" title="{{ _("Текст для Hub не копировали") }}">{{ _("не в Hub") }}</span>{% endif %}
         </td>
       </tr>
     {% endfor %}
@@ -126,28 +126,28 @@
   </table>
   </div>
 
-  <noscript><button type="submit" class="btn" formaction="/projects/{{ project.id }}/hub/defect-selected" formmethod="get" formnovalidate>Дефект из выбранных</button></noscript>
+  <noscript><button type="submit" class="btn" formaction="/projects/{{ project.id }}/hub/defect-selected" formmethod="get" formnovalidate>{{ _("Дефект из выбранных") }}</button></noscript>
   <div class="selected-bar" id="selected-bar" hidden>
-    <span class="selected-count"><span class="check narrow-only"><input type="checkbox" class="check-all" aria-label="Отметить все SAST на странице"></span> Отмечено: <strong id="selected-count">0</strong></span>
+    <span class="selected-count"><span class="check narrow-only"><input type="checkbox" class="check-all" aria-label="{{ _("Отметить все SAST на странице") }}"></span> {{ _("Отмечено:") }} <strong id="selected-count">0</strong></span>
     <label class="field">
-      <span class="field-label">Модель</span>
+      <span class="field-label">{{ _("Модель") }}</span>
       <select name="model"{% if not models %} disabled{% endif %}>
         {% for m in models %}<option value="{{ m.name }}"{% if m.name == default_model %} selected{% endif %}>{{ m|model_option }}</option>{% endfor %}
       </select>
     </label>
-    <button type="submit" class="btn btn-primary" id="run-selected"{% if not models or active_runs %} disabled{% endif %}>Запустить триаж отмеченных</button>
+    <button type="submit" class="btn btn-primary" id="run-selected"{% if not models or active_runs %} disabled{% endif %}>{{ _("Запустить триаж отмеченных") }}</button>
     {# «Отправить выбранные в Hub» (ADR-0119): предпросмотр по тем же галочкам – запрос GET, без запуска прогона #}
-    <button type="submit" class="btn" id="send-selected" formaction="/projects/{{ project.id }}/hub/send-selected" formmethod="get" formnovalidate title="Статус «Ложное срабатывание», общий комментарий и срок для отмеченных находок – одним запросом к Hub" disabled>Отправить выбранные в Hub</button>
-    <button type="submit" class="btn" id="decide-selected" formaction="/projects/{{ project.id }}/hub/decide-selected" formmethod="get" formnovalidate title="Один вывод, текст и рекомендация сразу на отмеченные находки: сначала предпросмотр состава">Решение на отмеченные</button>
-    <button type="submit" class="btn" id="defect-selected" formaction="/projects/{{ project.id }}/hub/defect-selected" formmethod="get" formnovalidate>Дефект из выбранных</button>
-    {% if active_runs %}<span class="muted small">Есть незавершённый <a href="/runs/{{ active_runs[0].id }}">прогон №{{ active_runs[0].id }}</a>.</span>{% elif not models %}<span class="muted small">{% if list_profile_remote %}Сервер профиля «{{ list_profile_name }}» не вернул список моделей: проверьте ключ и адрес профиля в «Провайдерах моделей».{% else %}Ollama недоступна или в ней нет моделей.{% endif %}</span>{% endif %}
+    <button type="submit" class="btn" id="send-selected" formaction="/projects/{{ project.id }}/hub/send-selected" formmethod="get" formnovalidate title="{{ _("Статус «Ложное срабатывание», общий комментарий и срок для отмеченных находок – одним запросом к Hub") }}" disabled>{{ _("Отправить выбранные в Hub") }}</button>
+    <button type="submit" class="btn" id="decide-selected" formaction="/projects/{{ project.id }}/hub/decide-selected" formmethod="get" formnovalidate title="{{ _("Один вывод, текст и рекомендация сразу на отмеченные находки: сначала предпросмотр состава") }}">{{ _("Решение на отмеченные") }}</button>
+    <button type="submit" class="btn" id="defect-selected" formaction="/projects/{{ project.id }}/hub/defect-selected" formmethod="get" formnovalidate>{{ _("Дефект из выбранных") }}</button>
+    {% if active_runs %}<span class="muted small">{{ _("Есть незавершённый") }} <a href="/runs/{{ active_runs[0].id }}">{{ _("прогон №{id}", id=active_runs[0].id) }}</a>.</span>{% elif not models %}<span class="muted small">{% if list_profile_remote %}{{ _("Сервер профиля «{name}» не вернул список моделей: проверьте ключ и адрес профиля в «Провайдерах моделей».", name=list_profile_name) }}{% else %}{{ _("Ollama недоступна или в ней нет моделей.") }}{% endif %}</span>{% endif %}
   </div>
 </form>
 
 {% elif has_filters or worklist.family_selected %}
-{{ empty_state("Под фильтр ничего не попало.", "Снимите часть фильтров или выберите другой отбор выше.", "/projects/%d/findings" % project.id, "Показать все находки", "search") }}
+{{ empty_state(_("Под фильтр ничего не попало."), _("Снимите часть фильтров или выберите другой отбор выше."), "/projects/%d/findings" % project.id, _("Показать все находки"), "search") }}
 {% else %}
-{{ empty_state("В проекте пока нет находок.", "Загрузите выгрузку из AppSec.Hub на странице проекта – находки появятся здесь.", "/projects/%d#step1" % project.id, "К загрузке выгрузки", "upload") }}
+{{ empty_state(_("В проекте пока нет находок."), _("Загрузите выгрузку из AppSec.Hub на странице проекта – находки появятся здесь."), "/projects/%d#step1" % project.id, _("К загрузке выгрузки"), "upload") }}
 {% endif %}
 {{ pager(worklist, "bottom") }}
 {% endblock %}

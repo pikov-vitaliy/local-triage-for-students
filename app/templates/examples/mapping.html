@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block page %}projects{% endblock %}
-{% block title %}Соответствия примера · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Соответствия примера") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block content %}
-<div class="page-head"><div><p class="eyebrow">{{ project.name }}</p><h1>Восстановить соответствия примера</h1>
-<p class="page-sub">Кодовые базы снова будут связаны с папками примера, как при создании проекта.</p></div></div>
+<div class="page-head"><div><p class="eyebrow">{{ project.name }}</p><h1 data-section="{{ _("Рабочее место") }}">{{ _("Восстановить соответствия примера") }}</h1>
+<p class="page-sub">{{ _("Кодовые базы снова будут связаны с папками примера, как при создании проекта.") }}</p></div></div>
 <section class="panel">
-{% if stale %}<p class="callout callout-warn" role="alert" id="mapping-stale">Пока страница была открыта, соответствия или сохранённые срезы изменились. Проверьте таблицу ниже и подтвердите ещё раз.</p>{% endif %}
+{% if stale %}<p class="callout callout-warn" role="alert" id="mapping-stale">{{ _("Пока страница была открыта, соответствия или сохранённые срезы изменились. Проверьте таблицу ниже и подтвердите ещё раз.") }}</p>{% endif %}
 {% if problem %}<p class="callout callout-err" role="alert" id="mapping-problem">{{ problem }}</p>{% endif %}
 {% if rows and not problem %}
 <div class="table-wrap"><table class="table">
-  <thead><tr><th scope="col">Кодовая база</th><th scope="col">Сейчас</th><th scope="col">Станет</th></tr></thead>
-  <tbody>{% for r in rows %}<tr><td>{{ r.codebase }}</td><td class="mono break">{{ r.now or "не выбрана" }}</td><td class="mono break">{{ r.then }}</td></tr>{% endfor %}</tbody>
+  <thead><tr><th scope="col">{{ _("Кодовая база") }}</th><th scope="col">{{ _("Сейчас") }}</th><th scope="col">{{ _("Станет") }}</th></tr></thead>
+  <tbody>{% for r in rows %}<tr><td>{{ r.codebase }}</td><td class="mono break">{{ r.now or _("не выбрана") }}</td><td class="mono break">{{ r.then }}</td></tr>{% endfor %}</tbody>
 </table></div>
 {% if warning %}<p class="callout callout-warn" id="mapping-warning">{{ warning }}</p>{% endif %}
 <form method="post" action="/projects/{{ project.id }}/example-mapping" class="cluster">
   <input type="hidden" name="expect" value="{{ expect }}">
-  <button type="submit" class="btn btn-primary">Восстановить</button>
-  <a class="btn" href="/projects/{{ project.id }}#step2">Отмена</a>
+  <button type="submit" class="btn btn-primary">{{ _("Восстановить") }}</button>
+  <a class="btn" href="/projects/{{ project.id }}#step2">{{ _("Отмена") }}</a>
 </form>
 {% elif not rows %}
-<p>Соответствия уже такие, как при создании проекта: менять нечего.</p>
-<p><a class="btn" href="/projects/{{ project.id }}#step2">К проекту</a></p>
+<p>{{ _("Соответствия уже такие, как при создании проекта: менять нечего.") }}</p>
+<p><a class="btn" href="/projects/{{ project.id }}#step2">{{ _("К проекту") }}</a></p>
 {% endif %}
 </section>
 {% endblock %}

@@ -9,7 +9,7 @@
    сокращённая строка над ним в это время скрыта (CSS: .compact-preview, за которым открытый details).
    Разделитель – точка с пробелом; lead – разделитель перед списком, стоит внутри сокращённой строки и
    прячется вместе с ней; cls="compact-preview inline" – продолжение строки, а не отдельный блок #}
-{% macro compact(items, preview=2, summary="Показать все", cls="compact-preview", lead="") -%}
+{% macro compact(items, preview=2, summary=_("Показать все"), cls="compact-preview", lead="") -%}
 {%- if items|length > preview -%}
 <div class="{{ cls }}">{{ lead }}{{ items[:preview]|join(" · ") }}</div>
 <details class="compact"><summary class="compact-summary">{{ summary }} {{ items|length }}</summary><ul class="compact-list">{% for it in items %}<li class="break">{{ it }}</li>{% endfor %}</ul></details>
@@ -19,7 +19,7 @@
 {%- endmacro %}
 
 {# Перечень классов CWE ссылками на /cwe/{id}; свёртка и раскрытие – как у compact #}
-{% macro cwe_compact(items, preview=3, summary="Показать все CWE", cls="compact-preview inline", lead="") -%}
+{% macro cwe_compact(items, preview=3, summary=_("Показать все CWE"), cls="compact-preview inline", lead="") -%}
 {%- if items|length > preview -%}
 <div class="{{ cls }}">{{ lead }}{% for it in items[:preview] %}{{ cwe_link(it) }}{{ " · " if not loop.last }}{% endfor %}</div>
 <details class="compact"><summary class="compact-summary">{{ summary }} {{ items|length }}</summary><ul class="compact-list">{% for it in items %}<li class="break">{{ cwe_link(it) }}</li>{% endfor %}</ul></details>
@@ -28,7 +28,7 @@
 {%- endif -%}
 {%- endmacro %}
 {% macro vuln_id(name, alias=none) -%}
-<span class="small"><span class="mono nowrap">{{ name }}</span>{% if alias and alias.aliases %} → {% for x in alias.aliases %}<span class="mono nowrap">{{ x }}</span>{% if not loop.last %}, {% endif %}{% endfor %}{% if alias.origin == "agent" %} <span class="muted">по ответу агента</span>{% endif %}{% endif %}</span>
+<span class="small"><span class="mono nowrap">{{ name }}</span>{% if alias and alias.aliases %} → {% for x in alias.aliases %}<span class="mono nowrap">{{ x }}</span>{% if not loop.last %}, {% endif %}{% endfor %}{% if alias.origin == "agent" %} <span class="muted">{{ _("по ответу агента") }}</span>{% endif %}{% endif %}</span>
 {%- endmacro %}
 
 {# Ячейка «Уязвимости»: первые два идентификатора видны; раскрытие показывает все, сокращённая строка скрыта #}
@@ -37,7 +37,7 @@
 {%- else -%}
 <div class="compact-preview">{% for i in ids[:preview] %}{{ vuln_id(i, (aliases or {}).get(i)) }}{% endfor %}</div>
 {%- if ids|length > preview -%}
-<details class="compact"><summary class="compact-summary">Показать все {{ ids|length }}</summary><ul class="compact-list">{% for i in ids %}<li>{{ vuln_id(i, (aliases or {}).get(i)) }}</li>{% endfor %}</ul></details>
+<details class="compact"><summary class="compact-summary">{{ _("Показать все") }} {{ ids|length }}</summary><ul class="compact-list">{% for i in ids %}<li>{{ vuln_id(i, (aliases or {}).get(i)) }}</li>{% endfor %}</ul></details>
 {%- endif -%}
 {%- endif -%}
 {%- endmacro %}
@@ -55,7 +55,7 @@
 <div class="compact-preview"><a class="mono" href="{{ url }}/{{ primary.id }}">{{ primary.hub_id }}</a> {{ marks(primary.reviewed, primary.entered) }}{{ hub_badges(primary.hub) }}</div>
 {%- endif -%}
 {%- if rest|length -%}
-<details class="compact"><summary class="compact-summary">Показать все {{ items|length }}</summary><ul class="compact-list">{% for it in ([primary] if primary else []) + rest %}<li><a class="mono" href="{{ url }}/{{ it.id }}">{{ it.hub_id }}</a> {{ marks(it.reviewed, it.entered) }}{{ hub_badges(it.hub) }}</li>{% endfor %}</ul></details>
+<details class="compact"><summary class="compact-summary">{{ _("Показать все") }} {{ items|length }}</summary><ul class="compact-list">{% for it in ([primary] if primary else []) + rest %}<li><a class="mono" href="{{ url }}/{{ it.id }}">{{ it.hub_id }}</a> {{ marks(it.reviewed, it.entered) }}{{ hub_badges(it.hub) }}</li>{% endfor %}</ul></details>
 {%- endif -%}
 {%- endmacro %}
 
@@ -65,191 +65,191 @@
    раскрытие внутри неё не может быть вложено в строку #}
 {% macro score_cell(score, parts, version_title, version="") -%}
 {% set score_version = version or (parts[0].version if parts|length == 1 else "") %}
-<div class="cvss-cell"{% if version_title and score is not none and score != "" %} title="Оценка {{ version_title }}: {{ score|num }}"{% elif parts|length == 1 %} title="{{ parts[0].label }}"{% endif %}>{{ cvss(score, score_version) }}{% if parts|length > 1 %}
-<details class="compact"><summary class="compact-summary">версии: {{ parts|length }}</summary><ul class="compact-list">{% for p in parts %}<li><span class="mono">{{ p.score|num }}</span> – {{ p.label }}{% if p.count > 1 %}, находок: {{ p.count }}{% endif %}</li>{% endfor %}</ul></details>{% endif %}</div>
+<div class="cvss-cell"{% if version_title and score is not none and score != "" %} title="{{ _("Оценка {version}: {score}", version=version_title, score=score|num) }}"{% elif parts|length == 1 %} title="{{ parts[0].label }}"{% endif %}>{{ cvss(score, score_version) }}{% if parts|length > 1 %}
+<details class="compact"><summary class="compact-summary">{{ _("версии: {n}", n=parts|length) }}</summary><ul class="compact-list">{% for p in parts %}<li><span class="mono">{{ p.score|num }}</span> – {{ p.label }}{% if p.count > 1 %}, {{ _("находок: {n}", n=p.count) }}{% endif %}</li>{% endfor %}</ul></details>{% endif %}</div>
 {%- endmacro %}
 {% from "worklists.html" import pager, controls, groups %}
-{% block title %}SCA · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}SCA · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}sca{% endblock %}
 {% block wide %} wrap-wide{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">SCA</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><span aria-current="page">SCA</span>{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "sca", counts.defects) }}{% endblock %}
 {% block content %}
-{% if identity_pending %}<div class="callout callout-info" role="note" id="identity-pending"><p><strong>Сведения Hub о библиотеках ещё не применены</strong> к находкам SCA: {{ identity_pending }}. Выполните «Синхронизировать с Hub» и «Принять состояние Hub» – тогда экосистема и координаты компонентов будут по Hub.</p></div>{% endif %}
+{% if identity_pending %}<div class="callout callout-info" role="note" id="identity-pending"><p><strong>{{ _("Сведения Hub о библиотеках ещё не применены") }}</strong> {{ _("к находкам SCA: {pending}.", pending=identity_pending) }} {{ _("Выполните «Синхронизировать с Hub» и «Принять состояние Hub» – тогда экосистема и координаты компонентов будут по Hub.") }}</p></div>{% endif %}
 <form method="get" action="/projects/{{ project.id }}/findings/by-id" class="actions">
-  <label for="hub-id">ID находки</label>
+  <label for="hub-id">{{ _("ID находки") }}</label>
   <input id="hub-id" name="hub_id" type="text" required>
-  <button type="submit" class="btn">Открыть</button>
+  <button type="submit" class="btn">{{ _("Открыть") }}</button>
 </form>
 {% set pid = project.id %}
 <div class="page-head">
   <div>
-    <h1>SCA: библиотеки и версии</h1>
-    <p class="page-sub">Находки SCA из выгрузки: решение по каждой версии и перенос в Hub – в карточке находки (пакетное решение и дефект набора). Исследование релизов, поддержки и публичных уязвимостей – в разделе «Компоненты»; оно показывается и в карточке находки.</p>
+    <h1 data-section="{{ _("Сторонние библиотеки") }}">{{ _("SCA: библиотеки и версии") }}</h1>
+    <p class="page-sub">{{ _("Находки SCA из выгрузки: решение по каждой версии и перенос в Hub – в карточке находки (пакетное решение и дефект набора). Исследование релизов, поддержки и публичных уязвимостей – в разделе «Компоненты»; оно показывается и в карточке находки.") }}</p>
   </div>
   <div class="page-actions">
-    <a class="btn btn-primary" id="component-research-link" href="/projects/{{ pid }}/components">{{ icon("package") }}Исследовать компоненты</a>
-    {% if first_unreviewed %}<a class="btn" id="sca-continue" href="/projects/{{ pid }}/sca/findings/{{ first_unreviewed }}">{{ icon("play") }}Продолжить разбор SCA</a>{% endif %}
+    <a class="btn btn-primary" id="component-research-link" href="/projects/{{ pid }}/components">{{ icon("package") }}{{ _("Исследовать компоненты") }}</a>
+    {% if first_unreviewed %}<a class="btn" id="sca-continue" href="/projects/{{ pid }}/sca/findings/{{ first_unreviewed }}">{{ icon("play") }}{{ _("Продолжить разбор SCA") }}</a>{% endif %}
   </div>
 </div>
 
 {% if not imp %}
 <section class="panel" id="sca-empty">
-  {{ empty_state("Выгрузки ещё нет", "Загрузите отчёт AppSec.Hub на странице проекта – библиотеки с уязвимостями появятся здесь.", "/projects/%d#step1" % pid, "К загрузке отчёта", "upload") }}
+  {{ empty_state(_("Выгрузки ещё нет"), _("Загрузите отчёт AppSec.Hub на странице проекта – библиотеки с уязвимостями появятся здесь."), "/projects/%d#step1" % pid, _("К загрузке отчёта"), "upload") }}
 </section>
 {% elif not views %}
 <section class="panel" id="sca-empty">
   {% if license_count %}
-  {{ empty_state("В выгрузке нет находок SCA Security", "Разбирать здесь нечего. Находки о лицензиях (" ~ license_count ~ ") – в общем списке находок, для сведения.", "/projects/%d/findings?kind=SCA-license" % pid, "Находки о лицензиях", "package") }}
+  {{ empty_state(_("В выгрузке нет находок SCA Security"), _("Разбирать здесь нечего. Находки о лицензиях ({n}) – в общем списке находок, для сведения.", n=license_count), "/projects/%d/findings?kind=SCA-license" % pid, _("Находки о лицензиях"), "package") }}
   {% else %}
-  {{ empty_state("В выгрузке нет находок SCA Security", "Разбирать здесь нечего: уязвимых библиотек анализатор не нашёл.", icon_name="package") }}
+  {{ empty_state(_("В выгрузке нет находок SCA Security"), _("Разбирать здесь нечего: уязвимых библиотек анализатор не нашёл."), icon_name="package") }}
   {% endif %}
 </section>
 {% else %}
 
-<section class="panel panel-compact" aria-label="Ход разбора SCA" id="sca-summary">
+<section class="panel panel-compact" aria-label="{{ _("Ход разбора SCA") }}" id="sca-summary">
   <div class="stats">
-    {{ stat(views|length, "Библиотеки", sub="срочных " ~ urgent_count ~ ", CVSS от " ~ settings.sca_urgent_cvss|num) }}
-    {{ stat(answered ~ " из " ~ views|length, "С ответом агента", tone="ok" if answered == views|length else "") }}
-    {{ stat(stats.sca_reviewed ~ " из " ~ stats.sca, "Проверено находок") }}
-    {{ stat(stats.sca_entered, "Внесено в Hub", tone="ok" if stats.sca_entered and stats.sca_entered >= stats.sca_reviewed else "", sub="из " ~ stats.sca_reviewed ~ " проверенных") }}
+    {{ stat(views|length, _("Библиотеки"), sub=_("срочных {n}, CVSS от {cvss}", n=urgent_count, cvss=settings.sca_urgent_cvss|num)) }}
+    {{ stat(_("{n} из {total}", n=answered, total=views|length), _("С ответом агента"), tone="ok" if answered == views|length else "") }}
+    {{ stat(_("{n} из {total}", n=stats.sca_reviewed, total=stats.sca), _("Проверено находок")) }}
+    {{ stat(stats.sca_entered, _("Внесено в Hub"), tone="ok" if stats.sca_entered and stats.sca_entered >= stats.sca_reviewed else "", sub=_("из {n} проверенных", n=stats.sca_reviewed)) }}
   </div>
   {{ progress(stats.sca_reviewed, stats.sca, stats.sca_entered) }}
-  {% if license_count %}<p class="field-hint">Находки о лицензиях ({{ license_count }}) показаны в <a href="/projects/{{ pid }}/findings?kind=SCA-license">общем списке находок</a> (вид «SCA, лицензии»): это сведения для проверки лицензионной чистоты, решение по ним стенд не записывает.</p>{% endif %}
+  {% if license_count %}<p class="field-hint">{{ _("Находки о лицензиях ({n}) показаны в", n=license_count) }} <a href="/projects/{{ pid }}/findings?kind=SCA-license">{{ _("общем списке находок") }}</a> {{ _("(вид «SCA, лицензии»): это сведения для проверки лицензионной чистоты, решение по ним стенд не записывает.") }}</p>{% endif %}
 </section>
 
 <section class="panel" id="component-research" aria-labelledby="component-research-title">
-  <div class="panel-head"><h2 id="component-research-title">Исследование компонентов</h2></div>
-  <p class="hint">Соберите задание по всем компонентам текущей выгрузки, загрузите проверенный ответ и примите решение по каждому пакету. Текущая версия, стабильный релиз, поддержка, публичные находки и охват источников показаны раздельно.</p>
-  <div class="actions"><a class="btn" href="/projects/{{ pid }}/components">{{ icon("arrow-right") }}Открыть компоненты</a></div>
+  <div class="panel-head"><h2 id="component-research-title">{{ _("Исследование компонентов") }}</h2></div>
+  <p class="hint">{{ _("Соберите задание по всем компонентам текущей выгрузки, загрузите проверенный ответ и примите решение по каждому пакету. Текущая версия, стабильный релиз, поддержка, публичные находки и охват источников показаны раздельно.") }}</p>
+  <div class="actions"><a class="btn" href="/projects/{{ pid }}/components">{{ icon("arrow-right") }}{{ _("Открыть компоненты") }}</a></div>
   <details class="compact">
-    <summary>Отбор компонентов для задания</summary>
+    <summary>{{ _("Отбор компонентов для задания") }}</summary>
     {% if package_excluded %}
     <div class="callout callout-warn" role="note" id="package-excluded">
-      <p><strong>Исключены из задания: {{ package_excluded|length }}.</strong> Префиксы внутренних компонентов задаются в <a href="/settings#sca-title">настройках</a>.</p>
+      <p><strong>{{ _("Исключены из задания: {n}.", n=package_excluded|length) }}</strong> {{ _("Префиксы внутренних компонентов задаются в") }} <a href="/settings#sca-title">{{ _("настройках") }}</a>.</p>
       <ul>{% for x in package_excluded %}<li><span class="mono break">{{ x.component }}{% if x.version %}@{{ x.version }}{% endif %}</span> – {{ x.reason }}</li>{% endfor %}</ul>
     </div>
     {% endif %}
     {% if package_doubtful %}
     <div class="callout callout-warn" role="note" id="package-doubtful">
-      <p><strong>Имена, требующие уточнения: {{ package_doubtful|length }}.</strong> Сохранённый выбор определяет состав нового задания. После изменения соберите задание заново.</p>
+      <p><strong>{{ _("Имена, требующие уточнения: {n}.", n=package_doubtful|length) }}</strong> {{ _("Сохранённый выбор определяет состав нового задания. После изменения соберите задание заново.") }}</p>
       <form method="post" action="/projects/{{ pid }}/sca/package/confirm" id="doubtful-form" class="stack-form">
         <ul class="check-list">{% for x in package_doubtful[:200] %}<li><label class="check"><input type="checkbox" name="item" value="{{ x.key }}"{% if x.confirmed %} checked{% endif %}> <span class="mono break">{{ x.component }}{% if x.version %}@{{ x.version }}{% endif %}</span> – {{ x.reason }}</label></li>{% endfor %}</ul>
-        {% if package_doubtful|length > 200 %}<p class="field-hint">Показаны первые 200.</p>{% endif %}
-        <button type="submit" class="btn" id="doubtful-save">Сохранить выбранные компоненты</button>
+        {% if package_doubtful|length > 200 %}<p class="field-hint">{{ _("Показаны первые 200.") }}</p>{% endif %}
+        <button type="submit" class="btn" id="doubtful-save">{{ _("Сохранить выбранные компоненты") }}</button>
       </form>
     </div>
     {% endif %}
     <details class="task-preview" id="package-rows">
-      <summary>Состав нового задания: {{ package_count }} {{ package_count|plural("компонент", "компонента", "компонентов") }}</summary>
+      <summary>{{ _("Состав нового задания:") }} {{ package_count }} {{ package_count|plural("компонент", "компонента", "компонентов") }}</summary>
       <ul class="small">{% for r in package_rows %}<li><span class="mono break">{{ r.component }}@{{ r.version }}</span>{% if r.ecosystem %} · {{ r.ecosystem }}{% endif %}</li>{% endfor %}</ul>
     </details>
   </details>
 </section>
 
 <section class="panel" id="answers" aria-labelledby="answers-title">
-  <div class="panel-head"><h2 id="answers-title">Прежние ответы агентов</h2></div>
-  <p class="hint">Импорт ответов первой версии сохранён для совместимости с локальной историей. Для нового исследования используйте <a href="/projects/{{ pid }}/components">раздел «Компоненты»</a>.</p>
+  <div class="panel-head"><h2 id="answers-title">{{ _("Прежние ответы агентов") }}</h2></div>
+  <p class="hint">{{ _("Импорт ответов первой версии сохранён для совместимости с локальной историей. Для нового исследования используйте") }} <a href="/projects/{{ pid }}/components">{{ _("раздел «Компоненты»") }}</a>.</p>
   {% if answers_report %}
   {% set r = answers_report %}
   <div class="callout {{ 'callout-warn' if r.unknown or not r.saved else 'callout-info' }}" role="status" id="answers-report">
-    <p><strong>Сохранено ответов: {{ r.saved }}</strong>{% if r.saved %} · источник «{{ r.source }}»{% endif %}{% if r.without_answer %} · без ответа в этой загрузке: {{ r.without_answer|length }}{% endif %}.</p>
-    {% if r.unknown %}<p>Нет в проекте, не сохранены ({{ r.unknown|length }}): <span class="mono">{{ r.unknown[:20]|join(", ") }}</span>{% if r.unknown|length > 20 %} …{% endif %}. Проверьте, что в ответе не изменены имена и версии библиотек.</p>{% endif %}
+    <p><strong>{{ _("Сохранено ответов: {n}", n=r.saved) }}</strong>{% if r.saved %} · {{ _("источник «{source}»", source=r.source) }}{% endif %}{% if r.without_answer %} · {{ _("без ответа в этой загрузке: {n}", n=r.without_answer|length) }}{% endif %}.</p>
+    {% if r.unknown %}<p>{{ _("Нет в проекте, не сохранены ({n}):", n=r.unknown|length) }} <span class="mono">{{ r.unknown[:20]|join(", ") }}</span>{% if r.unknown|length > 20 %} …{% endif %}. {{ _("Проверьте, что в ответе не изменены имена и версии библиотек.") }}</p>{% endif %}
     {% if r.warnings %}
-    <p>Проверьте:</p>
-    <ul>{% for w in r.warnings[:30] %}<li>{{ w }}</li>{% endfor %}{% if r.warnings|length > 30 %}<li>и ещё {{ r.warnings|length - 30 }}</li>{% endif %}</ul>
+    <p>{{ _("Проверьте:") }}</p>
+    <ul>{% for w in r.warnings[:30] %}<li>{{ w }}</li>{% endfor %}{% if r.warnings|length > 30 %}<li>{{ _("и ещё {n}", n=r.warnings|length - 30) }}</li>{% endif %}</ul>
     {% endif %}
   </div>
   {% endif %}
   {% if answered %}
-  <p class="step-summary">Ответы есть по {{ answered }} из {{ views|length }} {{ views|length|plural("библиотеки", "библиотек", "библиотек") }}{% if sources %} · {{ "источник" if sources|length == 1 else "источники" }}: {{ sources|join(", ") }}{% endif %}{% if last_answer_at %} · загружены <time datetime="{{ last_answer_at }}" data-relative>{{ last_answer_at|ts }}</time>{% endif %}</p>
+  <p class="step-summary">{{ _("Ответы есть по {n} из {total}", n=answered, total=views|length) }} {{ views|length|plural("библиотеки", "библиотек", "библиотек") }}{% if sources %} · {{ _("источник") if sources|length == 1 else _("источники") }}: {{ sources|join(", ") }}{% endif %}{% if last_answer_at %} · {{ _("загружены") }} <time datetime="{{ last_answer_at }}" data-relative>{{ last_answer_at|ts }}</time>{% endif %}</p>
   {% else %}
-  <p class="hint">Вставьте ответ агента целиком – JSON по схеме из задания или текст с блоком JSON – или выберите файл. Если библиотек много, ответ можно загружать частями.</p>
+  <p class="hint">{{ _("Вставьте ответ агента целиком – JSON по схеме из задания или текст с блоком JSON – или выберите файл. Если библиотек много, ответ можно загружать частями.") }}</p>
   {% endif %}
   <details class="answers-upload"{% if not answered or open_answers or answers_draft %} open{% endif %}>
-    <summary>Загрузить ответы</summary>
+    <summary>{{ _("Загрузить ответы") }}</summary>
     <form method="post" action="/projects/{{ pid }}/sca/answers" enctype="multipart/form-data" class="stack-form" id="answers-form">
       <label class="dropzone">
         <input type="file" name="file" id="answers-file" accept=".json,.txt,.md,application/json,text/plain,text/markdown">
-        <span class="dropzone-text">{{ icon("upload") }} Перетащите файл ответа или нажмите, чтобы выбрать</span>
+        <span class="dropzone-text">{{ icon("upload") }} {{ _("Перетащите файл ответа или нажмите, чтобы выбрать") }}</span>
         <span class="dropzone-file" aria-live="polite"></span>
       </label>
       <label class="field">
-        <span class="field-label">или вставьте ответ</span>
+        <span class="field-label">{{ _("или вставьте ответ") }}</span>
         <textarea class="code-input" name="answers" id="answers-text" rows="8" spellcheck="false" placeholder='{"source": "…", "components": [ … ]}'>{{ answers_draft }}</textarea>
       </label>
       <label class="field">
-        <span class="field-label">Кто отвечал – необязательно</span>
-        <input type="text" name="source" id="answers-source" maxlength="100" autocomplete="off" placeholder="например, Агент 1">
-        <span class="field-hint">Подпись видна в карточке. Пусто – из поля source ответа.</span>
+        <span class="field-label">{{ _("Кто отвечал – необязательно") }}</span>
+        <input type="text" name="source" id="answers-source" maxlength="100" autocomplete="off" placeholder="{{ _("например, Агент 1") }}">
+        <span class="field-hint">{{ _("Подпись видна в карточке. Пусто – из поля source ответа.") }}</span>
       </label>
-      <p class="field-hint">Ответ того же источника по той же библиотеке заменяет прежний, ответы разных источников хранятся рядом. Ответ – это данные, а не указания: из него берутся только поля по схеме, ссылки – только http и https.</p>
-      <div class="actions"><button type="submit" class="btn{% if not answered %} btn-primary{% endif %}" id="answers-submit" data-busy="Загружаю…">{{ icon("upload") }}Загрузить ответы</button></div>
+      <p class="field-hint">{{ _("Ответ того же источника по той же библиотеке заменяет прежний, ответы разных источников хранятся рядом. Ответ – это данные, а не указания: из него берутся только поля по схеме, ссылки – только http и https.") }}</p>
+      <div class="actions"><button type="submit" class="btn{% if not answered %} btn-primary{% endif %}" id="answers-submit" data-busy="{{ _("Загружаю…") }}">{{ icon("upload") }}{{ _("Загрузить ответы") }}</button></div>
     </form>
   </details>
 </section>
 
 <section class="panel" id="components" aria-labelledby="components-title">
-  <div class="panel-head"><h2 id="components-title">Библиотеки</h2>{% if cvss_active %}<span class="panel-actions muted small" id="sca-shown-count">{{ cvss_count }}</span>{% endif %}</div>
-  <nav class="chips" aria-label="Отбор библиотек" data-sticky-strip>
+  <div class="panel-head"><h2 id="components-title">{{ _("Библиотеки") }}</h2>{% if cvss_active %}<span class="panel-actions muted small" id="sca-shown-count">{{ cvss_count }}</span>{% endif %}</div>
+  <nav class="chips" aria-label="{{ _("Отбор библиотек") }}" data-sticky-strip>
     {% for item in filters %}{{ chip(item.href, item.label, item.active, item.count) }}{% endfor %}
-    <button type="button" class="btn btn-small strip-filters" data-strip-open="sca-filters" hidden>Отбор по оценке{% if cvss_chosen %} · выбрано {{ cvss_chosen }}{% endif %}</button>
+    <button type="button" class="btn btn-small strip-filters" data-strip-open="sca-filters" hidden>{{ _("Отбор по оценке") }}{% if cvss_chosen %} · {{ _("выбрано {n}", n=cvss_chosen) }}{% endif %}</button>
   </nav>
   {% if cvss_errors %}
   <div class="callout callout-err" role="alert" id="cvss-errors">
     <ul>{% for error in cvss_errors %}<li>{{ error }}</li>{% endfor %}</ul>
-    <p>Неверный параметр не применён. При ошибке в границах числовой диапазон снят целиком. Остальные корректные условия отбора и сортировки продолжают действовать.</p>
+    <p>{{ _("Неверный параметр не применён. При ошибке в границах числовой диапазон снят целиком. Остальные корректные условия отбора и сортировки продолжают действовать.") }}</p>
   </div>
   {% endif %}
   <details class="filters-more" id="sca-filters"{% if cvss_filters_open %} open{% endif %}>
-    <summary>Отбор по оценке{% if cvss_chosen %} · выбрано {{ cvss_chosen }}{% endif %}</summary>
-    <section class="filters filter-panel" aria-label="Отбор по оценке CVSS">
+    <summary>{{ _("Отбор по оценке") }}{% if cvss_chosen %} · {{ _("выбрано {n}", n=cvss_chosen) }}{% endif %}</summary>
+    <section class="filters filter-panel" aria-label="{{ _("Отбор по оценке CVSS") }}">
       <div class="filter-group">
-        <span class="filter-label" id="filter-cvss">Оценка CVSS</span>
+        <span class="filter-label" id="filter-cvss">{{ _("Оценка CVSS") }}</span>
         <nav class="chips" aria-labelledby="filter-cvss">{% for c in cvss_chips %}{{ chip(c.href, c.label, c.active, c.count) }}{% endfor %}</nav>
         <span class="field-hint" id="cvss-scale">{{ cvss_scale }}</span>
         <span class="field-hint">{{ cvss_score_note }}</span>
       </div>
       <form method="get" action="/projects/{{ pid }}/sca" class="filter-group" id="sca-range-form">
         {% for key, value in cvss_range_hidden %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
-        <span class="filter-label" id="filter-range">Свой диапазон</span>
+        <span class="filter-label" id="filter-range">{{ _("Свой диапазон") }}</span>
         <div class="filter-actions">
-          <input type="number" name="cvss_min" id="cvss-min" min="0" max="10" step="0.1" inputmode="decimal" value="{{ cvss_min_raw }}" placeholder="от 0" aria-label="Оценка не ниже">
+          <input type="number" name="cvss_min" id="cvss-min" min="0" max="10" step="0.1" inputmode="decimal" value="{{ cvss_min_raw }}" placeholder="{{ _("от 0") }}" aria-label="{{ _("Оценка не ниже") }}">
           <span class="muted">–</span>
-          <input type="number" name="cvss_max" id="cvss-max" min="0" max="10" step="0.1" inputmode="decimal" value="{{ cvss_max_raw }}" placeholder="до 10" aria-label="Оценка не выше">
-          <button type="submit" class="btn btn-small">Отобрать</button>
+          <input type="number" name="cvss_max" id="cvss-max" min="0" max="10" step="0.1" inputmode="decimal" value="{{ cvss_max_raw }}" placeholder="{{ _("до 10") }}" aria-label="{{ _("Оценка не выше") }}">
+          <button type="submit" class="btn btn-small">{{ _("Отобрать") }}</button>
         </div>
-        <span class="field-hint">Границы входят в отбор; пустая граница – без ограничения.</span>
+        <span class="field-hint">{{ _("Границы входят в отбор; пустая граница – без ограничения.") }}</span>
       </form>
       {% if cvss_versions %}
       <form method="get" action="/projects/{{ pid }}/sca" class="filter-group" data-autosubmit id="sca-version-form">
         {% for key, value in cvss_version_hidden %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
-        <label class="filter-label" for="cvss-version">Версия оценки</label>
+        <label class="filter-label" for="cvss-version">{{ _("Версия оценки") }}</label>
         <div class="filter-actions">
           <select name="cvss_version" id="cvss-version">
-            <option value="">все версии вместе</option>
+            <option value="">{{ _("все версии вместе") }}</option>
             {% for value, label in cvss_versions %}<option value="{{ value }}"{% if value == cvss_version %} selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>
-          <button type="submit" class="btn btn-small no-js-only">Показать</button>
+          <button type="submit" class="btn btn-small no-js-only">{{ _("Показать") }}</button>
         </div>
-        <span class="field-hint">Версия берётся из вектора оценки или из явной колонки версии CVSS. При выборе версии используются только её баллы; «Без оценки» показывает библиотеки без оценки этой версии. Если версия не указана, число остаётся доступным через «все версии вместе» и «версия не указана».</span>
+        <span class="field-hint">{{ _("Версия берётся из вектора оценки или из явной колонки версии CVSS. При выборе версии используются только её баллы; «Без оценки» показывает библиотеки без оценки этой версии. Если версия не указана, число остаётся доступным через «все версии вместе» и «версия не указана».") }}</span>
       </form>
       {% else %}
       <div class="filter-group">
-        <span class="filter-label">Версия оценки</span>
-        <span class="field-hint">В выгрузке нет указаний версии оценки: отбор идёт по всем баллам вместе, версия остаётся неизвестной.</span>
+        <span class="filter-label">{{ _("Версия оценки") }}</span>
+        <span class="field-hint">{{ _("В выгрузке нет указаний версии оценки: отбор идёт по всем баллам вместе, версия остаётся неизвестной.") }}</span>
       </div>
       {% endif %}
       <div class="filter-group">
-        <span class="filter-label" id="filter-sort">Сортировка</span>
+        <span class="filter-label" id="filter-sort">{{ _("Сортировка") }}</span>
         <nav class="chips" aria-labelledby="filter-sort">{% for c in sort_chips %}{{ chip(c.href, c.label, c.active) }}{% endfor %}</nav>
         <span class="field-hint">{{ sort_note }}</span>
       </div>
-      {% if cvss_active or sort or cvss_errors %}<div class="filter-actions"><a class="btn btn-small btn-ghost" id="sca-reset" href="{{ cvss_reset }}">{{ icon("x") }}Сбросить отбор по оценке</a></div>{% endif %}
+      {% if cvss_active or sort or cvss_errors %}<div class="filter-actions"><a class="btn btn-small btn-ghost" id="sca-reset" href="{{ cvss_reset }}">{{ icon("x") }}{{ _("Сбросить отбор по оценке") }}</a></div>{% endif %}
     </section>
   </details>
   {{ controls(worklist) }}
-  {% if worklist.family_selected %}<p><a class="btn" href="{{ research_family_url }}">Открыть эти версии в компонентах для общего решения</a></p>{% endif %}
+  {% if worklist.family_selected %}<p><a class="btn" href="{{ research_family_url }}">{{ _("Открыть эти версии в компонентах для общего решения") }}</a></p>{% endif %}
   {{ pager(worklist) }}
   {% if worklist.groups %}{{ groups(worklist, sticky=True) }}
   {% elif shown %}
@@ -257,42 +257,42 @@
   <table class="table table-sca table-sticky-head" id="sca-table" data-rows>
     <thead>
       <tr>
-        <th scope="col">Библиотека</th>
-        <th scope="col" class="num col-cvss"{% if sort == "cvss_asc" %} aria-sort="ascending"{% elif sort == "cvss_desc" %} aria-sort="descending"{% else %} aria-sort="none"{% endif %}><a class="table-sort" id="sca-sort-cvss" href="{{ sort_href }}" title="Сортировать по оценке: {{ 'по возрастанию' if sort == 'cvss_desc' else 'по убыванию' }}"><span class="table-sort-label">CVSS</span></a></th>
-        <th scope="col">Уязвимости</th>
-        <th scope="col">Версия исправления (Hub)</th>
-        <th scope="col">Ответ агента</th>
-        <th scope="col">Находки</th>
+        <th scope="col">{{ _("Библиотека") }}</th>
+        <th scope="col" class="num col-cvss"{% if sort == "cvss_asc" %} aria-sort="ascending"{% elif sort == "cvss_desc" %} aria-sort="descending"{% else %} aria-sort="none"{% endif %}><a class="table-sort" id="sca-sort-cvss" href="{{ sort_href }}" title="{{ _("Сортировать по оценке: по возрастанию") if sort == 'cvss_desc' else _("Сортировать по оценке: по убыванию") }}"><span class="table-sort-label">CVSS</span></a></th>
+        <th scope="col">{{ _("Уязвимости") }}</th>
+        <th scope="col">{{ _("Версия исправления (Hub)") }}</th>
+        <th scope="col">{{ _("Ответ агента") }}</th>
+        <th scope="col">{{ _("Находки") }}</th>
       </tr>
     </thead>
     <tbody>
     {% for v in shown %}
       <tr data-component="{{ v.component }}" data-version="{{ v.version }}"{% if v.reviewed >= v.findings %} class="is-reviewed"{% endif %}>
-        <td data-label="Библиотека">
-          {% if v.open_id %}<a class="mono rule-link break" data-row-link href="/projects/{{ pid }}/sca/findings/{{ v.open_id }}?back={{ worklist.url(page=worklist.page)|urlencode }}">{{ v.component }}</a>{% else %}<span class="mono break">{{ v.component }}</span>{% endif %}<span class="mono">@{{ v.version }}</span>{% if v.urgent %} <span class="badge badge-urgent">срочная</span>{% endif %}
-          {% for d in v.defects %} <a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="Карточка дефекта: {{ d.label }}">{{ d.word }} {{ d.text }}</a>{% endfor %}{% if v.closed_without_defect and not v.in_defect %} <span class="badge badge-ok" title="Все находки версии закрыты в Hub статусом «Ложное срабатывание» или «Риск принят»: дефект не нужен">закрыто без дефекта</span>{% elif not v.in_defect and worklist.family_selected and worklist.active and (worklist.active.versions_with_defect or worklist.active.versions_closed) %} <span class="badge badge-muted" title="У этой версии дефекта нет, и её находки не закрыты статусом; у другой версии компонента дефект есть или находки закрыты">без дефекта</span>{% endif %}
+        <td data-label="{{ _("Библиотека") }}">
+          {% if v.open_id %}<a class="mono rule-link break" data-row-link href="/projects/{{ pid }}/sca/findings/{{ v.open_id }}?back={{ worklist.url(page=worklist.page)|urlencode }}">{{ v.component }}</a>{% else %}<span class="mono break">{{ v.component }}</span>{% endif %}<span class="mono">@{{ v.version }}</span>{% if v.urgent %} <span class="badge badge-urgent">{{ _("срочная") }}</span>{% endif %}
+          {% for d in v.defects %} <a class="badge badge-{{ 'accent' if d.done else 'warn' }} component-defect" href="{{ d.card_url }}" title="{{ _("Карточка дефекта: {label}", label=d.label) }}">{{ d.word }} {{ d.text }}</a>{% endfor %}{% if v.closed_without_defect and not v.in_defect %} <span class="badge badge-ok" title="{{ _("Все находки версии закрыты в Hub статусом «Ложное срабатывание» или «Риск принят»: дефект не нужен") }}">{{ _("закрыто без дефекта") }}</span>{% elif not v.in_defect and worklist.family_selected and worklist.active and (worklist.active.versions_with_defect or worklist.active.versions_closed) %} <span class="badge badge-muted" title="{{ _("У этой версии дефекта нет, и её находки не закрыты статусом; у другой версии компонента дефект есть или находки закрыты") }}">{{ _("без дефекта") }}</span>{% endif %}
           {% if v.ecosystem or v.cwe or v.codebases %}
           {% set cwe_preview = 3 %}
           {# разделитель между категориями нужен, только пока предыдущая категория помещается в строку: раскрытый
              перечень уже стоит с новой строки, и точка перед следующей категорией была бы висячей #}
-          <div class="muted small">{{ v.ecosystem }}{{ cwe_compact(v.cwe, cwe_preview, "Показать все CWE", "compact-preview inline", " · " if v.ecosystem else "") }}{{ compact(v.codebases, 2, "Показать все кодовые базы", "compact-preview inline", " · " if (v.ecosystem and not v.cwe) or (v.cwe and v.cwe|length <= cwe_preview) else "") }}</div>
+          <div class="muted small">{{ v.ecosystem }}{{ cwe_compact(v.cwe, cwe_preview, _("Показать все CWE"), "compact-preview inline", " · " if v.ecosystem else "") }}{{ compact(v.codebases, 2, _("Показать все кодовые базы"), "compact-preview inline", " · " if (v.ecosystem and not v.cwe) or (v.cwe and v.cwe|length <= cwe_preview) else "") }}</div>
           {% endif %}
           {% for m in v.identity_marks %}<span class="small muted block identity-mark">{{ m }}</span>{% endfor %}
         </td>
         <td data-label="CVSS" class="num">{{ score_cell(v.cvss_score, v.cvss_parts, cvss_version_title, cvss_version) }}</td>
-        <td data-label="Уязвимости">{{ vuln_ids(v.ids, v.aliases) }}</td>
-        <td data-label="Версия исправления (Hub)" class="mono">{% if v.fixed_versions %}{{ compact(v.fixed_versions, 2, "Показать все версии") }}{% set pre = v.fixed_versions|prerelease_versions %}{% if pre %}<span class="hint prerelease-note">{{ pre|join(", ") }} – предварительная, как цель не годится</span>{% endif %}{% else %}<span class="muted">–</span>{% endif %}</td>
-        <td data-label="Ответ агента">
+        <td data-label="{{ _("Уязвимости") }}">{{ vuln_ids(v.ids, v.aliases) }}</td>
+        <td data-label="{{ _("Версия исправления (Hub)") }}" class="mono">{% if v.fixed_versions %}{{ compact(v.fixed_versions, 2, _("Показать все версии")) }}{% set pre = v.fixed_versions|prerelease_versions %}{% if pre %}<span class="hint prerelease-note">{{ _("{versions} – предварительная, как цель не годится", versions=pre|join(", ")) }}</span>{% endif %}{% else %}<span class="muted">–</span>{% endif %}</td>
+        <td data-label="{{ _("Ответ агента") }}">
           {% if v.answer %}{% set av = v.answer_view %}
-          {{ sca_conclusion(v.conclusion, "" if v.conclusion else "вывод не указан") }}{% if av.recommended_version %} <span class="mono">до {{ av.recommended_version }}</span>{% endif %}
+          {{ sca_conclusion(v.conclusion, "" if v.conclusion else _("вывод не указан")) }}{% if av.recommended_version %} <span class="mono">{{ _("до {version}", version=av.recommended_version) }}</span>{% endif %}
           <span class="muted small block">{{ av.source }} · <time datetime="{{ av.updated_at }}">{{ av.updated_at|ts }}</time></span>
           {% for n in av.notes %}<span class="badge badge-{{ 'warn' if n.tone == 'warn' else 'info' }}">{{ n.text }}</span> {% endfor %}
           {% if v.conclusion == "not_applicable" and av.explanation %}<span class="small block" title="{{ av.explanation }}">{{ av.explanation|truncate(180) }}</span>{% endif %}
           {% else %}{{ sca_conclusion("") }}{% endif %}
         </td>
-        <td data-label="Находки">
+        <td data-label="{{ _("Находки") }}">
           {{ finding_links(v.finding_items, v.open_id, "/projects/%d/sca/findings" % pid) }}
-          <span class="muted small block">{{ v.findings }} {{ v.findings|plural("находка", "находки", "находок") }} · проверено {{ v.reviewed }}{% if v.entered %} · в Hub {{ v.entered }}{% endif %}{% for d in v.hub_delivery %} · <span class="{{ 'muted' if d.state == 'unsendable' else 'text-warn' }} hub-group-{{ 'unsent' if d.state == 'unsent' else 'delivery-' ~ d.state }}">{{ d.label }} {{ d.count }}</span>{% endfor %}{% if v.hub_differs %} · <span class="hub-group-differs">отличий от Hub {{ v.hub_differs }}</span>{% endif %}</span>
+          <span class="muted small block">{{ v.findings }} {{ v.findings|plural("находка", "находки", "находок") }} · {{ _("проверено {n}", n=v.reviewed) }}{% if v.entered %} · {{ _("в Hub {n}", n=v.entered) }}{% endif %}{% for d in v.hub_delivery %} · <span class="{{ 'muted' if d.state == 'unsendable' else 'text-warn' }} hub-group-{{ 'unsent' if d.state == 'unsent' else 'delivery-' ~ d.state }}">{{ d.label }} {{ d.count }}</span>{% endfor %}{% if v.hub_differs %} · <span class="hub-group-differs">{{ _("отличий от Hub {n}", n=v.hub_differs) }}</span>{% endif %}</span>
         </td>
       </tr>
     {% endfor %}
@@ -300,22 +300,22 @@
   </table>
   </div>
   {% else %}
-  <p class="empty">Под этот отбор ничего не попало. <a href="/projects/{{ pid }}/sca#components">Показать все библиотеки</a></p>
+  <p class="empty">{{ _("Под этот отбор ничего не попало.") }} <a href="/projects/{{ pid }}/sca#components">{{ _("Показать все библиотеки") }}</a></p>
   {% endif %}
   {{ pager(worklist, "bottom") }}
 </section>
 
 <section class="panel" id="ast-map" aria-labelledby="ast-map-title">
-  <div class="panel-head"><h2 id="ast-map-title">Соответствие AST → CVE</h2></div>
-  <p class="hint">Расшифровка внутренних номеров AST больше не предлагается: она нужна была прежнему исходящему пакету, который собирался со строками выгрузки и соответствиями анализатора. Новый цикл работает с координатами и версиями компонентов в разделе <a href="/projects/{{ pid }}/components">«Компоненты»</a>. Номера AST, уже сохранённые в истории проекта, остаются в таблице библиотек.</p>
+  <div class="panel-head"><h2 id="ast-map-title">{{ _("Соответствие AST → CVE") }}</h2></div>
+  <p class="hint">{{ _("Расшифровка внутренних номеров AST больше не предлагается: она нужна была прежнему исходящему пакету, который собирался со строками выгрузки и соответствиями анализатора. Новый цикл работает с координатами и версиями компонентов в разделе") }} <a href="/projects/{{ pid }}/components">{{ _("«Компоненты»") }}</a>. {{ _("Номера AST, уже сохранённые в истории проекта, остаются в таблице библиотек.") }}</p>
   {% if map_report %}
   {# Отчёт появляется только когда соответствие принято по адресу загрузки, а не из формы: интерфейса
      загрузки здесь нет, но результат принятой пары должен быть виден и не должен молчать. #}
   <div class="callout callout-warn" role="status" id="ast-map-report">
-    <p>Добавлено новых пар: {{ map_report.added }} (в файле – {{ map_report.pairs }}). Пропущено строк без пары «AST – CVE»: {{ map_report.skipped }}{% if map_report.lines %} (строки {{ map_report.lines|join(", ") }}{% if map_report.skipped > map_report.lines|length %} …{% endif %}){% endif %}.</p>
+    <p>{{ _("Добавлено новых пар: {added} (в файле – {pairs}).", added=map_report.added, pairs=map_report.pairs) }} {{ _("Пропущено строк без пары «AST – CVE»: {n}", n=map_report.skipped) }}{% if map_report.lines %} ({{ _("строки {lines}", lines=map_report.lines|join(", ")) }}{% if map_report.skipped > map_report.lines|length %} …{% endif %}){% endif %}.</p>
   </div>
   {% endif %}
-  {% if map_ast %}<p class="small muted" id="ast-map-known">Номеров AST в этом проекте: {{ map_ast }}{% if map_known %}, соответствие из выгрузки поставщика известно для {{ map_known }}{% endif %}.</p>{% endif %}
+  {% if map_ast %}<p class="small muted" id="ast-map-known">{{ _("Номеров AST в этом проекте: {n}", n=map_ast) }}{% if map_known %}, {{ _("соответствие из выгрузки поставщика известно для {n}", n=map_known) }}{% endif %}.</p>{% endif %}
 </section>
 {% endif %}
 {% endblock %}

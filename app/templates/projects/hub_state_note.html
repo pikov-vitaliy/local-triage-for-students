@@ -2,22 +2,22 @@
    (app/hub_state.py). Проблема чтения важнее отправки, отправка важнее сравнения; «совпадает» – короткой строкой. #}
 {% if hub_state and hub_state.badges %}
 <div class="callout {{ 'callout-warn' if hub_state.unsent or hub_state.read in ('missing', 'stale', 'incomplete') else 'callout-info' }}" id="hub-state-note">
-  <p><strong id="hub-state-label">{% for b in hub_state.badges %}{{ b.text }}{{ " · " if not loop.last }}{% endfor %}</strong>{% if hub_state.delivery.date %} – правка от {{ hub_state.delivery.date|ts }}{% endif %}</p>
+  <p><strong id="hub-state-label">{% for b in hub_state.badges %}{{ b.text }}{{ " · " if not loop.last }}{% endfor %}</strong>{% if hub_state.delivery.date %} – {{ _("правка от {at}", at=hub_state.delivery.date|ts) }}{% endif %}</p>
   {% if hub_state.read == "never" %}{% set d = hub_state.delivery.state %}<p class="small" id="hub-state-never">
-  {%- if d == "sent" %}Решение отправлено в Hub; Hub для этого проекта ещё не читался – синхронизируйте проект, чтобы увидеть его состояние в Hub.
-  {%- elif d == "unconfirmed" %}Исход отправки неизвестен: запись в Hub могла пройти. Hub для этого проекта ещё не читался – прочитайте состояние Hub («Pull из Hub» в карточке или синхронизация проекта), прежде чем отправлять снова.
-  {%- elif d == "queued" %}Отправка поставлена и ждёт исполнителя. Hub для этого проекта ещё не читался.
-  {%- elif d == "refused" %}Hub не принял отправку. Hub для этого проекта ещё не читался.
-  {%- else %}Hub для этого проекта ещё не читался: решение сохранено в приложении, в Hub не отправлялось. Отправить его можно из этой карточки.
+  {%- if d == "sent" %}{{ _("Решение отправлено в Hub; Hub для этого проекта ещё не читался – синхронизируйте проект, чтобы увидеть его состояние в Hub.") }}
+  {%- elif d == "unconfirmed" %}{{ _("Исход отправки неизвестен: запись в Hub могла пройти. Hub для этого проекта ещё не читался – прочитайте состояние Hub («Pull из Hub» в карточке или синхронизация проекта), прежде чем отправлять снова.") }}
+  {%- elif d == "queued" %}{{ _("Отправка поставлена и ждёт исполнителя. Hub для этого проекта ещё не читался.") }}
+  {%- elif d == "refused" %}{{ _("Hub не принял отправку. Hub для этого проекта ещё не читался.") }}
+  {%- else %}{{ _("Hub для этого проекта ещё не читался: решение сохранено в приложении, в Hub не отправлялось. Отправить его можно из этой карточки.") }}
   {%- endif %}</p>
-  {% elif hub_state.read == "missing" %}<p class="small" id="hub-state-missing">Находки нет в последнем чтении Hub: о её состоянии в Hub приложение пока не знает – синхронизируйте проект с Hub.</p>
-  {% elif hub_state.delivery.state == "unsent" and not hub_state.causes %}<p class="small">Решение есть в приложении, а в Hub его нет: отправить его можно из этой карточки.</p>{% endif %}
+  {% elif hub_state.read == "missing" %}<p class="small" id="hub-state-missing">{{ _("Находки нет в последнем чтении Hub: о её состоянии в Hub приложение пока не знает – синхронизируйте проект с Hub.") }}</p>
+  {% elif hub_state.delivery.state == "unsent" and not hub_state.causes %}<p class="small">{{ _("Решение есть в приложении, а в Hub его нет: отправить его можно из этой карточки.") }}</p>{% endif %}
   {% for c in hub_state.causes %}<p class="small hub-state-cause">{{ c }}</p>{% endfor %}
   {% for n in hub_state.notes %}<p class="small muted hub-state-notes">{{ n }}</p>{% endfor %}
-  {% if hub_state.link %}<p class="small"><a href="{{ hub_state.link }}" id="hub-state-link">Запись синхронизации</a></p>{% endif %}
+  {% if hub_state.link %}<p class="small"><a href="{{ hub_state.link }}" id="hub-state-link">{{ _("Запись синхронизации") }}</a></p>{% endif %}
 </div>
 {% elif hub_state and hub_state.group in ("matched", "coincident") %}
-<div id="hub-state-note"><p class="small muted">Совпадает с последним чтением Hub{% if hub_state.link %} · <a href="{{ hub_state.link }}" id="hub-state-link">запись синхронизации</a>{% endif %}.</p>
+<div id="hub-state-note"><p class="small muted">{{ _("Совпадает с последним чтением Hub") }}{% if hub_state.link %} · <a href="{{ hub_state.link }}" id="hub-state-link">{{ _("запись синхронизации") }}</a>{% endif %}.</p>
 {# пометки Hub (противоречия на стороне Hub) видны и у совпадающей находки (ревью кода dev15, круг 1) #}
 {% for c in hub_state.causes %}<p class="small muted hub-state-cause">{{ c }}</p>{% endfor %}</div>
 {% endif %}

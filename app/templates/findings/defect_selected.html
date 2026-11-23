@@ -1,47 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Дефект из выбранных · {{ project.name }}{% endblock %}
-{% block crumbs %}<a href="/projects/{{ project.id }}/findings">Находки</a><span> / </span><span aria-current="page">Дефект из выбранных</span>{% endblock %}
+{% block title %}{{ _("Дефект из выбранных") }} · {{ project.name }}{% endblock %}
+{% block crumbs %}<a href="/projects/{{ project.id }}/findings">{{ _("Находки") }}</a><span> / </span><span aria-current="page">{{ _("Дефект из выбранных") }}</span>{% endblock %}
 {% block content %}
-<h1>Дефект из выбранных</h1>
-<p>Общее решение «Подтверждаю дефект» и «Проверено» сохранятся у каждой входящей находки. Решения исключённых и невыбранных находок сохраняются прежними.</p>
+<h1>{{ _("Дефект из выбранных") }}</h1>
+<p>{{ _("Общее решение «Подтверждаю дефект» и «Проверено» сохранятся у каждой входящей находки. Решения исключённых и невыбранных находок сохраняются прежними.") }}</p>
 {% if error %}<p class="text-err" role="alert" id="selected-error">{{ error }}</p>{% endif %}
 {% if blocker %}<p class="text-warn">{{ blocker }}</p>{% endif %}
 {% if problems %}<ul class="text-warn" id="selected-problems">{% for p in problems %}<li>{{ p }}</li>{% endfor %}</ul>{% endif %}
 {% for w in warnings %}<p class="text-warn">{{ w }}</p>{% endfor %}
-<section class="panel"><h2>Состав</h2>
-<p id="selected-anchor">Опорная находка: {{ anchor }}{% if anchor_finding %} · {{ anchor_finding.rule }} · {{ anchor_finding.cwe | join(', ') }} · {{ anchor_finding.codebase }}{% endif %}.</p>
-<h3>Войдут ({{ ready | length }})</h3>
-<ul id="selected-included">{% for r in ready %}<li><a href="{{ r.url }}">{{ r.hub_id }}</a> · {{ r.finding.file }}:{{ r.finding.line or '–' }}{% if r.snapshot.code.stale_verdict %} · <span class="muted stale-slice">срез, который разбирала модель, не совпадает с текущим кодом</span>{% endif %}</li>{% else %}<li>Нет находок.</li>{% endfor %}</ul>
-<h3>Исключены ({{ excluded | length }})</h3>
-<ul id="selected-excluded">{% for r in excluded %}<li>{% if r.url %}<a href="{{ r.url }}">{{ r.hub_id }}</a>{% else %}{{ r.hub_id }}{% endif %}: {{ r.why }}</li>{% else %}<li>Нет исключений.</li>{% endfor %}</ul>
+<section class="panel"><h2>{{ _("Состав") }}</h2>
+<p id="selected-anchor">{{ _("Опорная находка: {id}", id=anchor) }}{% if anchor_finding %} · {{ anchor_finding.rule|rule_text }} · {{ anchor_finding.cwe | join(', ') }} · {{ anchor_finding.codebase }}{% endif %}.</p>
+<h3>{{ _("Войдут ({n})", n=ready | length) }}</h3>
+<ul id="selected-included">{% for r in ready %}<li><a href="{{ r.url }}">{{ r.hub_id }}</a> · {{ r.finding.file }}:{{ r.finding.line or '–' }}{% if r.snapshot.code.stale_verdict %} · <span class="muted stale-slice">{{ _("срез, который разбирала модель, не совпадает с текущим кодом") }}</span>{% endif %}</li>{% else %}<li>{{ _("Нет находок.") }}</li>{% endfor %}</ul>
+<h3>{{ _("Исключены ({n})", n=excluded | length) }}</h3>
+<ul id="selected-excluded">{% for r in excluded %}<li>{% if r.url %}<a href="{{ r.url }}">{{ r.hub_id }}</a>{% else %}{{ r.hub_id }}{% endif %}: {{ r.why }}</li>{% else %}<li>{{ _("Нет исключений.") }}</li>{% endfor %}</ul>
 </section>
 <form method="post" action="/projects/{{ project.id }}/hub/defect-selected" class="stack-form" id="selected-defect-form">
 {% for hub_id in selected %}<input type="hidden" name="hub_id" value="{{ hub_id }}">{% endfor %}
 {% if confirm %}
 <input type="hidden" name="anchor" value="{{ anchor }}"><input type="hidden" name="snapshot" value="{{ snapshot }}">
 <input type="hidden" name="comment" value="{{ comment }}"><input type="hidden" name="fix" value="{{ fix }}">
-<section class="panel"><h2>Решение и подготовка ID{{ number }}</h2>
+<section class="panel"><h2>{{ _("Решение и подготовка ID{number}", number=number) }}</h2>
 <pre class="hub-text" id="selected-body">{{ body }}</pre>
-<p>Назначение: {{ state.hub_url }} · приложение {{ state.app_id }}.</p>
-<p>«Подготовить дефект» сохранит общее решение и проверку кода, зарезервирует ID{{ number }} и запросит GET /defects/blank по входящим находкам{% if not state.service %}, а также GET /defects/serviceInfo{% endif %}. Создание подтверждается отдельно в карточке дефекта.</p>
-{% if replacements %}<div id="selected-replacements"><h3>Будут заменены решения</h3>
-{% for r in replacements %}<details open><summary>{{ r.hub_id }} · редакция {{ r.revision }} · {{ VERDICT_LABELS.get(r.outcome, DECISION_LABELS.get(r.outcome, r.outcome)) }}</summary><pre class="hub-text">{{ r.comment }}
+<p>{{ _("Назначение: {url} · приложение {app}.", url=state.hub_url, app=state.app_id) }}</p>
+<p>{% if state.service %}{{ _("«Подготовить дефект» сохранит общее решение и проверку кода, зарезервирует ID{number} и запросит GET /defects/blank по входящим находкам. Создание подтверждается отдельно в карточке дефекта.", number=number) }}{% else %}{{ _("«Подготовить дефект» сохранит общее решение и проверку кода, зарезервирует ID{number} и запросит GET /defects/blank по входящим находкам, а также GET /defects/serviceInfo. Создание подтверждается отдельно в карточке дефекта.", number=number) }}{% endif %}</p>
+{% if replacements %}<div id="selected-replacements"><h3>{{ _("Будут заменены решения") }}</h3>
+{% for r in replacements %}<details open><summary>{{ r.hub_id }} · {{ _("редакция {n}", n=r.revision) }} · {{ VERDICT_LABELS.get(r.outcome, DECISION_LABELS.get(r.outcome, r.outcome)) }}</summary><pre class="hub-text">{{ r.comment }}
 {{ r.fix }}</pre></details>{% endfor %}
-<label class="check"><input type="checkbox" name="overwrite" value="1" id="selected-overwrite" required> Подтверждаю перезапись перечисленных решений показанным общим текстом</label></div>{% endif %}
-<label class="check"><input type="checkbox" name="confirm" value="1" id="selected-confirm" required> Подтверждаю состав, общее решение, отметки «Проверено» и запросы подготовки</label>
-<div class="actions"><button type="submit" name="action" value="prepare" class="btn btn-primary" id="selected-prepare"{% if problems or blocker %} disabled{% endif %}>Подготовить дефект</button>
-<button type="submit" name="action" value="edit" class="btn" formnovalidate>Изменить текст или опорную находку</button></div>
+<label class="check"><input type="checkbox" name="overwrite" value="1" id="selected-overwrite" required> {{ _("Подтверждаю перезапись перечисленных решений показанным общим текстом") }}</label></div>{% endif %}
+<label class="check"><input type="checkbox" name="confirm" value="1" id="selected-confirm" required> {{ _("Подтверждаю состав, общее решение, отметки «Проверено» и запросы подготовки") }}</label>
+<div class="actions"><button type="submit" name="action" value="prepare" class="btn btn-primary" id="selected-prepare"{% if problems or blocker %} disabled{% endif %}>{{ _("Подготовить дефект") }}</button>
+<button type="submit" name="action" value="edit" class="btn" formnovalidate>{{ _("Изменить текст или опорную находку") }}</button></div>
 </section>
 {% else %}
-<label class="field"><span class="field-label">Опорная находка</span><select name="anchor" id="selected-anchor-input">{% for hub_id in selected %}<option value="{{ hub_id }}"{% if hub_id == anchor %} selected{% endif %}>{{ hub_id }}</option>{% endfor %}</select></label>
+<label class="field"><span class="field-label">{{ _("Опорная находка") }}</span><select name="anchor" id="selected-anchor-input">{% for hub_id in selected %}<option value="{{ hub_id }}"{% if hub_id == anchor %} selected{% endif %}>{{ hub_id }}</option>{% endfor %}</select></label>
 {#- текст модели опорной находки – только по кнопке, как в карточке находки (ADR-0092) -#}
-{% if anchor_ready and not (model.comment or model.points) %}<p class="field-hint" id="selected-model-none">У опорной находки {{ anchor }} нет разбора модели с вердиктом «Подтверждаю дефект», который можно перенести: текст пишет оператор.</p>{% endif %}
-<label class="field"><span class="field-label">Обоснование</span><textarea name="comment" id="selected-comment" rows="6">{{ comment }}</textarea></label>
-{% if model.comment %}<p class="field-hint"><button type="button" class="btn btn-ghost btn-small" id="take-model-comment" data-take-model="selected-comment" data-anchor="{{ anchor }}" data-text="{{ model.comment }}">Взять обоснование модели (находка {{ anchor }})</button></p>{% endif %}
-<label class="field"><span class="field-label">Рекомендация</span><textarea name="fix" id="selected-fix" rows="6">{{ fix }}</textarea></label>
-{% if model.points %}<p class="field-hint"><button type="button" class="btn btn-ghost btn-small" id="take-model-points" data-take-model="selected-fix" data-anchor="{{ anchor }}" data-text="{{ model.points }}" data-code-dropped="{{ '1' if model.code_dropped else '' }}">Взять пункты из рекомендации модели (находка {{ anchor }})</button>{% if model.code_dropped %} <span class="muted small">пример кода модели в пункты не переносится</span>{% endif %}</p>{% endif %}
-<p class="field-hint">Следующий шаг только пересчитает состав и покажет текст и заменяемые решения. Сохранения и обращения к Hub ещё нет.</p>
-<button type="submit" name="action" value="preview" class="btn btn-primary" id="selected-preview">Проверить состав и текст</button>
+{% if anchor_ready and not (model.comment or model.points) %}<p class="field-hint" id="selected-model-none">{{ _("У опорной находки {id} нет разбора модели с вердиктом «Подтверждаю дефект», который можно перенести: текст пишет оператор.", id=anchor) }}</p>{% endif %}
+<label class="field"><span class="field-label">{{ _("Обоснование") }}</span><textarea name="comment" id="selected-comment" rows="6">{{ comment }}</textarea></label>
+{% if model.comment %}<p class="field-hint"><button type="button" class="btn btn-ghost btn-small" id="take-model-comment" data-take-model="selected-comment" data-anchor="{{ anchor }}" data-text="{{ model.comment }}">{{ _("Взять обоснование модели (находка {id})", id=anchor) }}</button></p>{% endif %}
+<label class="field"><span class="field-label">{{ _("Рекомендация") }}</span><textarea name="fix" id="selected-fix" rows="6">{{ fix }}</textarea></label>
+{% if model.points %}<p class="field-hint"><button type="button" class="btn btn-ghost btn-small" id="take-model-points" data-take-model="selected-fix" data-anchor="{{ anchor }}" data-text="{{ model.points }}" data-code-dropped="{{ '1' if model.code_dropped else '' }}">{{ _("Взять пункты из рекомендации модели (находка {id})", id=anchor) }}</button>{% if model.code_dropped %} <span class="muted small">{{ _("пример кода модели в пункты не переносится") }}</span>{% endif %}</p>{% endif %}
+<p class="field-hint">{{ _("Следующий шаг только пересчитает состав и покажет текст и заменяемые решения. Сохранения и обращения к Hub ещё нет.") }}</p>
+<button type="submit" name="action" value="preview" class="btn btn-primary" id="selected-preview">{{ _("Проверить состав и текст") }}</button>
 {% endif %}
 </form>
 {% endblock %}

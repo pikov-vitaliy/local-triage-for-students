@@ -1,67 +1,67 @@
 {% extends "base.html" %}
 {% from "macros.html" import icon, project_tabs %}
-{% block title %}Предпросмотр исследования · {{ project.name }} · Локальный триаж{% endblock %}
+{% block title %}{{ _("Предпросмотр исследования") }} · {{ project.name }} · {{ _("Локальный триаж") }}{% endblock %}
 {% block page %}components{% endblock %}
 {% block subnav %}{{ project_tabs(project, counts.total, stats.sca, "components", counts.defects) }}{% endblock %}
-{% block crumbs %}<a href="/">Проекты</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">Компоненты</a><span aria-hidden="true"> / </span><span aria-current="page">Исследование провайдером</span>{% endblock %}
+{% block crumbs %}<a href="/">{{ _("Проекты") }}</a><span aria-hidden="true"> / </span><a class="crumb-project" href="/projects/{{ project.id }}">{{ project.name }}</a><span aria-hidden="true"> / </span><a href="/projects/{{ project.id }}/components">{{ _("Компоненты") }}</a><span aria-hidden="true"> / </span><span aria-current="page">{{ _("Исследование провайдером") }}</span>{% endblock %}
 {% block content %}
 {% set p = preview %}
 <div class="page-head">
   <div>
-    <p class="eyebrow">Предпросмотр и согласие</p>
-    <h1>Исследование компонентов провайдером</h1>
-    <p class="page-sub">Ниже – всё, что уйдёт провайдеру: строки задания, инструкции и первое сообщение целиком. Ничего другого не отправляется. Каждое обращение оплачивается у провайдера.</p>
+    <p class="eyebrow">{{ _("Предпросмотр и согласие") }}</p>
+    <h1 data-section="{{ _("Компоненты") }}">{{ _("Исследование компонентов провайдером") }}</h1>
+    <p class="page-sub">{{ _("Ниже – всё, что уйдёт провайдеру: строки задания, инструкции и первое сообщение целиком. Ничего другого не отправляется. Каждое обращение оплачивается у провайдера.") }}</p>
   </div>
 </div>
 
 <section class="panel" aria-labelledby="whereto-title">
-  <h2 id="whereto-title">Куда уходит</h2>
+  <h2 id="whereto-title">{{ _("Куда уходит") }}</h2>
   <dl class="terms">
-    <dt>Профиль</dt><dd>{{ p.profile.name }} – {{ {"local": "этот компьютер", "lan": "сеть организации", "external": "интернет (внешний провайдер)"}.get(p.trust, p.trust) }}</dd>
-    <dt>Адрес</dt><dd><span class="mono">{{ p.where }}</span></dd>
-    <dt>Модель</dt><dd><span class="mono">{{ p.model }}</span></dd>
-    <dt>Рассуждение</dt><dd>{{ p.chat.thinking or "не передаётся" }}{% if p.chat.effort %} · уровень {{ p.chat.effort }}{% endif %}</dd>
-    <dt>Поиск по источникам</dt><dd>{% if p.search %}через поисковый API провайдера (<span class="mono">{{ p.search.search_path }}</span>, <span class="mono">{{ p.search.fetch_path }}</span>); адреса страниц для получения выбирает модель, а открывает их провайдер – что он делает с адресом (его разрешение имени, перенаправления), приложение не контролирует{% else %}нет – модель отвечает по своим знаниям, каждая запись охвата{% if p.osv_url %}, кроме OSV,{% endif %} помечается «без поиска по источникам»{% if p.osv_url %}; покрытие OSV – по полю osv{% endif %}{% endif %}</dd>
-    <dt>Запрос OSV</dt><dd>{% if p.osv_url %}до обращения к модели приложение само запрашивает OSV (<span class="mono">{{ p.osv_url }}</span>, POST /v1/query): туда уходят только экосистема, имя и версия компонента; ответ – в поле <span class="mono">osv</span> первого сообщения, обмен – в журнале{% else %}выключен (OSV_URL=off): поля osv в сообщении нет, покрытие OSV модель отмечает неполным{% endif %}</dd>
-    <dt>Шагов инструментов на компонент</dt><dd>не больше {{ p.tool_steps }}</dd>
-    <dt>Оценка числа обращений</dt><dd>до {{ p.calls_max }}: на строку – до {{ p.sends_per_row }} обращений к модели (шаги инструментов – {{ p.tool_steps }} по профилю и до {{ p.extra_steps }} на исправления после замечаний проверки, и до {{ p.sends_per_row - p.steps_max }} ходов ответа, с повторами транспорта) и до {{ p.steps_max * 2 }} запросов поиска и страниц (каждый шаг – до двух попыток); расход считается у провайдера</dd>
-    <dt>Дата среза</dt><dd>{{ p.cutoff }} – сохраняется в согласии вместе с текстом инструкций: «Продолжить» после перерыва их не меняет</dd>
+    <dt>{{ _("Профиль") }}</dt><dd>{{ p.profile.name }} – {{ {"local": _("этот компьютер"), "lan": _("сеть организации"), "external": _("интернет (внешний провайдер)")}.get(p.trust, p.trust) }}</dd>
+    <dt>{{ _("Адрес") }}</dt><dd><span class="mono">{{ p.where }}</span></dd>
+    <dt>{{ _("Модель") }}</dt><dd><span class="mono">{{ p.model }}</span></dd>
+    <dt>{{ _("Рассуждение") }}</dt><dd>{{ p.chat.thinking or _("не передаётся") }}{% if p.chat.effort %} · {{ _("уровень {effort}", effort=p.chat.effort) }}{% endif %}</dd>
+    <dt>{{ _("Поиск по источникам") }}</dt><dd>{% if p.search %}{{ _("через поисковый API провайдера") }} (<span class="mono">{{ p.search.search_path }}</span>, <span class="mono">{{ p.search.fetch_path }}</span>); {{ _("адреса страниц для получения выбирает модель, а открывает их провайдер – что он делает с адресом (его разрешение имени, перенаправления), приложение не контролирует") }}{% elif p.osv_url %}{{ _("нет – модель отвечает по своим знаниям, каждая запись охвата, кроме OSV, помечается «без поиска по источникам»; покрытие OSV – по полю osv") }}{% else %}{{ _("нет – модель отвечает по своим знаниям, каждая запись охвата помечается «без поиска по источникам»") }}{% endif %}</dd>
+    <dt>{{ _("Запрос OSV") }}</dt><dd>{% if p.osv_url %}{{ _("до обращения к модели приложение само запрашивает OSV") }} (<span class="mono">{{ p.osv_url }}</span>, POST /v1/query): {{ _("туда уходят только экосистема, имя и версия компонента; ответ – в поле") }} <span class="mono">osv</span> {{ _("первого сообщения, обмен – в журнале") }}{% else %}{{ _("выключен (OSV_URL=off): поля osv в сообщении нет, покрытие OSV модель отмечает неполным") }}{% endif %}</dd>
+    <dt>{{ _("Шагов инструментов на компонент") }}</dt><dd>{{ _("не больше {n}", n=p.tool_steps) }}</dd>
+    <dt>{{ _("Оценка числа обращений") }}</dt><dd>{{ _("до {calls_max}: на строку – до {sends} обращений к модели (шаги инструментов – {tool_steps} по профилю и до {extra_steps} на исправления после замечаний проверки, и до {answer_turns} ходов ответа, с повторами транспорта) и до {fetches} запросов поиска и страниц (каждый шаг – до двух попыток); расход считается у провайдера", calls_max=p.calls_max, sends=p.sends_per_row, tool_steps=p.tool_steps, extra_steps=p.extra_steps, answer_turns=p.sends_per_row - p.steps_max, fetches=p.steps_max * 2) }}</dd>
+    <dt>{{ _("Дата среза") }}</dt><dd>{{ p.cutoff }} – {{ _("сохраняется в согласии вместе с текстом инструкций: «Продолжить» после перерыва их не меняет") }}</dd>
   </dl>
-  <p class="hint">Что раскрывается косвенно: состав системы в целом – перечень компонентов и их версий. Название системы, кодовые базы, пути, номера находок, внутренние номера анализатора, код и решения оператора не уходят.</p>
+  <p class="hint">{{ _("Что раскрывается косвенно: состав системы в целом – перечень компонентов и их версий. Название системы, кодовые базы, пути, номера находок, внутренние номера анализатора, код и решения оператора не уходят.") }}</p>
 </section>
 
 <section class="panel" aria-labelledby="rows-title">
-  <h2 id="rows-title">Строки задания – {{ p.selection_label }} ({{ p.rows|length }})</h2>
+  <h2 id="rows-title">{{ _("Строки задания – {selection} ({n})", selection=p.selection_label, n=p.rows|length) }}</h2>
   <div class="table-wrap">
   <table class="table table-compact">
-    <thead><tr><th scope="col">Экосистема</th><th scope="col">Компонент</th><th scope="col">Версия</th><th scope="col">Вид идентичности</th><th scope="col">Кандидат из выгрузки</th><th scope="col">Публичные идентификаторы</th></tr></thead>
+    <thead><tr><th scope="col">{{ _("Экосистема") }}</th><th scope="col">{{ _("Компонент") }}</th><th scope="col">{{ _("Версия") }}</th><th scope="col">{{ _("Вид идентичности") }}</th><th scope="col">{{ _("Кандидат из выгрузки") }}</th><th scope="col">{{ _("Публичные идентификаторы") }}</th></tr></thead>
     <tbody>{% for r in p.rows %}<tr>
-      <td data-label="Экосистема">{{ r.ecosystem }}</td>
-      <td data-label="Компонент"><span class="mono break">{{ r.component }}</span></td>
-      <td data-label="Версия"><span class="mono">{{ r.version }}</span></td>
-      <td data-label="Вид идентичности">{{ r.identity_kind }}</td>
-      <td data-label="Кандидат из выгрузки"><span class="mono">{{ r.hub_fix_candidate or "–" }}</span></td>
-      <td data-label="Публичные идентификаторы">{% if r.vulnerability_ids %}<span class="mono break">{{ r.vulnerability_ids|join(", ") }}</span>{% else %}–{% endif %}</td>
+      <td data-label="{{ _("Экосистема") }}">{{ r.ecosystem }}</td>
+      <td data-label="{{ _("Компонент") }}"><span class="mono break">{{ r.component }}</span></td>
+      <td data-label="{{ _("Версия") }}"><span class="mono">{{ r.version }}</span></td>
+      <td data-label="{{ _("Вид идентичности") }}">{{ r.identity_kind }}</td>
+      <td data-label="{{ _("Кандидат из выгрузки") }}"><span class="mono">{{ r.hub_fix_candidate or "–" }}</span></td>
+      <td data-label="{{ _("Публичные идентификаторы") }}">{% if r.vulnerability_ids %}<span class="mono break">{{ r.vulnerability_ids|join(", ") }}</span>{% else %}–{% endif %}</td>
     </tr>{% endfor %}</tbody>
   </table>
   </div>
 </section>
 
 <section class="panel" aria-labelledby="system-title">
-  <h2 id="system-title">Инструкции модели (системное сообщение, целиком)</h2>
-  <details class="compact"><summary class="compact-summary">Показать текст ({{ p.system|length }} знаков)</summary>
+  <h2 id="system-title">{{ _("Инструкции модели (системное сообщение, целиком)") }}</h2>
+  <details class="compact"><summary class="compact-summary">{{ _("Показать текст ({n} знаков)", n=p.system|length) }}</summary>
   <pre class="code-block" id="research-system">{{ p.system }}</pre></details>
 </section>
 
 <section class="panel" aria-labelledby="first-title">
-  <h2 id="first-title">Первое сообщение пользователя (первая строка, целиком)</h2>
+  <h2 id="first-title">{{ _("Первое сообщение пользователя (первая строка, целиком)") }}</h2>
   <pre class="code-block" id="research-first">{{ p.first_message }}</pre>
-  <p class="hint">Для каждой следующей строки – такое же сообщение с её данными.</p>
+  <p class="hint">{{ _("Для каждой следующей строки – такое же сообщение с её данными.") }}</p>
 </section>
 
 <section class="panel" aria-labelledby="tools-title">
-  <h2 id="tools-title">Описание инструментов</h2>
-  <details class="compact"><summary class="compact-summary">Показать ({{ p.tools|length }})</summary>
+  <h2 id="tools-title">{{ _("Описание инструментов") }}</h2>
+  <details class="compact"><summary class="compact-summary">{{ _("Показать ({n})", n=p.tools|length) }}</summary>
   <pre class="code-block">{{ p.tools|json_text }}</pre></details>
 </section>
 
@@ -71,10 +71,10 @@
   <input type="hidden" name="fingerprint" value="{{ p.fingerprint }}">
   <input type="hidden" name="nonce" value="{{ p.nonce }}">
   <input type="hidden" name="token" value="{{ p.token }}">
-  <label class="check"><input type="checkbox" name="confirm" value="1" required id="research-confirm"> Я посмотрел предпросмотр и разрешаю отправить эти строки и инструкции провайдеру «{{ p.profile.name }}» ({{ p.model }}); обращения оплачиваются у провайдера</label>
+  <label class="check"><input type="checkbox" name="confirm" value="1" required id="research-confirm"> {{ _("Я посмотрел предпросмотр и разрешаю отправить эти строки и инструкции провайдеру «{profile}» ({model}); обращения оплачиваются у провайдера", profile=p.profile.name, model=p.model) }}</label>
   <div class="actions">
-    <button type="submit" class="btn btn-primary" id="research-start" data-busy="Запускаю…">{{ icon("play") }}Исследовать провайдером</button>
-    <a class="btn btn-ghost" href="/projects/{{ project.id }}/components">Отмена</a>
+    <button type="submit" class="btn btn-primary" id="research-start" data-busy="{{ _("Запускаю…") }}">{{ icon("play") }}{{ _("Исследовать провайдером") }}</button>
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}/components">{{ _("Отмена") }}</a>
   </div>
 </form>
 {% endblock %}

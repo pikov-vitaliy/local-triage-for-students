@@ -9,6 +9,7 @@ const path = require('node:path');
 const fsx = require('./fsx');
 
 const { StandError } = require('./paths');
+const { t } = require('./lang');
 const { run, tail } = require('./proc');
 const { writeJsonAtomic, readJson } = require('./stand');
 
@@ -52,7 +53,7 @@ async function installUv(home, env, say) {
   const dir = path.join(home, 'uv');
   fs.mkdirSync(dir, { recursive: true });
   const installEnv = { ...env, UV_INSTALL_DIR: dir, UV_UNMANAGED_INSTALL: dir, UV_NO_MODIFY_PATH: '1' };
-  say(`Ставлю uv ${UV_VERSION} официальным установщиком в ${dir}…`);
+  say(t(`Ставлю uv ${UV_VERSION} официальным установщиком в ${dir}…`, `Installing uv ${UV_VERSION} with the official installer into ${dir}…`));
   const result = process.platform === 'win32'
     ? await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command',
       `irm https://astral.sh/uv/${UV_VERSION}/install.ps1 | iex`], { env: installEnv, timeoutMs: 600000 })
@@ -60,14 +61,15 @@ async function installUv(home, env, say) {
       { env: installEnv, timeoutMs: 600000, group: true });
   const own = path.join(dir, process.platform === 'win32' ? 'uv.exe' : 'uv');
   if (result.code !== 0 || !fs.existsSync(own)) {
-    throw new StandError(`uv не установился (код ${result.code}). ${tail(result.stderr || result.stdout, 8)}\nПоставьте Python ` +
-      '3.12 с python.org или uv вручную и запустите стенд снова.');
+    throw new StandError(t(`uv не установился (код ${result.code}). ${tail(result.stderr || result.stdout, 8)}\nПоставьте Python ` +
+      '3.12 с python.org или uv вручную и запустите стенд снова.', `uv was not installed (code ${result.code}). ${tail(result.stderr || result.stdout, 8)}\nInstall Python ` +
+      '3.12 from python.org or uv manually and start the stand again.'));
   }
   return own;
 }
 
 function failed(step, result) {
-  return new StandError(`${step}: код ${result.code}.\n${tail(result.stderr || result.stdout, 15)}`);
+  return new StandError(t(`${step}: код ${result.code}.\n${tail(result.stderr || result.stdout, 15)}`, `${step}: code ${result.code}.\n${tail(result.stderr || result.stdout, 15)}`));
 }
 
 /**
@@ -94,25 +96,25 @@ async function ensurePython({ home, version, requirements, env, say, reinstall =
   if (!uv && system) {
     const viaSystem = await systemVenv(system, venv, python, requirements, env, say);
     if (viaSystem.ok) return finish();
-    say(`${viaSystem.why} Перехожу к установке Python через uv…`);
+    say(t(`${viaSystem.why} Перехожу к установке Python через uv…`, `${viaSystem.why} Switching to installing Python with uv…`));
     fsx.rmSync(venv, { recursive: true, force: true });
     system = '';
   }
   if (!uv) uv = await installUv(home, env, say);
   {
-    say(`Готовлю Python ${PYTHON} (uv)…`);
+    say(t(`Готовлю Python ${PYTHON} (uv)…`, `Preparing Python ${PYTHON} (uv)…`));
     const made = await run(uv, ['venv', venv, '--python', PYTHON, '--no-config'], { env, timeoutMs: 900000 });
-    if (made.code !== 0) throw failed('uv venv не создал окружение Python', made);
-    say('Ставлю зависимости приложения по хешам…');
+    if (made.code !== 0) throw failed(t('uv venv не создал окружение Python', 'uv venv did not create the Python environment'), made);
+    say(t('Ставлю зависимости приложения по хешам…', 'Installing the app dependencies by hash…'));
     const installed = await run(uv, ['pip', 'install', '--python', python, '--require-hashes', '--no-config', '-r', requirements],
       { env, timeoutMs: 1800000 });
-    if (installed.code !== 0) throw failed('Зависимости не установились', installed);
+    if (installed.code !== 0) throw failed(t('Зависимости не установились', 'The dependencies were not installed'), installed);
   }
   return finish();
 
   async function finish() {
     const check = await run(python, ['-E', '-s', '-c', IMPORT_CHECK], { env, timeoutMs: 120000 });
-    if (check.code !== 0) throw failed('Окружение Python собрано, но модули не импортируются', check);
+    if (check.code !== 0) throw failed(t('Окружение Python собрано, но модули не импортируются', 'The Python environment is built, but the modules do not import'), check);
     writeJsonAtomic(marker, { requirements_sha256: wanted, python: PYTHON, via: uv ? 'uv' : 'pip', at: new Date().toISOString() });
     return python;
   }
@@ -120,13 +122,13 @@ async function ensurePython({ home, version, requirements, env, say, reinstall =
 
 /** Окружение из системного Python 3.12: venv и pip по хешам. Отказ – {ok: false, why}, чтобы перейти к uv. */
 async function systemVenv(system, venv, python, requirements, env, say) {
-  say(`Готовлю Python ${PYTHON} (системный, venv и pip)…`);
+  say(t(`Готовлю Python ${PYTHON} (системный, venv и pip)…`, `Preparing Python ${PYTHON} (system, venv and pip)…`));
   const made = await run(system, ['-E', '-s', '-m', 'venv', venv], { env, timeoutMs: 600000 });
-  if (made.code !== 0) return { ok: false, why: `Системный Python не создал окружение (код ${made.code}).` };
+  if (made.code !== 0) return { ok: false, why: t(`Системный Python не создал окружение (код ${made.code}).`, `The system Python did not create the environment (code ${made.code}).`) };
   const index = env.PIP_INDEX_URL ? ['--index-url', env.PIP_INDEX_URL] : [];
   const installed = await run(python, ['-E', '-s', '-m', 'pip', 'install', '--isolated', '--disable-pip-version-check',
     '--no-input', ...index, '--require-hashes', '-r', requirements], { env, timeoutMs: 1800000 });
-  if (installed.code !== 0) throw failed('Зависимости не установились', installed); // сеть или хеши – uv тут не поможет
+  if (installed.code !== 0) throw failed(t('Зависимости не установились', 'The dependencies were not installed'), installed); // сеть или хеши – uv тут не поможет
   return { ok: true };
 }
 

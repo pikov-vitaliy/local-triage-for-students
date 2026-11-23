@@ -10,6 +10,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { StandError } = require('./paths');
+const { t } = require('./lang');
 
 const BUSY = new Set(['EPERM', 'EACCES', 'EBUSY']);
 const RETRY_MS = 30000;
@@ -27,9 +28,11 @@ function retrying(what, fn, ms = RETRY_MS) {
     } catch (error) {
       if (!error || !BUSY.has(error.code)) throw error;
       if (Date.now() >= deadline) {
-        throw new StandError(`${what}: файл занят другой программой (${error.code}), чаще всего антивирусом или ` +
+        throw new StandError(t(`${what}: файл занят другой программой (${error.code}), чаще всего антивирусом или ` +
           'индексатором. Ничего не потеряно: подождите минуту и запустите стенд снова. Помогает исключить служебную ' +
-          'папку стенда из проверки антивируса.');
+          'папку стенда из проверки антивируса.', `${what}: the file is in use by another program (${error.code}), most often an antivirus or ` +
+          'indexer. Nothing is lost: wait a minute and start the stand again. Excluding the stand home folder ' +
+          'from antivirus scanning helps.'));
       }
       pause(wait);
       wait = Math.min(wait * 2, 2000);
@@ -38,11 +41,11 @@ function retrying(what, fn, ms = RETRY_MS) {
 }
 
 function renameSync(from, to, ms) {
-  return retrying(`Не удалось переименовать ${from} в ${to}`, () => fs.renameSync(from, to), ms);
+  return retrying(t(`Не удалось переименовать ${from} в ${to}`, `Could not rename ${from} to ${to}`), () => fs.renameSync(from, to), ms);
 }
 
 function rmSync(target, options, ms) {
-  return retrying(`Не удалось удалить ${target}`, () => fs.rmSync(target, options), ms);
+  return retrying(t(`Не удалось удалить ${target}`, `Could not delete ${target}`), () => fs.rmSync(target, options), ms);
 }
 
 const MARK = '.local-triage-tmp';
@@ -83,7 +86,7 @@ function writeAll(fd, data) {
   let offset = 0;
   while (offset < buf.length) {
     const n = fs.writeSync(fd, buf, offset, buf.length - offset);
-    if (!(n > 0)) throw new Error('запись на диск не продвигается');
+    if (!(n > 0)) throw new Error(t('запись на диск не продвигается', 'writing to disk makes no progress'));
     offset += n;
   }
 }
@@ -96,7 +99,7 @@ function writeAll(fd, data) {
 function writeSecret(file, data, restrict = () => {}, { exclusive = false } = {}) {
   removeLeftovers(path.dirname(file), path.basename(file), ['tmp']);
   if (exclusive && fs.existsSync(file)) {
-    const error = new Error(`${file} уже есть`);
+    const error = new Error(t(`${file} уже есть`, `${file} already exists`));
     error.code = 'EEXIST';
     throw error;
   }
@@ -117,7 +120,7 @@ function writeSecret(file, data, restrict = () => {}, { exclusive = false } = {}
   const want = Buffer.isBuffer(data) ? data : Buffer.from(String(data), 'utf8');
   if (!fs.readFileSync(tmp).equals(want)) { // сверка до публикации: на место – только целый секрет
     fs.rmSync(tmp, { force: true });
-    throw new Error(`${file}: записанный файл не совпал с исходным`);
+    throw new Error(t(`${file}: записанный файл не совпал с исходным`, `${file}: the written file does not match the source`));
   }
   renameSync(tmp, file);
 }

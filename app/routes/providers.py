@@ -22,15 +22,17 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from starlette.concurrency import run_in_threadpool
 
-from app import model_traffic
+from app import i18n, model_traffic
 from app.db import DEFAULT_PROVIDER_ID
 from app.executors import (CHAT_TIMEOUT_S, REMOTE_KINDS, ProbeBusy, apply_chat, chat_settings, generation,
                            new_client, probe_generation, same_model, server_of, service_client)
 from app.llm_net import external_enabled
 from app.llm import LlmError, outcome_unknown
+from app.run_errors import shown_error
 from app.provider_keys import PendingKeys, key_headers, key_hint, load_key
 from app import profile_gate
-from app.providers import (CHAT_NUMBERS, EFFORT_LABELS, KEY_DISABLED, KIND_LABELS, MESSAGES_RESPONSE_LABELS,
+from app.providers import (CHAT_NUMBERS, DEFAULT_NOT_OFF, EFFORT_LABELS, KEY_DISABLED, KIND_LABELS,
+                           MESSAGES_RESPONSE_LABELS,
                            NUMBER_FIELDS, RESPONSE_LABELS, THINK_LABELS, THINKING_LABELS, TRUST_LABELS, WHERE,
                            ProfileInvalid, confirmed_of, form_of, local_hosts_hint, read_form, resolve_addresses,
                            save_profile)
@@ -42,8 +44,8 @@ router = APIRouter()
 log = logging.getLogger(__name__)
 
 MAX_FIELDS = 60
-NO_KEY = ("Введите ключ: отмечено «Сервер требует ключ», а ключа нет ни в поле, ни в сохранённых для этого адреса – "
-          "без ключа сервер ответит отказом. Запрос не отправлен.")
+NO_KEY = i18n.N_("Введите ключ: отмечено «Сервер требует ключ», а ключа нет ни в поле, ни в сохранённых для этого "
+                 "адреса – без ключа сервер ответит отказом. Запрос не отправлен.")
 
 
 def pending_of(request: Request) -> PendingKeys:
@@ -98,7 +100,7 @@ def form_page(request: Request, profile: dict | None, values: dict, errors: dict
 def profile_or_404(request: Request, pid: int) -> dict:
     profile = db_of(request).get_provider(pid)
     if profile is None:
-        raise HTTPException(status_code=404, detail="Профиль не найден.")
+        raise HTTPException(status_code=404, detail=i18n._("Профиль не найден."))
     return profile
 
 
@@ -109,11 +111,11 @@ def provider_new(request: Request):
     values = preset_form(name)
     if values is None:
         return form_page(request, None, form_of(None))
-    notice = ("Заготовка DeepSeek: вставьте свой ключ API, нажмите «Проверить», затем «Сохранить». Без ключа профиль "
-              "ничего не отправляет. Данные обрабатываются провайдером в КНР; поставьте лимит расхода ключа в кабинете "
-              "провайдера." if name == "deepseek" else
-              "Заготовка Ollama на этом компьютере: нажмите «Проверить» – если модели нет, выполните "
-              "ollama pull gpt-oss:20b и проверьте снова." if name in PRESETS else "")
+    notice = (i18n._("Заготовка DeepSeek: вставьте свой ключ API, нажмите «Проверить», затем «Сохранить». Без ключа "
+                     "профиль ничего не отправляет. Данные обрабатываются провайдером в КНР; поставьте лимит расхода "
+                     "ключа в кабинете провайдера.") if name == "deepseek" else
+              i18n._("Заготовка Ollama на этом компьютере: нажмите «Проверить» – если модели нет, выполните "
+                     "ollama pull gpt-oss:20b и проверьте снова.") if name in PRESETS else "")
     if name == "ollama-local" and settings_of(request).stand != "npm":
         # Docker-установка: Ollama этого компьютера – по адресу из настроек (обычно host.docker.internal), а не
         # 127.0.0.1 контейнера приложения
@@ -140,12 +142,12 @@ def run_check(request: Request, profile: dict | None, values: dict, key: str, us
             check["addresses"] = resolve_addresses(values["base_url"], "lan", values["kind"])
             public = [a["address"] for a in check["addresses"] if not a["private"]]
             if public:
-                check["error"] = (f"Имя сервера разрешается в адрес {', '.join(public)} – это не частная сеть: сервер "
-                                  "в сети организации должен иметь частный адрес (10.x, 172.16–31.x, 192.168.x, "
-                                  "fc00::/7).")
+                check["error"] = i18n._("Имя сервера разрешается в адрес {addresses} – это не частная сеть: сервер "
+                                        "в сети организации должен иметь частный адрес (10.x, 172.16–31.x, 192.168.x, "
+                                        "fc00::/7).", addresses=', '.join(public))
                 return check
             if not check["addresses"]:
-                check["error"] = "Имя сервера не разрешилось ни в один адрес IPv4 или IPv6: проверьте адрес."
+                check["error"] = i18n._("Имя сервера не разрешилось ни в один адрес IPv4 или IPv6: проверьте адрес.")
                 return check
             confirmed = set(values["confirmed"])
             if not all(a["address"] in confirmed for a in check["addresses"]):
@@ -157,7 +159,7 @@ def run_check(request: Request, profile: dict | None, values: dict, key: str, us
             bound = bool(saved) and saved["base_url"] == str(values["base_url"]).rstrip("/") and (
                 values["trust"] != "lan" or set(saved["addresses"]) == set(values["confirmed"]))
             if not bound:  # иначе проверка без ключа уходила бы провайдеру и получала 401
-                check["error"] = NO_KEY
+                check["error"] = i18n._(NO_KEY)
                 return check
         client = new_client(web_of(request).make_client, values["kind"], values["base_url"])
         client.trust = values["trust"]
@@ -194,7 +196,7 @@ def run_check(request: Request, profile: dict | None, values: dict, key: str, us
         if wanted and not match:
             check["model_missing"] = wanted  # выбор оператора сохраняется, но в списке сервера его нет
     except LlmError as e:
-        check["error"] = str(e)
+        check["error"] = shown_error(str(e))  # текст LlmError – русский канонический, показ на языке интерфейса
         # сбой «Проверить» – и в журнал приложения (без ключа: тексты ошибок клиента ключа не содержат)
         log.info("проверка профиля провайдера не прошла: профиль %s, протокол %s, класс %s: %s",
                  profile["id"] if profile else "новый", values["kind"], values["trust"], e)
@@ -251,13 +253,13 @@ async def provider_post(request: Request, pid: int | None):
             """Сохранение формы; (профиль, прежний ключ удалён) или ответ с ошибкой."""
             if parsed.errors:
                 return form_page(request, profile, parsed.values, parsed.errors, entered,
-                                 error="Профиль не сохранён: исправьте отмеченные поля.", status_code=400)
+                                 error=i18n._("Профиль не сохранён: исправьте отмеченные поля."), status_code=400)
             claimed = bool(handle) and not parsed.key
             key = parsed.key or (pending.claim(handle, owner, base, bound) if handle else "")
             if claimed and not key:  # метку уже сохраняет другой запрос или она истекла – ключ вводится заново
-                return form_page(request, profile, parsed.values, {"key": "Введите ключ ещё раз."},
-                                 {**entered, "key_handle": ""}, error="Профиль не сохранён: ключ не найден в памяти.",
-                                 status_code=400)
+                return form_page(request, profile, parsed.values, {"key": i18n._("Введите ключ ещё раз.")},
+                                 {**entered, "key_handle": ""},
+                                 error=i18n._("Профиль не сохранён: ключ не найден в памяти."), status_code=400)
             written = {"key": False}
             try:
                 result = save_profile(db, pid, parsed.clean, key=key, requires_key=wants_key,
@@ -270,8 +272,9 @@ async def provider_post(request: Request, pid: int | None):
                     (pending.forget if written["key"] else pending.release)(handle, owner)
                 if not isinstance(e, ProfileInvalid):
                     raise
-                field = ({"enabled": str(e)} if "не выключается" in str(e) else
-                         {"key": str(e)} if str(e) == KEY_DISABLED else {})
+                # поле – по тексту отказа на любом из двух языков (ADR-0158)
+                field = ({"enabled": str(e)} if str(e) in (DEFAULT_NOT_OFF, i18n._(DEFAULT_NOT_OFF)) else
+                         {"key": str(e)} if str(e) in (KEY_DISABLED, i18n._(KEY_DISABLED)) else {})
                 return form_page(request, profile, parsed.values, field, entered, error=str(e), status_code=400)
             if handle:
                 pending.forget(handle, owner)  # сохранено файлом – ключ в памяти больше не нужен
@@ -298,11 +301,11 @@ async def provider_post(request: Request, pid: int | None):
             parsed.values = form_of(profile, settings.default_provider_id or DEFAULT_PROVIDER_ID)
         if action == "probe":
             if profile is None:
-                return form_page(request, None, parsed.values, check=entered, error="Сначала сохраните профиль.",
+                return form_page(request, None, parsed.values, check=entered, error=i18n._("Сначала сохраните профиль."),
                                  status_code=400)
             model = str(profile.get("default_model") or "")
             if not model:
-                return form_page(request, profile, parsed.values, check=entered, error="У профиля не выбрана модель.",
+                return form_page(request, profile, parsed.values, check=entered, error=i18n._("У профиля не выбрана модель."),
                                  status_code=400)
             client = apply_chat(service_client(web_of(request).make_client, server_of(profile), db),
                                 chat_settings(profile))
@@ -317,12 +320,14 @@ async def provider_post(request: Request, pid: int | None):
                 # – не «результат неизвестен»
                 unknown = str(profile.get("trust")) == "external" and outcome_unknown(e)
                 return form_page(request, profile, parsed.values, check=entered,
-                                 error=f"Пробный ответ не получен: {e}" + (
-                                     " Результат неизвестен: запрос мог быть принят и оплачен – повторять ли, решите "
-                                     "сами." if unknown else ""))
+                                 error=i18n._("Пробный ответ не получен: {error}", error=shown_error(str(e))) + (
+                                     " " + i18n._("Результат неизвестен: запрос мог быть принят и оплачен – повторять "
+                                                  "ли, решите сами.") if unknown else ""))
             record_check(db, profile, "probe", True)
             return form_page(request, profile, parsed.values, check=entered,
-                             notice=f"Модель {model} ответила за {seconds:.1f} с.".replace(".", ",", 1))
+                             notice=i18n._("Модель {model} ответила за {seconds} с.", model=model,
+                                           seconds=f"{seconds:.1f}".replace(".", ",") if i18n.current() == "ru"
+                                           else f"{seconds:.1f}"))
         if action == "search_check":
             return search_check(request, profile, parsed.values, entered)
         saved = persist()
@@ -389,16 +394,16 @@ def search_check(request: Request, profile: dict | None, values: dict, entered: 
     search = caps.get("search") if isinstance(caps, dict) else None
     if not profile or str(profile.get("kind")) not in REMOTE_KINDS or not isinstance(search, dict):
         return form_page(request, profile, values, check=entered, status_code=400,
-                         error="Поиск не настроен: сохраните профиль удалённого API (чат-завершения или Messages) с "
-                               "путями поиска.")
+                         error=i18n._("Поиск не настроен: сохраните профиль удалённого API (чат-завершения или Messages) "
+                                      "с путями поиска."))
     client = service_client(web_of(request).make_client, server_of(profile), db)
     try:
         with model_traffic.context(purpose="search_check"):
             data = client.search(str(search.get("search_path") or ""), "OpenSSL security advisory", 1)
     except LlmError as e:
         record_check(db_of(request), profile, "search", False)
-        return form_page(request, profile, values, check=entered, error=f"Поиск не ответил: {e}")
+        return form_page(request, profile, values, check=entered, error=i18n._("Поиск не ответил: {error}", error=shown_error(str(e))))
     found = next((len(v) for v in data.values() if isinstance(v, list)), 0) if isinstance(data, dict) else 0
     record_check(db_of(request), profile, "search", True)
     return form_page(request, profile, values, check=entered,
-                     notice=f"Поиск ответил: результатов – {found}.")
+                     notice=i18n._("Поиск ответил: результатов – {n}.", n=found))

@@ -17,6 +17,7 @@ import json
 import re
 import secrets
 import urllib.parse
+from app import i18n
 from app.hub_sync_contract import SYNC_PATHS, sync_query_value, validate_sync_purpose
 
 from typing import Any
@@ -160,6 +161,13 @@ def op_key(hub_url: str, app_id: int | None, purpose: str, targets: list[dict], 
 
 
 NOT_SENT = "запрос в Hub не отправлен"  # начало ошибки операции, которую исполнитель в Hub не отправлял
+UNKNOWN = "результат неизвестен"  # начало ошибки записи, исход которой не установлен
+# Ошибки операций хранятся в hub_ops.error по-русски: по их началу идёт разбор (NOT_SENT, «результат неизвестен»,
+# «белый список»). На языке интерфейса – только при показе, error_text (ADR-0158).
+_NO_REASON = i18n.N_("причина не указана")
+_TRUNCATED = i18n.N_("ответ Hub усечён")
+_NO_ANSWER = i18n.N_("ответа от Hub нет")
+_CODED = re.compile(r"Hub ответил кодом ([0-9]+)(?:: (.*))?\Z", re.S)
 
 
 def outcome_state(purpose: str, result: dict) -> tuple[str, str]:
@@ -171,7 +179,7 @@ def outcome_state(purpose: str, result: dict) -> tuple[str, str]:
     status = int(result.get("status") or 0)
     error = str(result.get("error") or "")
     if result.get("not_sent"):  # исполнитель не отправлял запрос в Hub (отказ белого списка, Hub недоступен)
-        return "failed", f"{NOT_SENT}: {error or 'причина не указана'}"
+        return "failed", f"{NOT_SENT}: {error or _NO_REASON}"
     if 200 <= status < 300 and not error and not result.get("truncated"):
         return "done", ""
     if is_write(purpose) and not 400 <= status < 500:
@@ -182,13 +190,32 @@ def outcome_state(purpose: str, result: dict) -> tuple[str, str]:
         if error:  # ошибка доставки или чтения – вместе с известным кодом и пояснением Hub
             note = f"{coded}; {error}" if coded else error
         else:
-            note = "ответ Hub усечён" if 200 <= status < 300 else coded or "ответа от Hub нет"
-        return "unknown", f"результат неизвестен: {note}"
+            note = _TRUNCATED if 200 <= status < 300 else coded or _NO_ANSWER
+        return "unknown", f"{UNKNOWN}: {note}"
     if status:  # отказ Hub: код и его короткое пояснение из тела ответа – оператор видит, что поправить; ошибка
         # чтения ответа дописывается к пояснению, а не заменяет его
         said = "; ".join(part for part in (hub_message(result.get("body_text")), error) if part)
         return "failed", f"Hub ответил кодом {status}" + (f": {said}" if said else "")
-    return "failed", error or "ответа от Hub нет"
+    return "failed", error or _NO_ANSWER
+
+
+def error_text(text: Any) -> str:
+    """Сохранённая ошибка операции Hub (русский текст из outcome_state, пояснения сверки) -> текст для показа на языке
+    интерфейса. Известные начала переводятся, пояснение Hub и ошибка исполнителя остаются как есть; при русском – без
+    изменений."""
+    text = str(text or "")
+    if not text or i18n.current() == "ru":
+        return text
+    if text.startswith(NOT_SENT + ": "):
+        return i18n._("запрос в Hub не отправлен: {reason}", reason=error_text(text[len(NOT_SENT) + 2:]))
+    if text.startswith(UNKNOWN + ": "):
+        return i18n._("результат неизвестен: {note}", note=error_text(text[len(UNKNOWN) + 2:]))
+    coded = _CODED.match(text)
+    if coded:
+        if coded.group(2) is None:
+            return i18n._("Hub ответил кодом {status}", status=coded.group(1))
+        return i18n._("Hub ответил кодом {status}: {said}", status=coded.group(1), said=coded.group(2))
+    return i18n._(text)
 
 
 def hub_message(body_text: Any) -> str:
@@ -243,11 +270,12 @@ def probe_outcome(result: dict) -> dict:
                 "detail": ""}
     if status in (401, 403):
         return {"ok": False, "user": "", "login": "", "roles": [],
-                "detail": "Hub не принял сессию исполнителя: войдите в исполнителе заново."}
+                "detail": i18n._("Hub не принял сессию исполнителя: войдите в исполнителе заново.")}
     if status == 0:
         return {"ok": False, "user": "", "login": "", "roles": [],
-                "detail": f"Исполнитель не дозвонился до Hub: {result.get('error') or 'сбой соединения'}."}
-    return {"ok": False, "user": "", "login": "", "roles": [], "detail": f"Hub ответил кодом {status}."}
+                "detail": i18n._("Исполнитель не дозвонился до Hub: {error}.",
+                                 error=result.get('error') or i18n._("сбой соединения"))}
+    return {"ok": False, "user": "", "login": "", "roles": [], "detail": i18n._("Hub ответил кодом {status}.", status=status)}
 
 
 def clip_result(result: dict) -> dict:
@@ -282,8 +310,8 @@ def load_or_create_worker_key(keys: Any) -> str:
     from app.storage.local_state import WORKER_SECRET
     key = keys.ensure_secret(WORKER_SECRET, lambda: secrets.token_hex(32)).strip()
     if not _KEY_RE.fullmatch(key):
-        raise ValueError("Ключ исполнителя в базе повреждён. Выпустите ключ заново в настройках (раздел «AppSec.Hub») и впишите новый "
-                         "в настройки исполнителя.")
+        raise ValueError(i18n._("Ключ исполнителя в базе повреждён. Выпустите ключ заново в настройках (раздел «AppSec.Hub») и "
+                                "впишите новый в настройки исполнителя."))
     return key
 
 
@@ -311,20 +339,22 @@ def probe_view(op: dict | None) -> dict:
     state = op["state"]
     if state == "queued":
         return {"state": state, "final": False, "ok": False,
-                "text": "Ждём исполнителя: он заберёт проверку при следующем обращении к приложению."}
+                "text": i18n._("Ждём исполнителя: он заберёт проверку при следующем обращении к приложению.")}
     if state == "taken":
-        return {"state": state, "final": False, "ok": False, "text": "Исполнитель выполняет запрос к Hub…"}
+        return {"state": state, "final": False, "ok": False, "text": i18n._("Исполнитель выполняет запрос к Hub…")}
     result = parse_json(op.get("result_json") or "") or {}
     if state == "done":
         outcome = probe_outcome(result)
         if outcome["ok"]:
-            roles = ", ".join(outcome["roles"]) or "не указаны"
+            roles = ", ".join(outcome["roles"]) or i18n._("не указаны")
             return {"state": state, "final": True, "ok": True,
-                    "text": f"Связь с Hub есть: вошли как {outcome['user']} ({outcome['login']}), роли: {roles}."}
-        return {"state": state, "final": True, "ok": False, "text": outcome["detail"] or "Hub ответил без имени."}
+                    "text": i18n._("Связь с Hub есть: вошли как {user} ({login}), роли: {roles}.",
+                                   user=outcome['user'], login=outcome['login'], roles=roles)}
+        return {"state": state, "final": True, "ok": False, "text": outcome["detail"] or i18n._("Hub ответил без имени.")}
     if state == "failed" and result:
         return {"state": state, "final": True, "ok": False, "text": probe_outcome(result)["detail"]}
     if state == "cancelled":
-        return {"state": state, "final": True, "ok": False, "text": "Проверка отменена."}
+        return {"state": state, "final": True, "ok": False, "text": i18n._("Проверка отменена.")}
     return {"state": state, "final": True, "ok": False,
-            "text": f"Проверка не удалась: {op.get('error') or 'исполнитель не вернул результат'}."}
+            "text": i18n._("Проверка не удалась: {error}.",
+                           error=error_text(op.get('error')) or i18n._("исполнитель не вернул результат"))}

@@ -41,7 +41,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from app import cvss, defect_where
+from app import cvss, i18n
 from app.storage import BUSY_TEXT, DatabaseBusy, IntegrityError, PostgresStore, conninfo_for  # noqa: F401
 from app.storage import schema as storage_schema
 from app.storage import migrate as storage_migrate
@@ -82,22 +82,22 @@ CASE_KEYS = ("kind", "rule", "cwe", "codebase", "file", "line", "snippet", "lang
 # Поля находки SCA, от которых зависит решение человека: компонент, версия и уязвимости
 SCA_KEYS = ("kind", "component", "version", "cve", "vuln_ids", "codebase", "dep_path")
 
-INTERRUPTED_NOTE = "Приложение перезапускалось, прогон поставлен на паузу. Нажмите «Продолжить»."
-STOPPED_NOTE = "Прогон остановлен по команде «Стоп»: приложение перезапускалось до конца текущей находки."
-QUESTION_INTERRUPTED = "Приложение перезапускалось, ответ не получен. Спросите ещё раз."
+INTERRUPTED_NOTE = i18n.N_("Приложение перезапускалось, прогон поставлен на паузу. Нажмите «Продолжить».")
+STOPPED_NOTE = i18n.N_("Прогон остановлен по команде «Стоп»: приложение перезапускалось до конца текущей находки.")
+QUESTION_INTERRUPTED = i18n.N_("Приложение перезапускалось, ответ не получен. Спросите ещё раз.")
 # К11: обращение к внешнему провайдеру ушло, ответа нет – находка не разбирается повторно ни «Продолжить», ни после
 # перезапуска; явный «Повторить ошибочные» – новый платный запрос по решению оператора
-UNKNOWN_RESULT_NOTE = ("Результат неизвестен: обращение к провайдеру ушло, ответ не получен – запрос мог быть принят "
+UNKNOWN_RESULT_NOTE = i18n.N_("Результат неизвестен: обращение к провайдеру ушло, ответ не получен – запрос мог быть принят "
                        "и оплачен. Повторно находка автоматически не отправляется; «Повторить ошибочные» – новый "
                        "платный запрос.")
-UNKNOWN_AFTER_RESTART = ("Результат неизвестен: приложение перезапускалось после отправки запроса провайдеру – запрос "
+UNKNOWN_AFTER_RESTART = i18n.N_("Результат неизвестен: приложение перезапускалось после отправки запроса провайдеру – запрос "
                          "мог быть принят и оплачен. Повторно находка автоматически не отправляется; «Повторить "
                          "ошибочные» – новый платный запрос.")
-QUESTION_UNKNOWN = ("Результат неизвестен: вопрос ушёл провайдеру, ответ не получен – запрос мог быть принят и "
+QUESTION_UNKNOWN = i18n.N_("Результат неизвестен: вопрос ушёл провайдеру, ответ не получен – запрос мог быть принят и "
                     "оплачен. Спросите ещё раз, если нужно: это новый платный запрос.")
-QUESTION_UNKNOWN_RESTART = ("Результат неизвестен: приложение перезапускалось после отправки вопроса провайдеру – запрос "
+QUESTION_UNKNOWN_RESTART = i18n.N_("Результат неизвестен: приложение перезапускалось после отправки вопроса провайдеру – запрос "
                             "мог быть принят и оплачен. Спросите ещё раз, если нужно: это новый платный запрос.")
-UNKNOWN_BEFORE_RESUME = ("Результат неизвестен: запрос провайдеру ушёл, а результат записать не удалось (база была "
+UNKNOWN_BEFORE_RESUME = i18n.N_("Результат неизвестен: запрос провайдеру ушёл, а результат записать не удалось (база была "
                          "занята или приложение останавливалось) – запрос мог быть принят и оплачен. Повторно находка "
                          "автоматически не отправляется; «Повторить ошибочные» с отметкой – новый платный запрос.")
 
@@ -298,7 +298,7 @@ class HubResyncRequired(Exception):
     """Пауза записи не снята: после восстановления копии ещё не прошла «Синхронизировать»; число проектов – в args[0]."""
 
 
-HUB_DISABLED_TEXT = ("В учебном стенде Hub выключен: исполнителя Hub в стенде нет. Подключение к AppSec.Hub – в "
+HUB_DISABLED_TEXT = i18n.N_("В учебном стенде Hub выключен: исполнителя Hub в стенде нет. Подключение к AppSec.Hub – в "
                      "Docker-установке приложения; выгрузку Excel из Hub в стенд загрузить можно.")
 
 
@@ -665,7 +665,7 @@ class Database:
         except ValueError:
             key = b""
         if len(key) != KEY_SIZE:
-            raise ValueError("Ключ маскирования в базе повреждён: восстановите его из копии базы.")
+            raise ValueError(i18n._("Ключ маскирования в базе повреждён: восстановите его из копии базы."))
         return key
 
     def hold_instance(self) -> None:
@@ -722,14 +722,15 @@ class Database:
         if not tables:
             return None
         if "meta" not in tables:
-            raise RuntimeError("База PostgreSQL – не база этого приложения: в ней нет таблицы meta. Укажите другую базу.")
+            raise RuntimeError(i18n._("База PostgreSQL – не база этого приложения: в ней нет таблицы meta. Укажите другую базу."))
         version = int(self._scalar("SELECT value FROM meta WHERE key = 'schema_version'") or SCHEMA_VERSION)
         if version > SCHEMA_VERSION:
-            raise RuntimeError(f"База создана более новой версией приложения (схема {version}, эта версия – "
-                               f"{SCHEMA_VERSION}).")
+            raise RuntimeError(i18n._("База создана более новой версией приложения (схема {version}, эта версия – "
+                                      "{expected}).", version=version, expected=SCHEMA_VERSION))
         if version < SCHEMA_VERSION:
-            raise RuntimeError(f"Схема базы {version}, этой версии приложения нужна {SCHEMA_VERSION}: обновите схему "
-                               "командой обслуживания (start.ps1 делает это вместе с копией базы).")
+            raise RuntimeError(i18n._("Схема базы {version}, этой версии приложения нужна {expected}: обновите схему "
+                                      "командой обслуживания (start.ps1 делает это вместе с копией базы).",
+                                      version=version, expected=SCHEMA_VERSION))
         self._check_layout()
         return version
 
@@ -767,12 +768,12 @@ class Database:
             present.setdefault(row[0], set()).add(row[1])
         for table, columns in _expected_layout().items():
             if table not in present:
-                raise RuntimeError(f"База не подходит этой версии приложения: нет таблицы {table}. Восстановите базу из "
-                                   "проверенной копии.")
+                raise RuntimeError(i18n._("База не подходит этой версии приложения: нет таблицы {table}. Восстановите "
+                                          "базу из проверенной копии.", table=table))
             missing = sorted(columns - present[table])
             if missing:
-                raise RuntimeError(f"База не подходит этой версии приложения: в таблице {table} нет колонок "
-                                   f"{', '.join(missing)}.")
+                raise RuntimeError(i18n._("База не подходит этой версии приложения: в таблице {table} нет колонок "
+                                          "{columns}.", table=table, columns=", ".join(missing)))
 
     def ready(self) -> dict[str, Any]:
         """Готовность для /healthz: база отвечает и её схема – та, что нужна этой версии. Ошибка связи – исключение."""
@@ -831,7 +832,7 @@ class Database:
                 c.execute("INSERT INTO llm_providers(id, name, kind, base_url, trust, auth, purposes_json, enabled,"
                           " version, default_model, capabilities_json, created_at, updated_at)"
                           " VALUES (?, ?, 'ollama', ?, 'local', 'none', ?, 1, 1, ?, ?, ?, ?)",
-                          (DEFAULT_PROVIDER_ID, "Ollama из «Настроек»", str(base_url or ""), dumps(["code", "research"]),
+                          (DEFAULT_PROVIDER_ID, i18n._("Ollama из «Настроек»"), str(base_url or ""), dumps(["code", "research"]),
                            str(default_model or ""), dumps({"supports_ps": True, "allows_unload": True}), ts, ts))
                 # номер 1 задан явно: следующий профиль получит следующий номер, а не столкнётся с этим
                 c.execute("SELECT setval(pg_get_serial_sequence('llm_providers', 'id'),"
@@ -875,7 +876,7 @@ class Database:
         with self._tx() as c:
             row = c.execute("SELECT * FROM llm_providers WHERE id = ?", (int(provider_id),)).fetchone()
             if row is None:
-                raise ValueError(f"профиля №{provider_id} нет")
+                raise ValueError(i18n._("профиля №{provider_id} нет", provider_id=provider_id))
             current = dict(zip([d[0] for d in c.execute("SELECT * FROM llm_providers LIMIT 0").description], row, strict=True))
             changed = {k: v for k, v in fields.items() if current.get(k) != v}
             if changed:
@@ -899,11 +900,13 @@ class Database:
         row = c.execute("SELECT enabled, base_url, name, confirmed_addresses_json FROM llm_providers WHERE id = ?",
                         (int(provider_id),)).fetchone()
         if row is None or not row[0]:
-            raise ProfileChanged(f"Профиль провайдера модели «{row[2] if row else provider_id}» выключен.")
+            raise ProfileChanged(i18n._("Профиль провайдера модели «{name}» выключен.",
+                                        name=row[2] if row else provider_id))
         if base_url is not None and str(row[1]) != str(base_url):
-            raise ProfileChanged(f"Адрес профиля «{row[2]}» изменился после этого прогона.")
+            raise ProfileChanged(i18n._("Адрес профиля «{name}» изменился после этого прогона.", name=row[2]))
         if confirmed is not None and set(_snapshot_confirmed(row[3], key=None)) != set(confirmed):
-            raise ProfileChanged(f"Подтверждённые адреса профиля «{row[2]}» изменились после этого прогона.")
+            raise ProfileChanged(i18n._("Подтверждённые адреса профиля «{name}» изменились после этого прогона.",
+                                        name=row[2]))
 
     @staticmethod
     def _insert_execution(c: Connection, values: Mapping[str, Any], ts: str) -> int:
@@ -1011,7 +1014,7 @@ class Database:
         ts = now_iso()
         with self.source_gate(project_id), self._tx() as c:
             if expect is not None and self._restore_fingerprint_in(c, project_id, mapping) != expect:
-                raise ValueError("Соответствия или сохранённые срезы изменились после страницы подтверждения.")
+                raise ValueError(i18n._("Соответствия или сохранённые срезы изменились после страницы подтверждения."))
             return sum(self._set_codebase_folder_in(c, project_id, codebase, folder, True, ts)
                        for codebase, folder in mapping.items())
 
@@ -1138,7 +1141,7 @@ class Database:
             with self._tx() as c:
                 row = c.execute("SELECT hub_app_id FROM projects WHERE id = ?", (project_id,)).fetchone()
                 if row is None:
-                    raise ValueError("Проекта нет.")
+                    raise ValueError(i18n._("Проекта нет."))
                 hub_url = self._hub_url_in(c)
                 old, new = pt.scope_of(hub_url, row["hub_app_id"]), pt.scope_of(hub_url, hub_app_id)
                 token = pt.assignment_fingerprint(c, project_id, old, new)
@@ -1146,7 +1149,7 @@ class Database:
                     holder.update(token=token, affects=False, unchanged=True, summary={})
                     return holder
                 if expect is not None and expect != token:
-                    raise ValueError("Итог изменился: откройте подтверждение смены назначения Hub заново.")
+                    raise ValueError(i18n._("Итог изменился: откройте подтверждение смены назначения Hub заново."))
                 holder.update(token=token, affects=pt.assignment_affects(c, project_id))
                 holder["summary"] = pt.change_assignment(c, project_id, lambda cc: cc.execute(
                     "UPDATE projects SET hub_app_id = ?, updated_at = ? WHERE id = ?",
@@ -1185,7 +1188,7 @@ class Database:
                 token = __import__("hashlib").sha256("|".join(parts).encode("ascii")).hexdigest()[:32]
                 unchanged = old_url == new_url
                 if expect is not None and expect != token and not unchanged:
-                    raise ValueError("Итог изменился: откройте подтверждение смены адреса Hub заново.")
+                    raise ValueError(i18n._("Итог изменился: откройте подтверждение смены адреса Hub заново."))
                 holder.update(token=token, unchanged=unchanged,
                               affects=not unchanged and any(pt.assignment_affects(c, pid) for pid in ids))
                 if not unchanged:  # тот же адрес – данные действующего назначения не трогаются (ревью Codex, круг 2)
@@ -1344,7 +1347,7 @@ class Database:
             if c.execute("SELECT 1 FROM projects WHERE id = ?", (project_id,)).fetchone() is None:
                 return False
             if c.execute("SELECT 1 FROM runs WHERE project_id = ? AND state = 'running'", (project_id,)).fetchone():
-                raise ProjectBusy("У проекта идёт прогон: остановите его и дождитесь окончания текущей находки.")
+                raise ProjectBusy(i18n._("У проекта идёт прогон: остановите его и дождитесь окончания текущей находки."))
             own = sorted({row[0] for row in c.execute(
                 "SELECT verdict_id FROM cases WHERE project_id = ? AND verdict_id IS NOT NULL"
                 " UNION SELECT ri.verdict_id FROM run_items ri JOIN runs u ON u.id = ri.run_id"
@@ -1429,17 +1432,17 @@ class Database:
         with self.source_gate(project_id), self._tx() as c:
             old = c.execute("SELECT repos_dir FROM projects WHERE id = ?", (project_id,)).fetchone()
             if old is None or (old["repos_dir"] or "") != (expect_repos_dir or ""):
-                raise ValueError("Папка проекта изменилась после открытия страницы: откройте её заново.")
+                raise ValueError(i18n._("Папка проекта изменилась после открытия страницы: откройте её заново."))
             mapped = c.execute("SELECT folder FROM codebase_map WHERE project_id = ? AND codebase = ?",
                                (project_id, codebase)).fetchone()
             if mapped is not None and (mapped["folder"] or ""):
-                raise ValueError("У кодовой базы уже выбрана папка: откройте страницу заново.")
+                raise ValueError(i18n._("У кодовой базы уже выбрана папка: откройте страницу заново."))
             # показанная и подтверждённая цена (ревью Kimi, выпуск dev18): изменилась – ничего не удаляется
             changed = (old["repos_dir"] or "") != (repos_dir or "")
             if expect_counts is not None and self._clone_reset_counts_in(c, project_id, codebase, changed) \
                     != tuple(expect_counts):
-                raise ValueError("Срезы или отметки «Проверено» изменились после предупреждения: откройте страницу "
-                                 "заново и подтвердите снова.")
+                raise ValueError(i18n._("Срезы или отметки «Проверено» изменились после предупреждения: откройте страницу "
+                                 "заново и подтвердите снова."))
             reopened = self._set_repos_dir_in(c, project_id, repos_dir, ts)
             reopened += self._set_codebase_folder_in(c, project_id, codebase, folder, True, ts)
             return reopened
@@ -2787,10 +2790,11 @@ class Database:
             row["dropped_info"] = loads(row.get("defect_dropped") or "", {}) or {}
             row["entered_scope_note"] = ""
             if row["entered_recorded"] and not row["entered_hub"]:
-                row["entered_scope_note"] = (f"Прежняя отметка относится к {row['entered_hub_url']}, "
-                                             f"приложению {row['entered_app_id']}. В текущем назначении запись не подтверждена.")
+                row["entered_scope_note"] = i18n._("Прежняя отметка относится к {url}, приложению {app_id}. В текущем "
+                                                   "назначении запись не подтверждена.",
+                                                   url=row['entered_hub_url'], app_id=row['entered_app_id'])
             elif row["entered_hub"] and row["entered_origin"] not in ("status", "defect", "hub_sync"):
-                row["entered_scope_note"] = "Ручная или прежняя отметка без назначения; статус в текущем Hub ею не подтверждён."
+                row["entered_scope_note"] = i18n._("Ручная или прежняя отметка без назначения; статус в текущем Hub ею не подтверждён.")
         return row
 
     def review_version(self, project_id: int, hub_id: str) -> str:
@@ -2814,18 +2818,18 @@ class Database:
         current_verdict = case["verdict_id"] if case is not None else None
         version = source_version(source) if source is not None else ""
         if source is None or version != expect.get("version"):
-            raise StaleReview("Находка, папка с её кодом или ревизия клона изменились, пока страница была открыта.",
+            raise StaleReview(i18n._("Находка, папка с её кодом или ревизия клона изменились, пока страница была открыта."),
                               "source")
         if current_verdict != expect.get("verdict_id"):
-            raise StaleReview("Вердикт модели изменился, пока страница была открыта.", "verdict")
+            raise StaleReview(i18n._("Вердикт модели изменился, пока страница была открыта."), "verdict")
         if expect.get("answer_id") is not None:
             if Database._main_answer(c, project_id, source["data"])[0] != str(expect["answer_id"]):
-                raise StaleReview("Ответ агента по библиотеке изменился, пока страница была открыта.", "answer")
+                raise StaleReview(i18n._("Ответ агента по библиотеке изменился, пока страница была открыта."), "answer")
         if expect.get("revision") is not None:
             row = c.execute("SELECT revision FROM reviews WHERE project_id = ? AND hub_id = ?",
                             (project_id, hub_id)).fetchone()
             if int(row["revision"] if row is not None else 0) != int(expect["revision"]):
-                raise StaleReview("Решение по находке изменили в другой вкладке или окне.", "revision")
+                raise StaleReview(i18n._("Решение по находке изменили в другой вкладке или окне."), "revision")
 
     @staticmethod
     def _reopen_after_research(c: Connection, project_id: int, refs: set[str], ts: str) -> int:
@@ -2954,7 +2958,7 @@ class Database:
         source = self._source(c, project_id, hub_id)  # находка и источник её кода – одним снимком
         sig = source_signature(source) if source is not None else ""
         if require_present and (source is None or source.get("missing")):
-            raise StaleReview("Находки нет в текущей выгрузке.", "missing")
+            raise StaleReview(i18n._("Находки нет в текущей выгрузке."), "missing")
         self._check_expect(c, project_id, hub_id, source, expect)
         if group_check is not None:
             group_check(self._group_rows(c, project_id, group_key, hub_id))
@@ -3116,7 +3120,7 @@ class Database:
         дефекта» (None, с обоснованием reason). expect – {set_no: редакция}, которые видел оператор, для обоих наборов: не совпало –
         StaleReview, ничего не меняется. Оба набора получают новую редакцию одной транзакцией."""
         if set_no is None and not str(reason or "").strip():
-            raise ValueError("«Без дефекта» сохраняется только с обоснованием.")
+            raise ValueError(i18n._("«Без дефекта» сохраняется только с обоснованием."))
         ts = now_iso()
         with self._tx() as c:
             # карточка показывала этот пакет и эту ревизию идентичности находки (план dev17, п. 4.3, 4.5): после
@@ -3128,7 +3132,7 @@ class Database:
                 now_ref = package_ref(*package_identity.of(package_identity.with_package(dict(own)))) if own else ""
                 if own is None or (expect_input_ref is not None and now_ref != expect_input_ref) or (
                         expect_pkg_rev is not None and int(own["pkg_rev"] or 0) != int(expect_pkg_rev)):
-                    raise StaleReview("Пакет находки изменился после открытия карточки: обновите карточку.", "set")
+                    raise StaleReview(i18n._("Пакет находки изменился после открытия карточки: обновите карточку."), "set")
             else:
                 # форма без этих полей (страница до обновления) – только пока идентичность не менялась и место не ждёт
                 # нового выбора после слияния (ревью Kimi, шаг 3, круг 5)
@@ -3136,11 +3140,11 @@ class Database:
                                     (project_id, hub_id)).fetchone()
                 if (own is not None and int(own["pkg_rev"] or 0) != 0) or (
                         waiting is not None and str(waiting["pending_reason"] or "")):
-                    raise StaleReview("Пакет находки изменился после открытия карточки: обновите карточку.", "set")
+                    raise StaleReview(i18n._("Пакет находки изменился после открытия карточки: обновите карточку."), "set")
             row = c.execute("SELECT set_no, input_ref FROM sca_set_members WHERE project_id = ? AND hub_id = ?",
                             (project_id, hub_id)).fetchone()
             if row is not None and row["input_ref"] != input_ref:
-                raise StaleReview("Находка относится к другой версии компонента: обновите карточку.", "set")
+                raise StaleReview(i18n._("Находка относится к другой версии компонента: обновите карточку."), "set")
             current = 0 if row is None else (None if row[0] is None else int(row[0]))
             fresh = None
             if set_no == NEW_SET:  # новый набор: следующий номер – в этой же транзакции
@@ -3152,7 +3156,7 @@ class Database:
             for number in {x for x in (current, set_no) if x is not None and x != fresh}:
                 # редакции затронутых наборов обязательны: иначе перенос из устаревшей карточки прошёл бы молча
                 if number not in expect or self._set_revision(c, project_id, input_ref, number) != int(expect[number]):
-                    raise StaleReview("Набор дефекта изменили в другой вкладке: обновите карточку.", "set")
+                    raise StaleReview(i18n._("Набор дефекта изменили в другой вкладке: обновите карточку."), "set")
             if set_no == 0:
                 c.execute("DELETE FROM sca_set_members WHERE project_id = ? AND hub_id = ?", (project_id, hub_id))
             else:
@@ -3176,20 +3180,20 @@ class Database:
         записано. Исключение меняет только текст, не применимость и не проверку цели (ADR-0094 Р3.3)."""
         reason = str(reason or "").strip()
         if exclude and not reason:
-            raise ValueError("Исключение из текста сохраняется только с обоснованием.")
+            raise ValueError(i18n._("Исключение из текста сохраняется только с обоснованием."))
         ids = sorted({str(i) for i in ids if str(i or "").strip()})
         if not ids:
-            raise ValueError("Нет идентификаторов уязвимости.")
+            raise ValueError(i18n._("Нет идентификаторов уязвимости."))
         ts = now_iso()
         with self._tx() as c:
             state = self._sca_package_state(c, project_id, hub_id)
             if state is None:
-                raise StaleReview("Проект или находка исчезли.", "deleted")
+                raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
             if self._sca_state_fingerprint(state) != expect_fp:
-                raise StaleReview("Пакет изменился после открытия карточки: обновите её.", "package")
+                raise StaleReview(i18n._("Пакет изменился после открытия карточки: обновите её."), "package")
             ref = state["input_ref"]
             if self._set_revision(c, project_id, ref, set_no) != int(expect_set_revision):
-                raise StaleReview("Набор дефекта изменили в другой вкладке: обновите карточку.", "set")
+                raise StaleReview(i18n._("Набор дефекта изменили в другой вкладке: обновите карточку."), "set")
             row = c.execute("SELECT excluded_json FROM sca_defect_sets WHERE project_id = ? AND input_ref = ?"
                             " AND set_no = ?", (project_id, ref, int(set_no))).fetchone()
             items = []
@@ -3220,17 +3224,17 @@ class Database:
         ts = now_iso()
         with self._tx() as c:
             if expect_fp is not None and member and self._sca_defect_fingerprint(c, project_id, member) != expect_fp:
-                raise StaleReview("Пакет изменился, пока сохранялся текст: обновите карточку.", "package")
+                raise StaleReview(i18n._("Пакет изменился, пока сохранялся текст: обновите карточку."), "package")
             if member:
                 place = c.execute("SELECT set_no, input_ref FROM sca_set_members WHERE project_id = ? AND hub_id = ?",
                                   (project_id, member)).fetchone()
                 now = 0 if place is None else place["set_no"]
                 if (place is not None and place["input_ref"] != input_ref) or now != int(set_no):
-                    raise StaleReview("Находку перенесли в другой набор дефекта: обновите карточку.", "text")
+                    raise StaleReview(i18n._("Находку перенесли в другой набор дефекта: обновите карточку."), "text")
             row = c.execute("SELECT revision FROM sca_package_texts WHERE project_id = ? AND input_ref = ?"
                             " AND set_no = ?", (project_id, input_ref, int(set_no))).fetchone()
             if (int(row[0]) if row else 0) != int(expect_revision):
-                raise StaleReview("Текст дефекта изменили в другой вкладке: обновите карточку.", "text")
+                raise StaleReview(i18n._("Текст дефекта изменили в другой вкладке: обновите карточку."), "text")
             c.execute("""INSERT INTO sca_package_texts(project_id, input_ref, set_no, revision, explanation, ast_json,
                                                        target_version, target_basis, version_checked_sig,
                                                        text_checked_sig, text_sig, updated_at, residual_checked_sig,
@@ -3274,17 +3278,17 @@ class Database:
         with self._tx() as c:
             state = self._sca_package_state(c, project_id, hub_id)
             if state is None:
-                raise StaleReview("Проект или находка исчезли.", "deleted")
+                raise StaleReview(i18n._("Проект или находка исчезли."), "deleted")
             if self._sca_state_fingerprint(state) != expect_fp:
-                raise StaleReview("Пакет изменился после открытия карточки: обновите её.", "package")
+                raise StaleReview(i18n._("Пакет изменился после открытия карточки: обновите её."), "package")
             research = state.get("research") or {}
             if int(research.get("revision") or 0) != int(expect_research_revision):
-                raise StaleReview("Исследование компонента обновлено: обновите карточку.", "research")
+                raise StaleReview(i18n._("Исследование компонента обновлено: обновите карточку."), "research")
             ref = state["input_ref"]
             rows = state.get("applicability") or {}
             now = rows.get(str(vuln_key))
             if (int(now["revision"]) if now else 0) != int(expect_revision):
-                raise StaleReview("Решение о применимости изменили в другой вкладке: обновите карточку.", "revision")
+                raise StaleReview(i18n._("Решение о применимости изменили в другой вкладке: обновите карточку."), "revision")
             for key, row in rows.items():
                 if key != str(vuln_key) and row.get("decision") and set(row.get("ids") or []) & set(ids):
                     c.execute("UPDATE sca_applicability SET decision = '', reason = '', revision = revision + 1,"
@@ -3315,19 +3319,19 @@ class Database:
         with self._tx() as c:
             source = self._source(c, project_id, hub_id)
             if source is None:
-                raise StaleReview("Находки нет в проекте.", "source")
+                raise StaleReview(i18n._("Находки нет в проекте."), "source")
             self._check_expect(c, project_id, hub_id, source, expect)
             old = c.execute("SELECT decision, final_verdict, final_comment, reviewed, reviewed_at, code_hash, code_chars,"
                             " answer_sig, finding_sig, verdict_id FROM reviews WHERE project_id = ? AND hub_id = ?",
                             (project_id, hub_id)).fetchone()
             if reviewed and old is not None and old["decision"] == "later":
-                raise ValueError("Отложенная находка остаётся непроверенной: сначала выберите «Согласен» или "
-                                 "«Не согласен».")
+                raise ValueError(i18n._("Отложенная находка остаётся непроверенной: сначала выберите «Согласен» или "
+                                 "«Не согласен»."))
             if reviewed and old is not None and old["decision"] == "agree" and self._answer_moved(
                     c, project_id, source["data"], old["answer_sig"]):
                 # «Согласен с агентом» принято по другому ответу: проверенным его не сделать, пока человек не
                 # сверит решение с текущим ответом и не сохранит его заново (сохранение ставит новый отпечаток)
-                raise StaleReview("Решение «Согласен с агентом» принято по прежнему ответу агента.", "answer")
+                raise StaleReview(i18n._("Решение «Согласен с агентом» принято по прежнему ответу агента."), "answer")
             if reviewed:
                 reviewed_at = old["reviewed_at"] if old is not None and old["reviewed"] and old["reviewed_at"] else ts
             else:
@@ -3337,9 +3341,9 @@ class Database:
                 # принял решение. Проверенным можно назвать только решение, принятое по текущей версии находки и по
                 # коду, который в клоне сейчас; иначе его сначала подтверждают заново (сохраняют решение).
                 if reviewed and old["finding_sig"] != source_signature(source):
-                    raise StaleReview("Решение принято по прежней версии находки.", "source")
+                    raise StaleReview(i18n._("Решение принято по прежней версии находки."), "source")
                 if reviewed and code_hash is not None and old["code_hash"] != code_hash:
-                    raise StaleReview("Код изменился после решения.", "code")
+                    raise StaleReview(i18n._("Код изменился после решения."), "code")
                 c.execute("UPDATE reviews SET reviewed = ?, reviewed_at = ?, revision = revision + 1,"
                           " updated_at = ? WHERE project_id = ? AND hub_id = ?",
                           (1 if reviewed else 0, reviewed_at, ts, project_id, hub_id))
@@ -4013,7 +4017,7 @@ class Database:
                                  " ORDER BY id DESC LIMIT 1", (project_id, str(consent_key))).fetchone()
                 if same is not None:
                     if same["state"] != "active":
-                        raise RuntimeError("Это согласие отозвано: откройте предпросмотр заново.")
+                        raise RuntimeError(i18n._("Это согласие отозвано: откройте предпросмотр заново."))
                     return self._consent_row(same)
             task = c.execute("SELECT state, components_sha256 FROM sca2_tasks WHERE id = ? AND project_id = ?",
                              (task_pk, project_id)).fetchone()
@@ -4025,7 +4029,8 @@ class Database:
             running = c.execute("SELECT id FROM sca2_research_runs WHERE project_id = ? AND state = 'running'",
                                 (project_id,)).fetchone()
             if running is not None:
-                raise RuntimeError(f"По проекту уже идёт получение №{running['id']}: остановите его или дождитесь конца.")
+                raise RuntimeError(i18n._("По проекту уже идёт получение №{run_id}: остановите его или дождитесь конца.",
+                                          run_id=running['id']))
             self._check_profile_allows(c, execution.get("provider_id"), None)
             execution_id = self._insert_execution(c, execution, ts)
             cur = c.execute(
@@ -4085,7 +4090,7 @@ class Database:
             c.execute("UPDATE sca_research_consents SET state = 'revoked', revoked_at = ? WHERE id = ? AND state = 'active'",
                       (ts, int(consent_id)))
             c.execute("UPDATE sca2_research_runs SET state = 'stopped', reason = ?, updated_at = ?, finished_at = ?"
-                      " WHERE consent_id = ? AND state = 'running'", ("согласие отозвано", ts, ts, int(consent_id)))
+                      " WHERE consent_id = ? AND state = 'running'", (i18n.N_("согласие отозвано"), ts, ts, int(consent_id)))
 
     def start_research_run(self, consent_id: int) -> dict:
         """Получение по согласию – ровно одно (повторное подтверждение возвращает прежнее, а не второе); строки
@@ -4100,7 +4105,7 @@ class Database:
         ts = now_iso()
         consent = c.execute("SELECT * FROM sca_research_consents WHERE id = ?", (int(consent_id),)).fetchone()
         if consent is None or consent["state"] != "active":
-            raise RuntimeError("Согласие не найдено или отозвано.")
+            raise RuntimeError(i18n._("Согласие не найдено или отозвано."))
         existing = c.execute("SELECT * FROM sca2_research_runs WHERE consent_id = ?", (int(consent_id),)).fetchone()
         if existing is not None:
             return dict(existing)
@@ -4114,7 +4119,7 @@ class Database:
                             (consent["project_id"], consent["task_id"], int(consent_id), consent["execution_id"],
                              len(rows), ts, ts))
         except IntegrityError as e:
-            raise RuntimeError("По проекту уже идёт другое получение: остановите его или дождитесь конца.") from e
+            raise RuntimeError(i18n._("По проекту уже идёт другое получение: остановите его или дождитесь конца.")) from e
         run_id = int(cur.fetchone()[0])
         c.executemany("INSERT INTO sca2_research_run_rows(run_id, input_ref, position, state, updated_at)"
                       " VALUES (?, ?, ?, 'queued', ?)", [(run_id, ref, i, ts) for i, ref in enumerate(rows)])
@@ -4207,7 +4212,7 @@ class Database:
         with self._tx() as c:
             run = c.execute("SELECT * FROM sca2_research_runs WHERE id = ?", (int(run_id),)).fetchone()
             if run is None:
-                raise RuntimeError("Получение не найдено.")
+                raise RuntimeError(i18n._("Получение не найдено."))
             if result is not None:
                 task_pk, project_id = int(run["task_id"]), int(run["project_id"])
                 task = c.execute("SELECT state FROM sca2_tasks WHERE id = ? AND project_id = ?",
@@ -4287,18 +4292,18 @@ class Database:
         with self._tx() as c:
             run = c.execute("SELECT * FROM sca2_research_runs WHERE id = ?", (int(run_id),)).fetchone()
             if run is None or run["state"] not in ("stopped", "interrupted"):
-                raise RuntimeError("Продолжить можно только остановленное или прерванное получение.")
+                raise RuntimeError(i18n._("Продолжить можно только остановленное или прерванное получение."))
             consent = c.execute("SELECT state FROM sca_research_consents WHERE id = ?", (run["consent_id"],)).fetchone()
             if consent is None or consent["state"] != "active":
-                raise RuntimeError("Согласие отозвано: нужно новое согласие.")
+                raise RuntimeError(i18n._("Согласие отозвано: нужно новое согласие."))
             c.execute("UPDATE sca2_research_run_rows SET state = 'unknown', reason = ?, sending_at = NULL, updated_at = ?"
                       " WHERE run_id = ? AND state = 'sending'",
-                      ("обращение ушло, результат неизвестен – запрос мог быть оплачен", ts, int(run_id)))
+                      (i18n.N_("обращение ушло, результат неизвестен – запрос мог быть оплачен"), ts, int(run_id)))
             try:
                 c.execute("UPDATE sca2_research_runs SET state = 'running', reason = '', updated_at = ?, finished_at = NULL"
                           " WHERE id = ?", (ts, int(run_id)))
             except IntegrityError as e:
-                raise RuntimeError("По проекту уже идёт другое получение.") from e
+                raise RuntimeError(i18n._("По проекту уже идёт другое получение.")) from e
             self._recount_research_run(c, run_id, ts)
             return dict(c.execute("SELECT * FROM sca2_research_runs WHERE id = ?", (int(run_id),)).fetchone())
 
@@ -4313,10 +4318,10 @@ class Database:
                                                     " WHERE state = 'sending'")}
             c.execute("UPDATE sca2_research_run_rows SET state = 'unknown', reason = ?, sending_at = NULL, updated_at = ?"
                       " WHERE state = 'sending'",
-                      ("приложение перезапускалось после отправки – результат неизвестен, запрос мог быть оплачен", ts))
+                      (i18n.N_("приложение перезапускалось после отправки – результат неизвестен, запрос мог быть оплачен"), ts))
             running = [r[0] for r in c.execute("SELECT id FROM sca2_research_runs WHERE state = 'running'")]
             c.execute("UPDATE sca2_research_runs SET state = 'interrupted', reason = ?, updated_at = ?,"
-                      " finished_at = ? WHERE state = 'running'", ("приложение перезапускалось", ts, ts))
+                      " finished_at = ? WHERE state = 'running'", (i18n.N_("приложение перезапускалось"), ts, ts))
             for run_id in sorted(with_sending | set(running)):
                 self._recount_research_run(c, run_id, ts)
             return len(running)
@@ -4349,13 +4354,13 @@ class Database:
         states = ("failed", "unknown") if include_unknown else ("failed",)
         run = c.execute("SELECT * FROM sca2_research_runs WHERE id = ?", (int(run_id),)).fetchone()
         if run is None or run["state"] == "running":
-            raise RuntimeError("Получение не найдено или ещё идёт.")
+            raise RuntimeError(i18n._("Получение не найдено или ещё идёт."))
         if consent_key:
             same = c.execute("SELECT * FROM sca_research_consents WHERE project_id = ? AND consent_key = ?"
                              " ORDER BY id DESC LIMIT 1", (int(run["project_id"]), str(consent_key))).fetchone()
             if same is not None:
                 if same["state"] != "active":
-                    raise RuntimeError("Это согласие отозвано: откройте страницу получения заново.")
+                    raise RuntimeError(i18n._("Это согласие отозвано: откройте страницу получения заново."))
                 # согласие с запущенным получением – идемпотентный повтор формы; согласие, запуск которого не
                 # состоялся (другое получение успело раньше), не возвращается как есть – отбор строк проверяется
                 # заново, чтобы устаревший список не ушёл (ревью Codex, круг 29)
@@ -4376,7 +4381,7 @@ class Database:
             return self._consent_row(same)  # отбор не изменился – то же согласие, без второго
         prior = c.execute("SELECT * FROM sca_research_consents WHERE id = ?", (run["consent_id"],)).fetchone()
         if prior is None:
-            raise RuntimeError("Согласие прежнего получения не найдено.")
+            raise RuntimeError(i18n._("Согласие прежнего получения не найдено."))
         project_id, task_pk = int(run["project_id"]), int(run["task_id"])
         task = c.execute("SELECT state FROM sca2_tasks WHERE id = ? AND project_id = ?", (task_pk, project_id)).fetchone()
         _, digest = self._composition(c, project_id)
@@ -4384,7 +4389,7 @@ class Database:
             raise TaskSuperseded(0, "состав изменился")
         if c.execute("SELECT 1 FROM sca2_research_runs WHERE project_id = ? AND state = 'running'",
                      (project_id,)).fetchone():
-            raise RuntimeError("По проекту уже идёт получение.")
+            raise RuntimeError(i18n._("По проекту уже идёт получение."))
         self._check_profile_allows(c, c.execute("SELECT provider_id FROM llm_executions WHERE id = ?",
                                                 (run["execution_id"],)).fetchone()[0], None)
         cur = c.execute(
@@ -4692,7 +4697,7 @@ class Database:
     def save_decisions(self, project_id: int, entries: list[dict], values: dict) -> list[dict]:
         """Пакет отдельных решений: любой конфликт откатывает все версии, включая историю."""
         if not entries or len(entries) > 200 or len({e["input_ref"] for e in entries}) != len(entries):
-            raise ValueError("Выберите от 1 до 200 разных версий.")
+            raise ValueError(i18n._("Выберите от 1 до 200 разных версий."))
         ts = now_iso()
         with self._tx() as c:
             signatures, _ = self._composition(c, project_id)
@@ -4737,7 +4742,7 @@ class Database:
         дефект»): тогда номер для дефекта с ним в заголовке Hub не освободился."""
         with self._tx() as c:
             if self.defect_number_in(c, project_id, key) != int(number):
-                raise ValueError("Номер дефекта изменили в другой вкладке: обновите карточку.")
+                raise ValueError(i18n._("Номер дефекта изменили в другой вкладке: обновите карточку."))
             if check is not None:
                 check(c)
             held = c.execute(
@@ -4746,7 +4751,7 @@ class Database:
                 " OR EXISTS (SELECT 1 FROM json_array_elements_text(hub_defects.number_keys_json::json) AS k(value) WHERE k.value = ?)) LIMIT 1",
                 (project_id, str(hub_id), str(key))).fetchone()
             if held is not None:
-                raise ValueError("Находка входит в дефект приложения: номер не снимается.")
+                raise ValueError(i18n._("Находка входит в дефект приложения: номер не снимается."))
             c.execute("DELETE FROM defects WHERE project_id = ? AND defect_key = ? AND number = ?",
                       (project_id, str(key), int(number)))
             return self.defect_keys_with_number_in(c, project_id, int(number))
@@ -4968,7 +4973,7 @@ class Database:
             row = c.execute("SELECT number FROM defects WHERE project_id = ? AND defect_key = ?",
                             (project_id, key)).fetchone()
             if (int(row[0]) if row is not None else None) != expect_number:
-                raise StaleReview("Номер дефекта изменили в другой вкладке.", "number")
+                raise StaleReview(i18n._("Номер дефекта изменили в другой вкладке."), "number")
         if foreign_check is not None:
             foreign_check([r[0] for r in c.execute(
                 "SELECT defect_key FROM defects WHERE project_id = ? AND number = ? AND defect_key != ?"
@@ -4988,20 +4993,21 @@ class Database:
         base = key[:key.rindex("#")] if found else key
         with self._tx() as c:
             if self._sca_defect_fingerprint(c, project_id, hub_id) != fingerprint:
-                raise StaleReview("Состав группы, решения, ответ агента или соответствия изменились.", "source")
+                raise StaleReview(i18n._("Состав группы, решения, ответ агента или соответствия изменились."), "source")
             # номер занят другим набором этого же пакета – отказ до записи (ADR-0091, таблица отказов)
             taken = c.execute("SELECT 1 FROM defects WHERE project_id = ? AND number = ? AND defect_key != ?"
                               " AND (defect_key = ? OR substr(defect_key, 1, ?) = ?)",
                               (project_id, number, key, base, len(base) + 1, base + "#")).fetchone()
             if key.startswith("sca:") and taken is not None:
-                raise ValueError(f"Номер {number} уже у другого набора этого компонента: укажите другой номер.")
+                raise ValueError(i18n._("Номер {number} уже у другого набора этого компонента: укажите другой номер.",
+                                        number=number))
             self._number_guard(c, project_id, key, number, expect_number, foreign_check)
             try:
                 c.execute("INSERT INTO defects(project_id, defect_key, number, updated_at, assigned_at) VALUES (?, ?, ?, ?, ?)"
                           " ON CONFLICT(project_id, defect_key) DO UPDATE SET number = excluded.number,"
                           " updated_at = excluded.updated_at, assigned_at = CASE WHEN defects.number = excluded.number AND defects.assigned_at <> '' THEN defects.assigned_at ELSE excluded.updated_at END", (project_id, key, number, ts, ts))
             except IntegrityError:
-                raise StaleReview("Проект удалён.", "source") from None
+                raise StaleReview(i18n._("Проект удалён."), "source") from None
             return [r["defect_key"] for r in c.execute(
                 "SELECT defect_key FROM defects WHERE project_id = ? AND number = ? AND defect_key != ?"
                 " ORDER BY defect_key", (project_id, number, key))]
@@ -5022,20 +5028,20 @@ class Database:
         with self._tx() as c:
             source = self._source(c, project_id, hub_id)
             if source is None or source.get("missing"):
-                raise StaleReview("Находки нет в текущей выгрузке.", "source")
+                raise StaleReview(i18n._("Находки нет в текущей выгрузке."), "source")
             if source_signature(source) != source_sig:
-                raise StaleReview("Находка или источник её кода изменились.", "source")
+                raise StaleReview(i18n._("Находка или источник её кода изменились."), "source")
             if export is not None and export_label(source.get("import_filename", ""), source.get("import_at", "")) != export:
                 # текст дефекта называет выгрузку находки: другая подпись выгрузки между сборкой и записью – другой текст
-                raise StaleReview("Загружена новая выгрузка.", "source")
+                raise StaleReview(i18n._("Загружена новая выгрузка."), "source")
             row = c.execute("SELECT revision FROM reviews WHERE project_id = ? AND hub_id = ?",
                             (project_id, hub_id)).fetchone()
             if row is None or int(row["revision"]) != int(revision):
-                raise StaleReview("Решение сохранили заново.", "revision")
+                raise StaleReview(i18n._("Решение сохранили заново."), "revision")
             case = c.execute("SELECT verdict_id FROM cases WHERE project_id = ? AND hub_id = ?",
                              (project_id, hub_id)).fetchone()
             if (case["verdict_id"] if case is not None else None) != case_verdict_id:
-                raise StaleReview("Вердикт модели изменился.", "verdict")
+                raise StaleReview(i18n._("Вердикт модели изменился."), "verdict")
             if group_check is not None:  # группа (ADR-0089): решения, текст и номер – тем же снимком, что и запись
                 own = c.execute("SELECT number, COALESCE(NULLIF(assigned_at, ''), updated_at) AS at FROM defects"
                                 " WHERE project_id = ? AND defect_key = ?", (project_id, key)).fetchone()
@@ -5048,7 +5054,7 @@ class Database:
                           " ON CONFLICT(project_id, defect_key) DO UPDATE SET number = excluded.number,"
                           " updated_at = excluded.updated_at, assigned_at = CASE WHEN defects.number = excluded.number AND defects.assigned_at <> '' THEN defects.assigned_at ELSE excluded.updated_at END", (project_id, key, number, ts, ts))
             except IntegrityError:
-                raise StaleReview("Проект удалён.", "source") from None
+                raise StaleReview(i18n._("Проект удалён."), "source") from None
             return [r["defect_key"] for r in c.execute(
                 "SELECT defect_key FROM defects WHERE project_id = ? AND number = ? AND defect_key != ?"
                 " ORDER BY defect_key", (project_id, number, key))]
@@ -5461,7 +5467,7 @@ class Database:
                     key_extra: str = "") -> dict:
         from app import hub_ops
         if self.hub_disabled:  # единственная точка вставки в hub_ops: в стенде без Hub очередь не наполняется
-            raise HubDisabledInStand(HUB_DISABLED_TEXT)
+            raise HubDisabledInStand(i18n._(HUB_DISABLED_TEXT))
         if purpose not in hub_ops.PURPOSES:
             raise ValueError(f"Неизвестное назначение операции «{purpose}».")
         hub_ops.check_operation(purpose, request, app_id)
@@ -5477,9 +5483,11 @@ class Database:
         same = c.execute("SELECT id, state FROM hub_ops WHERE op_key = ?", (key,)).fetchone()
         if same is not None:
             if same["state"] in hub_ops.OPEN_STATES:
-                raise ValueError(f"Такая операция уже в очереди (№{same['id']}, состояние «{same['state']}»).")
+                raise ValueError(i18n._("Такая операция уже в очереди (№{op_id}, состояние «{state}»).",
+                                        op_id=same['id'], state=same['state']))
             if same["state"] == "done" and writes:
-                raise ValueError(f"Такая операция уже выполнена (№{same['id']}): второй раз не отправляется.")
+                raise ValueError(i18n._("Такая операция уже выполнена (№{op_id}): второй раз не отправляется.",
+                                        op_id=same['id']))
             # чтение после закрытия ставится снова; у записи failed или cancelled освобождает ключ:
             # прежняя строка переименовывается
             c.execute("UPDATE hub_ops SET op_key = op_key || ':' || id WHERE id = ?", (same["id"],))
@@ -5488,8 +5496,8 @@ class Database:
                                   " AND state IN ('queued', 'taken', 'unknown') ORDER BY id", (base, purpose)).fetchall()
             for row in open_rows:
                 if set(loads(row["lock_keys"], [])) & set(locks):
-                    raise ValueError(f"У находки уже есть незакрытая операция «{purpose}» (№{row['id']}): "
-                                     "дождитесь её итога или сверьте результат.")
+                    raise ValueError(i18n._("У находки уже есть незакрытая операция «{purpose}» (№{op_id}): "
+                                            "дождитесь её итога или сверьте результат.", purpose=purpose, op_id=row['id']))
         cur = c.execute(
             "INSERT INTO hub_ops(project_id, purpose, op_key, lock_keys, targets_json, request_json, hub_url,"
             " app_id, text_hash, text_norm, state, created_at, updated_at)"
@@ -5570,7 +5578,7 @@ class Database:
         и принятие её результата); чтение – сбой, его можно поставить снова. Отметок о том, что Hub что-то сделал или нет, это не добавляет."""
         from app import hub_defects, hub_ops, hub_sync
         ts = now_iso()
-        note = "база восстановлена из копии: операция снята, текущее состояние покажет синхронизация с Hub"
+        note = i18n.N_("база восстановлена из копии: операция снята, текущее состояние покажет синхронизация с Hub")
         failed = cancelled = chains = 0
         with self._tx() as c:
             c.execute("INSERT INTO settings(key, value_json, updated_at) VALUES ('hub_write_paused', 'true', ?)"
@@ -5612,11 +5620,11 @@ class Database:
                 state = "unknown" if hub_ops.is_write(row["purpose"]) else "failed"
                 c.execute("UPDATE hub_ops SET state = ?, error = ?, updated_at = ?, closed_at = ?"
                           " WHERE id = ? AND state = 'taken'",
-                          (state, "исполнитель не вернул результат в срок аренды", ts,
+                          (state, i18n.N_("исполнитель не вернул результат в срок аренды"), ts,
                            ts if state == "failed" else None, row["op_id"]))
                 if row["purpose"] == "sync_read":
                     from app import hub_sync
-                    hub_sync.expire_in(c, row["op_id"], "Исполнитель не вернул результат в срок аренды.")
+                    hub_sync.expire_in(c, row["op_id"], i18n.N_("Исполнитель не вернул результат в срок аренды."))
             return len(rows)
 
     def hub_claim(self, worker_id: str, hub_url: str, lease_s: int, now: str | None = None,
@@ -5684,11 +5692,11 @@ class Database:
                 if op["state"] == "taken":  # аренда истекла, а срок ещё не обработан: закрыть сразу
                     state = "unknown" if hub_ops.is_write(op["purpose"]) else "failed"
                     c.execute("UPDATE hub_ops SET state = ?, error = ?, updated_at = ?, closed_at = ? WHERE id = ?",
-                              (state, "результат пришёл после истечения аренды", ts,
+                              (state, i18n.N_("результат пришёл после истечения аренды"), ts,
                                ts if state == "failed" else None, op["id"]))
                 if op["purpose"] == "sync_read":
                     from app import hub_sync
-                    hub_sync.expire_in(c, op["id"], "Результат пришёл после истечения аренды.")
+                    hub_sync.expire_in(c, op["id"], i18n.N_("Результат пришёл после истечения аренды."))
                 return {"outcome": "late", "op": dict(c.execute("SELECT * FROM hub_ops WHERE id = ?",
                                                                  (op["id"],)).fetchone())}
             state, error = hub_ops.outcome_state(op["purpose"], clipped)
@@ -5899,8 +5907,9 @@ class Database:
                 live = self.hub_defect_live_in(c, hub_url, app_id, number)
                 if live is not None:
                     label = (label_of(live["state"]) if label_of is not None else None) or live["state"]
-                    raise ValueError(f"Дефект №{number} уже есть в приложении (строка {live['id']}, состояние "
-                                     f"«{label}»): второй раз не заносится.")
+                    raise ValueError(i18n._("Дефект №{number} уже есть в приложении (строка {row_id}, состояние "
+                                            "«{label}»): второй раз не заносится.", number=number, row_id=live['id'],
+                                            label=label))
                 fresh = self._hub_defect_row(c, project_id, kind="", number=None, summary="", anchor_hub_id="",
                                              targets=[], number_keys=[], command_text="", hub_url=hub_url,
                                              app_id=app_id, state="import_reading", origin="import")
@@ -6023,8 +6032,8 @@ class Database:
             own = {r["defect_key"] for r in c.execute(
                 "SELECT defect_key FROM defects WHERE project_id = ? AND number = ?", (project_id, number))}
             if taken is not None or (own - set(keys)):
-                raise ValueError(f"Номер ID{number} уже занят другим дефектом: обновите карточку – приложение "
-                                 "предложит следующий.")
+                raise ValueError(i18n._("Номер ID{number} уже занят другим дефектом: обновите карточку – приложение "
+                                        "предложит следующий.", number=number))
         fresh = self._hub_defect_row(c, project_id, **row)
         ops = [self._hub_insert(c, **item) for item in items]
         if ops:
@@ -6054,8 +6063,8 @@ class Database:
                 " SELECT 1 FROM json_array_elements(hub_defects.targets_json::json) AS t(value) WHERE (t.value ->> 'hub_id') = ?)"
                 " ORDER BY id DESC LIMIT 1", (project_id, str(target.get("hub_id") or ""))).fetchone()
             if busy is not None:
-                raise ValueError(f"Находка {target.get('hub_id')} уже в другом дефекте из карточки "
-                                 f"(состояние «{busy['state']}»): обновите карточку.")
+                raise ValueError(i18n._("Находка {hub_id} уже в другом дефекте из карточки (состояние «{state}»): "
+                                        "обновите карточку.", hub_id=target.get('hub_id'), state=busy['state']))
 
     def hub_defect_link_start(self, project_id: int, parent_id: int, hub_defect_id: str, *, item: dict,
                               body_hash: str, hub_link: str = "",
@@ -6079,15 +6088,15 @@ class Database:
                                (int(parent_id), project_id)).fetchone()
             if (parent is None or parent["state"] not in ("done", "mismatch")
                     or str(parent["hub_defect_id"] or "") != str(hub_defect_id)
-                    or text_hash(defect_where.body_of(parent["command_text"])) != str(body_hash)):
-                raise ValueError("Дефект, к которому привязывается находка, изменился (ещё не подтверждён или другой "
-                                 "текст решения): обновите карточку.")
+                    or text_hash(_defect_body_key(parent["command_text"])) != str(body_hash)):
+                raise ValueError(i18n._("Дефект, к которому привязывается находка, изменился (ещё не подтверждён или другой "
+                                 "текст решения): обновите карточку."))
             from app.hub_defects import family_running_problem, update_unconfirmed, update_busy
             if update_unconfirmed(dict(parent)) or update_busy(dict(parent)):
-                raise ValueError("Обновление дефекта не подтверждено или ещё выполняется: сначала завершите его.")
+                raise ValueError(i18n._("Обновление дефекта не подтверждено или ещё выполняется: сначала завершите его."))
             if not allow_imported and (parent["origin"] == "import" or self.imported_defect_in(c, project_id, parent)):
-                raise ValueError("Дефект занесён из Hub: привяжите находку к нему в Hub и нажмите «Pull из Hub» во "
-                                 "вкладке «Дефекты».")
+                raise ValueError(i18n._("Дефект занесён из Hub: привяжите находку к нему в Hub и нажмите «Pull из Hub» во "
+                                 "вкладке «Дефекты»."))
             running = family_running_problem(c, dict(parent))
             if running:
                 raise ValueError(running)
@@ -6104,7 +6113,7 @@ class Database:
                 confirmed = loads(parent["import_json"], {}).get("object", {})
             from app.hub_sync_api import composition_problems
             if composition_problems(confirmed):
-                raise ValueError("Прежний состав не подтверждён: сначала сверить дефект с Hub.")
+                raise ValueError(i18n._("Прежний состав не подтверждён: сначала сверить дефект с Hub."))
             blank = {**loads(parent["blank_json"], {}), "expected_previous_links": sorted(linked_pairs(confirmed))}
             fresh = self._hub_defect_row(c, project_id, draft_owner_id=parent["draft_owner_id"] or parent["id"], **row)
             op = self._hub_insert(c, **{**item, "key_extra": f"defect-row:{int(fresh['id'])}"})
@@ -6386,3 +6395,9 @@ class Database:
         """Строка дефекта, в цепочке которой есть операция op_id (заготовка, создание, чтение или привязка)."""
         return self._one("SELECT * FROM hub_defects WHERE blank_op_id = ? OR create_op_id = ? OR read_op_id = ?"
                          " OR link_op_id = ? ORDER BY id DESC LIMIT 1", (int(op_id),) * 4)
+
+
+def _defect_body_key(text: str) -> str:
+    """defect.body_key без цикла импорта (app.defect импортируется при вызове)."""
+    from app.defect import body_key
+    return body_key(text)

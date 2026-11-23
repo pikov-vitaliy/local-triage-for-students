@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from collections.abc import Callable
 from typing import Any, Mapping
 
-from app import profile_gate
+from app import i18n, profile_gate
 from app.storage.postgresql import CommitUnknown
 from app.executors import KINDS, MAX_NUM_CTX, MIN_NUM_CTX, REMOTE_KINDS, THINK_RULES
 from app.llm import LlmError
@@ -26,9 +26,11 @@ from app.llm_net import (ALLOWED_HOSTS, TRUST_CLASSES, _getaddrinfo, _ip, extern
 from app.provider_keys import KeyRejected, delete_key, load_key, save_key
 
 EXTERNAL_KINDS = REMOTE_KINDS  # протоколы, которым доступен класс external (Ollama – нет)
-EXTERNAL_OFF = ("Внешние провайдеры на этой установке выключены: профиль «интернет» создаётся и включается, только если "
-                "приложение запущено с LLM_EXTERNAL=1.")
-EXTERNAL_KIND = "Сервер в интернете – только по API внешнего провайдера; Ollama – этот компьютер или сеть организации."
+# тексты отказов – msgid: перевод при выводе (i18n._), сравнение – с обоими языками
+EXTERNAL_OFF = i18n.N_("Внешние провайдеры на этой установке выключены: профиль «интернет» создаётся и включается, "
+                       "только если приложение запущено с LLM_EXTERNAL=1.")
+EXTERNAL_KIND = i18n.N_("Сервер в интернете – только по API внешнего провайдера; Ollama – этот компьютер или сеть "
+                        "организации.")
 AUTH_MODES = ("none", "bearer")
 
 
@@ -41,13 +43,13 @@ def check_values(values: Mapping[str, Any]) -> dict[str, Any]:
     в едином виде."""
     clean = dict(values)
     if "kind" in clean and clean["kind"] not in KINDS:
-        raise ProfileInvalid(f"Протокол сервера «{clean['kind']}» не поддерживается: Ollama, API чат-завершений или "
-                             "Anthropic Messages API.")
+        raise ProfileInvalid(i18n._("Протокол сервера «{kind}» не поддерживается: Ollama, API чат-завершений или "
+                                    "Anthropic Messages API.", kind=clean['kind']))
     if "trust" in clean and clean["trust"] not in TRUST_CLASSES:
-        raise ProfileInvalid(f"Класс доверия «{clean['trust']}» не поддерживается: только «этот компьютер» (local) и "
-                             "«сеть организации» (lan).")
+        raise ProfileInvalid(i18n._("Класс доверия «{trust}» не поддерживается: только «этот компьютер» (local) и "
+                                    "«сеть организации» (lan).", trust=clean['trust']))
     if "auth" in clean and clean["auth"] not in AUTH_MODES:
-        raise ProfileInvalid(f"Способ входа «{clean['auth']}» не поддерживается.")
+        raise ProfileInvalid(i18n._("Способ входа «{auth}» не поддерживается.", auth=clean['auth']))
     if "confirmed_addresses" in clean:
         clean["confirmed_addresses_json"] = json.dumps(normalize_addresses(clean.pop("confirmed_addresses")))
     return clean
@@ -60,15 +62,17 @@ def check_external(planned: Mapping[str, Any], creating: bool = False) -> None:
     if str(planned.get("trust") or "") != "external":
         return
     if str(planned.get("kind") or "ollama") not in EXTERNAL_KINDS:
-        raise ProfileInvalid(EXTERNAL_KIND)
+        raise ProfileInvalid(i18n._(EXTERNAL_KIND))
     if (creating or planned.get("enabled", 1)) and not external_enabled():
-        raise ProfileInvalid(EXTERNAL_OFF)
+        raise ProfileInvalid(i18n._(EXTERNAL_OFF))
 
 
-DEFAULT_UNFIT = ("Профиль по умолчанию для разбора кода: Ollama – только на этом компьютере или на сервере в сети "
-                 "организации; API чат-завершений или Messages API – только внешний провайдер (интернет).")
-MESSAGES_LOCAL = ("Anthropic Messages API – внешний провайдер или шлюз в сети организации: вариант «этот компьютер» "
-                  "для него не предлагается.")
+DEFAULT_UNFIT = i18n.N_("Профиль по умолчанию для разбора кода: Ollama – только на этом компьютере или на сервере в "
+                        "сети организации; API чат-завершений или Messages API – только внешний провайдер (интернет).")
+MESSAGES_LOCAL = i18n.N_("Anthropic Messages API – внешний провайдер или шлюз в сети организации: вариант «этот "
+                         "компьютер» для него не предлагается.")
+# отказ выключить профиль по умолчанию: форма отмечает поле «Профиль включён» (routes/providers.py)
+DEFAULT_NOT_OFF = i18n.N_("Профиль по умолчанию для разбора кода не выключается: сначала выберите другой.")
 
 
 def code_default_ok(planned: Mapping[str, Any]) -> bool:
@@ -99,7 +103,7 @@ def update_profile(db: Any, provider_id: int, values: Mapping[str, Any]) -> dict
     with profile_gate.gate(int(provider_id)).write():
         before = db.get_provider(int(provider_id))
         if before is None:
-            raise ProfileInvalid(f"Профиль провайдера модели №{provider_id} не найден.")
+            raise ProfileInvalid(i18n._("Профиль провайдера модели №{id} не найден.", id=provider_id))
         planned = {**before, **clean}
         check_external(planned)
         if (not planned.get("enabled") or str(planned["base_url"]) != str(before["base_url"])
@@ -107,14 +111,14 @@ def update_profile(db: Any, provider_id: int, values: Mapping[str, Any]) -> dict
             try:
                 delete_key(db, int(provider_id))
             except OSError as e:
-                raise ProfileInvalid(f"Ключ профиля не удалось удалить ({type(e).__name__}): правка не сохранена.") \
-                    from None
+                raise ProfileInvalid(i18n._("Ключ профиля не удалось удалить ({error}): правка не сохранена.",
+                                            error=type(e).__name__)) from None
         return db.update_provider(int(provider_id), clean)
 
 
 _DEFAULT_LOCK = threading.Lock()  # выбор профиля по умолчанию и выключение профиля – согласованно
 # выключение профиля удаляет его ключ (ADR-0102): новый ключ выключенному профилю не записывается
-KEY_DISABLED = "Ключ не сохраняется у выключенного профиля: включите профиль или очистите поле ключа."
+KEY_DISABLED = i18n.N_("Ключ не сохраняется у выключенного профиля: включите профиль или очистите поле ключа.")
 
 
 def _must_drop_key(before: Mapping[str, Any], planned: Mapping[str, Any]) -> bool:
@@ -150,15 +154,15 @@ def save_profile(db: Any, provider_id: int | None, values: Mapping[str, Any], *,
     with _DEFAULT_LOCK:
         default_id = int(db.get_settings().get("default_provider_id") or DEFAULT_PROVIDER_ID)
         if provider_id is not None and int(provider_id) == default_id and not clean.get("enabled", 1):
-            raise ProfileInvalid("Профиль по умолчанию для разбора кода не выключается: сначала выберите другой.")
+            raise ProfileInvalid(i18n._(DEFAULT_NOT_OFF))
         if provider_id is None and requires_key and key and not clean.get("enabled", 1):
-            raise ProfileInvalid(KEY_DISABLED)
+            raise ProfileInvalid(i18n._(KEY_DISABLED))
         before_default = db.get_provider(int(provider_id)) if provider_id is not None else None
         planned_default = {"kind": "ollama", **(before_default or {}), **clean}
         # умолчание для кода – только пригодный профиль: и при назначении, и при правке действующего умолчания
         if (make_default or (provider_id is not None and int(provider_id) == default_id)) \
                 and not code_default_ok(planned_default):
-            raise ProfileInvalid(DEFAULT_UNFIT)
+            raise ProfileInvalid(i18n._(DEFAULT_UNFIT))
         dropped = False
         if provider_id is None:
             check_external({"kind": "ollama", **clean}, creating=True)
@@ -171,17 +175,17 @@ def save_profile(db: Any, provider_id: int | None, values: Mapping[str, Any], *,
             with _write(int(provider_id)):
                 before = db.get_provider(int(provider_id))
                 if before is None:
-                    raise ProfileInvalid(f"Профиль провайдера модели №{provider_id} не найден.")
+                    raise ProfileInvalid(i18n._("Профиль провайдера модели №{id} не найден.", id=provider_id))
                 if requires_key and key and not {**before, **clean}.get("enabled"):
-                    raise ProfileInvalid(KEY_DISABLED)
+                    raise ProfileInvalid(i18n._(KEY_DISABLED))
                 check_external({**before, **clean})
                 had = load_key(db, int(provider_id)) is not None
                 if _must_drop_key(before, {**before, **clean}):
                     try:
                         delete_key(db, int(provider_id))
                     except OSError as e:
-                        raise ProfileInvalid(f"Ключ профиля не удалось удалить ({type(e).__name__}): правка не "
-                                             "сохранена.") from None
+                        raise ProfileInvalid(i18n._("Ключ профиля не удалось удалить ({error}): правка не сохранена.",
+                                                    error=type(e).__name__)) from None
                     dropped = had and not key
                 saved = db.update_provider(int(provider_id), clean)
                 if requires_key and key:
@@ -201,7 +205,7 @@ def _write(provider_id: int):
             with profile_gate.gate(provider_id).write():
                 yield
         except TimeoutError:
-            raise ProfileInvalid("Профиль сейчас отправляет запросы модели: правка не сохранена – повторите.") \
+            raise ProfileInvalid(i18n._("Профиль сейчас отправляет запросы модели: правка не сохранена – повторите.")) \
                 from None
     return held()
 
@@ -212,9 +216,9 @@ def set_key(db: Any, provider_id: int, key: str) -> None:
     with profile_gate.gate(int(provider_id)).write():
         profile = db.get_provider(int(provider_id))
         if profile is None:
-            raise ProfileInvalid(f"Профиль провайдера модели №{provider_id} не найден.")
+            raise ProfileInvalid(i18n._("Профиль провайдера модели №{id} не найден.", id=provider_id))
         if not profile.get("enabled"):
-            raise ProfileInvalid(KEY_DISABLED)
+            raise ProfileInvalid(i18n._(KEY_DISABLED))
         save_key(db, int(provider_id), key, str(profile["base_url"]), confirmed_of(profile))
 
 
@@ -233,45 +237,49 @@ def create_profile(db: Any, values: Mapping[str, Any]) -> dict[str, Any]:
 
 # ============================================================================ форма профиля («Настройки → Провайдеры»)
 
-TRUST_LABELS = {"local": "Этот компьютер – код не покидает компьютер",
-                "lan": "Сервер в сети организации – код уходит только на подтверждённые адреса",
-                "external": "Интернет – внешний провайдер по ключу API (код – только проектам с отметкой «код не "
-                            "секретный»; исследование компонентов – обезличенный состав)"}
-KIND_LABELS = {"ollama": "Ollama", "chat_completions": "API чат-завершений (внешний провайдер или совместимый сервер)",
-               "messages": "Anthropic Messages API (внешний провайдер или совместимый шлюз)"}
-WHERE = {"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"}
-RESPONSE_LABELS = {"json_object": "json_object – ответ объектом JSON, проверка приложением",
-                   "json_schema": "json_schema – сервер проверяет ответ по схеме (если поддерживает)",
-                   "none": "без формата – только проверка приложением"}
+TRUST_LABELS = i18n.Labels({
+    "local": "Этот компьютер – код не покидает компьютер",
+    "lan": "Сервер в сети организации – код уходит только на подтверждённые адреса",
+    "external": "Интернет – внешний провайдер по ключу API (код – только проектам с отметкой «код не "
+                "секретный»; исследование компонентов – обезличенный состав)"})
+KIND_LABELS = i18n.Labels({
+    "ollama": "Ollama", "chat_completions": "API чат-завершений (внешний провайдер или совместимый сервер)",
+    "messages": "Anthropic Messages API (внешний провайдер или совместимый шлюз)"})
+WHERE = i18n.Labels({"local": "этот компьютер", "lan": "сеть организации", "external": "интернет"})
+RESPONSE_LABELS = i18n.Labels({"json_object": "json_object – ответ объектом JSON, проверка приложением",
+                               "json_schema": "json_schema – сервер проверяет ответ по схеме (если поддерживает)",
+                               "none": "без формата – только проверка приложением"})
 # формат ответа Messages API – своим полем формы (два списка на странице, виден список выбранного протокола)
-MESSAGES_RESPONSE_LABELS = {"tool": "tool – ответ вызовом инструмента answer, проверка приложением",
-                            "tool_strict": "tool_strict – инструмент answer со строгой схемой (если сервер "
-                                           "поддерживает), проверка приложением",
-                            "none": "без формата – ответ текстом, только проверка приложением"}
+MESSAGES_RESPONSE_LABELS = i18n.Labels({
+    "tool": "tool – ответ вызовом инструмента answer, проверка приложением",
+    "tool_strict": "tool_strict – инструмент answer со строгой схемой (если сервер поддерживает), проверка "
+                   "приложением",
+    "none": "без формата – ответ текстом, только проверка приложением"})
 RESPONSE_FIELDS = {"chat_completions": ("response_mode", RESPONSE_LABELS),  # протокол: (поле формы, варианты)
                    "messages": ("messages_response_mode", MESSAGES_RESPONSE_LABELS)}
-THINKING_LABELS = {"": "не передавать", "enabled": "включено", "disabled": "выключено"}
-EFFORT_LABELS = {"": "не передавать", "none": "none", "minimal": "minimal", "low": "low", "medium": "medium",
-                 "high": "high", "max": "max"}
-CHAT_NUMBERS = {  # поле формы: (ключ generation_json, наименьшее, наибольшее, что это)
-    "context_window": ("context_window", 1024, 10_000_000, "Окно контекста модели"),
-    "max_output": ("max_output", 16, 1_000_000, "Предел ответа"),
-    "tool_steps": ("tool_steps", 1, 40, "Шагов поиска на компонент"),
-    "chat_timeout_s": ("timeout_s", 30, 86400, "Срок одного обращения"),
+THINKING_LABELS = i18n.Labels({"": "не передавать", "enabled": "включено", "disabled": "выключено"})
+EFFORT_LABELS = i18n.Labels({"": "не передавать", "none": "none", "minimal": "minimal", "low": "low",
+                             "medium": "medium", "high": "high", "max": "max"})
+CHAT_NUMBERS = {  # поле формы: (ключ generation_json, наименьшее, наибольшее, что это – msgid, перевод при выводе)
+    "context_window": ("context_window", 1024, 10_000_000, i18n.N_("Окно контекста модели")),
+    "max_output": ("max_output", 16, 1_000_000, i18n.N_("Предел ответа")),
+    "tool_steps": ("tool_steps", 1, 40, i18n.N_("Шагов поиска на компонент")),
+    "chat_timeout_s": ("timeout_s", 30, 86400, i18n.N_("Срок одного обращения")),
 }
 SEARCH_PATH_MAX = 200
 # пути поиска и получения страницы по умолчанию: галочка поиска без путей – эти (серые
 # подсказки в пустых полях выглядели заполненными)
 SEARCH_DEFAULTS = {"search_path": "/v1/tools/search", "fetch_path": "/v1/tools/fetch"}
-THINK_LABELS = {"auto": "авто – моделям, которые умеют рассуждать, рассуждение включено (gpt-oss – низкий уровень)",
-                "off": "выключено (gpt-oss рассуждает всегда – низкий уровень)",
-                "low": "низкий уровень", "medium": "средний уровень", "high": "высокий уровень"}
-NUMBER_FIELDS = {  # поле формы: (ключ generation_json, наименьшее, наибольшее, что это)
-    "num_ctx": ("num_ctx", MIN_NUM_CTX, MAX_NUM_CTX, "Окно контекста"),
-    "num_predict": ("num_predict", 256, 1_000_000, "Предел ответа разбора"),
-    "think_num_predict": ("think_num_predict", 256, 1_000_000, "Предел ответа с рассуждением"),
-    "timeout_s": ("timeout_s", 30, 86400, "Срок ответа"),
-    "think_timeout_s": ("think_timeout_s", 30, 86400, "Срок ответа с рассуждением"),
+THINK_LABELS = i18n.Labels({
+    "auto": "авто – моделям, которые умеют рассуждать, рассуждение включено (gpt-oss – низкий уровень)",
+    "off": "выключено (gpt-oss рассуждает всегда – низкий уровень)",
+    "low": "низкий уровень", "medium": "средний уровень", "high": "высокий уровень"})
+NUMBER_FIELDS = {  # поле формы: (ключ generation_json, наименьшее, наибольшее, что это – msgid, перевод при выводе)
+    "num_ctx": ("num_ctx", MIN_NUM_CTX, MAX_NUM_CTX, i18n.N_("Окно контекста")),
+    "num_predict": ("num_predict", 256, 1_000_000, i18n.N_("Предел ответа разбора")),
+    "think_num_predict": ("think_num_predict", 256, 1_000_000, i18n.N_("Предел ответа с рассуждением")),
+    "timeout_s": ("timeout_s", 30, 86400, i18n.N_("Срок ответа")),
+    "think_timeout_s": ("think_timeout_s", 30, 86400, i18n.N_("Срок ответа с рассуждением")),
 }
 TEXT_LIMITS = {"name": 100, "base_url": 300, "default_model": 200}
 
@@ -328,7 +336,7 @@ DEEPSEEK_RECOMMENDED: dict[str, Any] = {
     "search_path": "/v1/tools/search", "fetch_path": "/v1/tools/fetch",
 }
 # Подсказки к полям раздела «Дополнительно»: что это простыми словами и что ставить для DeepSeek
-ADVANCED_HINTS = {
+ADVANCED_HINTS = i18n.Labels({
     "response_mode": "В каком виде модель присылает ответ. Для DeepSeek – json_object: приложение само проверит, что "
                      "ответ полный.",
     "thinking": "Модель сначала рассуждает, потом отвечает: точнее, но дольше. Для DeepSeek – «включено» (так у "
@@ -339,7 +347,7 @@ ADVANCED_HINTS = {
                   "умолчанию при рассуждении. Меньше – ответ может оборваться.",
     "tool_steps": "Сколько раз модель может искать и открывать источники, исследуя один компонент. Для DeepSeek – 12.",
     "chat_timeout_s": "Сколько секунд ждать один ответ. С рассуждением ответ идёт минутами; для DeepSeek – 600.",
-}
+})
 
 # Заготовки нового профиля для учебного стенда (план стенда, раздел 5; ADR-0157): форма предзаполнена, ключ студент
 # вводит сам, «Проверить» сверяет имя модели со списком /models. Без ключа профиль ничего не отправляет.
@@ -347,15 +355,16 @@ PRESETS: dict[str, dict[str, Any]] = {
     "deepseek": {"name": "DeepSeek", "kind": "chat_completions", "trust": "external",
                  "base_url": "https://api.deepseek.com", "default_model": "deepseek-flash", "requires_key": True,
                  **DEEPSEEK_RECOMMENDED},
-    "ollama-local": {"name": "Ollama на этом компьютере", "kind": "ollama", "trust": "local",
+    "ollama-local": {"name": i18n.N_("Ollama на этом компьютере"), "kind": "ollama", "trust": "local",
                      "base_url": "http://127.0.0.1:11434", "default_model": "gpt-oss:20b", "requires_key": False},
 }
 
 
 def preset_form(name: str) -> dict[str, Any] | None:
-    """Значения формы нового профиля по заготовке; неизвестное имя – None."""
+    """Значения формы нового профиля по заготовке; неизвестное имя – None. Название заготовки – на языке
+    интерфейса (оператор может его сменить)."""
     preset = PRESETS.get(str(name or ""))
-    return None if preset is None else {**form_of(None), **preset}
+    return None if preset is None else {**form_of(None), **preset, "name": i18n._(preset["name"])}
 
 
 def form_of(profile: Mapping[str, Any] | None, default_id: int | None = None) -> dict[str, Any]:
@@ -414,21 +423,21 @@ def read_form(form: Any, profile: Mapping[str, Any] | None, fixed: bool = False)
                          delete_key=form.get("delete_key") == "1", default_code=values["default_code"])
     errors = result.errors
     if not values["name"]:
-        errors["name"] = "Назовите профиль, например «Сервер в сети» или «Ollama на этом компьютере»."
+        errors["name"] = i18n._("Назовите профиль, например «Сервер в сети» или «Ollama на этом компьютере».")
     chat = values["kind"] in REMOTE_KINDS  # удалённый API: чат-завершения или Messages
     messages = values["kind"] == "messages"
     if values["kind"] not in KINDS:
-        errors["kind"] = "Выберите протокол сервера из списка."
+        errors["kind"] = i18n._("Выберите протокол сервера из списка.")
     if values["trust"] not in TRUST_CLASSES:
-        errors["trust"] = "Выберите, где работает модель."
+        errors["trust"] = i18n._("Выберите, где работает модель.")
     elif values["trust"] == "external" and not chat:  # Ollama – только этот компьютер или сеть организации
-        errors["trust"] = EXTERNAL_KIND
+        errors["trust"] = i18n._(EXTERNAL_KIND)
     elif values["trust"] == "local" and messages:  # план 0.9.14 п. 2.4: Messages – внешний провайдер или шлюз
-        errors["trust"] = MESSAGES_LOCAL
+        errors["trust"] = i18n._(MESSAGES_LOCAL)
     elif values["trust"] == "external" and (values["enabled"] or profile is None) and not external_enabled():
-        errors["trust"] = EXTERNAL_OFF
+        errors["trust"] = i18n._(EXTERNAL_OFF)
     if values["think"] not in THINK_RULES:
-        errors["think"] = "Выберите режим рассуждения из списка."
+        errors["think"] = i18n._("Выберите режим рассуждения из списка.")
     if not errors.get("trust") and not errors.get("kind"):
         try:
             check_address(values["base_url"], values["trust"], values["kind"])
@@ -438,32 +447,34 @@ def read_form(form: Any, profile: Mapping[str, Any] | None, fixed: bool = False)
     if chat:
         field_name, labels = RESPONSE_FIELDS[values["kind"]]
         if values[field_name] not in labels:
-            errors[field_name] = "Выберите формат ответа из списка."
+            errors[field_name] = i18n._("Выберите формат ответа из списка.")
         if messages:
             # Messages API: рассуждение не передаётся (ADR-0106 п. 10) – поля рассуждения у этого протокола скрыты и
             # не сохраняются, значение, оставшееся от другого протокола, сбрасывается
             values["thinking"] = values["effort"] = ""
         if values["thinking"] not in THINKING_LABELS:
-            errors["thinking"] = "Выберите режим рассуждения из списка."
+            errors["thinking"] = i18n._("Выберите режим рассуждения из списка.")
         if values["effort"] not in EFFORT_LABELS:
-            errors["effort"] = "Выберите уровень рассуждения из списка."
+            errors["effort"] = i18n._("Выберите уровень рассуждения из списка.")
         for name, (key, low, high, label) in CHAT_NUMBERS.items():
             raw = values[name]
             if not raw:
                 continue
             if not raw.isdigit() or not low <= int(raw) <= high:
-                errors[name] = f"{label}: целое число от {low} до {high} или пусто – по умолчанию."
+                errors[name] = i18n._("{label}: целое число от {low} до {high} или пусто – по умолчанию.",
+                                       label=i18n._(label), low=low, high=high)
             else:
                 chat_gen[key] = int(raw)
         if chat_gen.get("max_output") and chat_gen.get("context_window") and \
                 chat_gen["max_output"] >= chat_gen["context_window"]:
-            errors["max_output"] = "Предел ответа должен быть меньше окна контекста модели."
+            errors["max_output"] = i18n._("Предел ответа должен быть меньше окна контекста модели.")
         if values["search_on"]:
             for name in ("search_path", "fetch_path"):
                 values[name] = values[name] or SEARCH_DEFAULTS[name]
                 path = values[name]
                 if not path.startswith("/") or path.startswith("//") or any(c in path for c in "?#@ \\"):
-                    errors[name] = "Путь от корня адреса профиля, например /v1/tools/search – без «?», «#» и пробелов."
+                    errors[name] = i18n._("Путь от корня адреса профиля, например /v1/tools/search – без «?», «#» и "
+                                           "пробелов.")
         # удалённый API может быть профилем по умолчанию (решение владельца 21.11.2026): код ему уходит только у
         # проектов с отметкой «код не секретный», остальным разбор откажет (executors.external_code_allowed)
     gen: dict[str, Any] = {}
@@ -472,7 +483,8 @@ def read_form(form: Any, profile: Mapping[str, Any] | None, fixed: bool = False)
         if not raw or chat:  # поля Ollama у другого протокола не проверяются
             continue
         if not raw.isdigit() or not low <= int(raw) <= high:
-            errors[name] = f"{label}: целое число от {low} до {high} или пусто – «авто»."
+            errors[name] = i18n._("{label}: целое число от {low} до {high} или пусто – «авто».", label=i18n._(label),
+                                   low=low, high=high)
         else:
             gen[key] = int(raw)
     if values["think"] != "auto":
@@ -483,9 +495,10 @@ def read_form(form: Any, profile: Mapping[str, Any] | None, fixed: bool = False)
         except KeyRejected as e:
             errors["key"] = str(e)
     if values["trust"] == "local" and (result.key or values["requires_key"]):
-        errors["key"] = "Ключ нужен только серверу в сети или внешнему провайдеру: этот компьютер работает без ключа."
+        errors["key"] = i18n._("Ключ нужен только серверу в сети или внешнему провайдеру: этот компьютер работает без "
+                                "ключа.")
     if result.key and not values["requires_key"] and not errors.get("key"):
-        errors["key"] = "Ключ введён, но «Сервер требует ключ» не отмечено: отметьте или очистите поле ключа."
+        errors["key"] = i18n._("Ключ введён, но «Сервер требует ключ» не отмечено: отметьте или очистите поле ключа.")
     if not errors and chat:
         caps = {"supports_ps": False, "allows_unload": False,
                 "response_mode": values[RESPONSE_FIELDS[values["kind"]][0]],
@@ -518,7 +531,7 @@ def read_form(form: Any, profile: Mapping[str, Any] | None, fixed: bool = False)
 def _check_key(key: str) -> None:
     from app.provider_keys import _KEY, KEY_FORMAT
     if not _KEY.fullmatch(key):
-        raise KeyRejected(KEY_FORMAT)
+        raise KeyRejected(i18n._(KEY_FORMAT))
 
 
 def check_address(base_url: str, trust: str, kind: str = "ollama") -> tuple[str, int]:

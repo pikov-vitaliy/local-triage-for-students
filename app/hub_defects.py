@@ -41,7 +41,7 @@ from datetime import UTC, datetime
 from html.parser import HTMLParser
 from typing import Any, Callable, Iterable
 
-from app import defect_drafts, defect_where, hub_block_builder, hub_block_version, hub_ops, hub_status, hub_template_model
+from app import defect, defect_drafts, defect_where, hub_block_builder, hub_block_version, hub_ops, hub_status, hub_template_model, i18n
 from app.db import Database, dumps, hub_verdict, loads, text_hash
 
 
@@ -53,40 +53,40 @@ STATES = ("blank", "preview", "creating", "created", "linking", "done", "mismatc
           "import_reading", "import_preview", "unconfirmed")
 # ждём исполнителя: карточка и вкладка опрашивают состояние (чтение дефекта для занесения из Hub – тоже, ADR-0124)
 OPEN_STATES = ("blank", "creating", "created", "linking", "import_reading")
-RESTORED_NOTE = "База восстановлена из копии, дефект снят: что успело уйти в Hub, занесёт «Синхронизировать» и «Принять состояние Hub»."
-RESTORED_PUT_NOTE = "база восстановлена из копии, подготовка снята: что успело уйти в Hub, занесут «Синхронизировать» и «Принять состояние Hub»"
+RESTORED_NOTE = i18n.N_("База восстановлена из копии, дефект снят: что успело уйти в Hub, занесёт «Синхронизировать» и «Принять состояние Hub».")
+RESTORED_PUT_NOTE = i18n.N_("база восстановлена из копии, подготовка снята: что успело уйти в Hub, занесут «Синхронизировать» и «Принять состояние Hub»")
 UPDATE_SETTLED = (None, "", "done", "done_diff", "cancelled", "refused", "read_failed")  # такие попытки синхронизации не мешают (hub_sync_compare)
 # находка занята этим дефектом; чтение и предпросмотр занесения из Hub целей не держат (ADR-0124 п. 2)
 BUSY_STATES = ("blank", "creating", "created", "linking", "preview", "unknown", "unconfirmed", "mismatch", "done")
 BOUND_STATES = Database.HUB_DEFECT_BOUND  # находка привязана к дефекту: POST мог дойти до Hub (ADR-0121 п. 1)
-STATE_LABELS = {"blank": "заготовка запрошена", "preview": "предпросмотр", "creating": "создаётся",
-                "created": "проверка привязки", "linking": "привязка находок", "done": "создан",
-                "mismatch": "создан, привязка неполная", "unknown": "результат неизвестен", "failed": "не принят",
-                "cancelled": "отменён", "import_reading": "чтение из Hub", "import_preview": "предпросмотр занесения",
-                "unconfirmed": "содержимое не подтверждено"}
+STATE_LABELS = i18n.Labels({"blank": "заготовка запрошена", "preview": "предпросмотр", "creating": "создаётся",
+                            "created": "проверка привязки", "linking": "привязка находок", "done": "создан",
+                            "mismatch": "создан, привязка неполная", "unknown": "результат неизвестен",
+                            "failed": "не принят", "cancelled": "отменён", "import_reading": "чтение из Hub",
+                            "import_preview": "предпросмотр занесения", "unconfirmed": "содержимое не подтверждено"})
 SERVICE_INFO_PATH = "/defects/serviceInfo"
 PAGE_SIZE = 50  # страница списка дефектов при сверке
 PAGES_MAX = 20  # дальше сверка не листает: исход остаётся неизвестным, решает оператор
 ISSUE_IDS_MAX = hub_ops.ISSUE_IDS_MAX  # предел значения параметра issueIds – один с белым списком запросов (hub_ops)
-VERIFY_NOTE_DONE = "сверено чтением: дефект найден в Hub, находки привязаны"
-VERIFY_NOTE_NONE = "сверка: в Hub нет дефекта с таким заголовком и находками – исход неизвестен, решает оператор"
-VERIFY_NOTE_FAILED = "сверка не удалась: чтение из Hub не выполнено – сверьте ещё раз"
+VERIFY_NOTE_DONE = i18n.N_("сверено чтением: дефект найден в Hub, находки привязаны")
+VERIFY_NOTE_NONE = i18n.N_("сверка: в Hub нет дефекта с таким заголовком и находками – исход неизвестен, решает оператор")
+VERIFY_NOTE_FAILED = i18n.N_("сверка не удалась: чтение из Hub не выполнено – сверьте ещё раз")
 # «Проверить в Hub» у созданного дефекта (ADR-0121 п. 6)
-RECHECK_OK = "проверено в Hub: дефект на месте, находки привязаны"
-RECHECK_FAILED = "проверка в Hub не удалась ({reason}) – нажмите «Проверить в Hub» ещё раз"
-RECHECK_MISSING = "в составе дефекта в Hub нет находок {ids}: они отвязаны или их статус уже не Open – проверьте в Hub"
-RECHECK_NO_LIST = "проверка не выполнена: ответ Hub без состава дефекта"
-RECHECK_404 = ("дефект в Hub не найден (404) – возможно, удалён; находки остаются привязанными, снятие привязки – в "
+RECHECK_OK = i18n.N_("проверено в Hub: дефект на месте, находки привязаны")
+RECHECK_FAILED = i18n.N_("проверка в Hub не удалась ({reason}) – нажмите «Проверить в Hub» ещё раз")
+RECHECK_MISSING = i18n.N_("в составе дефекта в Hub нет находок {ids}: они отвязаны или их статус уже не Open – проверьте в Hub")
+RECHECK_NO_LIST = i18n.N_("проверка не выполнена: ответ Hub без состава дефекта")
+RECHECK_404 = i18n.N_("дефект в Hub не найден (404) – возможно, удалён; находки остаются привязанными, снятие привязки – в "
                "следующей сборке")
 # строка привязки новой находки к готовому дефекту: чтение после привязки (или «Сверить») не нашло находку
-LINK_NOT_DONE = "привязка не состоялась: в составе дефекта №{defect} в Hub нет находок {ids}"
+LINK_NOT_DONE = i18n.N_("привязка не состоялась: в составе дефекта №{defect} в Hub нет находок {ids}")
 # вопросы подтверждения для находки, привязанной к дефекту (ADR-0121 п. 2–4)
-SAVE_QUESTION = "Сохранить решение?"
-IN_DEFECT_STATUS = ("статус и комментарий в Hub у неё идут через дефект, отдельно не отправляются. Чтобы отметить ложное "
+SAVE_QUESTION = i18n.N_("Сохранить решение?")
+IN_DEFECT_STATUS = i18n.N_("статус и комментарий в Hub у неё идут через дефект, отдельно не отправляются. Чтобы отметить ложное "
                     "срабатывание или принятый риск, сначала отвяжите её от дефекта в Hub, затем {how}.")
-IN_DEFECT_HOW_IMPORT = "примените «Pull из Hub» у дефекта"
-IN_DEFECT_HOW_APP = "на вкладке «Дефекты» нажмите «Синхронизировать», затем «Принять состояние Hub»"
-UNENTER_QUESTION = "Снять отметку «Внесено в Hub»?"
+IN_DEFECT_HOW_IMPORT = i18n.N_("примените «Pull из Hub» у дефекта")
+IN_DEFECT_HOW_APP = i18n.N_("на вкладке «Дефекты» нажмите «Синхронизировать», затем «Принять состояние Hub»")
+UNENTER_QUESTION = i18n.N_("Снять отметку «Внесено в Hub»?")
 # адрес дефекта в интерфейсе Hub (страница приложения – «…/#/appprofile/<номер>/…»); точный путь страницы дефекта
 # уточнить проверкой в Hub
 HUB_DEFECT_PATH = "/#/appprofile/{app_id}/defects/{defect_id}"
@@ -102,10 +102,10 @@ def blank_request(app_id: int, targets: list[dict], issue_type: str) -> dict:
     """`GET /defects/blank?appId&issueIds&type` по всем находкам-целям (issueIds через запятую)."""
     ids = ",".join(str(int(t["issue_id"])) for t in targets)
     if not ids:
-        raise ValueError("Нет находок для заготовки дефекта.")
+        raise ValueError(i18n._("Нет находок для заготовки дефекта."))
     if len(ids) > ISSUE_IDS_MAX:
-        raise ValueError(f"Слишком много находок для одной заготовки (параметр issueIds длиннее {ISSUE_IDS_MAX} "
-                         "знаков): создайте дефект из меньшего числа находок.")
+        raise ValueError(i18n._("Слишком много находок для одной заготовки (параметр issueIds длиннее {max} знаков): "
+                                "создайте дефект из меньшего числа находок.", max=ISSUE_IDS_MAX))
     request = {"method": "GET", "path": f"/defects/blank?appId={int(app_id)}&issueIds={ids}&type={issue_type}",
                "body": None}
     hub_ops.check_request(request["method"], request["path"])
@@ -135,7 +135,7 @@ def link_request(defect_id: str, targets: list[dict], group_id: Any = None) -> d
     целей один тип находки. groupId – из заготовки, если Hub его отдал (назначение поля уточнить)."""
     types = {str(t["issue_type"]) for t in targets}
     if len(types) != 1:
-        raise ValueError("Привязка к дефекту – находки одного типа.")
+        raise ValueError(i18n._("Привязка к дефекту – находки одного типа."))
     body = {"defectId": int(defect_id), "issueIds": [int(t["issue_id"]) for t in targets], "issueType": types.pop(),
             "groupId": group_id}
     request = {"method": "POST", "path": f"/defects/{int(defect_id)}/link", "body": body}
@@ -247,7 +247,7 @@ def pick_level(items: Any, name: str, fallback: Any) -> Any:
     for item in items:
         if level_name(item) == name:
             return item if isinstance(item, dict) else {"name": name}
-    raise ValueError(f"Значение «{name}» не из списка Hub ({', '.join(names)}).")
+    raise ValueError(i18n._("Значение «{name}» не из списка Hub ({names}).", name=name, names=", ".join(names)))
 
 
 LEVEL_IDS = (("priority", "priorityId"), ("severity", "severityId"))
@@ -287,8 +287,8 @@ def fill_level_codes(body: dict, codes: dict, blank: dict) -> dict:
         if code is not None:
             body[id_field] = used[key] = code
         elif blank.get(id_field) is not None:
-            raise DefectRefused(f"Нет подтверждённого Hub соответствия значения «{level_name(level)}» коду {id_field}: "
-                                "оставьте значение заготовки.")
+            raise DefectRefused(i18n._("Нет подтверждённого Hub соответствия значения «{name}» коду {field}: оставьте "
+                                       "значение заготовки.", name=level_name(level), field=id_field))
     return used
 
 
@@ -312,10 +312,11 @@ def level_diffs(sent: dict, defect: dict) -> list[str]:
             else:
                 same = level == seen
             if not same:
-                diffs.append(f"{field}: отправлено {json.dumps(level, ensure_ascii=False)}, "
-                             f"прочитано {json.dumps(seen, ensure_ascii=False)}")
+                diffs.append(i18n._("{field}: отправлено {sent}, прочитано {seen}", field=field,
+                                    sent=json.dumps(level, ensure_ascii=False), seen=json.dumps(seen, ensure_ascii=False)))
         if id_field in sent and id_field in defect and defect[id_field] != sent[id_field]:
-            diffs.append(f"{id_field}: отправлено {sent[id_field]}, прочитано {defect.get(id_field)}")
+            diffs.append(i18n._("{field}: отправлено {sent}, прочитано {seen}", field=id_field, sent=sent[id_field],
+                                seen=defect.get(id_field)))
     return diffs
 
 
@@ -338,9 +339,9 @@ def create_composition_check(body: dict, targets: list[dict]) -> None:
     problems = composition_problems(body)
     actual = linked_pairs(body) if not problems else set()
     if problems or actual != expected or not expected:
-        detail = "; ".join(problems) if problems else "связи не совпадают с подтверждённым составом"
-        raise DefectRefused("Состав linkedIssues заготовки не соответствует предпросмотру: " + detail
-                            + ". Создание не поставлено; отмените предпросмотр и подготовьте заново.")
+        detail = "; ".join(problems) if problems else i18n._("связи не совпадают с подтверждённым составом")
+        raise DefectRefused(i18n._("Состав linkedIssues заготовки не соответствует предпросмотру: {detail}. Создание не "
+                                   "поставлено; отмените предпросмотр и подготовьте заново.", detail=detail))
 
 
 def creation_signature(row: dict) -> str:
@@ -409,7 +410,7 @@ def composition_diff(row: dict, defect: dict) -> dict:
     expected, actual = expected_pairs(row), linked_pairs(defect)
     problems = composition_problems(defect)
     if expected is None:
-        problems.append("Подтверждённый прежний состав привязки не сохранён.")
+        problems.append(i18n._("Подтверждённый прежний состав привязки не сохранён."))
     return {"missing": sorted((expected or set()) - actual),
             "extra": sorted(actual - (expected or set())), "problems": problems}
 
@@ -418,13 +419,14 @@ def _unconfirmed_composition(db, row, op, expect_op, defect, **fields):
     diff = composition_diff(row, defect)
     if not any(diff.values()):
         return False
-    parts = ["Недостающие связи: " + ", ".join(f"{t}:{i}" for i, t in diff["missing"]),
-             "Лишние связи: " + ", ".join(f"{t}:{i}" for i, t in diff["extra"]), *diff["problems"]]
+    parts = [i18n._("Недостающие связи: {links}", links=", ".join(f"{t}:{i}" for i, t in diff["missing"])),
+             i18n._("Лишние связи: {links}", links=", ".join(f"{t}:{i}" for i, t in diff["extra"])), *diff["problems"]]
     verification = loads(fields.pop("verify_json", row.get("verify_json")), {})
     verification["composition"] = diff
     db.hub_defect_update(int(row["id"]), expect_state=row["state"], expect_op=expect_op,
                          state="unconfirmed", verify_op_id=None, import_json=dumps(_read_of(defect)),
-                         verify_json=dumps(verification), error="Состав не подтверждён. " + "; ".join(parts), **fields)
+                         verify_json=dumps(verification), error=i18n._("Состав не подтверждён. ") + "; ".join(parts),
+                         **fields)
     return True
 
 
@@ -492,29 +494,33 @@ def bound_name(row: dict) -> str:
     """«дефект №555 (ID1)»; номер в Hub ещё не известен – «дефект ID1 (создаётся в Hub)»."""
     label = bound_label(row)
     if row.get("hub_defect_id"):
-        return f"дефект {label}"
-    return (f"дефект {label}" if label else "дефект") + " (создаётся в Hub)"
+        return i18n._("дефект {label}", label=label)
+    return i18n._("дефект {label} (создаётся в Hub)", label=label) if label else i18n._("дефект (создаётся в Hub)")
 
 
 def bound_text(row: dict, question: str, hub_id: str = "") -> str:
     """Текст отказа «нужно подтверждение»: в какой дефект входит находка (hub_id – не своя находка, а соседка группы),
     что дефект в Hub не изменится, и вопрос. Номер в Hub ещё не известен – «который создаётся в Hub»."""
-    who = f"Находка {hub_id}" if hub_id else "Находка"
+    who = i18n._("Находка {hub_id}", hub_id=hub_id) if hub_id else i18n._("Находка")
     if row.get("hub_defect_id"):
-        head = f"{who} входит в {bound_name(row)}, созданный в Hub."
+        head = i18n._("{who} входит в {defect}, созданный в Hub.", who=who, defect=bound_name(row))
     else:
         label = bound_label(row)
-        head = f"{who} входит в дефект{' ' + label if label else ''}, который создаётся в Hub (номер в Hub ещё не известен)."
-    return f"{head} Дефект в Hub не изменится – поправьте его в Hub сами. {question}"
+        head = (i18n._("{who} входит в дефект {label}, который создаётся в Hub (номер в Hub ещё не известен).", who=who,
+                       label=label) if label else
+                i18n._("{who} входит в дефект, который создаётся в Hub (номер в Hub ещё не известен).", who=who))
+    return i18n._("{head} Дефект в Hub не изменится – поправьте его в Hub сами. {question}", head=head,
+                  question=i18n._(question))
 
 
 def in_defect_text(row: dict, hub_id: str = "") -> str:
     """Пояснение dev32: находка (hub_id – соседка группы, своя – без номера) входит в дефект – статус в Hub через
     дефект. Как освободить находку – по происхождению дефекта: у занесённого из Hub – «Pull из Hub» (ADR-0124), у
     созданного приложением – синхронизация с принятием состояния Hub (ADR-0127); ревью dev32, круг 1."""
-    who = f"Находка {hub_id}" if hub_id else "Находка"
-    how = IN_DEFECT_HOW_IMPORT if str(row.get("origin") or "") == "import" else IN_DEFECT_HOW_APP
-    return f"{who} входит в {bound_name(row)}: {IN_DEFECT_STATUS.format(how=how)}"
+    who = i18n._("Находка {hub_id}", hub_id=hub_id) if hub_id else i18n._("Находка")
+    how = i18n._(IN_DEFECT_HOW_IMPORT if str(row.get("origin") or "") == "import" else IN_DEFECT_HOW_APP)
+    return i18n._("{who} входит в {defect}: {status}", who=who, defect=bound_name(row),
+                  status=i18n._(IN_DEFECT_STATUS, how=how))
 
 
 def refuse_in_defect(c, project_id: int, hub_ids, own: str = "") -> None:
@@ -575,6 +581,47 @@ def save_check(db: Database, project_id: int, hub_id: str, decision: str, final_
 
 # ============================================================================ вид для карточки и вкладки
 
+# пометка «номер ID… не записан» (apply_marks): по ней вид строки ставит тон warn – узнаётся на обоих языках (ADR-0158)
+NOT_WRITTEN = i18n.N_("номер ID{number} не записан: {clashes}")
+NOT_WRITTEN_MARKS = ("не записан", "was not recorded")
+
+
+def _not_written_note(number: Any, clashes: list) -> str:
+    return i18n._(NOT_WRITTEN, number=number,
+                  clashes="; ".join(i18n._("{key} – уже ID{other}", key=key, other=other) for key, other in clashes))
+
+
+def number_not_written(error: Any) -> bool:
+    """В тексте строки есть пометка «номер ID… не записан» – на любом из двух языков."""
+    text = str(error or "")
+    return any(mark in text for mark in NOT_WRITTEN_MARKS)
+
+
+def is_not_in_export(why: Any) -> bool:
+    """Причина «нет в текущей выгрузке» в снимке предпросмотра – на любом из двух языков (снимок пишется на языке
+    интерфейса, по причине отбираются выбывшие из выгрузки находки)."""
+    return why in (NOT_IN_EXPORT, i18n.translate(NOT_IN_EXPORT, "en"))
+
+
+def is_no_number(why: Any) -> bool:
+    """Пояснение разбора заголовка – «в заголовке нет номера ID<n>» (title_number пишет его каноническим, по-русски;
+    английский перевод – на случай пояснения, записанного переводом)."""
+    return why in (NO_NUMBER, i18n.translate(NO_NUMBER, "en"))
+
+
+def _and_more(n: int) -> str:
+    return i18n._(" и ещё {n}", n=n)
+
+
+def _findings_list(keys: list) -> str:
+    """«находки: k1, k2 и ещё N» – ключи номера, которыми номер занят."""
+    return i18n._("находки: {keys}", keys=", ".join(keys[:5]) + (_and_more(len(keys) - 5) if len(keys) > 5 else ""))
+
+
+def _defect_row(other: dict) -> str:
+    return i18n._("дефект {label} (строка {row})", label=bound_label(other) or i18n._("из карточки"), row=other["id"])
+
+
 
 def link_rereadable(row: dict) -> bool:
     """Строка привязки «привязка неполная» с целями: итог определит новое чтение (ADR-0136). Записи нет, строка создания
@@ -593,22 +640,25 @@ def view(row: dict | None) -> dict:
     # итог «Проверить в Hub» (ADR-0121 п. 6) с dev33 не выводится: кнопки нет, у дефекта – «Push в Hub» и «Pull из Hub»
     note = ""
     texts = {
-        "blank": ("Ждём исполнителя: он запросит у Hub заготовку дефекта…", "", False, False),
-        "preview": ("Заготовка получена: проверьте предпросмотр и нажмите «Создать».", "", True, False),
-        "creating": ("Исполнитель создаёт дефект в Hub…", "", False, False),
-        "created": (f"Дефект №{number} создан, проверяю привязку находок чтением…", "", False, False),
-        "linking": (f"Привязываю находки к дефекту №{number}…", "", False, False),
+        "blank": (i18n._("Ждём исполнителя: он запросит у Hub заготовку дефекта…"), "", False, False),
+        "preview": (i18n._("Заготовка получена: проверьте предпросмотр и нажмите «Создать»."), "", True, False),
+        "creating": (i18n._("Исполнитель создаёт дефект в Hub…"), "", False, False),
+        "created": (i18n._("Дефект №{number} создан, проверяю привязку находок чтением…", number=number), "", False,
+                    False),
+        "linking": (i18n._("Привязываю находки к дефекту №{number}…", number=number), "", False, False),
         "done": (" ".join(p for p in (error, note) if p),
-                 "warn" if "не записан" in error or (note and note != RECHECK_OK) else "ok", True, False),
-        "mismatch": (f"Дефект №{number} создан, но {error or 'привязаны не все находки'}. Проверьте дефект в Hub.",
-                     "warn", True, link_rereadable(row)),
-        "unknown": (f"Результат неизвестен ({error or 'ответа нет'}). Нажмите «Pull из Hub»: приложение прочитает дефект "
-                    "в Hub; повторно само не создаст.", "warn", True, True),
-        "unconfirmed": ("Содержимое дефекта в Hub не совпало с отправленным снимком. "
-                        "Сравните версии и нажмите «Pull из Hub». Повторной записи нет.", "warn", True, True),
+                 "warn" if number_not_written(error) or (note and note != RECHECK_OK) else "ok", True, False),
+        "mismatch": (i18n._("Дефект №{number} создан, но {error}. Проверьте дефект в Hub.", number=number,
+                            error=error or i18n._("привязаны не все находки")), "warn", True, link_rereadable(row)),
+        "unknown": (i18n._("Результат неизвестен ({error}). Нажмите «Pull из Hub»: приложение прочитает дефект в Hub; "
+                           "повторно само не создаст.", error=error or i18n._("ответа нет")), "warn", True, True),
+        "unconfirmed": (i18n._("Содержимое дефекта в Hub не совпало с отправленным снимком. Сравните версии и нажмите "
+                               "«Pull из Hub». Повторной записи нет."), "warn", True, True),
         # итог чтения (_conclude ставит confirm_op_id): Hub не отказывал – находки нет в составе (круг 5 ревью)
-        "failed": ((f"{error or 'ошибка'}. Можно попробовать ещё раз." if row.get("confirm_op_id") else
-                    f"Hub не принял: {error or 'ошибка'}. Можно попробовать ещё раз."), "err", True, False),
+        "failed": ((i18n._("{error}. Можно попробовать ещё раз.", error=error or i18n._("ошибка"))
+                    if row.get("confirm_op_id") else
+                    i18n._("Hub не принял: {error}. Можно попробовать ещё раз.", error=error or i18n._("ошибка"))),
+                   "err", True, False),
         "cancelled": (error, "warn" if error else "", True, False),
     }
     if row.get("origin") == "import":  # занесение из Hub (ADR-0124): только чтение, «Сверить» результата нет
@@ -620,17 +670,18 @@ def view(row: dict | None) -> dict:
         tone = "warn" if "warn" in (tone, update_tone) else update_tone or tone
         final = final and update_final
     if state == "done" and row.get("sync_op_id"):  # «Pull из Hub» у дефекта из приложения идёт (dev34)
-        text, tone, final, verify = (f"Сверяю с Hub: читаю дефект №{number}…", "", False, False)
+        text, tone, final, verify = (i18n._("Сверяю с Hub: читаю дефект №{number}…", number=number), "", False, False)
     elif state == "done":
         sync_state = loads(row.get("sync_json"), {}) or {}
         if isinstance(sync_state, dict) and sync_state.get("error"):  # сверка не удалась: пояснение, состояние прежнее
-            text = " ".join(p for p in (text, "сверка с Hub: " + str(sync_state["error"])) if p)
+            text = " ".join(p for p in (text, i18n._("сверка с Hub: {error}", error=str(sync_state["error"]))) if p)
             tone = "err" if tone == "err" else "warn"
     if state == "unknown" and row.get("verify_op_id"):
         # сверка идёт: исполнитель читает список и кандидатов – карточка продолжает опрос, кнопка скрыта
-        text, tone, final, verify = (f"Сверяю с Hub: {error or 'жду исполнителя'}", "", False, False)
+        text, tone, final, verify = (i18n._("Сверяю с Hub: {state}", state=error or i18n._("жду исполнителя")), "", False,
+                                     False)
     if state == "done" and row.get("verify_op_id"):  # «Проверить в Hub» идёт: карточка опрашивает, кнопка скрыта
-        text, tone, final, verify = (f"Проверяю в Hub: читаю дефект №{number}…", "", False, False)
+        text, tone, final, verify = (i18n._("Проверяю в Hub: читаю дефект №{number}…", number=number), "", False, False)
     if state == "unconfirmed" and loads(row.get("verify_json"), {}).get("composition"):
         text += " " + error
     confirmation = loads(row.get("verify_json"), {}).get("confirmation", {})
@@ -705,7 +756,7 @@ def after_op(db: Database, op: dict | None, worker_login: str = "",
         _on_update(db, op, _first_target(op), prepare)
         return
     if op["state"] == "cancelled":
-        op = {**op, "state": "failed", "error": op.get("error") or "операция отменена"}
+        op = {**op, "state": "failed", "error": op.get("error") or i18n._("операция отменена")}
     purpose, first = op["purpose"], _first_target(op)
     if purpose == "read":
         if isinstance(first.get("verify_defect"), int):
@@ -779,12 +830,12 @@ def _on_blank(db: Database, row: dict, op: dict) -> None:
     mine = ("blank_op_id", int(op["id"]))
     if op["state"] != "done":
         db.hub_defect_update(int(row["id"]), expect_state="blank", expect_op=mine, state="failed",
-                             error=f"заготовка не получена: {op.get('error') or 'ответа нет'}")
+                             error=i18n._("заготовка не получена: {error}", error=op.get("error") or i18n._("ответа нет")))
         return
     blank = _body(op)
     if not isinstance(blank, dict):
         db.hub_defect_update(int(row["id"]), expect_state="blank", expect_op=mine, state="failed",
-                             error="заготовка Hub не разобрана: ответ не объект JSON")
+                             error=i18n._("заготовка Hub не разобрана: ответ не объект JSON"))
         return
     # заготовка без описания: служебного блока не будет – сведения для разработчиков уходят разделом текста (план dev7, раздел 11)
     fields = {}
@@ -813,7 +864,8 @@ def _read_step(db: Database, row: dict, expect_state: str, defect_id: str, expec
                                          hub_defect_id=str(defect_id), error="", **fields)
     except ValueError as e:
         return db.hub_defect_update(int(row["id"]), expect_state=expect_state, expect_op=expect_op, state="unknown",
-                                    hub_defect_id=str(defect_id), error=f"чтение дефекта не поставлено: {e}", **fields)
+                                    hub_defect_id=str(defect_id), error=i18n._("чтение дефекта не поставлено: {error}", error=e),
+                                    **fields)
     return fresh
 
 
@@ -823,11 +875,11 @@ def _on_create(db: Database, row: dict, op: dict, worker_login: str = "") -> Non
     mine = ("create_op_id", int(op["id"]))
     if op["state"] == "failed":
         db.hub_defect_update(int(row["id"]), expect_state="creating", expect_op=mine, state="failed",
-                             error=str(op.get("error") or "Hub не принял дефект"))
+                             error=str(op.get("error") or i18n._("Hub не принял дефект")))
         return
     if op["state"] == "unknown":
         db.hub_defect_update(int(row["id"]), expect_state="creating", expect_op=mine, state="unknown",
-                             error=str(op.get("error") or "ответа от Hub нет"))
+                             error=str(op.get("error") or i18n._("ответа от Hub нет")))
         return
     defect_id = parse_defect_id(_result(op))
     if not defect_id:
@@ -840,13 +892,13 @@ def _on_create(db: Database, row: dict, op: dict, worker_login: str = "") -> Non
             try:
                 fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state="creating", expect_op=mine,
                                                  item=list_item(row, 0), op_field="verify_op_id", state="unknown",
-                                                 verify_json=dumps(state), error="сверяю по списку дефектов Hub…")
+                                                 verify_json=dumps(state), error=i18n._("сверяю по списку дефектов Hub…"))
             except ValueError:
                 fresh = None
             if fresh is not None:
                 return
         db.hub_defect_update(int(row["id"]), expect_state="creating", expect_op=mine, state="unknown",
-                             error="Hub ответил без номера дефекта")
+                             error=i18n._("Hub ответил без номера дефекта"))
         return
     _read_step(db, row, "creating", defect_id, mine, hub_link=defect_link(row["hub_url"], row.get("app_id"), defect_id),
                created_by=str(worker_login or "")[:200])
@@ -898,7 +950,8 @@ def _on_read(db: Database, row: dict, op: dict) -> None:
     mine = ("read_op_id", int(op["id"]))
     if op["state"] != "done":
         db.hub_defect_update(int(row["id"]), expect_state="created", expect_op=mine, state="unknown",
-                             error=f"чтение дефекта №{row['hub_defect_id']} не выполнено – нажмите «Pull из Hub»")
+                             error=i18n._("чтение дефекта №{number} не выполнено – нажмите «Pull из Hub»",
+                                          number=row["hub_defect_id"]))
         return
     defect = _body(op)
     only_link = not row.get("create_op_id") and not row.get("blank_op_id")  # строка привязки (ADR-0121 п. 5)
@@ -907,11 +960,11 @@ def _on_read(db: Database, row: dict, op: dict) -> None:
     if (not _has_expected_id(defect, row["hub_defect_id"])
             or (only_link and not isinstance(defect.get("linkedIssues"), list))):
         db.hub_defect_update(int(row["id"]), expect_state="created", expect_op=mine, state="unknown",
-                             error="ответ на чтение дефекта не разобран – нажмите «Pull из Hub»")
+                             error=i18n._("ответ на чтение дефекта не разобран – нажмите «Pull из Hub»"))
         return
     if not _has_expected_app(defect, row.get("app_id")):
         db.hub_defect_update(int(row["id"]), expect_state="created", expect_op=mine, state="unknown",
-                             error="appId ответа не совпал с приложением операции – нажмите «Pull из Hub»")
+                             error=i18n._("appId ответа не совпал с приложением операции – нажмите «Pull из Hub»"))
         return
     seen = _read_of(defect, _repeat_expected(db, row))
     if seen["text_note"] and not _blank_appended_twice(db, row, defect):
@@ -927,7 +980,7 @@ def _on_read(db: Database, row: dict, op: dict) -> None:
         _unconfirmed_composition(db, row, op, mine, defect)
         return
     if not missing:
-        _conclude(db, row, op, mine, "done", VERIFY_NOTE_DONE if row.get("link_op_id") else "")
+        _conclude(db, row, op, mine, "done", i18n._(VERIFY_NOTE_DONE) if row.get("link_op_id") else "")
         return
     ids = ", ".join(str(t.get("hub_id") or t.get("issue_id")) for t in missing)
     if row.get("link_op_id") is None:
@@ -940,7 +993,8 @@ def _on_read(db: Database, row: dict, op: dict) -> None:
                                   op_field="link_op_id", state="linking", error="")
         except ValueError as e:
             db.hub_defect_update(int(row["id"]), expect_state="created", expect_op=mine, state="mismatch",
-                                 error=f"не привязаны находки {ids}; привязка не поставлена: {e}")
+                                 error=i18n._("не привязаны находки {ids}; привязка не поставлена: {error}", ids=ids,
+                                              error=e))
         return
     if only_link and len(missing) == len(targets):
         # строка привязки ведёт себя как строка создания (ADR-0121 п. 5): привязка выполнена, а находки в составе нет –
@@ -949,11 +1003,11 @@ def _on_read(db: Database, row: dict, op: dict) -> None:
         # итога, неизвестная операция закрывается в последствиях (_apply_effects; сбой доводят sync и повторная доставка)
         link = db.hub_op(int(row["link_op_id"]))
         if link is not None and link["state"] == "unknown":
-            _conclude(db, row, op, mine, "failed", LINK_NOT_DONE.format(defect=row["hub_defect_id"], ids=ids))
+            _conclude(db, row, op, mine, "failed", i18n._(LINK_NOT_DONE, defect=row["hub_defect_id"], ids=ids))
             return
     # у строки создания и у строки привязки (в том числе частично подтверждённой) – «привязка неполная» для строки
     # целиком: цели не освобождаются
-    _conclude(db, row, op, mine, "mismatch", f"после привязки не привязаны находки {ids}")
+    _conclude(db, row, op, mine, "mismatch", i18n._("после привязки не привязаны находки {ids}", ids=ids))
 
 
 def _on_link(db: Database, row: dict, op: dict) -> None:
@@ -968,14 +1022,17 @@ def _on_link(db: Database, row: dict, op: dict) -> None:
         # отказал – в Hub ничего не изменилось, строка «не принят», находки свободны; у созданного дефекта – как раньше
         only_link = not row.get("blank_op_id") and not row.get("create_op_id")
         # отдельная строка привязки: готовый дефект мог быть удалён в Hub – назван ручной путь (бэклог 39)
-        manual = (" – если дефект удалён в Hub (проверьте его в Hub или «Синхронизировать» во вкладке «Дефекты»), создайте дефект вручную по панели "
-                  "«Дефект для Hub» и нажмите «Отметить: дефект создан в Hub»" if only_link else "")
+        manual = (i18n._(" – если дефект удалён в Hub (проверьте его в Hub или «Синхронизировать» во вкладке «Дефекты»), "
+                         "создайте дефект вручную по панели «Дефект для Hub» и нажмите «Отметить: дефект создан в Hub»")
+                  if only_link else "")
         db.hub_defect_update(int(row["id"]), expect_state="linking", expect_op=mine,
                              state="failed" if only_link else "mismatch",
-                             error=f"привязка находок отклонена: {op.get('error') or 'ошибка'}{manual}")
+                             error=i18n._("привязка находок отклонена: {error}", error=op.get("error") or i18n._("ошибка"))
+                             + manual)
         return
     db.hub_defect_update(int(row["id"]), expect_state="linking", expect_op=mine, state="unknown",
-                         error=f"привязка находок: {op.get('error') or 'ответа нет'} – нажмите «Pull из Hub»")
+                         error=i18n._("привязка находок: {error} – нажмите «Pull из Hub»",
+                                      error=op.get("error") or i18n._("ответа нет")))
 
 
 def _blank_appended_twice(db: Database, row: dict, defect: dict) -> bool:
@@ -1016,7 +1073,7 @@ def _unconfirmed_content(db: Database, row: dict, op: dict, expect_op: tuple[str
         db.hub_defect_update(int(row["id"]), expect_state=row["state"], expect_op=expect_op,
                              state="unconfirmed", verify_op_id=None, import_json=dumps(_read_of(defect)),
                              verify_json=dumps(verification),
-                             error="Приоритет или серьёзность не подтверждены чтением.", **fields)
+                             error=i18n._("Приоритет или серьёзность не подтверждены чтением."), **fields)
         return True
     if update_content_new(defect, expected):
         return False
@@ -1028,16 +1085,18 @@ def _unconfirmed_content(db: Database, row: dict, op: dict, expect_op: tuple[str
     seen = _read_of(defect)
     before = (str(sent.get("summary") or "") + "\n" + command).splitlines()
     after = (seen["summary"] + "\n" + seen["command_text"]).splitlines()
-    diff = "\n".join(unified_diff(before, after, fromfile="Отправлено", tofile="Прочитано в Hub", lineterm=""))
+    diff = "\n".join(unified_diff(before, after, fromfile=i18n._("Отправлено"), tofile=i18n._("Прочитано в Hub"),
+                                  lineterm=""))
     if not diff:  # текст совпал, но исходная подстрока блока Hub изменилась
         diff = "\n".join(unified_diff(str(sent.get("description") or "").splitlines(),
                                      str(defect.get("description") or "").splitlines(),
-                                     fromfile="Отправленное описание", tofile="Описание Hub", lineterm=""))
+                                     fromfile=i18n._("Отправленное описание"), tofile=i18n._("Описание Hub"),
+                                     lineterm=""))
     verification = loads(fields.pop("verify_json", row.get("verify_json")), {})
     verification["confirmation"] = {"op_id": op["id"], "sent": sent, "diff": diff}
     db.hub_defect_update(int(row["id"]), expect_state=row["state"], expect_op=expect_op,
                          state="unconfirmed", verify_op_id=None, import_json=dumps(seen),
-                         verify_json=dumps(verification), error="Заголовок или описание не подтверждены чтением.",
+                         verify_json=dumps(verification), error=i18n._("Заголовок или описание не подтверждены чтением."),
                          **fields)
     return True
 
@@ -1052,11 +1111,13 @@ def _conclude(db: Database, row: dict, op: dict, expect_op: tuple[str, int], sta
     if not _has_expected_id(defect, fields.get("hub_defect_id", row.get("hub_defect_id"))):
         return db.hub_defect_update(int(row["id"]), expect_state=row["state"], expect_op=expect_op,
                                     state="unknown", verify_op_id=None,
-                                    error="ID ответа не совпал с номером дефекта – нажмите «Pull из Hub»", **fields)
+                                    error=i18n._("ID ответа не совпал с номером дефекта – нажмите «Pull из Hub»"),
+                                    **fields)
     if not _has_expected_app(defect, row.get("app_id")):
         return db.hub_defect_update(int(row["id"]), expect_state=row["state"], expect_op=expect_op,
                                     state="unknown", verify_op_id=None,
-                                    error="appId ответа не совпал с приложением операции – нажмите «Pull из Hub»", **fields)
+                                    error=i18n._("appId ответа не совпал с приложением операции – нажмите «Pull из Hub»"),
+                                    **fields)
     seen = _read_of(defect, _repeat_expected(db, row))
     if seen["text_note"] and not _blank_appended_twice(db, row, defect):
         return db.hub_defect_update(int(row["id"]), expect_state=row["state"], expect_op=expect_op,
@@ -1100,7 +1161,7 @@ def _apply_effects(db: Database, row: dict, closed_at: str | None = None) -> Non
         confirm = db.hub_op(int(row["confirm_op_id"])) if row.get("confirm_op_id") else None
         closed_at = str((confirm or {}).get("closed_at") or "")
     done = row["state"] == "done"
-    _close_ops(db, row, "done" if done else "failed", VERIFY_NOTE_DONE if done else str(row.get("error") or ""))
+    _close_ops(db, row, "done" if done else "failed", i18n._(VERIFY_NOTE_DONE) if done else str(row.get("error") or ""))
     # занесённому из Hub при занесении отметки и номера ключам не ставятся (ADR-0124 п. 5); после подтверждённого
     # обновления текста – ставятся по обычным правилам, только для подтверждённого поколения (ADR-0125 п. 4)
     if done and (row.get("origin") != "import" or update_confirmed(row)):
@@ -1120,14 +1181,14 @@ def _close_ops(db: Database, row: dict, link_state: str = "done", note: str = VE
             continue
         op = db.hub_op(int(op_id))
         if op is not None and op["state"] == "unknown":
-            db.hub_resolve(int(op_id), state, note if state == link_state else VERIFY_NOTE_DONE)
+            db.hub_resolve(int(op_id), state, note if state == link_state else i18n._(VERIFY_NOTE_DONE))
     if update_confirmed(row):
         state = update_state(row)
         if int((state.get("confirmed") or {}).get("generation") or 0) == int(state.get("generation") or 0):
             for op_id in (row.get("update_op_id"), state.get("put_op_id")):
                 op = db.hub_op(int(op_id)) if op_id else None
                 if op is not None and op["state"] == "unknown":
-                    db.hub_resolve(int(op_id), "done", UPDATE_NOTE_DONE)
+                    db.hub_resolve(int(op_id), "done", i18n._(UPDATE_NOTE_DONE))
 
 
 def _effect_check(c, row: dict, key: str) -> None:
@@ -1135,10 +1196,10 @@ def _effect_check(c, row: dict, key: str) -> None:
     # у целей без происхождения (схема 28, принятый синхронизацией состав) поколение не сверяется, но принадлежность
     # ключа строке – всегда: прочитанная до принятия отсутствия строка не вернёт снятый номер (ревью 31.10)
     if any(t.get("entered_origin") == "defect" for t in targets) and not defect_drafts.current_effect(c, row):
-        raise ValueError("Подтверждённое поколение дефекта изменилось.")
+        raise ValueError(i18n._("Подтверждённое поколение дефекта изменилось."))
     current = c.execute("SELECT number_keys_json FROM hub_defects WHERE id = ?", (row["id"],)).fetchone()
     if current is None or key not in loads(current["number_keys_json"], []):
-        raise ValueError("Ключ больше не принадлежит физической строке дефекта.")
+        raise ValueError(i18n._("Ключ больше не принадлежит физической строке дефекта."))
 
 
 def by_composition(db: Database, row: dict, expect_op: tuple[str, int] | None = None) -> dict:
@@ -1216,11 +1277,13 @@ def apply_marks(db: Database, row: dict, closed_at: str = "", only_unmarked: boo
             except ValueError:
                 continue
             if other is not None:
-                clashes.append(f"{key} – уже ID{other}")
+                clashes.append((key, other))
         if clashes:
             current = db.hub_defect(int(row["id"])) or row
-            note = "номер ID" + str(number) + " не записан: " + "; ".join(clashes)
-            if note not in str(current.get("error") or ""):
+            # та же пометка, собранная на другом языке интерфейса, – не повод дописать её второй раз (ADR-0158)
+            notes = defect.in_both_languages(lambda: _not_written_note(number, clashes))
+            note = _not_written_note(number, clashes)
+            if not any(n in str(current.get("error") or "") for n in notes):
                 db.hub_defect_update(int(row["id"]),
                                      error="; ".join(p for p in (str(current.get("error") or ""), note) if p))
     return marked
@@ -1243,13 +1306,13 @@ def start_verify(db: Database, row: dict, login: str = "") -> dict:
 
     def idle(c) -> None:
         if c.execute("SELECT verify_op_id FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone()[0]:
-            raise ValueError("Сверка уже идёт: дождитесь ответа исполнителя.")
+            raise ValueError(i18n._("Сверка уже идёт: дождитесь ответа исполнителя."))
 
     fresh, op = db.hub_defect_advance(int(row["id"]), expect_state="unknown", check=idle, item=list_item(row, 0),
                                       op_field="verify_op_id", verify_json=dumps(state),
-                                      error="сверяю по списку дефектов Hub…")
+                                      error=i18n._("сверяю по списку дефектов Hub…"))
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите карточку.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите карточку."))
     return op
 
 
@@ -1263,7 +1326,7 @@ def restart_read(db: Database, row: dict) -> dict | None:
     def same(c) -> None:  # другая вкладка могла схлопнуть строку: чтение пустой истории снова заняло бы семью
         current = dict(c.execute("SELECT * FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone())
         if row["state"] == "mismatch" and (not link_rereadable(current) or current["targets_json"] != row["targets_json"]):
-            raise ValueError("Состояние дефекта изменилось: обновите карточку.")
+            raise ValueError(i18n._("Состояние дефекта изменилось: обновите карточку."))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state=row["state"], check=same, item=read_item(row, row["hub_defect_id"]),
                                      op_field="read_op_id", state="created", error="")
@@ -1279,17 +1342,17 @@ def settle_restored_in(c, ts: str) -> int:
     rows = c.execute(f"SELECT id, blank_op_id, create_op_id, read_op_id, link_op_id, verify_op_id FROM hub_defects WHERE origin <> 'import' AND state IN ({marks})",
                      unfinished).fetchall()
     for row in rows:
-        c.execute("UPDATE hub_defects SET state = 'cancelled', error = ?, updated_at = ?, closed_at = ? WHERE id = ?", (RESTORED_NOTE, ts, ts, row["id"]))
+        c.execute("UPDATE hub_defects SET state = 'cancelled', error = ?, updated_at = ?, closed_at = ? WHERE id = ?", (i18n._(RESTORED_NOTE), ts, ts, row["id"]))
         for field in ("blank_op_id", "create_op_id", "read_op_id", "link_op_id", "verify_op_id"):
             if row[field]:
                 c.execute("UPDATE hub_ops SET state = 'cancelled', error = ?, updated_at = ?, closed_at = ? WHERE id = ? AND state IN ('queued', 'taken', 'unknown')",
-                          (RESTORED_NOTE, ts, ts, row[field]))
+                          (i18n._(RESTORED_NOTE), ts, ts, row[field]))
     count = len(rows)
     for row in c.execute("SELECT id, update_json FROM hub_defects WHERE update_json <> ''").fetchall():
         state = loads(row["update_json"], {}) or {}
         if state.get("phase") not in UPDATE_SETTLED:
             count += c.execute("UPDATE hub_defects SET update_op_id = NULL, update_json = ?, updated_at = ? WHERE id = ?",
-                               (dumps({**state, "phase": "cancelled", "step": "", "note": RESTORED_PUT_NOTE}), ts, row["id"])).rowcount
+                               (dumps({**state, "phase": "cancelled", "step": "", "note": i18n._(RESTORED_PUT_NOTE)}), ts, row["id"])).rowcount
     return count
 
 
@@ -1307,7 +1370,7 @@ def _stop_verify(db: Database, row: dict, op: dict, state: dict, note: str) -> N
     """Сверка закончилась без подтверждения: итог словами, verify_op_id снят – опрос карточки останавливается, кнопка
     «Сверить» снова видна. Только если строка ещё ждёт именно эту операцию сверки."""
     db.hub_defect_update(int(row["id"]), expect_state="unknown", expect_op=("verify_op_id", int(op["id"])),
-                         verify_op_id=None, verify_json=dumps(state), error=note)
+                         verify_op_id=None, verify_json=dumps(state), error=i18n._(note))
 
 
 def _on_list(db: Database, op: dict, first: dict) -> None:
@@ -1353,9 +1416,9 @@ def _advance(db: Database, row: dict, op: dict, state: dict) -> None:
         try:
             db.hub_defect_advance(int(row["id"]), expect_state="unknown", expect_op=mine, item=item,
                                   op_field="verify_op_id", verify_json=dumps(state),
-                                  error=f"сверяю: читаю дефект №{candidate} из Hub…")
+                                  error=i18n._("сверяю: читаю дефект №{number} из Hub…", number=candidate))
         except ValueError as e:
-            _stop_verify(db, row, op, state, f"сверка: чтение кандидата не поставлено: {e}")
+            _stop_verify(db, row, op, state, i18n._("сверка: чтение кандидата не поставлено: {error}", error=e))
         return
     next_page = int(state["page"]) + 1
     if next_page * PAGE_SIZE < int(state["total"]) and next_page < PAGES_MAX:
@@ -1363,9 +1426,9 @@ def _advance(db: Database, row: dict, op: dict, state: dict) -> None:
         try:
             db.hub_defect_advance(int(row["id"]), expect_state="unknown", expect_op=mine, item=list_item(row, next_page),
                                   op_field="verify_op_id", verify_json=dumps(state),
-                                  error=f"сверяю по списку дефектов Hub: страница {next_page + 1}…")
+                                  error=i18n._("сверяю по списку дефектов Hub: страница {page}…", page=next_page + 1))
         except ValueError as e:
-            _stop_verify(db, row, op, state, f"сверка: следующая страница не поставлена: {e}")
+            _stop_verify(db, row, op, state, i18n._("сверка: следующая страница не поставлена: {error}", error=e))
         return
     _stop_verify(db, row, op, state, VERIFY_NOTE_NONE)
 
@@ -1393,7 +1456,7 @@ def _on_candidate(db: Database, op: dict, first: dict) -> None:
             or (isinstance(defect, dict) and hub_ops.normalize_text(defect.get("summary")) == hub_ops.normalize_text(row["summary"])
                 and description_matches(defect.get("description"), row["command_text"]))):
         # ID проверяет _conclude: неверный ответ сохраняет номер кандидата для повторного GET.
-        _conclude(db, row, op, ("verify_op_id", int(op["id"])), "done", VERIFY_NOTE_DONE, hub_defect_id=candidate,
+        _conclude(db, row, op, ("verify_op_id", int(op["id"])), "done", i18n._(VERIFY_NOTE_DONE), hub_defect_id=candidate,
                   hub_link=defect_link(row["hub_url"], row.get("app_id"), candidate), verify_json=dumps(state))
         return
     if not _has_expected_id(defect, candidate):
@@ -1428,19 +1491,19 @@ def start_recheck(db: Database, row: dict) -> dict:
     транзакцией; строка остаётся «создан». Занесён из Hub (ADR-0124 п. 9 – у него «Pull из Hub»), не «создан», без
     номера в Hub или проверка уже идёт – ValueError."""
     if row.get("origin") == "import":
-        raise ValueError("«Проверить в Hub» к дефекту, занесённому из Hub, не применяется: у занесённого дефекта – "
-                         "«Pull из Hub» во вкладке «Дефекты».")
+        raise ValueError(i18n._("«Проверить в Hub» к дефекту, занесённому из Hub, не применяется: у занесённого "
+                                "дефекта – «Pull из Hub» во вкладке «Дефекты»."))
     if row["state"] != "done" or not row.get("hub_defect_id"):
-        raise ValueError("Проверить в Hub можно только созданный дефект с номером в Hub.")
+        raise ValueError(i18n._("Проверить в Hub можно только созданный дефект с номером в Hub."))
 
     def idle(c) -> None:
         if c.execute("SELECT verify_op_id FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone()[0]:
-            raise ValueError("Проверка уже идёт: дождитесь ответа исполнителя.")
+            raise ValueError(i18n._("Проверка уже идёт: дождитесь ответа исполнителя."))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state="done", check=idle, item=recheck_item(row),
                                      op_field="verify_op_id")
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите карточку.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите карточку."))
     return fresh
 
 
@@ -1471,16 +1534,16 @@ def _on_recheck(db: Database, op: dict, first: dict) -> None:
         except (TypeError, ValueError):
             status = 0
         if status == 404 and not result.get("not_sent"):
-            _recheck_done(db, row, mine, RECHECK_404)
+            _recheck_done(db, row, mine, i18n._(RECHECK_404))
             return
-        _recheck_done(db, row, mine, RECHECK_FAILED.format(reason=op.get("error") or "ответа нет"))
+        _recheck_done(db, row, mine, i18n._(RECHECK_FAILED, reason=op.get("error") or i18n._("ответа нет")))
         return
     defect = _body(op)
     if not isinstance(defect, dict):
-        _recheck_done(db, row, mine, RECHECK_FAILED.format(reason="ответ не разобран"))
+        _recheck_done(db, row, mine, i18n._(RECHECK_FAILED, reason=i18n._("ответ не разобран")))
         return
     if not isinstance(defect.get("linkedIssues"), list):  # состава нет – сверять не с чем
-        _recheck_done(db, row, mine, RECHECK_NO_LIST)
+        _recheck_done(db, row, mine, i18n._(RECHECK_NO_LIST))
         return
     missing = missing_targets(defect, loads(row.get("targets_json"), []))
     if not missing:
@@ -1490,10 +1553,10 @@ def _on_recheck(db: Database, op: dict, first: dict) -> None:
         # занесённому без подтверждённого обновления – нет (ADR-0124 п. 5)
         if row.get("origin") != "import" or update_confirmed(row):
             apply_marks(db, row, str(op.get("closed_at") or ""), only_unmarked=True, expect_op=mine)
-        _recheck_done(db, row, mine, RECHECK_OK)
+        _recheck_done(db, row, mine, i18n._(RECHECK_OK))
         return
     ids = ", ".join(str(t.get("hub_id") or t.get("issue_id")) for t in missing)
-    _recheck_done(db, row, mine, RECHECK_MISSING.format(ids=ids))
+    _recheck_done(db, row, mine, i18n._(RECHECK_MISSING, ids=ids))
 
 
 # ============================================================================ «Занести из Hub» и «Pull из Hub» (ADR-0124)
@@ -1509,14 +1572,14 @@ IMPORT_TYPE = "DEFECT_IMPORT"  # тип цели операции чтения �
 IMPORT_BOUNDARY = "Информация об объекте сканирования:"  # граница блока Hub в описании: единственная такая строка
 KIND_OF_TYPE = {"SAST": "SAST", "SCA_S": "SCA"}  # тип находки Hub -> вид дефекта; SCA_L и смешанный – не поддерживаются
 TYPE_OF_KIND = {kind: issue for issue, kind in KIND_OF_TYPE.items()}
-IMPORT_READ_FAILED = "чтение не удалось – повторите"
-IMPORT_SHOWN_CHANGED = "Предпросмотр изменился (другая вкладка или новое чтение): обновите страницу."
-IMPORT_CHANGED = ("Состав изменился – обновите предпросмотр ({why}): нажмите «Отменить», затем «Синхронизировать» на "
+IMPORT_READ_FAILED = i18n.N_("чтение не удалось – повторите")
+IMPORT_SHOWN_CHANGED = i18n.N_("Предпросмотр изменился (другая вкладка или новое чтение): обновите страницу.")
+IMPORT_CHANGED = i18n.N_("Состав изменился – обновите предпросмотр ({why}): нажмите «Отменить», затем «Синхронизировать» на "
                   "вкладке «Дефекты» и «Принять состояние Hub» – приложение прочитает дефект снова.")
-SYNC_CHANGED = "Состав изменился после сверки ({why}): нажмите «Pull из Hub» ещё раз."
-SYNC_UNOBSERVED = "в Hub больше не связана с дефектом (или её статус не Open) – уберётся из состава"
-SYNC_INCOMPATIBLE = "несовместима с видом дефекта"
-NOT_IN_EXPORT = "нет в текущей выгрузке"
+SYNC_CHANGED = i18n.N_("Состав изменился после сверки ({why}): нажмите «Pull из Hub» ещё раз.")
+SYNC_UNOBSERVED = i18n.N_("в Hub больше не связана с дефектом (или её статус не Open) – уберётся из состава")
+SYNC_INCOMPATIBLE = i18n.N_("несовместима с видом дефекта")
+NOT_IN_EXPORT = i18n.N_("нет в текущей выгрузке")
 _DEFECT_REF = re.compile(r"/defects/([0-9]{1,12})(?![0-9])")
 # пометка рецензента в начале заголовка – в скобках; скобка, всё содержимое которой – ID<число> («[ID3] …»,
 # «(ID3) …»), – номер, а не пометка: не снимается
@@ -1546,16 +1609,18 @@ def import_numbers(text: str) -> list[str]:
             found = _DEFECT_REF.search(token)
             if found is None:
                 shown = token if len(token) <= 80 else token[:79] + "…"
-                raise ValueError(f"«{shown}» – не номер дефекта Hub и не ссылка на дефект (…/defects/<номер>).")
+                raise ValueError(i18n._("«{token}» – не номер дефекта Hub и не ссылка на дефект (…/defects/<номер>).",
+                                        token=shown))
             number = str(int(found.group(1)))
         if number == "0":
-            raise ValueError("Номер дефекта Hub – целое число больше нуля.")
+            raise ValueError(i18n._("Номер дефекта Hub – целое число больше нуля."))
         if number not in out:
             out.append(number)
     if not out:
-        raise ValueError("Укажите номера дефектов Hub или ссылки на них.")
+        raise ValueError(i18n._("Укажите номера дефектов Hub или ссылки на них."))
     if len(out) > IMPORT_MAX:
-        raise ValueError(f"За один раз – не больше {IMPORT_MAX} дефектов Hub (указано {len(out)}).")
+        raise ValueError(i18n._("За один раз – не больше {max} дефектов Hub (указано {count}).", max=IMPORT_MAX,
+                                count=len(out)))
     return out
 
 
@@ -1811,17 +1876,17 @@ def split_at_hub_block(value: Any, repeated: bool = False) -> tuple[str, list[st
     if repeated:
         at = at[:1]
     if len(at) != 1:
-        why = (f"в описании нет строки «{IMPORT_BOUNDARY}»" if not at
-               else f"строка «{IMPORT_BOUNDARY}» в описании встречается {len(at)} раза")
-        return "", [], why + " – текст команды не выделен"
+        why = (i18n._("в описании нет строки «{boundary}»", boundary=IMPORT_BOUNDARY) if not at
+               else i18n._("строка «{boundary}» в описании встречается {n} раза", boundary=IMPORT_BOUNDARY, n=len(at)))
+        return "", [], why + i18n._(" – текст команды не выделен")
     block = lines[at[0] + 1:]
     while block and not block[0]:
         block.pop(0)
     return "\n".join(lines[:at[0]]).strip("\n"), block, ""
 
 
-NO_NUMBER = "в заголовке нет номера ID<n>"
-NUMBER_RETURNED = "В заголовке нет номера ID: приложение возвращает его (ID{number})."
+NO_NUMBER = i18n.N_("в заголовке нет номера ID<n>")
+NUMBER_RETURNED = i18n.N_("В заголовке нет номера ID: приложение возвращает его (ID{number}).")
 
 
 def title_number(summary: Any) -> tuple[int | None, str]:
@@ -1838,8 +1903,8 @@ def title_number(summary: Any) -> tuple[int | None, str]:
     if not numbers:
         return None, NO_NUMBER
     if len(numbers) > 1:
-        return None, ("номер ID в заголовке неоднозначен (" + ", ".join(f"ID{n}" for n in numbers)
-                      + ") – номер не берётся")
+        return None, i18n._("номер ID в заголовке неоднозначен ({numbers}) – номер не берётся",
+                            numbers=", ".join(f"ID{n}" for n in numbers))
     return numbers[0], ""
 
 
@@ -1851,13 +1916,14 @@ def import_kind(pairs: list[tuple[int, str]], summary: Any) -> tuple[str, str]:
     if types:
         if len(types) == 1 and next(iter(types)) in KIND_OF_TYPE:
             return KIND_OF_TYPE[next(iter(types))], ""
-        return "", ("вид не поддерживается: в составе находки типов " + ", ".join(sorted(t or "«»" for t in types))
-                    + " – занесение недоступно")
+        return "", i18n._("вид не поддерживается: в составе находки типов {types} – занесение недоступно",
+                          types=", ".join(sorted(t or i18n._("«»") for t in types)))
     title = hub_ops.normalize_text(summary)
     for kind in ("SAST", "SCA"):
         if title.endswith(f"({kind})"):
             return kind, ""
-    return "", "состав пуст, а заголовок не кончается на «(SAST)» или «(SCA)» – вид не определён, занесение недоступно"
+    return "", i18n._("состав пуст, а заголовок не кончается на «(SAST)» или «(SCA)» – вид не определён, занесение "
+                      "недоступно")
 
 
 def _first_value(defect: dict, keys: tuple[str, ...]) -> str:
@@ -1912,21 +1978,21 @@ def import_answer(op: dict, row: dict) -> tuple[dict | None, str]:
         except (TypeError, ValueError):
             status = 0
         if status == 404 and not result.get("not_sent"):
-            return None, f"дефекта №{number} нет в Hub (404)"
-        return None, f"{IMPORT_READ_FAILED} ({op.get('error') or 'ответа нет'})"
+            return None, i18n._("дефекта №{number} нет в Hub (404)", number=number)
+        return None, f"{i18n._(IMPORT_READ_FAILED)} ({op.get('error') or i18n._('ответа нет')})"
     defect = _body(op)
     if not isinstance(defect, dict):
-        return None, "ответ Hub не разобран (не объект JSON) – повторите чтение"
+        return None, i18n._("ответ Hub не разобран (не объект JSON) – повторите чтение")
     raw_id = defect.get("id")
     if isinstance(raw_id, bool) or not _DIGITS.fullmatch(str(raw_id)) or str(int(str(raw_id))) != number:
-        return None, f"Hub вернул другой дефект (№{raw_id} вместо №{number}) – не заносится"
+        return None, i18n._("Hub вернул другой дефект (№{got} вместо №{number}) – не заносится", got=raw_id, number=number)
     raw_app = defect.get("appId")
     if (isinstance(raw_app, bool) or not _DIGITS.fullmatch(str(raw_app))
             or int(str(raw_app)) != int(row.get("app_id") or 0)):
-        return None, (f"дефект №{number} – не из приложения Hub проекта (appId {raw_app}, у проекта "
-                      f"{row.get('app_id')}) – не заносится")
+        return None, i18n._("дефект №{number} – не из приложения Hub проекта (appId {got}, у проекта {app}) – не "
+                            "заносится", number=number, got=raw_app, app=row.get("app_id"))
     if not isinstance(defect.get("linkedIssues"), list):
-        return None, "состав не прочитан: в ответе Hub нет списка linkedIssues – повторите чтение"
+        return None, i18n._("состав не прочитан: в ответе Hub нет списка linkedIssues – повторите чтение")
     return defect, ""
 
 
@@ -1958,18 +2024,21 @@ def _holder_why(holder: dict, row: dict) -> str:
     if (str(holder.get("hub_defect_id") or "") == str(row.get("hub_defect_id") or "")
             and str(holder.get("hub_url") or "") == str(row.get("hub_url") or "")
             and int(holder.get("app_id") or 0) == int(row.get("app_id") or 0)):
-        return f"уже в строке этого же дефекта Hub (строка {holder['id']}, «{state}»)"
+        return i18n._("уже в строке этого же дефекта Hub (строка {row}, «{state}»)", row=holder["id"], state=state)
     if holder["state"] in ("done", "mismatch") and holder.get("hub_defect_id"):
-        return f"уже в другом дефекте {label} (строка {holder['id']})"
-    return f"уже в незавершённой операции дефекта{' ' + label if label else ''} (строка {holder['id']}, «{state}»)"
+        return i18n._("уже в другом дефекте {label} (строка {row})", label=label, row=holder["id"])
+    if label:
+        return i18n._("уже в незавершённой операции дефекта {label} (строка {row}, «{state}»)", label=label,
+                      row=holder["id"], state=state)
+    return i18n._("уже в незавершённой операции дефекта (строка {row}, «{state}»)", row=holder["id"], state=state)
 
 
 def _versions_warning(found: dict[str, dict], hub_ids: list[str]) -> str:
     """У SCA – разные версии или компоненты среди находок дефекта: предупреждение (решение – после занесения)."""
     seen = list(dict.fromkeys(f"{found[h]['component']} {found[h]['version']}".strip() for h in hub_ids
                               if h in found and found[h]["kind"] == "SCA"))
-    return ("находки разных версий: " + ", ".join(seen) + " – решение по такому дефекту – после занесения"
-            if len(seen) > 1 else "")
+    return (i18n._("находки разных версий: {versions} – решение по такому дефекту – после занесения",
+                   versions=", ".join(seen)) if len(seen) > 1 else "")
 
 
 def _hints(db: Database, row: dict, read: dict) -> list[str]:
@@ -1979,8 +2048,8 @@ def _hints(db: Database, row: dict, read: dict) -> list[str]:
     named = sorted(db.hub_ids_among(int(row["project_id"]), read.get("hub_numbers") or []) - linked, key=int)
     if not named:
         return []
-    return ["в блоке Hub названы находки " + ", ".join(named) + ", которых нет в составе ответа (в составе – только "
-            "находки со статусом Open): проверьте их в Hub, приложение их не добавляет"]
+    return [i18n._("в блоке Hub названы находки {ids}, которых нет в составе ответа (в составе – только находки со "
+                   "статусом Open): проверьте их в Hub, приложение их не добавляет", ids=", ".join(named))]
 
 
 def import_snapshot(db: Database, row: dict, defect: dict, closed_at: str = "") -> dict:
@@ -1996,7 +2065,7 @@ def import_snapshot(db: Database, row: dict, defect: dict, closed_at: str = "") 
         hub_id = str(issue_id)
         f = found.get(hub_id)
         if f is None or f["missing"] or hub_status.HUB_ISSUE_TYPE.get(f["kind"]) != issue_type:
-            absent.append({"hub_id": hub_id, "issue_type": issue_type, "why": NOT_IN_EXPORT})
+            absent.append({"hub_id": hub_id, "issue_type": issue_type, "why": i18n._(NOT_IN_EXPORT)})
             continue
         holder = db.hub_defect_holder(pid, hub_id, exclude_id=int(row["id"]))
         if holder is not None:
@@ -2004,8 +2073,9 @@ def import_snapshot(db: Database, row: dict, defect: dict, closed_at: str = "") 
                               "row": int(holder["id"])})
             continue
         accepted.append({"hub_id": hub_id, "issue_id": int(issue_id), "issue_type": issue_type})
-    warnings = [note for note in (read["kind_note"], read["number_note"], read["text_note"],
-                                  _versions_warning(found, [x["hub_id"] for x in accepted + conflicts])) if note]
+    # number_note в снимке – канонический (NO_NUMBER сравнивают hub_pull и маршруты); в предупреждении – перевод
+    warnings = [i18n._(note) for note in (read["kind_note"], read["number_note"], read["text_note"],
+                                          _versions_warning(found, [x["hub_id"] for x in accepted + conflicts])) if note]
     return {**read, "accepted": accepted, "absent": absent, "conflicts": conflicts, "warnings": warnings,
             "hints": _hints(db, row, read), "read_at": str(closed_at or "")}
 
@@ -2025,7 +2095,7 @@ def own_number_keys_in(c, row: dict, entries: Any, unexported: Any = ()) -> set[
     где пишет."""
     pid = int(row["project_id"])
     ids = [str((e or {}).get("hub_id") or "") for e in entries or []]
-    gone = [e for e in unexported or () if isinstance(e, dict) and e.get("why") == NOT_IN_EXPORT]
+    gone = [e for e in unexported or () if isinstance(e, dict) and is_not_in_export(e.get("why"))]
     found = Database.import_findings_in(c, pid, [str(e.get("hub_id") or "") for e in gone])
     for entry in gone:
         hub_id = str(entry.get("hub_id") or "")
@@ -2107,15 +2177,16 @@ def number_note_in(c, row: dict, number: int | None, own_keys: Any = ()) -> str:
     own = {str(k) for k in own_keys or ()}
     keys = [k for k in Database.defect_keys_with_number_in(c, pid, number) if k not in own]
     if keys:
-        parts.append("находки: " + ", ".join(keys[:5]) + (f" и ещё {len(keys) - 5}" if len(keys) > 5 else ""))
+        parts.append(_findings_list(keys))
     family = family_ids_in(c, row) if row.get("id") else set()
     others = [o for o in Database.hub_defects_with_number_in(c, pid, number, exclude_id=int(row["id"]))
               if int(o["id"]) not in family]  # строки привязки того же дефекта – свои (ревью dev34, круг 1)
     for other in others[:5]:
-        parts.append(f"дефект {bound_label(other) or 'из карточки'} (строка {other['id']})")
+        parts.append(_defect_row(other))
     if not parts:
         return ""
-    return f"номер ID{number} уже занят в приложении ({'; '.join(parts)}) – это номер из заголовка Hub, он остаётся резервом"
+    return i18n._("номер ID{number} уже занят в приложении ({who}) – это номер из заголовка Hub, он остаётся резервом",
+                  number=number, who="; ".join(parts))
 
 
 def _on_import(db: Database, op: dict, first: dict) -> None:
@@ -2158,10 +2229,11 @@ def _still_free(row: dict, entries: list[dict], changed: str, extra: Callable | 
             hub_id = str(entry["hub_id"])
             f = now.get(hub_id)
             if f is None or f["missing"] or hub_status.HUB_ISSUE_TYPE.get(f["kind"]) != entry["issue_type"]:
-                raise ValueError(changed.format(why=f"находки {hub_id} {NOT_IN_EXPORT}"))
+                raise ValueError(i18n._(changed, why=i18n._("находки {hub_id} нет в текущей выгрузке", hub_id=hub_id)))
             holder = Database.hub_defect_holder_in(c, pid, hub_id, exclude_id=own)
             if holder is not None:
-                raise ValueError(changed.format(why=f"находка {hub_id} {_holder_why(holder, row)}"))
+                raise ValueError(i18n._(changed, why=i18n._("находка {hub_id} {why}", hub_id=hub_id,
+                                                            why=_holder_why(holder, row))))
     return check
 
 
@@ -2171,12 +2243,13 @@ def accept_import(db: Database, row: dict, *, op_id: int, shown: str, target_che
     затем – done, origin 'import', вид, цели, заголовок Hub, текст команды, номер ID<n> (только резерв), подтверждающая
     операция – чтение, последствия доведены. Номер ключам находок не пишется, отметки не ставятся. Иначе ValueError."""
     if row.get("origin") != "import" or row["state"] != "import_preview":
-        raise ValueError("Предпросмотра занесения нет: обновите страницу.")
+        raise ValueError(i18n._("Предпросмотра занесения нет: обновите страницу."))
     snap = loads(row.get("import_json"), {}) or {}
     if not snap.get("kind"):
-        raise ValueError("Занесение недоступно: " + (snap.get("kind_note") or "вид дефекта не определён") + ".")
+        raise ValueError(i18n._("Занесение недоступно: {why}.", why=snap.get("kind_note")
+                                or i18n._("вид дефекта не определён")))
     if text_hash(str(row.get("import_json") or "")) != str(shown or ""):
-        raise ValueError(IMPORT_SHOWN_CHANGED)
+        raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
     pid = int(row["project_id"])
     accepted = list(snap.get("accepted") or [])
     targets = import_targets(db, pid, accepted)
@@ -2187,7 +2260,7 @@ def accept_import(db: Database, row: dict, *, op_id: int, shown: str, target_che
             target_check(c)
         current = c.execute("SELECT import_json FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone()
         if current is None or text_hash(str(current["import_json"] or "")) != str(shown):
-            raise ValueError(IMPORT_SHOWN_CHANGED)
+            raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
 
     fresh, _ = db.hub_defect_advance(
         int(row["id"]), expect_state="import_preview", expect_op=("read_op_id", int(op_id)),
@@ -2200,7 +2273,7 @@ def accept_import(db: Database, row: dict, *, op_id: int, shown: str, target_che
         import_json=dumps({**snap, "accepted": accepted}),
         on_write=lambda c, fresh: defect_drafts.accept(c, fresh, snap, op_id))
     if fresh is None:
-        raise ValueError("Предпросмотр занесения изменился в другой вкладке: обновите страницу.")
+        raise ValueError(i18n._("Предпросмотр занесения изменился в другой вкладке: обновите страницу."))
     return fresh
 
 
@@ -2210,7 +2283,7 @@ def cancel_import(db: Database, row: dict) -> dict:
     fresh = (db.hub_defect_update(int(row["id"]), expect_state="import_preview", state="cancelled")
              if row.get("origin") == "import" else None)
     if fresh is None:
-        raise ValueError("Предпросмотра занесения уже нет: обновите страницу.")
+        raise ValueError(i18n._("Предпросмотра занесения уже нет: обновите страницу."))
     return fresh
 
 
@@ -2218,7 +2291,7 @@ def retry_import(db: Database, row: dict, target_check: Callable | None = None) 
     """«Повторить чтение» у не удавшегося или отменённого занесения (ADR-0124 п. 3) одной транзакцией: нет другой живой
     строки этого дефекта (своя не в счёт), новая операция чтения, строка снова import_reading."""
     if row.get("origin") != "import" or row["state"] not in ("failed", "cancelled"):
-        raise ValueError("Повторить чтение можно только у занесения, которое не удалось или отменено.")
+        raise ValueError(i18n._("Повторить чтение можно только у занесения, которое не удалось или отменено."))
 
     def free(c) -> None:
         if target_check is not None:
@@ -2226,14 +2299,15 @@ def retry_import(db: Database, row: dict, target_check: Callable | None = None) 
         live = Database.hub_defect_live_in(c, str(row.get("hub_url") or ""), row.get("app_id"),
                                            str(row.get("hub_defect_id") or ""), exclude_id=int(row["id"]))
         if live is not None:
-            raise ValueError(f"Дефект №{row.get('hub_defect_id')} уже есть в приложении (строка {live['id']}, состояние "
-                             f"«{STATE_LABELS.get(live['state'], live['state'])}»): повторное чтение не нужно.")
+            raise ValueError(i18n._("Дефект №{number} уже есть в приложении (строка {row}, состояние «{state}»): "
+                                    "повторное чтение не нужно.", number=row.get("hub_defect_id"), row=live["id"],
+                                    state=STATE_LABELS.get(live["state"], live["state"])))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state=row["state"], check=free,
                                      item=import_item(row, str(row["hub_defect_id"])), op_field="read_op_id",
                                      state="import_reading", import_json="", error="")
     if fresh is None:
-        raise ValueError("Состояние строки изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние строки изменилось: обновите страницу."))
     return fresh
 
 
@@ -2244,27 +2318,28 @@ def import_view(row: dict) -> dict:
     state, number, error = row["state"], str(row.get("hub_defect_id") or ""), str(row.get("error") or "")
     view_of = {"state": state, "final": True, "text": "", "tone": "", "verify": False}
     if state == "import_reading":
-        return {**view_of, "final": False, "text": f"Читаю дефект №{number} из Hub…"}
+        return {**view_of, "final": False, "text": i18n._("Читаю дефект №{number} из Hub…", number=number)}
     if state == "import_preview":
         snap = loads(row.get("import_json"), {}) or {}
         snap = snap if isinstance(snap, dict) else {}
         if not snap.get("kind"):  # вид не определён или не поддерживается: формы «Занести» нет – только «Отменить»
-            why = str(snap.get("kind_note") or "") or "вид дефекта не определён"
-            return {**view_of, "tone": "warn", "text": f"Дефект №{number} прочитан из Hub, занесение недоступно: {why}"
-                                                       " – нажмите «Отменить»."}
-        return {**view_of, "text": f"Дефект №{number} прочитан из Hub: проверьте предпросмотр и нажмите «Занести»."}
+            why = str(snap.get("kind_note") or "") or i18n._("вид дефекта не определён")
+            return {**view_of, "tone": "warn", "text": i18n._("Дефект №{number} прочитан из Hub, занесение недоступно: "
+                                                              "{why} – нажмите «Отменить».", number=number, why=why)}
+        return {**view_of, "text": i18n._("Дефект №{number} прочитан из Hub: проверьте предпросмотр и нажмите «Занести».",
+                                          number=number)}
     if state == "failed":
-        return {**view_of, "text": error or IMPORT_READ_FAILED, "tone": "err"}
+        return {**view_of, "text": error or i18n._(IMPORT_READ_FAILED), "tone": "err"}
     if state == "done":
         if row.get("sync_op_id"):
-            return {**view_of, "final": False, "text": f"Сверяю с Hub: читаю дефект №{number}…"}
+            return {**view_of, "final": False, "text": i18n._("Сверяю с Hub: читаю дефект №{number}…", number=number)}
         update_text, update_tone, update_final = update_view(row)  # «Push в Hub» (ADR-0125)
         if not update_final:
             return {**view_of, "final": False, "text": update_text}
         sync_state = loads(row.get("sync_json"), {}) or {}
         note = ""
         if isinstance(sync_state, dict) and sync_state.get("error"):  # сверка не удалась: пояснение, состояние прежнее
-            note = "сверка с Hub: " + str(sync_state["error"])
+            note = i18n._("сверка с Hub: {error}", error=str(sync_state["error"]))
         tone = "ok"
         if update_tone in ("warn", "err") or error or note:
             tone = "err" if update_tone == "err" else "warn"
@@ -2275,7 +2350,7 @@ def import_view(row: dict) -> dict:
 # ---------------------------------------------------------------------------- «Pull из Hub» (только добавление)
 
 
-PULL_ONLY = "Pull из Hub доступен у созданного или занесённого дефекта с номером в Hub (строка-владелец)."
+PULL_ONLY = i18n.N_("Pull из Hub доступен у созданного или занесённого дефекта с номером в Hub (строка-владелец).")
 
 
 def pull_allowed(row: dict | None) -> bool:
@@ -2304,7 +2379,7 @@ def pull_targets_in(c, row: dict) -> list[dict]:
     return out
 
 
-FAMILY_BUSY = ("У дефекта идёт привязка находок или проверка её итога: дождитесь ответа исполнителя, затем снова "
+FAMILY_BUSY = i18n.N_("У дефекта идёт привязка находок или проверка её итога: дождитесь ответа исполнителя, затем снова "
                "«Pull из Hub».")
 
 
@@ -2335,20 +2410,20 @@ def family_running_problem(c, row: dict) -> str:
     принятое состояние. Действует на все пути привязки, в транзакции постановки (ADR-0136); '' – можно."""
     owner = defect_drafts.owner_in(c, row)
     if update_unconfirmed(owner) or update_busy(owner):
-        return "Обновление дефекта не подтверждено или ещё выполняется: сначала завершите его."
+        return i18n._("Обновление дефекта не подтверждено или ещё выполняется: сначала завершите его.")
     if update_state(owner).get("phase") == "preview":
-        return "Открыт предпросмотр «Push в Hub»: нажмите «Push в Hub» или «Отменить»."
+        return i18n._("Открыт предпросмотр «Push в Hub»: нажмите «Push в Hub» или «Отменить».")
     if owner.get("sync_op_id"):
-        return "Идёт «Pull из Hub»: дождитесь её итога."
+        return i18n._("Идёт «Pull из Hub»: дождитесь её итога.")
     if owner.get("verify_op_id"):
-        return "Идёт проверка дефекта в Hub: дождитесь её итога."
+        return i18n._("Идёт проверка дефекта в Hub: дождитесь её итога.")
     sync_state = loads(owner.get("sync_json"), {}) or {}
     if isinstance(sync_state, dict) and sync_state.get("read"):
-        return UPDATE_SYNC_FIRST
+        return i18n._(UPDATE_SYNC_FIRST)
     if family_busy_in(c, owner):
-        return FAMILY_BUSY
+        return i18n._(FAMILY_BUSY)
     if family_effects_pending_in(c, owner):
-        return EFFECTS_PENDING
+        return i18n._(EFFECTS_PENDING)
     return ""
 
 
@@ -2358,12 +2433,13 @@ def add_problem(c, owner: dict, hub_id: str = "") -> str:
     заранее), неизвестная основа полей, номер дефекта, с которым находка не получит ID; ключ самой находки номер не
     занимает: её свой номер сверяет страница. '' – можно."""
     if loads(owner.get("conflicts_json"), []):
-        return "У дефекта есть неразрешённые конфликты состава: сначала разрешите их в карточке дефекта."
+        return i18n._("У дефекта есть неразрешённые конфликты состава: сначала разрешите их в карточке дефекта.")
     edit = defect_drafts.local_edit(owner)
     if edit["fields_unknown"]:
-        return "Приложение ещё не знает, какие поля дефекта сейчас в Hub: сначала «Pull из Hub» в карточке дефекта."
+        return i18n._("Приложение ещё не знает, какие поля дефекта сейчас в Hub: сначала «Pull из Hub» в карточке "
+                      "дефекта.")
     if edit["edited"]:
-        return "В дефекте есть неотправленная правка: сначала «Push в Hub» или верните текст в карточке дефекта."
+        return i18n._("В дефекте есть неотправленная правка: сначала «Push в Hub» или верните текст в карточке дефекта.")
     entries = [*pull_targets_in(c, owner), *([{"hub_id": hub_id}] if hub_id else [])]
     return "; ".join(_number_refusals(c, owner, owner.get("summary"), entries))
 
@@ -2399,7 +2475,7 @@ def start_import_sync(db: Database, row: dict, target_check: Callable | None = N
     операция чтения с целью import_sync, её номер – в sync_op_id; прежний предпросмотр сверки снимается. Состояние,
     цели, номер и защита не меняются."""
     if not pull_allowed(row):
-        raise ValueError(PULL_ONLY)
+        raise ValueError(i18n._(PULL_ONLY))
 
     def idle(c) -> None:
         if target_check is not None:
@@ -2407,21 +2483,21 @@ def start_import_sync(db: Database, row: dict, target_check: Callable | None = N
         current = c.execute("SELECT sync_op_id, update_op_id, update_json FROM hub_defects WHERE id = ?",
                             (int(row["id"]),)).fetchone()
         if current["sync_op_id"]:
-            raise ValueError("Сверка уже идёт: дождитесь ответа исполнителя.")
+            raise ValueError(i18n._("Сверка уже идёт: дождитесь ответа исполнителя."))
         if update_busy(dict(current)):  # идёт «Push в Hub» (ADR-0125 п. 2): сверка подождёт его итога
-            raise ValueError(UPDATE_IN_PROGRESS)
+            raise ValueError(i18n._(UPDATE_IN_PROGRESS))
         if family_busy_in(c, row):  # идёт привязка находок к этому дефекту (dev34)
-            raise ValueError(FAMILY_BUSY)
+            raise ValueError(i18n._(FAMILY_BUSY))
         # запись принята, подтверждения нет (ADR-0125 п. 2): успех «Повторить чтение» записал бы цели этой попытки
         # поверх добавленных сверкой находок
         if update_unconfirmed(dict(current)):
-            raise ValueError(UPDATE_UNCONFIRMED_FIRST)
+            raise ValueError(i18n._(UPDATE_UNCONFIRMED_FIRST))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state="done", check=idle,
                                      item=import_item(row, str(row["hub_defect_id"]), sync=True),
                                      op_field="sync_op_id", sync_json="")
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите страницу."))
     return fresh
 
 
@@ -2442,25 +2518,26 @@ def sync_snapshot(db: Database, row: dict, defect: dict, closed_at: str = "") ->
         if hub_id in own:
             continue
         if issue_type != want:
-            incompatible.append({"hub_id": hub_id, "issue_type": issue_type, "why": SYNC_INCOMPATIBLE})
+            incompatible.append({"hub_id": hub_id, "issue_type": issue_type, "why": i18n._(SYNC_INCOMPATIBLE)})
             continue
         f = found.get(hub_id)
         if f is None or f["missing"] or hub_status.HUB_ISSUE_TYPE.get(f["kind"]) != issue_type:
-            not_added.append({"hub_id": hub_id, "issue_type": issue_type, "why": NOT_IN_EXPORT})
+            not_added.append({"hub_id": hub_id, "issue_type": issue_type, "why": i18n._(NOT_IN_EXPORT)})
             continue
         holder = db.hub_defect_holder(pid, hub_id, exclude_id=int(row["id"]))
         if holder is not None:
             not_added.append({"hub_id": hub_id, "issue_type": issue_type, "why": _holder_why(holder, row)})
             continue
         added.append({"hub_id": hub_id, "issue_id": int(issue_id), "issue_type": issue_type})
-    unobserved = [{"hub_id": str(t.get("hub_id") or ""), "why": SYNC_UNOBSERVED} for t in missing_targets(defect, targets)]
-    warnings = [note for note in (read["number_note"], read["text_note"],
-                                  number_shift_note(row.get("number"), read["number"], read["number_note"]),
-                                  BLOCK_REPEATED if block_repeated(defect.get("description")) else "") if note]
+    unobserved = [{"hub_id": str(t.get("hub_id") or ""), "why": i18n._(SYNC_UNOBSERVED)}
+                  for t in missing_targets(defect, targets)]
+    warnings = [i18n._(note) for note in (read["number_note"], read["text_note"],
+                                          number_shift_note(row.get("number"), read["number"], read["number_note"]),
+                                          BLOCK_REPEATED if block_repeated(defect.get("description")) else "") if note]
     from app.defect_fields import diff, fields_of
     confirmed = loads(row.get("confirmed_object_json"), None)
     previous = _read_of(confirmed) if isinstance(confirmed, dict) else {}
-    warnings_changed = [note for key in ("number_note", "text_note")
+    warnings_changed = [i18n._(note) for key in ("number_note", "text_note")
                         if (note := read[key]) and note != previous.get(key)]
     fields_diff = diff(fields_of(confirmed), fields_of(defect)) if isinstance(confirmed, dict) else []
     previous_links = linked_pairs(confirmed) if isinstance(confirmed, dict) else None
@@ -2521,7 +2598,8 @@ def _block_diff(row: dict, defect: dict) -> list[str]:
     old, new = _block_lines(base), _block_lines(seen)
     if old == new:  # различие есть, а в строках для чтения его не видно: показывается по единицам
         old, new = _below_boundary(description_units(base)), _below_boundary(description_units(seen))
-        old, new = [line.replace(CELL_MARK, "[ячейка]") for line in old], [line.replace(CELL_MARK, "[ячейка]") for line in new]
+        cell = i18n._("[ячейка]")
+        old, new = [line.replace(CELL_MARK, cell) for line in old], [line.replace(CELL_MARK, cell) for line in new]
     # всё, что примет «Применить», показывается целиком
     return [("− " if line[0] == "-" else "+ ") + line[2:] for line in ndiff(old, new) if line[:2] in ("- ", "+ ")]
 
@@ -2574,15 +2652,15 @@ def apply_import_sync(db: Database, row: dict, *, shown: str, target_check: Call
     заголовок, снимок чтения, текст команды и номер ID<n> (резерв) – из ответа; sync_json очищается: повторное
     применение невозможно."""
     if not pull_allowed(row):
-        raise ValueError(PULL_ONLY)
+        raise ValueError(i18n._(PULL_ONLY))
     raw = str(row.get("sync_json") or "")
     snap = loads(raw, {}) or {}
     if row.get("sync_op_id"):
-        raise ValueError("Сверка ещё идёт: дождитесь ответа исполнителя.")
+        raise ValueError(i18n._("Сверка ещё идёт: дождитесь ответа исполнителя."))
     if not isinstance(snap, dict) or not snap.get("read"):
-        raise ValueError("Применять нечего: предпросмотра сверки нет – нажмите «Pull из Hub».")
+        raise ValueError(i18n._("Применять нечего: предпросмотра сверки нет – нажмите «Pull из Hub»."))
     if text_hash(raw) != str(shown or ""):
-        raise ValueError(IMPORT_SHOWN_CHANGED)
+        raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
     pid, read = int(row["project_id"]), snap["read"]
     added = list(snap.get("added") or [])
     # состав – как в Hub (Hub – источник истины): цели, которых нет среди связей прочитанного
@@ -2601,7 +2679,7 @@ def apply_import_sync(db: Database, row: dict, *, shown: str, target_check: Call
     anchor = anchor if anchor in kept_ids else (str(targets[0]["hub_id"]) if targets else "")
     # ID пропал из заголовка в Hub – номер остаётся за дефектом (ADR-0138), Push вернёт его
     number = read.get("number") if isinstance(read.get("number"), int) else (
-        row.get("number") if _is_number(row.get("number")) and read.get("number_note") == NO_NUMBER else None)
+        row.get("number") if _is_number(row.get("number")) and is_no_number(read.get("number_note")) else None)
     command = str(read.get("command_text") or "")
     if row.get("origin") != "import" and _norm_lines(command) == _norm_lines(row.get("command_text")):
         # у дефекта из приложения текст – исходный текст оператора; разбор Hub отличается только формой (края строк,
@@ -2619,25 +2697,25 @@ def apply_import_sync(db: Database, row: dict, *, shown: str, target_check: Call
                 or any(current[k] != row[k] for k in ("summary", "draft_owner_id", "draft_revision", "draft_summary",
                                                       "draft_command_text", "draft_fields_json", "draft_fields_basis_json", "confirmed_object_json",
                                                       "conflicts_json"))):
-            raise ValueError(IMPORT_SHOWN_CHANGED)
+            raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
         if any(current[k] != value for k, value in snap.get("local_snapshot", {}).items()):
-            raise ValueError(IMPORT_SHOWN_CHANGED)
+            raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
         # состав строк семейства тот же, что видел предпросмотр (строку привязки могли изменить отдельно, dev34)
         if members_shown is not None and defect_drafts.members_in(c, row) != members_shown:
-            raise ValueError(IMPORT_SHOWN_CHANGED)
+            raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
         if pull_targets_in(c, row) != previous:
-            raise ValueError(IMPORT_SHOWN_CHANGED)
+            raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
         if family_busy_in(c, row):  # привязка поставлена после предпросмотра (ревью dev34, круг 1)
-            raise ValueError(FAMILY_BUSY)
+            raise ValueError(i18n._(FAMILY_BUSY))
         # последствия подтверждения (отметки, номера) ещё не доведены у какой-либо строки семейства: их доведёт показ
         # вкладки по прежнему составу, «Применить» (схлопывание целей строк привязки) его не меняет до этого (ревью
         # dev34, круги 6–7)
         if family_effects_pending_in(c, row):
-            raise ValueError(EFFECTS_PENDING)
+            raise ValueError(i18n._(EFFECTS_PENDING))
         if update_busy(dict(current)):  # идёт «Push в Hub» (ADR-0125 п. 2): строка не меняется
-            raise ValueError(UPDATE_IN_PROGRESS)
+            raise ValueError(i18n._(UPDATE_IN_PROGRESS))
         if update_unconfirmed(dict(current)):  # запись принята, подтверждения нет (ADR-0125 п. 2): строка не меняется
-            raise ValueError(UPDATE_UNCONFIRMED_FIRST)
+            raise ValueError(i18n._(UPDATE_UNCONFIRMED_FIRST))
 
     accepted = [{"hub_id": str(t["hub_id"]), "issue_id": int(t["issue_id"]), "issue_type": str(t["issue_type"])}
                 for t in targets]
@@ -2670,7 +2748,7 @@ def apply_import_sync(db: Database, row: dict, *, shown: str, target_check: Call
         fields_after_check=lambda c: {"error": number_note_in(
             c, row, number, own_number_keys_in(c, row, previous + targets, snap.get("not_added")))})
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите страницу."))
     return fresh
 
 
@@ -2686,7 +2764,7 @@ def _is_number(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
 
-EFFECTS_PENDING = ("Отметки по подтверждению дефекта ещё не доведены: обновите страницу и снова нажмите "
+EFFECTS_PENDING = i18n.N_("Отметки по подтверждению дефекта ещё не доведены: обновите страницу и снова нажмите "
                    "«Применить».")
 
 
@@ -2694,11 +2772,12 @@ def number_shift_note(old: Any, new: Any, why: str = NO_NUMBER) -> str:
     """ID в заголовке Hub пропал или появился (ADR-0138): пропавший номер остаётся за дефектом, Push вернёт его в заголовок;
     появившийся у дефекта без номера находкам сам не выдаётся (бэклог 70). Перенумерацию между номерами ведёт renumber_keys."""
     if _is_number(old) and not _is_number(new):
-        if why != NO_NUMBER:  # номеров в заголовке несколько: возвращать нечего, причину называет сам разбор заголовка
+        if not is_no_number(why):  # номеров в заголовке несколько: возвращать нечего, причину называет разбор заголовка
             return ""
-        return f"ID{old} пропал из заголовка в Hub. Номер остаётся за дефектом: следующий «Push в Hub» вернёт его в заголовок."
+        return i18n._("ID{old} пропал из заголовка в Hub. Номер остаётся за дефектом: следующий «Push в Hub» вернёт его "
+                      "в заголовок.", old=old)
     if not _is_number(old) and _is_number(new):
-        return f"В заголовке в Hub появился ID{new}. Находкам дефекта приложение само номер не выдаёт."
+        return i18n._("В заголовке в Hub появился ID{new}. Находкам дефекта приложение само номер не выдаёт.", new=new)
     return ""
 
 
@@ -2714,20 +2793,20 @@ def cancel_import_sync(db: Database, row: dict, *, shown: str) -> dict:
     показанный снимок (shown – его text_hash), иначе IMPORT_SHOWN_CHANGED: «Отменить» из старой вкладки не стирает
     более новый предпросмотр. sync_json очищается, принятое состояние не меняется."""
     if not pull_allowed(row):
-        raise ValueError("Отменять нечего: обновите страницу.")
+        raise ValueError(i18n._("Отменять нечего: обновите страницу."))
 
     def idle(c) -> None:
         current = c.execute("SELECT sync_op_id, sync_json FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone()
         if current is None:
-            raise ValueError("Отменять нечего: обновите страницу.")
+            raise ValueError(i18n._("Отменять нечего: обновите страницу."))
         if current["sync_op_id"]:
-            raise ValueError("Сверка ещё идёт: дождитесь ответа исполнителя.")
+            raise ValueError(i18n._("Сверка ещё идёт: дождитесь ответа исполнителя."))
         if text_hash(str(current["sync_json"] or "")) != str(shown or ""):
-            raise ValueError(IMPORT_SHOWN_CHANGED)
+            raise ValueError(i18n._(IMPORT_SHOWN_CHANGED))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state="done", check=idle, sync_json="")
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите страницу."))
     return fresh
 
 
@@ -2748,33 +2827,33 @@ UPDATE_TYPE = "DEFECT_UPDATE"  # тип цели операций «Push в Hub�
 # шагами, когда операции нет (запись неизвестна, подтверждение не прочитано)
 UPDATE_BUSY = ("putting", "confirming", "unknown")
 UPDATE_SUCCESS = ("done", "done_diff")
-UPDATE_NOTE_DONE = "сверено чтением: в Hub – отправленные заголовок и текст"
-UPDATE_ONLY_IMPORTED = ("Обновляются только дефекты, занесённые из Hub (ADR-0125): дефект, созданный приложением, уже "
+UPDATE_NOTE_DONE = i18n.N_("сверено чтением: в Hub – отправленные заголовок и текст")
+UPDATE_ONLY_IMPORTED = i18n.N_("Обновляются только дефекты, занесённые из Hub (ADR-0125): дефект, созданный приложением, уже "
                         "написан текущим генератором.")
-UPDATE_NOT_DONE = "Push в Hub можно только занесённый дефект «создан» с номером в Hub: обновите страницу."
-UPDATE_SHOWN_CHANGED = "Предпросмотр обновления изменился (другая вкладка или новое чтение): обновите страницу."
-UPDATE_ALREADY = "Обновление в Hub уже идёт: дождитесь его итога."
-UPDATE_IN_PROGRESS = ("У дефекта идёт «Push в Hub»: дождитесь его итога (при неизвестном исходе – «Сверить», при "
+UPDATE_NOT_DONE = i18n.N_("Push в Hub можно только занесённый дефект «создан» с номером в Hub: обновите страницу.")
+UPDATE_SHOWN_CHANGED = i18n.N_("Предпросмотр обновления изменился (другая вкладка или новое чтение): обновите страницу.")
+UPDATE_ALREADY = i18n.N_("Обновление в Hub уже идёт: дождитесь его итога.")
+UPDATE_IN_PROGRESS = i18n.N_("У дефекта идёт «Push в Hub»: дождитесь его итога (при неизвестном исходе – «Сверить», при "
                       "неудавшемся подтверждении – «Повторить чтение» во вкладке «Дефекты»).")
-UPDATE_UNCONFIRMED_FIRST = ("Запись в Hub принята, но подтверждение не прочитано: сначала «Повторить чтение» или "
+UPDATE_UNCONFIRMED_FIRST = i18n.N_("Запись в Hub принята, но подтверждение не прочитано: сначала «Повторить чтение» или "
                             "заново «Push в Hub».")
-UPDATE_PREVIEW_OPEN = "Предпросмотр обновления уже открыт: нажмите «Push в Hub» или «Отменить»."
-UPDATE_SYNC_FIRST = "Сначала «Применить» или «Отменить» сверку с Hub: её предпросмотр не применён."
-UPDATE_MANY_ROWS = ("У дефекта в приложении несколько строк (ещё строка {other}): это другая запись того же дефекта "
+UPDATE_PREVIEW_OPEN = i18n.N_("Предпросмотр обновления уже открыт: нажмите «Push в Hub» или «Отменить».")
+UPDATE_SYNC_FIRST = i18n.N_("Сначала «Применить» или «Отменить» сверку с Hub: её предпросмотр не применён.")
+UPDATE_MANY_ROWS = i18n.N_("У дефекта в приложении несколько строк (ещё строка {other}): это другая запись того же дефекта "
                     "Hub, обновление закрыто.")
-BLOCK_REPEATED = ("Служебный блок в описании Hub встречается больше одного раза. Приложение сохраняет всё ниже первой границы как есть; "
+BLOCK_REPEATED = i18n.N_("Служебный блок в описании Hub встречается больше одного раза. Приложение сохраняет всё ниже первой границы как есть; "
                   "лишний блок можно убрать в Hub и нажать «Pull из Hub».")
-UPDATE_NOT_OWNER = "Эта строка – привязка находок: «Push в Hub» и его шаги идут только из карточки дефекта."
-UPDATE_FAMILY_UNMERGED = "Находка добавлена в дефект. Нажмите «Pull из Hub» и «Применить», затем Push."
-UPDATE_FIX_NUMBER = "поправьте номер ID в заголовке в Hub и нажмите «Pull из Hub»"
-UPDATE_CANCELLED_PUT = "запрос не отправлен – отменён до выдачи исполнителю"
-UPDATE_OLD_WORKER = ("запрос не отправлен: исполнитель в ВМ не выполняет `PUT /defects/{id}` – обновите исполнитель в "
+UPDATE_NOT_OWNER = i18n.N_("Эта строка – привязка находок: «Push в Hub» и его шаги идут только из карточки дефекта.")
+UPDATE_FAMILY_UNMERGED = i18n.N_("Находка добавлена в дефект. Нажмите «Pull из Hub» и «Применить», затем Push.")
+UPDATE_FIX_NUMBER = i18n.N_("поправьте номер ID в заголовке в Hub и нажмите «Pull из Hub»")
+UPDATE_CANCELLED_PUT = i18n.N_("запрос не отправлен – отменён до выдачи исполнителю")
+UPDATE_OLD_WORKER = i18n.N_("запрос не отправлен: исполнитель в ВМ не выполняет `PUT /defects/{id}` – обновите исполнитель в "
                      "ВМ (версия 0.9.23.dev4 или новее) и снова нажмите «Push в Hub»")
-UPDATE_UNCONFIRMED = "запись принята Hub, но чтение не подтвердило отправленное содержимое – проверьте в Hub"
-UPDATE_OBSERVED_OLD = "сейчас в Hub прежний текст – это не доказывает, что запрос не применился"
-UPDATE_UNCLEAR = "содержимое в Hub отличается и от прежнего, и от отправленного – проверьте в Hub"
-UPDATE_LOCAL_CHANGED = "решения, данные находок или текст набора изменились после предпросмотра"
-_MANUAL = " – дефект правится в Hub вручную"
+UPDATE_UNCONFIRMED = i18n.N_("запись принята Hub, но чтение не подтвердило отправленное содержимое – проверьте в Hub")
+UPDATE_OBSERVED_OLD = i18n.N_("сейчас в Hub прежний текст – это не доказывает, что запрос не применился")
+UPDATE_UNCLEAR = i18n.N_("содержимое в Hub отличается и от прежнего, и от отправленного – проверьте в Hub")
+UPDATE_LOCAL_CHANGED = i18n.N_("решения, данные находок или текст набора изменились после предпросмотра")
+_MANUAL = i18n.N_(" – дефект правится в Hub вручную")
 _VOID_TAGS = frozenset({"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
                         "track", "wbr"})
 
@@ -2836,36 +2915,40 @@ def update_view(row: dict) -> tuple[str, str, bool]:
         return "", "", True
     if row.get("update_op_id"):
         step = str(state.get("step") or "")
-        text = {"read1": f"Готовлю обновление: читаю дефект №{number} из Hub…",
-                "read2": f"Перечитываю дефект №{number} перед записью в Hub…",
-                "blank": f"Запрашиваю у Hub заготовку для служебного блока дефекта №{number}…",
-                "model": f"Читаю у Hub данные находок для служебного блока дефекта №{number}: {len(state.get('model_done') or {})} из {len(state.get('model_for') or [])}…",
-                "put": f"Записываю в Hub изменения дефекта №{number}…",
-                "confirm": f"Запись принята Hub: проверяю дефект №{number} чтением…",
-                "verify": f"Сверяю с Hub: читаю дефект №{number}…"}.get(step, f"Обновляю дефект №{number}…")
+        steps = {"read1": i18n.N_("Готовлю обновление: читаю дефект №{number} из Hub…"),
+                 "read2": i18n.N_("Перечитываю дефект №{number} перед записью в Hub…"),
+                 "blank": i18n.N_("Запрашиваю у Hub заготовку для служебного блока дефекта №{number}…"),
+                 "model": i18n.N_("Читаю у Hub данные находок для служебного блока дефекта №{number}: {done} из {total}…"),
+                 "put": i18n.N_("Записываю в Hub изменения дефекта №{number}…"),
+                 "confirm": i18n.N_("Запись принята Hub: проверяю дефект №{number} чтением…"),
+                 "verify": i18n.N_("Сверяю с Hub: читаю дефект №{number}…")}
+        text = i18n._(steps.get(step, i18n.N_("Обновляю дефект №{number}…")), number=number,
+                      done=len(state.get("model_done") or {}), total=len(state.get("model_for") or []))
         return text, "", False
     refusals = "; ".join(str(x) for x in state.get("refusals") or [])
     diff = ", ".join(str(x) for x in state.get("diff") or [])
     texts = {
-        "preview": ("Обновление подготовлено: проверьте предпросмотр и нажмите «Push в Hub»."
+        "preview": (i18n._("Обновление подготовлено: проверьте предпросмотр и нажмите «Push в Hub».")
                     + (f" {_sentence(note)}." if note else ""), "warn" if note else ""),
-        "refused": (f"Обновление не подготовлено: {refusals or note}.", "warn"),
-        "read_failed": (f"Обновление не подготовлено: {note} – снова нажмите «Push в Hub».", "err"),
-        "cancelled": (note or "Подготовка обновления отменена: в Hub ничего не уходило.", ""),
-        "stale": (f"Обновление не отправлено: {note} – снова нажмите «Push в Hub», приложение подготовит "
-                  "новый предпросмотр.", "warn"),
-        "failed": (f"Обновление не выполнено: {note}.", "err"),
-        "unknown": (f"Результат обновления неизвестен ({note or 'ответа нет'}): нажмите «Сверить» – приложение "
-                    "прочитает дефект в Hub; повторно само не отправит.", "warn"),
-        "confirming": (f"Запись принята Hub, но подтверждающее чтение не удалось ({note or 'ответа нет'}): нажмите "
-                       "«Повторить чтение».", "warn"),
-        "done": ("Обновлено в Hub: заголовок и текст – из сохранённого черновика.", "ok"),
-        "done_diff": (f"Обновлено в Hub; в дефекте отличаются и другие поля ({diff}) – проверьте в Hub.", "warn"),
-        "unconfirmed": (f"{_sentence(UPDATE_UNCONFIRMED)}."
-                        + (" Отличаются поля: " + ", ".join(state["confirmation_diff"]) + "."
+        "refused": (i18n._("Обновление не подготовлено: {why}.", why=refusals or note), "warn"),
+        "read_failed": (i18n._("Обновление не подготовлено: {why} – снова нажмите «Push в Hub».", why=note), "err"),
+        "cancelled": (note or i18n._("Подготовка обновления отменена: в Hub ничего не уходило."), ""),
+        "stale": (i18n._("Обновление не отправлено: {why} – снова нажмите «Push в Hub», приложение подготовит новый "
+                         "предпросмотр.", why=note), "warn"),
+        "failed": (i18n._("Обновление не выполнено: {why}.", why=note), "err"),
+        "unknown": (i18n._("Результат обновления неизвестен ({why}): нажмите «Сверить» – приложение прочитает дефект в "
+                           "Hub; повторно само не отправит.", why=note or i18n._("ответа нет")), "warn"),
+        "confirming": (i18n._("Запись принята Hub, но подтверждающее чтение не удалось ({why}): нажмите «Повторить "
+                              "чтение».", why=note or i18n._("ответа нет")), "warn"),
+        "done": (i18n._("Обновлено в Hub: заголовок и текст – из сохранённого черновика."), "ok"),
+        "done_diff": (i18n._("Обновлено в Hub; в дефекте отличаются и другие поля ({fields}) – проверьте в Hub.",
+                             fields=diff), "warn"),
+        "unconfirmed": (f"{_sentence(i18n._(UPDATE_UNCONFIRMED))}."
+                        + (i18n._(" Отличаются поля: {fields}.", fields=", ".join(state["confirmation_diff"]))
                            if state.get("confirmation_diff") else ""), "warn"),
-        "observed_old": (f"{_sentence(UPDATE_OBSERVED_OLD)}: снова нажмите «Push в Hub».", "warn"),
-        "unclear": (f"{_sentence(note or UPDATE_UNCLEAR)}.", "warn"),
+        "observed_old": (i18n._("{text}: снова нажмите «Push в Hub».", text=_sentence(i18n._(UPDATE_OBSERVED_OLD))),
+                         "warn"),
+        "unclear": (f"{_sentence(note or i18n._(UPDATE_UNCLEAR))}.", "warn"),
     }
     text, tone = texts.get(phase, ("", ""))
     return text, tone, True
@@ -2905,11 +2988,11 @@ def update_blank_item(row: dict) -> tuple[dict | None, str]:
     targets = [{"issue_id": i} for i in blank_target_ids(row)]
     issue_type = hub_status.HUB_ISSUE_TYPE.get(str(row.get("kind") or ""))
     if not targets:
-        return None, "у находок дефекта нет номеров Hub"
+        return None, i18n._("у находок дефекта нет номеров Hub")
     if not issue_type:
-        return None, f"вид дефекта «{row.get('kind') or '–'}» без типа находки Hub"
+        return None, i18n._("вид дефекта «{kind}» без типа находки Hub", kind=row.get("kind") or "–")
     if row.get("app_id") is None:
-        return None, "у строки дефекта нет приложения Hub"
+        return None, i18n._("у строки дефекта нет приложения Hub")
     try:
         request = blank_request(int(row["app_id"]), targets, issue_type)
     except (TypeError, ValueError, hub_ops.HubRequestRejected) as exc:
@@ -3136,8 +3219,9 @@ def hub_block(description: Any) -> tuple[str, str]:
     причина: дефект правится вручную): строки нет или она не одна; она не выделяется в один кусок; в её куске до неё
     есть другой текст (блок Hub склеен с текстом команды)."""
     text = str(description or "")
+    manual = i18n._(_MANUAL)
     if IMPORT_BOUNDARY not in description_lines(text):
-        return "", f"в описании нет строки «{IMPORT_BOUNDARY}»" + _MANUAL
+        return "", i18n._("в описании нет строки «{boundary}»", boundary=IMPORT_BOUNDARY) + manual
     starts = _top_level_starts(text)
     hits = []
     for i, start in enumerate(starts):
@@ -3146,13 +3230,13 @@ def hub_block(description: Any) -> tuple[str, str]:
         if IMPORT_BOUNDARY in lines:
             hits.append((start, lines))
     if not hits:
-        return "", f"строка «{IMPORT_BOUNDARY}» не выделяется в отдельный элемент описания" + _MANUAL
+        return "", i18n._("строка «{boundary}» не выделяется в отдельный элемент описания", boundary=IMPORT_BOUNDARY) + manual
     start, lines = hits[0]  # блок повторён (ADR-0137): от первой границы до конца описания, байт в байт
     if IMPORT_BOUNDARY in description_lines(text[:start]):  # первая граница не выделилась: второй блок её не заменяет
-        return "", f"строка «{IMPORT_BOUNDARY}» не выделяется в отдельный элемент описания" + _MANUAL
+        return "", i18n._("строка «{boundary}» не выделяется в отдельный элемент описания", boundary=IMPORT_BOUNDARY) + manual
     if any(line.strip() for line in lines[:lines.index(IMPORT_BOUNDARY)]):
-        return "", (f"блок Hub склеен с текстом команды: в одном элементе описания до «{IMPORT_BOUNDARY}» есть другой "
-                    "текст" + _MANUAL)
+        return "", i18n._("блок Hub склеен с текстом команды: в одном элементе описания до «{boundary}» есть другой "
+                          "текст", boundary=IMPORT_BOUNDARY) + manual
     return text[start:], ""
 
 
@@ -3189,7 +3273,7 @@ def keep_hub_markup(defect: Any, description: str) -> str:
     return description
 
 
-LAYOUT_KEPT = ("Пустые строки подряд и отступы в начале строк сравнение с Hub не учитывает: если правка касалась "
+LAYOUT_KEPT = i18n.N_("Пустые строки подряд и отступы в начале строк сравнение с Hub не учитывает: если правка касалась "
                "только их, описание в Hub не переписано – сохранит ли Hub такие правки, не проверялось")
 # оформление описания Hub, которого не видит сравнение по строкам: пустой абзац, неразрывный пробел или пробелы в
 # начале абзаца или строки – и обычные пробелы там же перед текстом (ревью Codex круга 5; перевод строки между
@@ -3251,15 +3335,15 @@ def update_description(command_text: str, block: str = "") -> tuple[str, str]:
     (описание, '') или ('', причина)."""
     if IMPORT_BOUNDARY in description_lines(command_html(command_text)):
         # так Hub отмечает начало своего блока: при чтении текст разделился бы по ней (ревью A2 31.10)
-        return "", (f"в тексте дефекта есть отдельная строка «{IMPORT_BOUNDARY}» – уберите или перефразируйте её: "
-                    "Hub отмечает ею начало своего блока")
+        return "", i18n._("в тексте дефекта есть отдельная строка «{boundary}» – уберите или перефразируйте её: Hub "
+                          "отмечает ею начало своего блока", boundary=IMPORT_BOUNDARY)
     text_html = command_html(command_text)
     expected = command_plain(command_text)
     # текст встречается в текстовой части один раз; совпадения внутри блока Hub (например, цитата текста в сведениях
     # Hub) повтором не считаются (ревью dev30, круг 4)
     times = plain_text(text_html).count(expected) if expected else 0
     if times != 1:
-        return "", f"в собранном описании текст команды встречается {times} раз" + _MANUAL
+        return "", i18n._("в собранном описании текст команды встречается {times} раз", times=times) + i18n._(_MANUAL)
     return description_html(command_text, block), ""
 
 
@@ -3283,9 +3367,9 @@ def block_for_write(row: dict, defect: dict | None) -> tuple[str, str]:
         block, problem = hub_block(hub)
         if not problem:
             return block, ""
-        why = problem.replace(_MANUAL, "")
-        return blank, (f"блок Hub в описании не выделяется ({why}): в описание уйдёт "
-                       + ("блок заготовки" if blank else "только текст приложения"))
+        why = problem.replace(i18n._(_MANUAL), "").replace(_MANUAL, "")
+        return blank, i18n._("блок Hub в описании не выделяется ({why}): в описание уйдёт {what}", why=why,
+                             what=i18n._("блок заготовки") if blank else i18n._("только текст приложения"))
     return blank, ""
 
 
@@ -3507,25 +3591,26 @@ def _number_refusals(c, row: dict, summary: Any, entries: Any, unexported: Any =
     reserved = row.get("number")
     number, number_why = title_number(summary)
     if not isinstance(reserved, int) or isinstance(reserved, bool) or reserved <= 0:
-        return ["нет номера: у строки нет номера ID" + (
-            f" (в заголовке Hub теперь ID{number}) – сначала «Pull из Hub» и «Применить»" if number
-            else f" – {UPDATE_FIX_NUMBER}")]
-    if number is None and number_why != NO_NUMBER:
-        return [f"{number_why} – {UPDATE_FIX_NUMBER}"]
+        if number:
+            return [i18n._("нет номера: у строки нет номера ID (в заголовке Hub теперь ID{number}) – сначала «Pull из "
+                           "Hub» и «Применить»", number=number)]
+        return [i18n._("нет номера: у строки нет номера ID – {fix}", fix=i18n._(UPDATE_FIX_NUMBER))]
+    if number is None and not is_no_number(number_why):
+        return [f"{i18n._(number_why)} – {i18n._(UPDATE_FIX_NUMBER)}"]
     number = reserved if number is None else number  # в заголовке номера нет: Push вернёт номер дефекта (ADR-0138)
     if number != reserved:
-        return [f"номер в заголовке Hub изменился (было ID{reserved}, стало ID{number}) – сначала «Pull из "
-                "Hub» и «Применить»"]
+        return [i18n._("номер в заголовке Hub изменился (было ID{old}, стало ID{new}) – сначала «Pull из Hub» и "
+                       "«Применить»", old=reserved, new=number)]
     own = own_number_keys_in(c, row, entries, unexported)
     keys = [k for k in Database.defect_keys_with_number_in(c, pid, number) if k not in own]
     family = family_ids_in(c, row)
     others = [r for r in Database.hub_defects_with_number_in(c, pid, number, exclude_id=int(row["id"]))
               if int(r["id"]) not in family]
     if keys or others:
-        who = (["находки: " + ", ".join(keys[:5]) + (f" и ещё {len(keys) - 5}" if len(keys) > 5 else "")]
-               if keys else [])
-        who += [f"дефект {bound_label(r) or 'из карточки'} (строка {r['id']})" for r in others[:5]]
-        return [f"номер ID{number} занят другим в приложении ({'; '.join(who)}) – {UPDATE_FIX_NUMBER}"]
+        who = [_findings_list(keys)] if keys else []
+        who += [_defect_row(r) for r in others[:5]]
+        return [i18n._("номер ID{number} занят другим в приложении ({who}) – {fix}", number=number, who="; ".join(who),
+                       fix=i18n._(UPDATE_FIX_NUMBER))]
     return []
 
 
@@ -3551,12 +3636,12 @@ def update_hub_problems(c, row: dict, defect: dict, prep: dict) -> tuple[list[st
             if hub_id not in own_ids:
                 added.append(hub_id)
         else:
-            unexported.append({"hub_id": hub_id, "issue_type": issue_type, "why": NOT_IN_EXPORT})
+            unexported.append({"hub_id": hub_id, "issue_type": issue_type, "why": i18n._(NOT_IN_EXPORT)})
     if added:
-        refusals.append(f"в Hub к дефекту добавлены находки {', '.join(added)}: сначала «Pull из Hub»")
+        refusals.append(i18n._("в Hub к дефекту добавлены находки {ids}: сначала «Pull из Hub»", ids=", ".join(added)))
     if unexported:
-        warnings.append("в составе дефекта в Hub есть находки не из текущей выгрузки: "
-                        + ", ".join(e["hub_id"] for e in unexported) + " – в обновлении они не участвуют")
+        warnings.append(i18n._("в составе дефекта в Hub есть находки не из текущей выгрузки: {ids} – в обновлении они не "
+                               "участвуют", ids=", ".join(e["hub_id"] for e in unexported)))
     number_refusals = _number_refusals(c, row, defect.get("summary"), targets, unexported)
     refusals += number_refusals
     number = title_number(defect.get("summary"))[0] or row.get("number")
@@ -3564,11 +3649,12 @@ def update_hub_problems(c, row: dict, defect: dict, prep: dict) -> tuple[list[st
         for key in prep.get("number_keys") or []:
             have = Database.defect_number_in(c, pid, str(key))
             if have is not None and have != number:
-                refusals.append(f"у ключа {key} уже номер ID{have}, а не ID{number} – {UPDATE_FIX_NUMBER}")
+                refusals.append(i18n._("у ключа {key} уже номер ID{have}, а не ID{number} – {fix}", key=key, have=have,
+                                       number=number, fix=i18n._(UPDATE_FIX_NUMBER)))
     return refusals, warnings
 
 
-PLACE_PENDING = ("Место находок {ids} в наборах нужно выбрать заново (после слияния пакетов): выберите его в карточке "
+PLACE_PENDING = i18n.N_("Место находок {ids} в наборах нужно выбрать заново (после слияния пакетов): выберите его в карточке "
                  "находки, затем подготовьте обновление.")
 
 
@@ -3584,7 +3670,7 @@ def pending_place_problem(c, current: dict) -> str:
     marks = ",".join("?" * len(ids))
     rows = c.execute(f"SELECT hub_id FROM sca_set_members WHERE project_id = ? AND hub_id IN ({marks})"
                      " AND pending_reason <> '' ORDER BY hub_id", (current["project_id"], *ids)).fetchall()
-    return PLACE_PENDING.format(ids=", ".join(str(r["hub_id"]) for r in rows)) if rows else ""
+    return i18n._(PLACE_PENDING, ids=", ".join(str(r["hub_id"]) for r in rows)) if rows else ""
 
 
 def _update_idle_problem(c, current: dict, own_op: int | None = None, *, local=False) -> str:
@@ -3593,39 +3679,39 @@ def _update_idle_problem(c, current: dict, own_op: int | None = None, *, local=F
     незакрытая операция цепочки, неприменённый предпросмотр сверки, у дефекта несколько живых строк, место целей в
     наборах ждёт выбора после слияния пакетов; '' – можно."""
     if not local and loads(current.get("conflicts_json"), []):
-        return "У дефекта есть неразрешённые конфликты."
+        return i18n._("У дефекта есть неразрешённые конфликты.")
     if problem := pending_place_problem(c, current):
         return problem
     if current.get("sync_op_id"):
-        return "Идёт «Pull из Hub»: дождитесь её итога."
+        return i18n._("Идёт «Pull из Hub»: дождитесь её итога.")
     if current.get("verify_op_id"):
-        return "Идёт проверка дефекта в Hub: дождитесь её итога."
+        return i18n._("Идёт проверка дефекта в Hub: дождитесь её итога.")
     if current.get("update_op_id") and current.get("update_op_id") != own_op:
-        return UPDATE_ALREADY
+        return i18n._(UPDATE_ALREADY)
     for field in ("blank_op_id", "create_op_id", "read_op_id", "link_op_id"):
         op_id = current.get(field)
         found = c.execute("SELECT state FROM hub_ops WHERE id = ?", (int(op_id),)).fetchone() if op_id else None
         if found is not None and found["state"] in hub_ops.OPEN_STATES:
-            return f"У строки дефекта есть незакрытая операция №{op_id}: дождитесь её итога."
+            return i18n._("У строки дефекта есть незакрытая операция №{op}: дождитесь её итога.", op=op_id)
     sync_state = loads(current.get("sync_json"), {}) or {}
     if isinstance(sync_state, dict) and sync_state.get("read"):
-        return UPDATE_SYNC_FIRST
+        return i18n._(UPDATE_SYNC_FIRST)
     owner_id = int(current.get("draft_owner_id") or current["id"])
     if owner_id != int(current["id"]):  # Push и его шаги – только от владельца: остальной код читает его цели (ADR-0136)
-        return UPDATE_NOT_OWNER
+        return i18n._(UPDATE_NOT_OWNER)
     if not defect_drafts.family_single_in(c, current):
-        return UPDATE_FAMILY_UNMERGED
+        return i18n._(UPDATE_FAMILY_UNMERGED)
     live = Database.hub_defect_live_in(c, str(current.get("hub_url") or ""), current.get("app_id"),
                                        str(current.get("hub_defect_id") or ""), exclude_id=int(current["id"]), owner_id=owner_id)
     if live is not None:
-        return UPDATE_MANY_ROWS.format(other=live["id"])
+        return i18n._(UPDATE_MANY_ROWS, other=live["id"])
     return ""
 
 
 def _current_in(c, row: dict) -> dict:
     found = c.execute("SELECT * FROM hub_defects WHERE id = ?", (int(row["id"]),)).fetchone()
     if found is None:
-        raise ValueError("Дефект не найден: обновите страницу.")
+        raise ValueError(i18n._("Дефект не найден: обновите страницу."))
     return dict(found)
 
 
@@ -3634,27 +3720,27 @@ def prep_changes(new: dict, prep: dict) -> list[str]:
     для оператора (прежний отказ «изменилось после предпросмотра» не говорил, что изменилось)."""
     out: list[str] = []
     if str(new.get("summary") or "") != str(prep.get("summary") or ""):
-        out.append("заголовок")
+        out.append(i18n._("заголовок"))
     if str(new.get("command_text") or "") != str(prep.get("command_text") or ""):
-        out.append("текст дефекта")
+        out.append(i18n._("текст дефекта"))
     if "draft_revision" in new and new.get("draft_revision") != prep.get("draft_revision"):
-        out.append("черновик сохранён заново")
+        out.append(i18n._("черновик сохранён заново"))
     if "members_snapshot" in new and new.get("members_snapshot") != prep.get("members_snapshot"):
-        out.append("состав дефекта в приложении")
+        out.append(i18n._("состав дефекта в приложении"))
     if str(new.get("fingerprint") or "") != str(prep.get("fingerprint") or ""):
-        out.append("набор SCA")
+        out.append(i18n._("набор SCA"))
     old_targets = [t for t in new.get("targets") or [] if isinstance(t, dict)]
     new_targets = [t for t in prep.get("targets") or [] if isinstance(t, dict)]
     before = {str(t.get("hub_id") or ""): t for t in old_targets}
     after = {str(t.get("hub_id") or ""): t for t in new_targets}
     added, removed = sorted(set(after) - set(before)), sorted(set(before) - set(after))
     if added:
-        out.append("в дефект вошли находки " + ", ".join(added))
+        out.append(i18n._("в дефект вошли находки {ids}", ids=", ".join(added)))
     if removed:
-        out.append("из дефекта ушли находки " + ", ".join(removed))
+        out.append(i18n._("из дефекта ушли находки {ids}", ids=", ".join(removed)))
     if not added and not removed and ([str(t.get("hub_id") or "") for t in old_targets]
                                       != [str(t.get("hub_id") or "") for t in new_targets]):
-        out.append("порядок находок")  # отпечаток учитывает порядок целей
+        out.append(i18n._("порядок находок"))  # отпечаток учитывает порядок целей
 
     def value(t: dict, key: str) -> str:
         # по тем же правилам, что update_prep_sig: прежний формат хранил текст решения как entered_hash, версия
@@ -3663,15 +3749,17 @@ def prep_changes(new: dict, prep: dict) -> list[str]:
             return parts_without_app(t.get(key))
         return str((t.get("decision_hash", t.get("entered_hash")) if key == "decision_hash" else t.get(key)) or "")
 
-    kinds = (("revision", "решение сохранено заново"), ("sig", "данные находки (новая выгрузка или синхронизация)"),
-             ("decision_hash", "текст решения"), ("entered_parts", "части отметки «Внесено в Hub»"))
+    kinds = (("revision", i18n.N_("решение сохранено заново")),
+             ("sig", i18n.N_("данные находки (новая выгрузка или синхронизация)")),
+             ("decision_hash", i18n.N_("текст решения")), ("entered_parts", i18n.N_("части отметки «Внесено в Hub»")))
     for key, label in kinds:
         changed = [h for h in sorted(set(before) & set(after)) if value(before[h], key) != value(after[h], key)]
         if changed:
-            shown = ", ".join(changed[:5]) + (f" и ещё {len(changed) - 5}" if len(changed) > 5 else "")
-            out.append(f"{label} – {'находка' if len(changed) == 1 else 'находки'} {shown}")
+            shown = ", ".join(changed[:5]) + (_and_more(len(changed) - 5) if len(changed) > 5 else "")
+            out.append(i18n._("{label} – находка {ids}", label=i18n._(label), ids=shown) if len(changed) == 1
+                       else i18n._("{label} – находки {ids}", label=i18n._(label), ids=shown))
     if sorted(str(k) for k in new.get("number_keys") or []) != sorted(str(k) for k in prep.get("number_keys") or []):
-        out.append("номера ID находок")
+        out.append(i18n._("номера ID находок"))
     return out
 
 
@@ -3683,15 +3771,15 @@ def _prep_problem(state: dict, prep: dict) -> str:
         return "; ".join(str(x) for x in prep["refusals"])
     new = state.get("new") or {}
     if update_prep_sig(prep, fields_contract="contract_version" in state) != str(new.get("prep_sig") or ""):
-        changes = prep_changes(new, prep) or ["что именно – по сохранённому предпросмотру не определить (поля "
-                                              "черновика, конфликты состава или формат прежней версии)"]
-        return f"{UPDATE_LOCAL_CHANGED} (изменилось: {'; '.join(changes)})"
+        changes = prep_changes(new, prep) or [i18n._("что именно – по сохранённому предпросмотру не определить (поля "
+                                                     "черновика, конфликты состава или формат прежней версии)")]
+        return i18n._("{what} (изменилось: {changes})", what=i18n._(UPDATE_LOCAL_CHANGED), changes="; ".join(changes))
     return ""
 
 
-WHERE_WITH_BLOCK = ("В тексте остался раздел «Где исправлять». Если вместе со служебным блоком он не нужен, нажмите «Отменить», уберите раздел в тексте "
+WHERE_WITH_BLOCK = i18n.N_("В тексте остался раздел «Где исправлять». Если вместе со служебным блоком он не нужен, нажмите «Отменить», уберите раздел в тексте "
                     "дефекта и снова нажмите «Push в Hub».")
-WHERE_DIFFERS = ("Раздел «Где исправлять» в тексте отличается от сведений Hub и оставлен как есть. Чтобы собрать его заново, "
+WHERE_DIFFERS = i18n.N_("Раздел «Где исправлять» в тексте отличается от сведений Hub и оставлен как есть. Чтобы собрать его заново, "
                  "удалите раздел из текста и сохраните черновик.")
 
 
@@ -3720,7 +3808,7 @@ def with_where(db: Database, row: dict, defect: dict | None, prep: dict) -> dict
     if block_for_write(row, defect)[0]:
         if hub_has_block(defect) or not defect_where.own_tail(text):
             return prep
-        return {**prep, "warnings": [*(prep.get("warnings") or []), WHERE_WITH_BLOCK]}
+        return {**prep, "warnings": [*(prep.get("warnings") or []), i18n._(WHERE_WITH_BLOCK)]}
     links = (defect or {}).get("linkedIssues") if isinstance(defect, dict) else None
     if not isinstance(links, list):
         return prep
@@ -3732,7 +3820,7 @@ def with_where(db: Database, row: dict, defect: dict | None, prep: dict) -> dict
     if not own and not defect_where.has_head(text):
         return {**prep, "command_text": defect_where.join(body, section), "where_added": True}
     if not defect_where.same(own, section):
-        return {**prep, "warnings": [*(prep.get("warnings") or []), WHERE_DIFFERS]}
+        return {**prep, "warnings": [*(prep.get("warnings") or []), i18n._(WHERE_DIFFERS)]}
     return prep
 
 
@@ -3747,9 +3835,9 @@ def _prepared(prepare: Callable[[dict], dict], row: dict) -> dict:
             "kind": str(row.get("kind") or ""), "fingerprint": "", "anchor": "", "tx_check": None, **prep}
     # номер – начало заголовка и выдаётся приложением (ADR-0138): пропал – Push возвращает его
     reserved = row.get("number")
-    if _is_number(reserved) and str(prep["summary"]).strip() and title_number(prep["summary"])[1] == NO_NUMBER:
+    if _is_number(reserved) and str(prep["summary"]).strip() and is_no_number(title_number(prep["summary"])[1]):
         prep = {**prep, "summary": f"ID{reserved} - {prep['summary']}",
-                "warnings": [*prep["warnings"], NUMBER_RETURNED.format(number=reserved)]}
+                "warnings": [*prep["warnings"], i18n._(NUMBER_RETURNED, number=reserved)]}
     return prep
 
 
@@ -3762,14 +3850,14 @@ def start_update(db: Database, row: dict, target_check: Callable | None = None) 
     поколение попытки и чтение `GET /defects/{id}` – номер в update_op_id. Подтверждённое содержимое прежнего успеха
     переносится в новое состояние. Иначе ValueError."""
     if row.get("origin") not in ("app", "import"):
-        raise ValueError(UPDATE_ONLY_IMPORTED)
+        raise ValueError(i18n._(UPDATE_ONLY_IMPORTED))
     if row["state"] != "done" or not row.get("hub_defect_id"):
-        raise ValueError(UPDATE_NOT_DONE)
+        raise ValueError(i18n._(UPDATE_NOT_DONE))
     if update_busy(row):
-        raise ValueError(UPDATE_ALREADY)
+        raise ValueError(i18n._(UPDATE_ALREADY))
     state = update_state(row)
     if state.get("phase") == "preview":
-        raise ValueError(UPDATE_PREVIEW_OPEN)
+        raise ValueError(i18n._(UPDATE_PREVIEW_OPEN))
     raw = str(row.get("update_json") or "")
 
     def idle(c) -> None:
@@ -3777,7 +3865,7 @@ def start_update(db: Database, row: dict, target_check: Callable | None = None) 
             target_check(c)
         current = _current_in(c, row)
         if str(current.get("update_json") or "") != raw:
-            raise ValueError(UPDATE_SHOWN_CHANGED)
+            raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
         problem = _update_idle_problem(c, current)
         if problem:
             raise ValueError(problem)
@@ -3787,7 +3875,7 @@ def start_update(db: Database, row: dict, target_check: Callable | None = None) 
         update_json=dumps({"phase": "reading", "step": "read1", "generation": int(state.get("generation") or 0) + 1,
                            "confirmed": state.get("confirmed") or {}}))
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите страницу."))
     return fresh
 
 
@@ -3798,23 +3886,23 @@ def request_put(db: Database, row: dict, *, generation: str, shown: str, prep: d
     транзакцией – второе чтение `GET /defects/{id}`. Запись `PUT` ставит ответ на него после повторных проверок
     (_on_update_read2). Иначе ValueError."""
     if row.get("origin") not in ("app", "import") or row["state"] != "done":
-        raise ValueError(UPDATE_ONLY_IMPORTED)
+        raise ValueError(i18n._(UPDATE_ONLY_IMPORTED))
     state = update_state(row)
     raw = str(row.get("update_json") or "")
     if (state.get("phase") != "preview" or row.get("update_op_id") or str(state.get("generation")) != str(generation)
             or text_hash(raw) != str(shown or "")):
-        raise ValueError(UPDATE_SHOWN_CHANGED)
+        raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
     problem = _prep_problem(state, with_where(db, row, state.get("first"), _prepared(lambda _row: prep, row)))
     if problem:
-        raise ValueError(f"Обновление не отправлено: {problem}. Нажмите «Отменить» в предпросмотре, затем снова "
-                         "«Push в Hub» – приложение подготовит новый предпросмотр.")
+        raise ValueError(i18n._("Обновление не отправлено: {why}. Нажмите «Отменить» в предпросмотре, затем снова "
+                                "«Push в Hub» – приложение подготовит новый предпросмотр.", why=problem))
 
     def idle(c) -> None:
         if target_check is not None:
             target_check(c)
         current = _current_in(c, row)
         if str(current.get("update_json") or "") != raw or current.get("update_op_id"):
-            raise ValueError(UPDATE_SHOWN_CHANGED)
+            raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
         problem = _update_idle_problem(c, current)
         if problem:
             raise ValueError(problem)
@@ -3823,7 +3911,7 @@ def request_put(db: Database, row: dict, *, generation: str, shown: str, prep: d
                                      op_field="update_op_id",
                                      update_json=dumps({**state, "phase": "checking", "step": "read2", "note": ""}))
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите страницу."))
     return fresh
 
 
@@ -3836,17 +3924,17 @@ def cancel_update(db: Database, row: dict, *, generation: str, shown: str) -> di
     if (row.get("origin") not in ("app", "import") or row["state"] != "done" or state.get("phase") != "preview"
             or row.get("update_op_id") or str(state.get("generation")) != str(generation)
             or text_hash(raw) != str(shown or "")):
-        raise ValueError(UPDATE_SHOWN_CHANGED)
+        raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
 
     def same(c) -> None:
         current = _current_in(c, row)
         if str(current.get("update_json") or "") != raw or current.get("update_op_id"):
-            raise ValueError(UPDATE_SHOWN_CHANGED)
+            raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state="done", check=same,
                                      update_json=dumps({**state, "phase": "cancelled", "step": "", "note": ""}))
     if fresh is None:
-        raise ValueError(UPDATE_SHOWN_CHANGED)
+        raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
     return fresh
 
 
@@ -3856,24 +3944,24 @@ def _restart_read(db: Database, row: dict, *, phases: tuple[str, ...], step: str
     raw = str(row.get("update_json") or "")
     if (row.get("origin") not in ("app", "import") or row["state"] != "done" or state.get("phase") not in phases
             or row.get("update_op_id")):
-        raise ValueError(refusal)
+        raise ValueError(i18n._(refusal))
 
     def idle(c) -> None:
         if target_check is not None:
             target_check(c)
         current = _current_in(c, row)
         if str(current.get("update_json") or "") != raw or current.get("update_op_id"):
-            raise ValueError(UPDATE_SHOWN_CHANGED)
+            raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
         sync_state = loads(current.get("sync_json"), {}) or {}
         if current.get("sync_op_id") or (isinstance(sync_state, dict) and sync_state.get("read")):
-            raise ValueError("Сначала дождитесь итога «Pull из Hub» и нажмите «Отменить» у её предпросмотра: успех "
-                             "чтения записал бы цели этой попытки поверх сверки.")
+            raise ValueError(i18n._("Сначала дождитесь итога «Pull из Hub» и нажмите «Отменить» у её предпросмотра: "
+                                    "успех чтения записал бы цели этой попытки поверх сверки."))
 
     fresh, _ = db.hub_defect_advance(int(row["id"]), expect_state="done", check=idle, item=update_read_item(row),
                                      op_field="update_op_id",
                                      update_json=dumps({**state, "phase": phase, "step": step, "note": ""}))
     if fresh is None:
-        raise ValueError("Состояние дефекта изменилось: обновите страницу.")
+        raise ValueError(i18n._("Состояние дефекта изменилось: обновите страницу."))
     return fresh
 
 
@@ -3881,7 +3969,7 @@ def verify_update(db: Database, row: dict, target_check: Callable | None = None)
     """«Сверить» при неизвестном исходе `PUT` (п. 3, шаг 5): чтение `GET /defects/{id}` одной транзакцией, фаза
     остаётся unknown, `PUT` – «результат неизвестен» до итога сверки. Иначе ValueError."""
     return _restart_read(db, row, phases=("unknown",), step="verify", phase="unknown", target_check=target_check,
-                         refusal="Сверить можно только обновление с неизвестным исходом: обновите страницу.")
+                         refusal=i18n.N_("Сверить можно только обновление с неизвестным исходом: обновите страницу."))
 
 
 def reread_update(db: Database, row: dict, target_check: Callable | None = None) -> dict:
@@ -3889,8 +3977,8 @@ def reread_update(db: Database, row: dict, target_check: Callable | None = None)
     отправленный текст – подтверждающее чтение снова одной транзакцией. Иначе ValueError."""
     return _restart_read(db, row, phases=("confirming", "unconfirmed"), step="confirm", phase="confirming",
                          target_check=target_check,
-                         refusal="Повторить чтение можно, когда запись принята Hub и ждёт подтверждения: обновите "
-                                 "страницу.")
+                         refusal=i18n.N_("Повторить чтение можно, когда запись принята Hub и ждёт подтверждения: "
+                                         "обновите страницу."))
 
 
 # ---------------------------------------------------------------------------- ответы исполнителя
@@ -3941,7 +4029,7 @@ def _on_update(db: Database, op: dict, first: dict, prepare: Callable[[dict], di
                  "confirm": "confirming", "verify": "unknown"}.get(step, "unknown")
         try:
             _update_step(db, row, op, {**state, "phase": phase, "step": "",
-                                       "note": f"ответ Hub не обработан ({type(e).__name__})"})
+                                       "note": i18n._("ответ Hub не обработан ({error})", error=type(e).__name__)})
         except Exception:  # строка доводится следующим показом вкладки (sync)
             return
 
@@ -3952,7 +4040,7 @@ def _on_update_read1(db: Database, row: dict, op: dict, state: dict, prepare) ->
     блока Hub в описании и без сохранённой заготовки – сначала шаг «blank» (dev31)."""
     defect, error = import_answer(op, row)
     if defect is None:
-        _update_step(db, row, op, {**state, "phase": "read_failed", "step": "", "note": f"чтение не удалось: {error}"})
+        _update_step(db, row, op, {**state, "phase": "read_failed", "step": "", "note": i18n._("чтение не удалось: {error}", error=error)})
         return
     if prepare is None:
         return
@@ -3966,7 +4054,8 @@ def _on_update_read1(db: Database, row: dict, op: dict, state: dict, prepare) ->
 
 def blank_failure_text(why: str) -> str:
     """Предупреждение предпросмотра: заготовку для служебного блока не получить, в описание уйдёт только текст."""
-    return f"заготовку Hub для служебного блока получить не удалось ({why}): в описание уйдёт только текст приложения"
+    return i18n._("заготовку Hub для служебного блока получить не удалось ({why}): в описание уйдёт только текст "
+                  "приложения", why=why)
 
 
 def _blank_step(db: Database, row: dict, op: dict, state: dict, defect: dict, closed_at: str,
@@ -3979,7 +4068,7 @@ def _blank_step(db: Database, row: dict, op: dict, state: dict, defect: dict, cl
     (blank_tried). (True, '') – шаг поставлен; (False, '') – шаг не нужен или сначала отказ проверок; (False, почему) –
     заготовку нельзя запросить (нет номеров Hub, слишком много находок) или поставить (очередь отказала)."""
     if built_blank_outdated(row, defect) and not hub_has_block(defect):
-        return False, BLOCK_COMPOSITION
+        return False, i18n._(BLOCK_COMPOSITION)
     if state.get("blank_tried") or saved_blank_fits(row) or hub_has_block(defect):
         return False, ""
     prep = _prepared(prepare, row)
@@ -4009,13 +4098,13 @@ def _blank_step(db: Database, row: dict, op: dict, state: dict, defect: dict, cl
                                                             "first_read": defect, "read_at": closed_at}),
                                          import_json=_observed(row, defect, closed_at))
     except ValueError as exc:
-        return False, f"операция не поставлена: {exc}"
+        return False, i18n._("операция не поставлена: {error}", error=exc)
     return fresh is not None, ""
 
 
-BLOCK_BUILT = ("Служебный блок собран приложением из данных Hub по образцу настоящих блоков: Hub мог бы оформить его иначе. "
+BLOCK_BUILT = i18n.N_("Служебный блок собран приложением из данных Hub по образцу настоящих блоков: Hub мог бы оформить его иначе. "
                "Проверьте его в сравнении выше.")
-BLOCK_COMPOSITION = "находки дефекта в Hub и в приложении различаются, сначала «Pull из Hub»"
+BLOCK_COMPOSITION = i18n.N_("находки дефекта в Hub и в приложении различаются, сначала «Pull из Hub»")
 
 
 def is_update_read(op: dict) -> bool:
@@ -4046,9 +4135,9 @@ def _model_step(db: Database, row: dict, op: dict, state: dict, defect: dict, cl
         return False, ""
     issues = _model_targets(row)
     if not issues:
-        return False, "у находок дефекта нет номеров Hub или вид дефекта не поддерживается"
+        return False, i18n._("у находок дефекта нет номеров Hub или вид дефекта не поддерживается")
     if _target_pairs(row) != linked_pairs(defect):  # блок описывает находки: только те, что привязаны в Hub, и все они
-        return False, BLOCK_COMPOSITION
+        return False, i18n._(BLOCK_COMPOSITION)
     return _next_model(db, row, op, {**state, "model_tried": True, "model_for": issues, "model_done": {}, "first_read": defect, "read_at": closed_at},
                        issues[0], closed_at, defect)
 
@@ -4069,7 +4158,7 @@ def _next_model(db: Database, row: dict, op: dict, state: dict, issue: int, clos
                                          op_field="update_op_id", update_json=dumps({**state, "step": "model", "note": ""}),
                                          import_json=_observed(row, defect, closed_at))
     except ValueError as exc:
-        return False, f"операция не поставлена: {exc}"
+        return False, i18n._("операция не поставлена: {error}", error=exc)
     return fresh is not None, ""
 
 
@@ -4081,37 +4170,38 @@ def _on_update_model(db: Database, row: dict, op: dict, state: dict, prepare) ->
     closed_at = str(state.get("read_at") or "")
     rest = {k: v for k, v in state.items() if k not in ("first_read", "model_done", "model_for", "read_at")}
     if not isinstance(defect, dict):
-        _update_step(db, row, op, {**rest, "phase": "read_failed", "step": "", "note": "чтение не удалось: нет дефекта первого чтения"})
+        _update_step(db, row, op, {**rest, "phase": "read_failed", "step": "", "note": i18n._("чтение не удалось: нет дефекта первого чтения")})
         return
     issues = list(state.get("model_for") or [])
     done = dict(state.get("model_done") or {})
 
     def without(why: str) -> None:
         if prepare is not None:
-            _preview_from(db, row, op, rest, prepare, defect, closed_at, [f"служебный блок собрать не удалось ({why}): в описание уйдёт только текст приложения"])
+            _preview_from(db, row, op, rest, prepare, defect, closed_at, [i18n._(
+                "служебный блок собрать не удалось ({why}): в описание уйдёт только текст приложения", why=why)])
 
     if issues != _model_targets(row):
-        without("состав дефекта изменился, пока читались данные находок")
+        without(i18n._("состав дефекта изменился, пока читались данные находок"))
         return
     current = next((i for i in issues if str(i) not in done), None)
     if current is None:
-        without("нет находки, которую ждало чтение")
+        without(i18n._("нет находки, которую ждало чтение"))
         return
     result = loads(op.get("result_json"), {}) or {}
     if op["state"] != "done":
         old_worker = result.get("not_sent") and "белый список" in str(result.get("error") or "")
-        without(hub_template_model.OLD_WORKER if old_worker else str(op.get("error") or "ответа нет"))
+        without(i18n._(hub_template_model.OLD_WORKER) if old_worker else str(op.get("error") or i18n._("ответа нет")))
         return
     model = hub_template_model.model_of(_body(op), current)
     if model is None:
-        without(f"ответ Hub по находке {current} не разобран")
+        without(i18n._("ответ Hub по находке {hub_id} не разобран", hub_id=current))
         return
     done[str(current)] = model
     following = next((i for i in issues if str(i) not in done), None)
     if following is not None:
         placed, why = _next_model(db, row, op, {**state, "model_done": done}, following, closed_at, defect)
         if not placed:
-            without(why or "состояние дефекта изменилось")
+            without(why or i18n._("состояние дефекта изменилось"))
         return
     if prepare is None:
         return
@@ -4121,7 +4211,7 @@ def _on_update_model(db: Database, row: dict, op: dict, state: dict, prepare) ->
         without(str(exc))
         return
     if hub_block(block)[1]:
-        without("собранный блок не выделяется")
+        without(i18n._("собранный блок не выделяется"))
         return
     fields = {"blank_json": dumps({"description": block, "_targets": issues, "built_from_model": True})}
     _preview_from(db, {**row, **fields}, op, rest, prepare, defect, closed_at, **fields)
@@ -4138,7 +4228,7 @@ def _on_update_blank(db: Database, row: dict, op: dict, state: dict, prepare) ->
     rest = {k: v for k, v in state.items() if k != "first_read"}
     if not isinstance(defect, dict):
         _update_step(db, row, op, {**rest, "phase": "read_failed", "step": "",
-                                   "note": "чтение не удалось: нет дефекта первого чтения"})
+                                   "note": i18n._("чтение не удалось: нет дефекта первого чтения")})
         return
     blank = _body(op) if op["state"] == "done" else None
     fields: dict[str, Any] = {}
@@ -4151,11 +4241,11 @@ def _on_update_blank(db: Database, row: dict, op: dict, state: dict, prepare) ->
         rest["blank_fetched"] = True
     else:
         if op["state"] != "done":
-            why = str(op.get("error") or "ответа нет")
+            why = str(op.get("error") or i18n._("ответа нет"))
         elif not isinstance(blank, dict) or not str(blank.get("description") or "").strip():
-            why = "в ответе Hub нет описания"
+            why = i18n._("в ответе Hub нет описания")
         else:
-            why = "состав дефекта изменился, пока запрашивалась заготовка"
+            why = i18n._("состав дефекта изменился, пока запрашивалась заготовка")
         # Hub отказал в заготовке (400) – находки уже привязаны: блок собирается из их данных (ADR-0139); сбой Hub или
         # исполнителя – прежний предпросмотр без блока
         if (loads(op.get("result_json"), {}) or {}).get("status") == 400:
@@ -4190,7 +4280,7 @@ def _preview_from(db: Database, row: dict, op: dict, state: dict, prepare, defec
             built = description
             description = keep_hub_markup(defect, description)
             if layout_warning(prep["command_text"], built, description, str((defect or {}).get("description") or "")):
-                extra_warnings = [*(extra_warnings or []), LAYOUT_KEPT]  # не молча (ADR-0149, ревью круга 2)
+                extra_warnings = [*(extra_warnings or []), i18n._(LAYOUT_KEPT)]  # не молча (ADR-0149, ревью круга 2)
     if problem:
         refusals.append(problem)
     observed = _observed(row, defect, closed_at)
@@ -4200,8 +4290,8 @@ def _preview_from(db: Database, row: dict, op: dict, state: dict, prepare, defec
     # как есть – о замене блока предупреждать нечего (ревью, круг 4)
     warnings = (list(prep["warnings"]) + list(hub_warnings)
                 + ([block_note] if block_note and block_mode != "kept" else []) + list(block_version.notes)
-                + ([BLOCK_REPEATED] if block_repeated(description) else [])
-                + ([BLOCK_BUILT] if block_built else [])
+                + ([i18n._(BLOCK_REPEATED)] if block_repeated(description) else [])
+                + ([i18n._(BLOCK_BUILT)] if block_built else [])
                 + list(extra_warnings or []))
     if refusals:
         _update_step(db, row, op, {**state, "phase": "refused", "step": "", "note": "", "refusals": refusals,
@@ -4215,14 +4305,14 @@ def _preview_from(db: Database, row: dict, op: dict, state: dict, prepare, defec
         db.on_connection(lambda c: defect_references.check_candidate(c, row, body))
     except ValueError as exc:
         _update_step(db, row, op, {**state, "phase": "refused", "step": "", "refusals": [str(exc)],
-                                   "note": "PUT не поставлен."}, import_json=observed, **fields)
+                                   "note": i18n._("PUT не поставлен.")}, import_json=observed, **fields)
         return
     if not changes:
         # без правки – никаких разниц: предупреждения формы в итог не идут; предупреждение о
         # неудавшейся заготовке (extra_warnings) остаётся в пояснении итога (ревью dev31, круг 1)
         extra = list(extra_warnings or []) + list(block_version.notes)
         _update_step(db, row, op, {**state, "phase": "cancelled", "step": "", "warnings": extra,
-                                   "note": "Изменений для отправки нет" + ("; " + "; ".join(extra) if extra else "")},
+                                   "note": i18n._("Изменений для отправки нет") + ("; " + "; ".join(extra) if extra else "")},
                      import_json=observed, **fields)
         return
     new = {"kind": prep["kind"], "summary": prep["summary"], "command_text": prep["command_text"],
@@ -4249,7 +4339,8 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
     defect, error = import_answer(op, row)
     if defect is None:
         _update_step(db, row, op, {**state, "phase": "preview", "step": "",
-                                   "note": f"второе чтение не удалось: {error} – нажмите «Push в Hub» снова"})
+                                   "note": i18n._("второе чтение не удалось: {error} – нажмите «Push в Hub» снова",
+                                                  error=error)})
         return
     if prepare is None:
         return
@@ -4260,7 +4351,7 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
 
     changed = _changed_fields(state.get("first") or {}, defect)
     if changed:
-        stale("дефект в Hub изменился после предпросмотра (поля: " + ", ".join(changed) + ")")
+        stale(i18n._("дефект в Hub изменился после предпросмотра (поля: {fields})", fields=", ".join(changed)))
         return
     prep = with_where(db, row, defect, _prepared(prepare, row))
     problem = _prep_problem(state, prep)
@@ -4272,7 +4363,7 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
     block_version = hub_block_version.for_defect(str(row.get("kind") or ""), prep["command_text"], block)
     block = block_version.block
     if block != str(state.get("block") or ""):
-        stale("блок Hub в описании изменился после предпросмотра – подготовьте обновление заново")
+        stale(i18n._("блок Hub в описании изменился после предпросмотра – подготовьте обновление заново"))
         return
     description, problem = update_description(prep["command_text"], block)
     if problem:
@@ -4286,12 +4377,12 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
     if "contract_version" in state:
         try:
             if state["contract_version"] != DEFECT_CONTRACT:
-                raise ValueError("Неизвестная версия контракта предпросмотра.")
+                raise ValueError(i18n._("Неизвестная версия контракта предпросмотра."))
             body, changes, local = defect_fields.candidate(defect, row, prep["summary"], description)
             if (not defect_fields.equal(changes, state.get("field_diff"))
                     or not defect_fields.equal(local, state.get("local_changes"))
                     or _changed_fields(body, state.get("candidate") or {})):
-                raise ValueError("Кандидат PUT отличается от показанного diff.")
+                raise ValueError(i18n._("Кандидат PUT отличается от показанного diff."))
         except ValueError as exc:
             stale(str(exc))
             return
@@ -4305,7 +4396,7 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
             prep["tx_check"](c)
         current = _current_in(c, row)
         if str(current.get("update_json") or "") != raw:
-            raise ValueError(UPDATE_SHOWN_CHANGED)
+            raise ValueError(i18n._(UPDATE_SHOWN_CHANGED))
         idle = _update_idle_problem(c, current, own_op=int(op["id"]))
         if idle:
             raise ValueError(idle)
@@ -4317,7 +4408,7 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
             from app import defect_references
             defect_references.check_candidate(c, current, checked)
             if not defect_fields.equal(checked, body) or not defect_fields.equal(checked_diff, state["field_diff"]):
-                raise ValueError("Тело PUT изменилось перед постановкой.")
+                raise ValueError(i18n._("Тело PUT изменилось перед постановкой."))
 
     putting = {**state, "phase": "putting", "step": "put", "note": "", "base": defect,
                "sent_object": body, "sent": {"summary": prep["summary"], "description": description, "command_text": prep["command_text"],
@@ -4334,7 +4425,7 @@ def _on_update_read2(db: Database, row: dict, op: dict, state: dict, prepare) ->
                               with_op=lambda put: {"update_json": dumps({**putting, "put_op_id": int(put["id"])})},
                               import_json=observed)
     except ValueError as e:
-        stale(f"запрос не поставлен: {e}")
+        stale(i18n._("запрос не поставлен: {error}", error=e))
 
 
 def _on_update_put(db: Database, row: dict, op: dict, state: dict, prepare) -> None:
@@ -4350,20 +4441,21 @@ def _on_update_put(db: Database, row: dict, op: dict, state: dict, prepare) -> N
                                   item=update_read_item(row), op_field="update_op_id",
                                   update_json=dumps(confirming))
         except ValueError as e:
-            _update_step(db, row, op, {**confirming, "step": "", "note": f"подтверждающее чтение не поставлено: {e}"})
+            _update_step(db, row, op, {**confirming, "step": "",
+                                       "note": i18n._("подтверждающее чтение не поставлено: {error}", error=e)})
         return
     if op["state"] == "cancelled":
-        _update_step(db, row, op, {**state, "phase": "failed", "step": "", "note": UPDATE_CANCELLED_PUT})
+        _update_step(db, row, op, {**state, "phase": "failed", "step": "", "note": i18n._(UPDATE_CANCELLED_PUT)})
         return
     if op["state"] == "failed":
         if _result(op).get("not_sent"):
             old_worker = "метод PUT не разрешён" in error or ("PUT /defects" in error and "белый список" in error)
-            note = UPDATE_OLD_WORKER if old_worker else (error or "запрос в Hub не отправлен")
+            note = i18n._(UPDATE_OLD_WORKER) if old_worker else (error or i18n._("запрос в Hub не отправлен"))
         else:
-            note = f"Hub не принял: {error or 'отказ'}"
+            note = i18n._("Hub не принял: {error}", error=error or i18n._("отказ"))
         _update_step(db, row, op, {**state, "phase": "failed", "step": "", "note": note})
         return
-    _update_step(db, row, op, {**state, "phase": "unknown", "step": "", "note": error or "ответа от Hub нет"})
+    _update_step(db, row, op, {**state, "phase": "unknown", "step": "", "note": error or i18n._("ответа от Hub нет")})
 
 
 def _on_update_confirm(db: Database, row: dict, op: dict, state: dict, prepare) -> None:
@@ -4372,13 +4464,13 @@ def _on_update_confirm(db: Database, row: dict, op: dict, state: dict, prepare) 
     defect, error = import_answer(op, row)
     if defect is None:
         _update_step(db, row, op, {**state, "phase": "confirming", "step": "",
-                                   "note": f"чтение не удалось: {error}"})
+                                   "note": i18n._("чтение не удалось: {error}", error=error)})
         return
     observed = _observed(row, defect, str(op.get("closed_at") or ""))
     if update_confirmed_fields(row, state, defect):
         _update_success(db, row, op, state, defect, observed)
         return
-    _update_step(db, row, op, {**state, "phase": "unconfirmed", "step": "", "note": UPDATE_UNCONFIRMED,
+    _update_step(db, row, op, {**state, "phase": "unconfirmed", "step": "", "note": i18n._(UPDATE_UNCONFIRMED),
                                "confirmation_diff": _changed_fields(state.get("sent_object") or {}, defect)},
                  import_json=observed)
 
@@ -4390,12 +4482,13 @@ def _on_update_verify(db: Database, row: dict, op: dict, state: dict, prepare) -
     defect, error = import_answer(op, row)
     if defect is None:
         _update_step(db, row, op, {**state, "phase": "unknown", "step": "",
-                                   "note": f"сверка не удалась: {error} – нажмите «Сверить» ещё раз"})
+                                   "note": i18n._("сверка не удалась: {error} – нажмите «Сверить» ещё раз", error=error)})
         return
     observed = _observed(row, defect, str(op.get("closed_at") or ""))
     if _read_of(defect, block_repeated((state.get("sent") or {}).get("description")))["text_note"]:
         _update_step(db, row, op, {**state, "phase": "unknown", "step": "",
-                                   "note": "текст команды не выделен при сверке; исход записи по-прежнему неизвестен"},
+                                   "note": i18n._("текст команды не выделен при сверке; исход записи по-прежнему "
+                                                  "неизвестен")},
                      import_json=observed)
         return
     if update_confirmed_fields(row, state, defect):
@@ -4404,10 +4497,12 @@ def _on_update_verify(db: Database, row: dict, op: dict, state: dict, prepare) -
     base = state.get("base") or {}
     changed = _changed_fields(base, defect)  # то же правило, что у шага 2: все поля, кроме updateTs
     old = not changed
-    note = UPDATE_OBSERVED_OLD if old else f"{UPDATE_UNCLEAR} (отличаются поля: {', '.join(changed)})"
+    note = (i18n._(UPDATE_OBSERVED_OLD) if old else
+            i18n._("{what} (отличаются поля: {fields})", what=i18n._(UPDATE_UNCLEAR), fields=", ".join(changed)))
     put_op = state.get("put_op_id")
     _update_step(db, row, op, {**state, "phase": "observed_old" if old else "unclear", "step": "", "note": note},
-                 resolve=[(int(put_op), "failed", f"сверка чтением: {note}")] if put_op else (), import_json=observed)
+                 resolve=[(int(put_op), "failed", i18n._("сверка чтением: {note}", note=note))] if put_op else (),
+                 import_json=observed)
 
 
 def update_confirmed_fields(row: dict, state: dict, defect: dict) -> bool:

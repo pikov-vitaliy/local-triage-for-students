@@ -19,6 +19,7 @@ import threading
 import time
 from typing import Any
 
+from app import i18n
 from app.llm import SendNotAllowed
 from app.llm_net import normalize_addresses
 
@@ -30,7 +31,7 @@ KEY_NOTE_OTHER = ("Прогон на паузе. Ключ профиля зад�
 # Не короче 16 знаков: короткий ключ совпадал бы со словами ответов модели, и проверка ответа перед сохранением
 # (model_traffic.shows_secret) отвергала бы обычные ответы
 _KEY = re.compile(r"[A-Za-z0-9\-._~+/=]{16,4096}")
-KEY_FORMAT = "Ключ – от 16 до 4096 знаков: латиница, цифры и - . _ ~ + / = (без пробелов и кавычек)."
+KEY_FORMAT = i18n.N_("Ключ – от 16 до 4096 знаков: латиница, цифры и - . _ ~ + / = (без пробелов и кавычек).")
 
 
 class KeyRejected(ValueError):
@@ -126,7 +127,7 @@ def save_key(keys: Any, provider_id: int, key: str, base_url: str, addresses: An
     """Записать (или заменить) ключ профиля с привязкой к адресу и подтверждённым адресам. keys – база (Database.put_secret)."""
     key = str(key or "").strip()
     if not _KEY.fullmatch(key):
-        raise KeyRejected(KEY_FORMAT)
+        raise KeyRejected(i18n._(KEY_FORMAT))
     keys.put_secret(secret_name(provider_id), json.dumps(
         {"addresses": sorted(normalize_addresses(addresses)), "base_url": _base(base_url), "key": key, "version": 1},
         ensure_ascii=True, sort_keys=True))
@@ -163,7 +164,7 @@ def delete_key(keys: Any, provider_id: int) -> bool:
 def key_hint(keys: Any, provider_id: int) -> str:
     """Для интерфейса: «задан, …abcd» или "" (ключа нет)."""
     entry = load_key(keys, provider_id)
-    return f"задан, …{entry['key'][-4:]}" if entry else ""
+    return i18n._("задан, …{last4}", last4=entry['key'][-4:]) if entry else ""
 
 
 def key_headers(kind: str, key: str) -> dict[str, str]:

@@ -18,6 +18,7 @@ import re
 import threading
 from collections.abc import Callable
 from contextlib import asynccontextmanager
+from http import HTTPStatus
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -25,7 +26,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app import __version__, hub_ops
+from app import __version__, hub_ops, i18n
 from app.config import Settings
 from app.db import Database, DatabaseBusy
 from app.storage.postgresql import MAINTENANCE_TEXT, PAGE_VIEW, CommitUnknown, MaintenanceMode
@@ -63,6 +64,20 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 BODY_OVERHEAD = 256 * 1024  # запас на служебные части multipart сверх MAX_UPLOAD_MB
 
 _CYRILLIC = re.compile(r"[А-Яа-яЁё]")
+
+
+def _framework_detail(status_code: int, detail: str) -> bool:
+    """Текст ошибки – служебный текст фреймворка, а не приложения: пусто, стандартная фраза статуса HTTP (её Starlette
+    ставит, когда текста нет) или, при русском интерфейсе, текст без кириллицы, как раньше. При английском интерфейсе
+    тексты приложения тоже без кириллицы, поэтому признак – фраза статуса (ADR-0158)."""
+    if not detail:
+        return True
+    try:
+        if detail == HTTPStatus(status_code).phrase:
+            return True
+    except ValueError:
+        pass
+    return i18n.current() == "ru" and not _CYRILLIC.search(detail)
 
 
 def clear_tmp(tmp_dir: Path) -> int:
@@ -103,9 +118,12 @@ def create_app(settings: Settings | None = None,
     async def lifespan(app: FastAPI):
         # Замок папки данных – до любых записей в базу: второй экземпляр на той же папке (например, запуск без
         # Docker рядом с работающим контейнером) не стартует, а не теряет чужие записи.
-        who = "текущему пользователю" if settings.stand == "npm" else "пользователю контейнера"
-        no_access = (f"Нет доступа к папке данных DATA_DIR={settings.data_dir}. Проверьте, что папка существует и "
-                     f"доступна на запись {who}.")
+        if settings.stand == "npm":
+            no_access = i18n._("Нет доступа к папке данных DATA_DIR={path}. Проверьте, что папка существует и доступна "
+                               "на запись текущему пользователю.", path=settings.data_dir)
+        else:
+            no_access = i18n._("Нет доступа к папке данных DATA_DIR={path}. Проверьте, что папка существует и доступна "
+                               "на запись пользователю контейнера.", path=settings.data_dir)
         # замок охраняет то, что осталось в папке данных: телеметрию (ADR-0133); базу охраняет замок базы
         lock = InstanceLock(settings.data_dir / "telemetry")
         try:
@@ -156,6 +174,7 @@ def create_app(settings: Settings | None = None,
                     app.state.hub_worker_key_error = str(e)
                     log_failure(log, "ключ исполнителя записи в Hub не прочитан", e)
             current = settings.with_stored(db.get_settings())
+            i18n.set_saved(db.get_settings().get(i18n.SETTING_KEY))  # язык интерфейса (ADR-0158)
             from app import affiliation
             affiliation.configure(current.affiliation_words)  # маска принадлежности (ADR-0118) – до первого запроса
             # Клоны могли обновить или подменить, пока приложение было остановлено (git pull, другая папка
@@ -285,8 +304,8 @@ def create_app(settings: Settings | None = None,
 
     async def internal_error_page(scope: dict, eid: str):
         """Страница необработанной ошибки: текст по-русски и номер записи в журнале (GuardMiddleware)."""
-        return error_response(Request(scope), 500, f"{HTTP_ERRORS[500]} Подробности – в журнале контейнера, "
-                                                   f"номер ошибки {eid}.")
+        return error_response(Request(scope), 500, HTTP_ERRORS[500] + " " + i18n._(
+            "Подробности – в журнале контейнера, номер ошибки {eid}.", eid=eid))
 
     app = FastAPI(title="Локальный триаж", version=__version__, lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
@@ -326,10 +345,10 @@ def create_app(settings: Settings | None = None,
     @app.exception_handler(StarletteHTTPException)
     async def http_error(request: Request, exc: StarletteHTTPException):
         detail = exc.detail if isinstance(exc.detail, str) else ""
-        if not _CYRILLIC.search(detail):  # служебные английские тексты фреймворка заменяются русскими
+        if _framework_detail(exc.status_code, detail):  # служебные тексты фреймворка заменяются своими
             if detail:
                 log.info("ошибка запроса %s: %s", exc.status_code, detail[:200])
-            detail = HTTP_ERRORS.get(exc.status_code, "Ошибка запроса.")
+            detail = HTTP_ERRORS.get(exc.status_code, i18n.N_("Ошибка запроса."))
         return error_response(request, exc.status_code, detail, getattr(exc, "headers", None))
 
     @app.exception_handler(DatabaseBusy)
@@ -367,7 +386,7 @@ def create_app(settings: Settings | None = None,
         # Запасной путь: ошибки запросов перехватывает GuardMiddleware (без текста исключения в журнале сервера);
         # сюда попадает только сбой самой защиты запросов
         eid = log_failure(log, "необработанная ошибка вне разделов", exc)
-        return error_response(request, 500, f"{HTTP_ERRORS[500]} Подробности – в журнале контейнера, номер ошибки "
-                                            f"{eid}.")
+        return error_response(request, 500, HTTP_ERRORS[500] + " " + i18n._(
+            "Подробности – в журнале контейнера, номер ошибки {eid}.", eid=eid))
 
     return app

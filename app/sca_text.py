@@ -13,6 +13,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from app import i18n
 from app.sca_contract import compare_versions, range_contains
 
 NVD = "https://nvd.nist.gov/vuln/detail/{}"
@@ -211,7 +212,8 @@ def update_comment(component: str, target: str, payload: Mapping[str, Any] | Non
            if effective_applies(item, decided.get(rep.get(_norm(str(item.get("id") or "")), ""), "")) == "yes"]
     if not ids:
         return ""
-    return f"Обновить {component} до версии {target}. Применимые уязвимости: {', '.join(dict.fromkeys(ids))}."
+    return i18n._("Обновить {component} до версии {target}. Применимые уязвимости: {ids}.", component=component,
+                  target=target, ids=", ".join(dict.fromkeys(ids)))
 
 
 def excluded_ids(items: Iterable[Any]) -> list[str]:
@@ -247,7 +249,7 @@ def explanation_draft(vulns: Iterable[Vuln], bdu: Mapping[str, list[Mapping[str,
                 text = str(item.get("description") or "").strip()
                 conditions = str(item.get("conditions") or "").strip()
                 if conditions:
-                    text = f"{text} Условия: {conditions}".strip()
+                    text = i18n._("{text} Условия: {conditions}", text=text, conditions=conditions).strip()
                 if text:
                     break
         if not text and len(vulns) == 1:
@@ -288,9 +290,20 @@ def free_text(text: str, vulns: Iterable[Vuln]) -> str:
     return "\n".join(line for line in lines if line and not any(line.upper().startswith(i) for i in ids))
 
 
-def non_russian_lines(text: str, vulns: Iterable[Vuln]) -> list[str]:
-    """Публичные уязвимости, строка Объяснения которых не на русском (кириллица – меньше трети букв после
-    идентификатора). Проверяется каждая строка: длинная русская строка не прячет английскую (Г12)."""
+def foreign_line(text: str, expected: str | None = None) -> bool:
+    """Строка с буквами не на ожидаемом языке текста дефекта: при русском (ru) кириллица – меньше трети букв, при
+    английском (en) – больше двух третей. expected – язык ответа, по умолчанию язык интерфейса (ADR-0158). Есть ли в
+    строке буквы, проверяет вызывающий – как до перевода интерфейса."""
+    share = cyrillic_share(text)
+    if (expected or i18n.current()) == "ru":
+        return share < 1 / 3
+    return share > 2 / 3
+
+
+def non_russian_lines(text: str, vulns: Iterable[Vuln], expected: str | None = None) -> list[str]:
+    """Публичные уязвимости, строка Объяснения которых не на ожидаемом языке (expected, по умолчанию язык интерфейса;
+    при русском – кириллица меньше трети букв после идентификатора, foreign_line). Проверяется каждая строка: длинная
+    русская строка не прячет английскую (Г12)."""
     lines = [line.strip() for line in str(text or "").replace("\r\n", "\n").split("\n")]
     out = []
     for vuln in vulns:
@@ -300,7 +313,7 @@ def non_russian_lines(text: str, vulns: Iterable[Vuln]) -> list[str]:
             vuln_id = next((i for i in vuln.public_ids if line.upper().startswith(i.upper() + ":")), None)
             rest = line[len(vuln_id) + 1:] if vuln_id is not None else ""
             # пустой остаток после «CVE-…:» – не «не на русском»: пустоту ловит explanation_problems
-            if vuln_id is not None and any(ch.isalpha() for ch in rest) and cyrillic_share(rest) < 1 / 3:
+            if vuln_id is not None and any(ch.isalpha() for ch in rest) and foreign_line(rest, expected):
                 out.append(vuln.main)
                 break
     return out
@@ -315,9 +328,9 @@ class Target:
     problem: str = ""  # причина, по которой выдача невозможна
 
 
-BASIS_LABELS = {"manual": "указана оператором", "component": "решение по компоненту",
-                "research": "совет исследования компонента", "legacy": "ответ внешнего агента (формат 1)",
-                "no_fix": "исправленной версии нет – меры оператора вместо обновления"}
+BASIS_LABELS = i18n.Labels({"manual": "указана оператором", "component": "решение по компоненту",
+                            "research": "совет исследования компонента", "legacy": "ответ внешнего агента (формат 1)",
+                            "no_fix": "исправленной версии нет – меры оператора вместо обновления"})
 TARGET_BASES = ("", "manual", "no_fix")  # что форма текста набора может записать в target_basis (ADR-0101 п. 4);
 # при записи db.save_sca_package_text проверяет полный перечень STORED_TARGET_BASES
 
@@ -338,15 +351,16 @@ def resolve_target(manual: str, component: Mapping[str, Any] | None, research: M
             if action == "update" and str(component.get("target_version") or "").strip():
                 return Target(str(component["target_version"]).strip(), "component")
             if action in ("keep", "replace", "remove", "accept_risk", "investigate"):
-                return Target(problem=f"Решение по компоненту – «{action}»: оно противоречит исходу «Обновить». "
-                                      "Укажите целевую версию вручную или измените решение по компоненту.")
+                return Target(problem=i18n._("Решение по компоненту – «{action}»: оно противоречит исходу «Обновить». "
+                                             "Укажите целевую версию вручную или измените решение по компоненту.",
+                                             action=action))
     advice = (research or {}).get("package_advice") or {}
     if str(advice.get("target_version") or "").strip():
         return Target(str(advice["target_version"]).strip(), "research")
     if legacy and str(legacy.get("recommended_version") or "").strip():
         return Target(str(legacy["recommended_version"]).strip(), "legacy")
-    return Target(problem="Нет проверенной целевой версии: исследуйте компонент, загрузите ответ агента или "
-                          "укажите версию.")
+    return Target(problem=i18n._("Нет проверенной целевой версии: исследуйте компонент, загрузите ответ агента или "
+                                 "укажите версию."))
 
 
 @dataclass
@@ -367,9 +381,10 @@ def severity_label(records: Iterable[Mapping[str, Any]]) -> str:
     scores = [float(r.get("cvss", {}).get("score")) for r in records
               if isinstance(r.get("cvss"), Mapping) and isinstance(r["cvss"].get("score"), (int, float))]
     if not scores:
-        return "важность не указана"
+        return i18n._("важность не указана")
     top = max(scores)
-    return "низкая" if top < 4 else "средняя" if top < 7 else "высокая" if top < 9 else "критическая"
+    return (i18n._("низкая") if top < 4 else i18n._("средняя") if top < 7 else i18n._("высокая") if top < 9
+            else i18n._("критическая"))
 
 
 def research_records(research: Mapping[str, Any] | None) -> list[Mapping[str, Any]]:
@@ -513,9 +528,9 @@ def check_version(ecosystem: str, current: str, target: str, research: Mapping[s
     исключаются до всех проверок."""
     order = compare_versions(ecosystem, target, current)
     if order is not None and order <= 0:
-        return VersionCheck("not_newer", "целевая версия не новее текущей: обновлять нечего")
+        return VersionCheck("not_newer", i18n._("целевая версия не новее текущей: обновлять нечего"))
     if not research:
-        return VersionCheck("unverified", "исследования компонента нет")
+        return VersionCheck("unverified", i18n._("исследования компонента нет"))
     records = target_records(research, target)
     if rep is None:
         rep = _union([[str(r.get("id") or ""), *[str(a) for a in r.get("aliases") or []]] for r in records])
@@ -545,25 +560,25 @@ def check_version(ecosystem: str, current: str, target: str, research: Mapping[s
             affected.append(main)
     residual.sort(key=lambda r: r["id"])
     if affected:
-        return VersionCheck("affected", "целевая версия входит в диапазон уязвимости", sorted(set(affected)),
+        return VersionCheck("affected", i18n._("целевая версия входит в диапазон уязвимости"), sorted(set(affected)),
                             residual=residual)
     if order is None:
-        return VersionCheck("unverified", "порядок версий не установлен", residual=residual)
+        return VersionCheck("unverified", i18n._("порядок версий не установлен"), residual=residual)
     if unknown:
-        return VersionCheck("unverified", "попадание в диапазон уязвимости не установлено", residual=residual)
+        return VersionCheck("unverified", i18n._("попадание в диапазон уязвимости не установлено"), residual=residual)
     if any(_no_ranges(r) for r in records):
-        return VersionCheck("unverified", "у уязвимости нет диапазонов версий", residual=residual)
+        return VersionCheck("unverified", i18n._("у уязвимости нет диапазонов версий"), residual=residual)
     coverage = [c for c in research.get("research_coverage") or [] if c.get("purpose") == "vulnerabilities"]
     if not coverage or not all(c.get("complete") and c.get("status") == "ok" for c in coverage):
-        return VersionCheck("unverified", "поиск уязвимостей в исследовании неполный", residual=residual)
+        return VersionCheck("unverified", i18n._("поиск уязвимостей в исследовании неполный"), residual=residual)
     # проверка точно этой целевой версии (ответ 2.1) – со своим охватом: неполный поиск по цели не даёт «проверена»
     target_check = next((c for c in research.get("version_checks") or [] if isinstance(c, Mapping)
                          and c.get("role") == "target" and str(c.get("version") or "") == target), None)
     if target_check is not None and not _vulnerability_coverage_complete(target_check):
-        return VersionCheck("unverified", "поиск уязвимостей целевой версии неполный", residual=residual)
+        return VersionCheck("unverified", i18n._("поиск уязвимостей целевой версии неполный"), residual=residual)
     if not published(target, research):
-        return VersionCheck("unverified", "публикация целевой версии не подтверждена", residual=residual)
-    return VersionCheck("verified", f"проверена по исследованию от {research_date}".strip(), residual=residual)
+        return VersionCheck("unverified", i18n._("публикация целевой версии не подтверждена"), residual=residual)
+    return VersionCheck("verified", i18n._("проверена по исследованию от {date}", date=research_date).strip(), residual=residual)
 
 
 @dataclass
@@ -617,9 +632,9 @@ def no_fix_check(ecosystem: str, current: str, research: Mapping[str, Any] | Non
     текущей (fixed_beyond) режим не отменяет: она идёт в список fixed, оператор подтверждает её отметкой (ADR-0151).
     Классы с решением оператора «не применима к продукту» (ADR-0094 Р3) проверку не проходят и строки не получают."""
     if not research:
-        return NoFixCheck(problems=["Режим «Исправленной версии нет» доступен только по исследованию компонента: по нему "
-                                    "проверяется, что исправления действительно нет. Исследуйте компонент или укажите "
-                                    "целевую версию."])
+        return NoFixCheck(problems=[i18n._("Режим «Исправленной версии нет» доступен только по исследованию компонента: "
+                                           "по нему проверяется, что исправления действительно нет. Исследуйте "
+                                           "компонент или укажите целевую версию.")])
     # все записи класса – находки текущей версии и всех проверок версий (ревью шага 8): версия исправления, известная
     # по проверке другой версии, тоже значит «обновлять есть куда»
     records = research_records(research)
@@ -639,25 +654,29 @@ def no_fix_check(ecosystem: str, current: str, research: Mapping[str, Any] | Non
             continue
         items = classes.get(root) or []
         if not items:
-            out.problems.append(f"{vuln.main}: в исследовании компонента нет сведений об этой уязвимости – что исправления "
-                                "нет, не установлено. Укажите целевую версию или исследуйте компонент заново.")
+            out.problems.append(i18n._("{id}: в исследовании компонента нет сведений об этой уязвимости – что "
+                                       "исправления нет, не установлено. Укажите целевую версию или исследуйте "
+                                       "компонент заново.", id=vuln.main))
             continue
         status = fix_status(ecosystem, current, items, research, research_date)
         if status["status"] == "fixed_beyond":
             version = _lowest_fix_above(ecosystem, current, items)
-            out.fixed.append(f"{vuln.main}: по исследованию есть исправление"
-                             + (f" в версии {version}" if version else "") + ".")
+            out.fixed.append(i18n._("{id}: по исследованию есть исправление в версии {version}.", id=vuln.main,
+                                    version=version) if version
+                             else i18n._("{id}: по исследованию есть исправление.", id=vuln.main))
         elif (status["status"] == "no_fix_published" and status.get("scope") == "branch"
               and not (latest and _branch_matches(latest, str(status.get("branch") or "")))):
-            out.problems.append(f"{vuln.main}: исправления нет только в ветке {status.get('branch')}"
-                                + (f", а наибольшая стабильная версия {latest} – в другой ветке: проверьте её"
-                                   if latest else ", наибольшая стабильная версия не установлена")
-                                + " и укажите целевую версию.")
+            out.problems.append(
+                i18n._("{id}: исправления нет только в ветке {branch}, а наибольшая стабильная версия {latest} – в "
+                       "другой ветке: проверьте её и укажите целевую версию.", id=vuln.main,
+                       branch=status.get("branch"), latest=latest) if latest
+                else i18n._("{id}: исправления нет только в ветке {branch}, наибольшая стабильная версия не "
+                            "установлена и укажите целевую версию.", id=vuln.main, branch=status.get("branch")))
         elif status["status"] in RESIDUAL_STATUSES:
             out.items.append({"id": vuln.main, "ids": class_ids(rep, root), "severity": severity_label(items), **status})
         else:
-            out.problems.append(f"{vuln.main}: статус исправления не установлен – исследуйте компонент или укажите "
-                                "целевую версию.")
+            out.problems.append(i18n._("{id}: статус исправления не установлен – исследуйте компонент или укажите "
+                                       "целевую версию.", id=vuln.main))
     out.items.sort(key=lambda r: r["id"])
     return out
 
@@ -722,8 +741,8 @@ def hub_explanation(ecosystem: str, hub_versions: Iterable[str], target: str, re
                 refs += own_refs
         if named:
             refs += [str(x) for c in coverage for x in c.get("source_refs") or []]
-            lines.append(f"Версия {hub}, указанная в Hub, затронута {', '.join(named)}; по исследованным диапазонам "
-                         f"версия {target} не затронута.")
+            lines.append(i18n._("Версия {hub}, указанная в Hub, затронута {named}; по исследованным диапазонам "
+                                "версия {target} не затронута.", hub=hub, named=", ".join(named), target=target))
     return "\n".join(lines), list(dict.fromkeys(refs))
 
 
@@ -735,8 +754,8 @@ def hub_note(ecosystem: str, hub_versions: Iterable[str], target: str, research:
 
 # ---------------------------------------------------------------------------- решения оператора о применимости
 
-APPLICABILITY_LABELS = {"applies": "применима", "not_current": "не затрагивает текущую версию",
-                        "not_product": "не применима к продукту"}
+APPLICABILITY_LABELS = i18n.Labels({"applies": "применима", "not_current": "не затрагивает текущую версию",
+                                    "not_product": "не применима к продукту"})
 
 
 def effective_applies(item: Mapping[str, Any], decision: str = "") -> str:
@@ -765,14 +784,14 @@ def applicability(decisions: Iterable[Mapping[str, Any]], rep: Mapping[str, str]
     for root, info in out.items():
         rows = info["rows"]
         if len(rows) > 1:
-            info["stale"] = ("противоположные решения в одном классе уязвимости"
-                             if len({r.get("decision") for r in rows}) > 1 else "состав уязвимости изменился")
+            info["stale"] = (i18n._("противоположные решения в одном классе уязвимости")
+                             if len({r.get("decision") for r in rows}) > 1 else i18n._("состав уязвимости изменился"))
             continue
         ids = sorted({_norm(i) for i in rows[0].get("ids") or [] if str(i or "").strip()})
         if ids != class_ids(rep, root):
-            info["stale"] = "состав уязвимости изменился"
+            info["stale"] = i18n._("состав уязвимости изменился")
         elif int(rows[0].get("research_revision") or 0) != int(research_revision or 0):
-            info["stale"] = "исследование компонента обновлено"
+            info["stale"] = i18n._("исследование компонента обновлено")
         else:
             info["decision"] = str(rows[0].get("decision") or "")
     return out
@@ -822,7 +841,8 @@ def evidence_urls(refs: Iterable[str], research: Mapping[str, Any] | None) -> li
 
 def residual_line(item: Mapping[str, Any], target: str, research: Mapping[str, Any] | None) -> str:
     """Строка «Рекомендаций» об остаточной уязвимости цели (ADR-0094 Р1.5): слова – по статусу исправления."""
-    return f"{residual_lead(item, research)}: {item.get('id')} ({item.get('severity')}) – обновление до {target} её не закрывает."
+    return i18n._("{lead}: {id} ({severity}) – обновление до {target} её не закрывает.",
+                  lead=residual_lead(item, research), id=item.get("id"), severity=item.get("severity"), target=target)
 
 
 def no_fix_line(item: Mapping[str, Any], research: Mapping[str, Any] | None) -> str:
@@ -841,15 +861,36 @@ def residual_lead(item: Mapping[str, Any], research: Mapping[str, Any] | None) -
     source = next((h for h in hosts if h), "")
     date = str(item.get("date") or "")
     if item.get("status") == "no_fix_published" and item.get("scope") == "branch":
-        lead = f"В ветке {item.get('branch')} исправления нет на {date}" + (f" ({source})" if source else "")
+        lead = (i18n._("В ветке {branch} исправления нет на {date}", branch=item.get("branch"), date=date)
+                + (f" ({source})" if source else ""))
     elif item.get("status") == "no_fix_published":
-        lead = f"Исправления нет ни в одной опубликованной версии на {date}" + (f" ({source})" if source else "")
+        lead = (i18n._("Исправления нет ни в одной опубликованной версии на {date}", date=date)
+                + (f" ({source})" if source else ""))
     else:
-        lead = f"Исправление не установлено в исследованном охвате на {date}"
+        lead = i18n._("Исправление не установлено в исследованном охвате на {date}", date=date)
     return lead
 
 
-ALSO_AFFECTED = "Также затрагивают эту версию:"
+ALSO_AFFECTED = i18n.N_("Также затрагивают эту версию:")
+# Разделы текста дефекта SCA и строка обновления (ADR-0091 п. 12): генератор (body) пишет их на языке интерфейса;
+# проверка и разбор текста узнают оба языка – msgid (русский) и i18n.translate(msgid, "en") (ADR-0158)
+SECTION_DESCRIPTION = i18n.N_("Описание")
+SECTION_EXPLANATION = i18n.N_("Объяснение")
+SECTION_RECOMMENDATIONS = i18n.N_("Рекомендации")
+SECTION_SOURCES = i18n.N_("Источники")
+SECTIONS = (SECTION_DESCRIPTION, SECTION_EXPLANATION, SECTION_RECOMMENDATIONS, SECTION_SOURCES)
+UPDATE_LINE = i18n.N_("Обновление {component} до версии {target}")
+
+
+def both_languages(msgid: str) -> tuple[str, ...]:
+    """Строка на обоих языках интерфейса (русский msgid и английский перевод) – для проверки и разбора текста дефекта,
+    собранного на любом из них."""
+    return tuple(dict.fromkeys((msgid, i18n.translate(msgid, "en"))))
+
+
+def update_line(component: str, target: str) -> str:
+    """Строка обновления в «Рекомендациях» на языке интерфейса."""
+    return i18n._(UPDATE_LINE, component=component, target=target)
 
 
 def description_lines(vulns: Iterable[Vuln]) -> tuple[list[str], list[str]]:
@@ -938,24 +979,25 @@ def body(component: str, vulns: list[Vuln], explanation: str, target: str, sourc
     # «Также затрагивают эту версию:» – применимые по исследованию, которых Hub не нашёл; заголовок – только если над
     # ним есть уязвимости Hub
     found, extra = description_lines(vulns)
-    lines = ["Описание", *found]
+    lines = [i18n._(SECTION_DESCRIPTION), *found]
     if extra:
         if found:
-            lines.append(ALSO_AFFECTED)
+            lines.append(i18n._(ALSO_AFFECTED))
         lines += extra
     from app.defect import edges
+    explanation_head, recommendations_head = i18n._(SECTION_EXPLANATION), i18n._(SECTION_RECOMMENDATIONS)
     if legacy_note:  # прежние правила – как были: края текста срезаны целиком
         explanation = strip_internal_ids(str(explanation or "").strip())
-        lines += ["", "Объяснение", *[x.rstrip() for x in explanation.split("\n")], "", "Рекомендации"]
+        lines += ["", explanation_head, *[x.rstrip() for x in explanation.split("\n")], "", recommendations_head]
     else:  # отступ первой строки оператора остаётся (ADR-0149 п. 5)
         explanation = edges(strip_ids_keep_indent(edges(explanation)))
-        lines += ["", "Объяснение", *explanation.split("\n"), "", "Рекомендации"]
+        lines += ["", explanation_head, *explanation.split("\n"), "", recommendations_head]
     if hub_note:
         lines.append(strip_internal_ids(hub_note))
     lines += [strip_internal_ids(str(x)) for x in residual_lines if str(x).strip()]
     lines += note_lines(recommendation_note, legacy=legacy_note)
     if target:  # режим «Исправленной версии нет» (ADR-0101): вместо строки обновления – меры оператора выше
-        lines.append(f"Обновление {component} до версии {target}")
+        lines.append(update_line(component, target))
     links = []
     for vuln in vulns:
         if vuln.public and link_of(vuln.main) not in links:
@@ -963,5 +1005,5 @@ def body(component: str, vulns: list[Vuln], explanation: str, target: str, sourc
     for url in sources:
         if url not in links and not has_internal_id(url):  # адрес с внутренним номером – не источник для получателя дефекта
             links.append(url)
-    lines += ["", "Источники", *links]
+    lines += ["", i18n._(SECTION_SOURCES), *links]
     return "\n".join(lines).strip() + "\n"

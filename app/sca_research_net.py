@@ -35,7 +35,7 @@ from contextlib import ExitStack, contextmanager
 from datetime import UTC, date, datetime
 from typing import Any
 
-from app import model_traffic, osv, profile_gate, sca_research as research
+from app import i18n, model_traffic, osv, profile_gate, sca_research as research
 from app.executors import DROP_STREAK_PAUSE, drop_retry_allowed
 from app.llm import UNKNOWN_STATUSES as llm_unknown_statuses
 from app.llm import LlmError, PromptOverflowError, ResolveError, SendNotAllowed, gate_for, model_answered, outcome_unknown
@@ -45,9 +45,9 @@ from app.sca_contract import ANSWER_CONTRACT, ROW_SCHEMA, VALIDATOR_VERSION, can
 
 log = logging.getLogger(__name__)
 
-SELECTIONS = {"all": "все строки задания", "unresearched": "без исследования", "review_due": "требующие пересмотра",
-              "no_defect": "без дефекта", "picked": "отмеченные в таблице",
-              "followup": "доисследование оставшихся"}
+SELECTIONS = i18n.Labels({"all": "все строки задания", "unresearched": "без исследования",
+                          "review_due": "требующие пересмотра", "no_defect": "без дефекта",
+                          "picked": "отмеченные в таблице", "followup": "доисследование оставшихся"})
 MAX_TOOL_RESULT_CHARS = 12_000  # результат инструмента – модели с обрезкой по бюджету
 MAX_SEARCH_COUNT = 8
 ROW_RETRIES = 2  # повторов не по формату на строку
@@ -59,16 +59,20 @@ TOOL_RETRY_STATUSES = (408, 429, 500, 503)  # поиск: один повтор 
 UNKNOWN_STATUSES = llm_unknown_statuses
 RESOLVE_ROW_WAIT_S = 10.0  # пауза перед повтором хода модели после сбоя службы имён (ADR-0113): запрос не ушёл
 RESOLVE_TOOL_WAIT_S = 5.0  # пауза перед повтором запроса инструмента после сбоя службы имён
-RESOLVE_RETRY_NOTE = "Единственный повтор после сбоя службы имён в этой строке уже использован."
+RESOLVE_RETRY_NOTE = i18n.N_("Единственный повтор после сбоя службы имён в этой строке уже использован.")
 _sleep = time.sleep  # пауза перед повтором (тесты подменяют)
 _now = time.monotonic  # часы паузы (тесты подменяют)
-UNKNOWN_NOTE = "Результат неизвестен: запрос мог быть принят и оплачен."
-DROP_THEN_STOPPED = ("Обрыв без ответа, автоматический повтор не отправлен: получение остановлено. " + UNKNOWN_NOTE)
-TOOL_UNKNOWN_NOTE = "В строке был запрос инструмента с неизвестным исходом – он мог быть принят и оплачен."
-TOOL_UNKNOWN_THEN_STOPPED = ("Получение остановлено до ответа модели после неизвестного исхода инструмента: строка в "
-                             "очередь не возвращается, доисследовать – по отметке. " + TOOL_UNKNOWN_NOTE)
-RESEARCH_DROP_STOP = ("провайдер обрывает соединения без ответа: {streak} строки подряд – получение остановлено, "
-                      "чтобы не тратить запросы впустую; оставшиеся строки можно получить новым запуском")
+# Причины строк и получения пишутся в базу на русском (канонический текст); N_ – перевод при показе (reason_text)
+UNKNOWN_NOTE = i18n.N_("Результат неизвестен: запрос мог быть принят и оплачен.")
+DROP_STOPPED = i18n.N_("Обрыв без ответа, автоматический повтор не отправлен: получение остановлено.")
+DROP_THEN_STOPPED = DROP_STOPPED + " " + UNKNOWN_NOTE
+TOOL_UNKNOWN_NOTE = i18n.N_("В строке был запрос инструмента с неизвестным исходом – он мог быть принят и оплачен.")
+TOOL_UNKNOWN_STOPPED = i18n.N_("Получение остановлено до ответа модели после неизвестного исхода инструмента: строка "
+                               "в очередь не возвращается, доисследовать – по отметке.")
+TOOL_UNKNOWN_THEN_STOPPED = TOOL_UNKNOWN_STOPPED + " " + TOOL_UNKNOWN_NOTE
+RESEARCH_DROP_STOP = i18n.N_("провайдер обрывает соединения без ответа: {streak} строки подряд – получение "
+                             "остановлено, чтобы не тратить запросы впустую; оставшиеся строки можно получить новым "
+                             "запуском")
 
 TOOLS = [
     {"type": "function", "function": {
@@ -162,8 +166,13 @@ def instructions(search_enabled: bool, osv_url: str = "") -> str:
                 "помечайте partial с причиной «без поиска по источникам» и указывайте источники, которые следует "
                 f"проверить;{osv_cov} {osv_note} Выдумывать URL и цитаты запрещено.\n")
     body = "\n\n".join(f"{name}\n\n{sections[name]}" for name in SHARED_SECTIONS)
+    # язык ответа (ADR-0158): при английском интерфейсе – отдельная последняя строка, не раздел «## »; первое сообщение
+    # пользователя – чистый JSON строки задания и не меняется. Строка входит в текст инструкций, а он – в отпечаток
+    # согласия: язык ответа – часть того, на что дано согласие, и получение отправляет сохранённый текст согласия
+    language = "".join(f"\n{line}\n" for line in research.answer_language_lines())
     return ("# Исследование компонента программного обеспечения\n\n" + mode + "\n" + result + "\n" + body
-            + "\n\n## Схема строки ответа\n\n" + json.dumps(ROW_SCHEMA, ensure_ascii=False, sort_keys=True) + "\n")
+            + "\n\n## Схема строки ответа\n\n" + json.dumps(ROW_SCHEMA, ensure_ascii=False, sort_keys=True) + "\n"
+            + language)
 
 
 def row_message(row: Mapping[str, Any], cutoff_date: str, osv_answer: Mapping[str, Any] | None = None) -> str:
@@ -245,7 +254,10 @@ def check_row(task: Mapping[str, Any], row: Mapping[str, Any], answer_row: Mappi
               "manifest_sha256": task.get("manifest_sha256", ""), "validator_version": VALIDATOR_VERSION,
               "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "row_count": 1,
               "rows": [dict(answer_row)]}
-    return validate_answer(json.dumps(answer, ensure_ascii=False), _subtask(task, row))
+    # замечания проверки уходят модели (инструкции на русском) и в причину строки в базе (канонический русский текст,
+    # перевод – при показе, reason_text) – поэтому всегда на русском, при любом языке интерфейса (ADR-0158)
+    with i18n.use("ru"):
+        return validate_answer(json.dumps(answer, ensure_ascii=False), _subtask(task, row))
 
 
 def _calls(message: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -707,6 +719,58 @@ def _tool_request(client: Any, outcome: RowOutcome, purpose: str, call: Callable
                 raise
             finally:
                 outcome.sent = outcome.sent or tracker.sent
+
+
+# ------------------------------------------------------------------ показ причин
+
+# Причины строк и получения, ошибки шагов хода строки хранятся в базе прежним русским текстом: по нему классифицируют
+# («Результат неизвестен» – app/run_errors.py) и его же видят прежние записи. Перевод – только при показе (ADR-0158):
+# известные части текста заменяются переводом, данные (ответ провайдера, замечания проверки) остаются как есть.
+_REASON_PARTS = sorted((
+    DROP_STOPPED, TOOL_UNKNOWN_STOPPED, UNKNOWN_NOTE, TOOL_UNKNOWN_NOTE, RESOLVE_RETRY_NOTE,
+    i18n.N_("Автоматический повтор после обрыва тоже остался без ответа."),
+    i18n.N_("Автоматический повтор после обрыва не получил ответа модели."),
+    i18n.N_("ответ модели оборван по длине (предел ответа профиля) – повтора нет"),
+    i18n.N_("ответ оборван по длине и не прошёл проверку – повтора нет:"),
+    i18n.N_("в вызове answer нет объекта row"), i18n.N_("в ответе нет объекта JSON строки"),
+    i18n.N_("ответ без строки"),
+    i18n.N_("Согласие на исследование отозвано: запрос не отправлен."),
+    i18n.N_("Получение остановлено: запрос не отправлен."),
+    i18n.N_("Профиль провайдера выключен: запрос не отправлен."),
+    i18n.N_("Задание устарело: состав проекта изменился – запрос не отправлен."),
+    i18n.N_("задание или согласие больше не действуют"), i18n.N_("строки нет в текущем задании"),
+    i18n.N_("остановлено оператором"), i18n.N_("пополните баланс у провайдера: сервер ответил 402"),
+    i18n.N_("задание устарело: состав проекта изменился"),
+    i18n.N_("срок строки исчерпан: запрос инструмента не отправлен"), i18n.N_("срок строки исчерпан"),
+    i18n.N_("получение остановлено во время паузы перед повтором"),
+    i18n.N_("повтор запроса с неизвестным исходом не отправлен"),
+), key=len, reverse=True)
+_REASON_PATTERNS = (
+    (re.compile(r"исчерпан бюджет отправок на строку \((\d+)\) – ответа нет"),
+     lambda m: i18n._("исчерпан бюджет отправок на строку ({limit}) – ответа нет", limit=m.group(1))),
+    (re.compile(r"исчерпан срок строки \((\d+) с\) – ответа нет"),
+     lambda m: i18n._("исчерпан срок строки ({seconds} с) – ответа нет", seconds=m.group(1))),
+    (re.compile(r"ответ не прошёл проверку после (\d+) повторов:"),
+     lambda m: i18n._("ответ не прошёл проверку после {retries} повторов:", retries=m.group(1))),
+    (re.compile(r"провайдер обрывает соединения без ответа: (\d+) строки подряд – получение остановлено, чтобы не "
+                r"тратить запросы впустую; оставшиеся строки можно получить новым запуском"),
+     lambda m: i18n._(RESEARCH_DROP_STOP, streak=m.group(1))),
+    (re.compile(r"^не сохранено: "), lambda m: i18n._("не сохранено: ")),
+    (re.compile(r"^сбой приложения: "), lambda m: i18n._("сбой приложения: ")),
+)
+
+
+def reason_text(text: Any) -> str:
+    """Причина строки или получения на языке интерфейса для показа: при русском – как сохранена."""
+    value = str(text or "")
+    if not value or i18n.current() == "ru":
+        return value
+    for part in _REASON_PARTS:
+        if part in value:
+            value = value.replace(part, i18n._(part))
+    for pattern, render in _REASON_PATTERNS:
+        value = pattern.sub(render, value)
+    return value
 
 
 # ------------------------------------------------------------------ получение целиком

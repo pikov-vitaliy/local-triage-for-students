@@ -20,16 +20,19 @@ import math
 import re
 from typing import Any, Iterable, Mapping
 
+from app import i18n
+
 UNKNOWN = ""  # версия оценки не указана (ключ в сохранённых данных)
 UNKNOWN_CHOICE = "?"  # значение параметра cvss_version для отбора «только оценки без версии»
 # Порядок для показа и разбора: 3.1 – основная версия пользователя, дальше остальные известные; в выпадающем
 # списке и в разборе баллов пакета оценки идут именно в таком порядке
 VERSIONS = ("3.1", "3.0", "4.0", "2.0")
-VERSION_LABELS = {UNKNOWN: "версия не указана", UNKNOWN_CHOICE: "версия не указана", "3.1": "CVSS 3.1",
-                  "3.0": "CVSS 3.0", "4.0": "CVSS 4.0", "2.0": "CVSS 2.0"}
+VERSION_LABELS = i18n.Labels({UNKNOWN: "версия не указана", UNKNOWN_CHOICE: "версия не указана", "3.1": "CVSS 3.1",
+                              "3.0": "CVSS 3.0", "4.0": "CVSS 4.0", "2.0": "CVSS 2.0"})
 CHOICES = (*VERSIONS, UNKNOWN_CHOICE)  # значения параметра cvss_version; "" – все версии вместе
 SORTS = ("cvss_asc", "cvss_desc")
-SORT_LABELS = {UNKNOWN: "как в отчёте", "cvss_asc": "CVSS: по возрастанию", "cvss_desc": "CVSS: по убыванию"}
+SORT_LABELS = i18n.Labels({UNKNOWN: "как в отчёте", "cvss_asc": "CVSS: по возрастанию",
+                           "cvss_desc": "CVSS: по убыванию"})
 EPS = 1e-9  # балл CVSS – число с одним знаком: сравниваем с допуском, чтобы 3,9 не уехало за границу
 
 # Базовые метрики версии и их допустимые значения (FIRST: спецификации 3.1, 4.0 и второй версии). Имя метрики
@@ -88,13 +91,15 @@ _HEAD_SUBJECT = re.compile(r"компонент|component|библиотек|б�
 _VERSION_TEXT = re.compile(r"(?:cvss[\s\-]*)?v?([234])[.](\d)", re.IGNORECASE)
 
 # Диапазоны CVSS 3.x и 4.0 совпадают. У второй версии верхняя граница «высокого» – 10, а «критического» нет:
-# пометка «Критический» у оценки 2.0 была бы баллом по чужой шкале
+# пометка «Критический» у оценки 2.0 была бы баллом по чужой шкале. Подписи – msgid, перевод в bands()
+_ZERO, _LOW, _MEDIUM = i18n.N_("Нулевой"), i18n.N_("Низкий"), i18n.N_("Средний")
+_HIGH, _CRITICAL = i18n.N_("Высокий"), i18n.N_("Критический")
 _BANDS = {
-    UNKNOWN: (("zero", "Нулевой", 0.0, 0.0), ("low", "Низкий", 0.1, 3.9), ("medium", "Средний", 4.0, 6.9),
-              ("high", "Высокий", 7.0, 8.9), ("critical", "Критический", 9.0, 10.0)),
-    UNKNOWN_CHOICE: (("zero", "Нулевой", 0.0, 0.0), ("low", "Низкий", 0.1, 3.9), ("medium", "Средний", 4.0, 6.9),
-                     ("high", "Высокий", 7.0, 8.9), ("critical", "Критический", 9.0, 10.0)),
-    "2.0": (("low", "Низкий", 0.0, 3.9), ("medium", "Средний", 4.0, 6.9), ("high", "Высокий", 7.0, 10.0)),
+    UNKNOWN: (("zero", _ZERO, 0.0, 0.0), ("low", _LOW, 0.1, 3.9), ("medium", _MEDIUM, 4.0, 6.9),
+              ("high", _HIGH, 7.0, 8.9), ("critical", _CRITICAL, 9.0, 10.0)),
+    UNKNOWN_CHOICE: (("zero", _ZERO, 0.0, 0.0), ("low", _LOW, 0.1, 3.9), ("medium", _MEDIUM, 4.0, 6.9),
+                     ("high", _HIGH, 7.0, 8.9), ("critical", _CRITICAL, 9.0, 10.0)),
+    "2.0": (("low", _LOW, 0.0, 3.9), ("medium", _MEDIUM, 4.0, 6.9), ("high", _HIGH, 7.0, 10.0)),
 }
 _CASES = ("cvss", "cvss_min", "cvss_max", "cvss_version", "sort")
 
@@ -187,7 +192,7 @@ def number(value: float) -> str:
 def bands(version: str = UNKNOWN) -> list[dict]:
     """Готовые диапазоны для версии: у 2.0 своя разметка, у 3.x и 4.0 – общая. Подпись границ выводится из
     самих границ диапазона, поэтому у второй версии «высокий» – это 7–10, а не 7–8,9 от другой шкалы."""
-    return [{"key": key, "label": label, "min": low, "max": high, "title": _band_title(low, high)}
+    return [{"key": key, "label": i18n._(label), "min": low, "max": high, "title": _band_title(low, high)}
             for key, label, low, high in _BANDS.get(version, _BANDS[UNKNOWN])]
 
 
@@ -200,17 +205,18 @@ def version_title(version: str) -> str:
     версия не указана; без выбора версии подписи нет вовсе (балл тогда наибольший из всех версий)."""
     if not version:
         return ""
-    return f"CVSS {version}" if version in VERSIONS else "без указания версии"
+    return f"CVSS {version}" if version in VERSIONS else i18n._("без указания версии")
 
 
 def presets(version: str = UNKNOWN) -> list[dict]:
     """Готовые отборы: диапазоны версии, «строго больше 7» и «7 и выше» отдельно друг от друга, оценка
     без балла. Пороги организационного правила (строго больше 7) и шкалы (7 и выше) не смешиваются."""
     items = bands(version)
-    items.append({"key": "above7", "label": "Строго больше 7", "min": 7.0, "max": 10.0, "open_min": True,
-                  "title": "больше 7"})
-    items.append({"key": "from7", "label": "7 и выше", "min": 7.0, "max": 10.0, "title": "7–10"})
-    items.append({"key": "no_score", "label": "Без оценки", "min": None, "max": None, "title": "оценки нет"})
+    items.append({"key": "above7", "label": i18n._("Строго больше 7"), "min": 7.0, "max": 10.0, "open_min": True,
+                  "title": i18n._("больше 7")})
+    items.append({"key": "from7", "label": i18n._("7 и выше"), "min": 7.0, "max": 10.0, "title": "7–10"})
+    items.append({"key": "no_score", "label": i18n._("Без оценки"), "min": None, "max": None,
+                  "title": i18n._("оценки нет")})
     return items
 
 
@@ -290,13 +296,15 @@ def bound(value: Any, name: str, label: str) -> tuple[float | None, str]:
     try:
         score = float(text)
     except ValueError:
-        return None, f"«{name}» – {label} должна быть числом от 0 до 10, получено «{text}»."
+        return None, i18n._("«{name}» – {label} должна быть числом от 0 до 10, получено «{value}».", name=name,
+                            label=i18n._(label), value=text)
     if not math.isfinite(score):
-        return None, f"«{name}» – {label} должна быть числом от 0 до 10."
+        return None, i18n._("«{name}» – {label} должна быть числом от 0 до 10.", name=name, label=i18n._(label))
     if not 0.0 <= score <= 10.0:
-        return None, f"«{name}» – {label} должна быть от 0 до 10, получено {number(score)}."
+        return None, i18n._("«{name}» – {label} должна быть от 0 до 10, получено {value}.", name=name,
+                            label=i18n._(label), value=number(score))
     if not math.isclose(score, round(score, 1), rel_tol=0, abs_tol=1e-12):
-        return None, f"«{name}» – {label} должна задаваться с шагом 0,1."
+        return None, i18n._("«{name}» – {label} должна задаваться с шагом 0,1.", name=name, label=i18n._(label))
     return round(score, 1), ""
 
 
@@ -308,8 +316,8 @@ def parse(params: Mapping[str, str]) -> dict:
     raw = {name: str(params.get(name, "") or "").strip() for name in _CASES}
     version = raw["cvss_version"]
     if version and version not in CHOICES:
-        errors.append(f"Версия оценки «{version}» неизвестна – доступны: "
-                      + ", ".join(VERSION_LABELS[v] for v in CHOICES) + ".")
+        errors.append(i18n._("Версия оценки «{version}» неизвестна – доступны: {choices}.", version=version,
+                             choices=", ".join(VERSION_LABELS[v] for v in CHOICES)))
         version = UNKNOWN
     item = None
     preset_key = raw["cvss"]
@@ -318,26 +326,27 @@ def parse(params: Mapping[str, str]) -> dict:
         if item is None:
             known = preset(UNKNOWN, preset_key)  # отбор, который есть в шкале 3.x и 4.0
             if known:
-                errors.append(f"Отбор «{known['label']}» не применим к {VERSION_LABELS[version]} – у этой "
-                              "версии такой шкалы нет.")
+                errors.append(i18n._("Отбор «{preset}» не применим к {version} – у этой версии такой шкалы нет.",
+                                     preset=known["label"], version=VERSION_LABELS[version]))
             else:
-                errors.append(f"Отбор «{preset_key}» неизвестен – доступны: "
-                              + ", ".join(band["label"] for band in presets(version)) + ".")
+                errors.append(i18n._("Отбор «{preset}» неизвестен – доступны: {choices}.", preset=preset_key,
+                                     choices=", ".join(band["label"] for band in presets(version))))
             preset_key = UNKNOWN
-    low, low_error = bound(raw["cvss_min"], "cvss_min", "нижняя граница")
-    high, high_error = bound(raw["cvss_max"], "cvss_max", "верхняя граница")
+    low, low_error = bound(raw["cvss_min"], "cvss_min", i18n.N_("нижняя граница"))
+    high, high_error = bound(raw["cvss_max"], "cvss_max", i18n.N_("верхняя граница"))
     errors.extend(error for error in (low_error, high_error) if error)
     if low_error or high_error:
         # половину неверного диапазона применять нельзя: обе границы и готовый отбор из той же формы
         # отбрасываются, список показывается целиком, а что именно не так – в errors
         low, high, item, preset_key = None, None, None, UNKNOWN
     elif low is not None and high is not None and low > high:
-        errors.append(f"Нижняя граница {number(low)} больше верхней {number(high)} – такой отбор ничего "
-                      "не найдёт.")
+        errors.append(i18n._("Нижняя граница {low} больше верхней {high} – такой отбор ничего не найдёт.",
+                             low=number(low), high=number(high)))
         low, high, item, preset_key = None, None, None, UNKNOWN
     sort = raw["sort"]
     if sort and sort not in SORTS:
-        errors.append(f"Сортировка «{sort}» неизвестна – доступны: " + ", ".join(SORT_LABELS[s] for s in SORTS) + ".")
+        errors.append(i18n._("Сортировка «{sort}» неизвестна – доступны: {choices}.", sort=sort,
+                             choices=", ".join(SORT_LABELS[s] for s in SORTS)))
         sort = UNKNOWN
     return {"preset": preset_key, "item": item, "min": low, "max": high, "version": version, "sort": sort,
             "active": bool(preset_key or low is not None or high is not None or version), "errors": errors,

@@ -3,6 +3,7 @@
 import copy
 import json
 
+from app import i18n
 from app.defect_dto import DEFECT_SCHEMA, REQUIRED_DEFECT, validate_defect, validate_value
 
 EDITABLE_FIELDS = frozenset({"priority", "priorityId", "severity", "severityId", "source", "tool", "stage", "type",
@@ -75,7 +76,8 @@ def basis_of(row):
 def local_changes(row):
     basis = basis_of(row)
     if not basis["known"]:
-        raise ValueError("приложение ещё не знает, какие поля дефекта сейчас в Hub – нажмите вверху карточки «Принять поля из Hub» и снова «Push в Hub»")
+        raise ValueError(i18n._("приложение ещё не знает, какие поля дефекта сейчас в Hub – нажмите вверху карточки "
+                                "«Принять поля из Hub» и снова «Push в Hub»"))
     return diff(basis["base"], json.loads(row["draft_fields_json"]))
 
 
@@ -105,7 +107,7 @@ def _merge_value(base, local, remote, path):
             if value is not MISSING:
                 result[key] = value
         return result
-    raise ValueError(f"Конфликт сверки {path}: поле изменено локально и в Hub. Применение отменено.")
+    raise ValueError(i18n._("Конфликт сверки {path}: поле изменено локально и в Hub. Применение отменено.", path=path))
 
 
 def merge(base, local, remote):
@@ -119,7 +121,7 @@ def merge(base, local, remote):
         elif equal(h, b):
             result.update(copy.deepcopy(d))
         else:
-            raise ValueError(f"Конфликт сверки /{group[0]}: связанная группа изменена с обеих сторон.")
+            raise ValueError(i18n._("Конфликт сверки /{field}: связанная группа изменена с обеих сторон.", field=group[0]))
     for key in (base.keys() | local.keys() | remote.keys()) - grouped:
         value = _merge_value(base.get(key, MISSING), local.get(key, MISSING), remote.get(key, MISSING), "/" + key)
         if value is not MISSING:
@@ -130,11 +132,11 @@ def merge(base, local, remote):
 def _known_path(path):
     keys = path.lstrip("/").split("/")
     if not path.startswith("/") or keys[0] not in EDITABLE_FIELDS:
-        raise FieldError(f"{path}: поле не редактируется.")
+        raise FieldError(i18n._("{path}: поле не редактируется.", path=path))
     schema = DEFECT_SCHEMA
     for key in keys:
         if not isinstance(schema, dict) or key not in schema:
-            raise FieldError(f"{path}: неизвестное свойство не редактируется.")
+            raise FieldError(i18n._("{path}: неизвестное свойство не редактируется.", path=path))
         schema = schema[key]
     return keys, schema
 
@@ -149,7 +151,7 @@ def _extensions_unchanged(old, new, schema, path, *, preserve_removed=False):
             a, b = before.get(key, MISSING), after.get(key, MISSING)
             if key not in schema:
                 if not equal(a, b):
-                    raise FieldError(f"{path}/{key}: расширение Hub должно сохраниться.")
+                    raise FieldError(i18n._("{path}/{key}: расширение Hub должно сохраниться.", path=path, key=key))
             else:
                 _extensions_unchanged(a, b, schema[key], path + "/" + key, preserve_removed=preserve_removed)
     elif isinstance(schema, list):
@@ -161,27 +163,27 @@ def _extensions_unchanged(old, new, schema, path, *, preserve_removed=False):
             if extension:
                 index = next((i for i, previous in enumerate(available) if equal(previous, extension)), None)
                 if index is None:
-                    raise FieldError(f"{path}: расширение записи Hub не редактируется.")
+                    raise FieldError(i18n._("{path}: расширение записи Hub не редактируется.", path=path))
                 available.pop(index)
         if preserve_removed and any(available):
-            raise FieldError(f"{path}: расширение записи Hub должно сохраниться.")
+            raise FieldError(i18n._("{path}: расширение записи Hub должно сохраниться.", path=path))
 
 
 def edit(current, operations, choices):
     """Изменяются только явно указанные пути. Неизменённый некорректный ответ Hub остаётся наблюдением."""
     if not isinstance(operations, list):
-        raise FieldError("changes: требуется массив изменений.")
+        raise FieldError(i18n._("changes: требуется массив изменений."))
     proposed = copy.deepcopy(current)
     paths = []
     for op in operations:
         if not isinstance(op, dict) or set(op) - {"path", "op", "value"}:
-            raise FieldError("Неверный формат изменения поля.")
+            raise FieldError(i18n._("Неверный формат изменения поля."))
         path = op.get("path", "")
         if not isinstance(path, str):
-            raise FieldError("Путь поля должен быть строкой.")
+            raise FieldError(i18n._("Путь поля должен быть строкой."))
         keys, schema = _known_path(path)
         if any(path == old or path.startswith(old + "/") or old.startswith(path + "/") for old in paths):
-            raise FieldError(f"{path}: повтор или пересечение изменений.")
+            raise FieldError(i18n._("{path}: повтор или пересечение изменений.", path=path))
         paths.append(path)
         action = op.get("op")
         if action == "set" and "value" in op:
@@ -191,9 +193,9 @@ def edit(current, operations, choices):
                 raise FieldError(str(exc)) from exc
         elif action == "remove":
             if len(keys) == 1 and keys[0] in REQUIRED_DEFECT:
-                raise FieldError(f"{path}: обязательное свойство нельзя удалить.")
+                raise FieldError(i18n._("{path}: обязательное свойство нельзя удалить.", path=path))
         else:
-            raise FieldError(f"{path}: требуется set со значением или remove.")
+            raise FieldError(i18n._("{path}: требуется set со значением или remove.", path=path))
         proposed = apply_changes(proposed, [{"path": path, "after_present": action == "set", "after": op.get("value")}])
     for root in EDITABLE_FIELDS - {"appStructureUnit", "releaseObject"}:
         _extensions_unchanged(current.get(root, MISSING), proposed.get(root, MISSING), DEFECT_SCHEMA[root], "/" + root)
@@ -209,10 +211,11 @@ def edit(current, operations, choices):
                 continue
         if main == "structureUnitId" and (not new or any(equal(new, x) for x in choices.get("structureUnits", []))):
             continue
-        raise FieldError(f"/{main}: нет подтверждённого соответствия связанных значений; сохраните текущую комбинацию.")
+        raise FieldError(i18n._("/{field}: нет подтверждённого соответствия связанных значений; сохраните текущую "
+                                 "комбинацию.", field=main))
     if not equal(current.get("releaseObject", MISSING), proposed.get("releaseObject", MISSING)) and "releaseObject" in proposed:
         if not any(equal(proposed["releaseObject"], x) for x in choices.get("releaseObjects", [])):
-            raise FieldError("/releaseObject: выберите значение из сохранённого справочника.")
+            raise FieldError(i18n._("/releaseObject: выберите значение из сохранённого справочника."))
     return proposed
 
 
@@ -235,7 +238,7 @@ def candidate(fresh, row, summary, description):
     new_priority = body["priority"]
     if not equal(old_priority.get("name", MISSING), new_priority.get("name", MISSING)):
         if ("priorityId" in fresh or "priorityId" in body or "rank" in old_priority or "rank" in new_priority):
-            raise FieldError("/priority: нет подтверждённого соответствия связанных значений; сохраните текущую комбинацию.")
+            raise FieldError(i18n._("/priority: нет подтверждённого соответствия связанных значений; сохраните текущую комбинацию."))
     return body, diff(fresh, body), changes
 
 
